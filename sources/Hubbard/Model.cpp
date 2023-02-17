@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <chrono>
 #include <omp.h>
+#include <fstream>
 #include "../Utility/Resolvent.hpp"
 
 namespace Hubbard {
@@ -60,6 +61,59 @@ namespace Hubbard {
 			quartic[2](k, k) += cdw_type(vec_k, vec_k) * sum_of_all[0];
 			quartic[2](k, k) += cdw_type(vec_k + vec_Q, vec_k) * sum_of_all[1];
 		}
+	}
+
+	double Model::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
+	{
+		if (term.operators.size() == 0) return term.multiplicity;
+		const Eigen::Vector2i l_idx = { x(l) + Constants::K_DISCRETIZATION, y(l) + Constants::K_DISCRETIZATION };
+		const Eigen::Vector2i k_idx = { x(k) + Constants::K_DISCRETIZATION, y(k) + Constants::K_DISCRETIZATION };
+
+		auto computeMomentum_kl = [&](const SymbolicOperators::WickOperator& op) -> Eigen::Vector2i {
+			Eigen::Vector2i buffer = { 0,0 };
+			int idx = op.momentum.isUsed('k');
+			int jdx = op.momentum.isUsed('l');
+
+			if (idx > -1) {
+				buffer += op.momentum.momentum_list[idx].first * k_idx;
+			}
+			if (jdx > -1) {
+				buffer += op.momentum.momentum_list[jdx].first * l_idx;
+			}
+			if (op.momentum.add_Q) {
+				buffer(0) += Constants::K_DISCRETIZATION;
+				buffer(1) += Constants::K_DISCRETIZATION;
+			}
+			clean_factor_2pi(buffer);
+			return buffer;
+		};
+
+		if (term.sum_momenta.size() > 0) {
+			if (term.operators.size() == 1) {
+				// bilinear term
+				auto it = wick_map.find(term.operators[0].type);
+				if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[0].type);
+
+				if (term.sum_momenta.size() > 1) throw std::invalid_argument("Term with more than one momentum summation: " + term.sum_momenta.size());
+				if (term.delta_momenta.size() == 0) throw std::invalid_argument("There is a summation without delta_kl in a bilinear term.");
+				return term.multiplicity * sum_of_all[it->second];
+			}
+			if (term.operators.size() == 2) {
+				// quartic term
+
+			}
+			throw std::invalid_argument("There are more than 2 WickOperators: " + term.operators.size());
+		}
+
+		double returnBuffer = 0;
+		for (size_t i = 0; i < term.operators.size(); i++)
+		{
+			auto it = wick_map.find(term.operators[i].type);
+			if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[i].type);
+			Eigen::Vector2i momentum_value = computeMomentum_kl(term.operators[i]);
+			returnBuffer += expecs[it->second](momentum_value(0), momentum_value(1));
+		}
+		return term.multiplicity * returnBuffer;
 	}
 
 	void Model::fill_M_N()
@@ -218,6 +272,16 @@ namespace Hubbard {
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for resolvent: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+	}
+
+	void Model::loadWick(const std::string& filename)
+	{
+		// create an input file stream and a text archive to deserialize the vector
+		std::ifstream ifs(filename);
+		boost::archive::text_iarchive ia(ifs);
+		wicks.clear();
+		ia >> wicks;
+		ifs.close();
 	}
 
 	void Model::getEnergies(std::vector<std::vector<double>>& reciever, double direction)

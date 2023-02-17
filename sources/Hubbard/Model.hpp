@@ -2,7 +2,9 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <memory>
+#include <map>
 #include "Constants.hpp"
+#include "WickTerm.hpp"
 
 namespace Hubbard {
 	class Model
@@ -36,6 +38,9 @@ namespace Hubbard {
 		std::vector<Eigen::MatrixXd> quartic;
 
 		Eigen::MatrixXd M, N;
+
+		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"g", 2}, {"\\eta", 3}};
+		std::vector<SymbolicOperators::WickTerm> wicks;
 
 		// Computes the respective x or y component from a given input index
 		inline int x(int idx) const {
@@ -104,6 +109,7 @@ namespace Hubbard {
 		virtual void fillHamiltonian(double k_x, double k_y) = 0;
 
 		virtual void compute_quartics();
+		virtual double computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 		virtual void fill_M_N();
 	public:
 		class ModelParameters {
@@ -159,5 +165,6 @@ namespace Hubbard {
 		inline double getTotalGapValue() const {
 			return sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta);
 		};
+		void loadWick(const std::string& filename);
 	};
 }
