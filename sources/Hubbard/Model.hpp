@@ -39,9 +39,10 @@ namespace Hubbard {
 		std::vector<Eigen::MatrixXd> quartic;
 
 		Eigen::MatrixXd M, N;
+		int number_of_basis_terms = 1;
 
 		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
-		std::vector<SymbolicOperators::WickTerm> wicks;
+		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M, wicks_N;
 
 		// Computes the respective x or y component from a given input index
 		inline int x(int idx) const {
