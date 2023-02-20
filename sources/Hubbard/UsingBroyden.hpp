@@ -23,7 +23,6 @@ namespace Hubbard {
 			this->delta_eta = 0.5 * (F(2) + this->delta_eta);
 		};
 
-		virtual void compute_quartics() override;
 		virtual void fill_M_N() override;
 	public:
 		UsingBroyden(ModelParameters& _params);

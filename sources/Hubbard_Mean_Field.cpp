@@ -72,7 +72,7 @@ int main(int argc, char** argv)
 
 	std::vector<std::vector<double>> energies;
 	model2.getEnergies(energies, 1);
-	Utility::saveData(energies, "../../dataenergies.txt");
+	Utility::saveData(energies, "../../data/energies.txt");
 	return MPI_Finalize();
 #endif // _DO_TEST
 	// Setup the parameters T, U, V
@@ -166,11 +166,11 @@ int main(int argc, char** argv)
 				+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
 			std::string output_folder = input.getString("output_folder");
-			std::filesystem::create_directories("../../data" + output_folder);
+			std::filesystem::create_directories("../../data/" + output_folder);
 
-			Utility::saveData(recieve_cdw, SECOND_IT_STEPS, "../../data" + output_folder + "cdw.txt", comments);
-			Utility::saveData(recieve_sc, SECOND_IT_STEPS, "../../data" + output_folder + "sc.txt", comments);
-			Utility::saveData(recieve_eta, SECOND_IT_STEPS, "../../data" + output_folder + "eta.txt", comments);
+			Utility::saveData(recieve_cdw, SECOND_IT_STEPS, "../../data/" + output_folder + "cdw.txt", comments);
+			Utility::saveData(recieve_sc, SECOND_IT_STEPS, "../../data/" + output_folder + "sc.txt", comments);
+			Utility::saveData(recieve_eta, SECOND_IT_STEPS, "../../data/" + output_folder + "eta.txt", comments);
 		}
 	}
 	else if (input.getString("compute_what") == "modes") {
@@ -211,16 +211,16 @@ int main(int argc, char** argv)
 				+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
 			std::string output_folder = input.getString("output_folder") + input.getString("global_iterator_type") + "_modes/";
-			std::filesystem::create_directories("../../data" + output_folder);
+			std::filesystem::create_directories("../../data/" + output_folder);
 
 			for (int i = 0; i < FIRST_IT_STEPS; i++)
 			{
 				std::stringstream stream;
 				stream << std::fixed << std::setprecision(2) << param[i];
 				comments.push_back("Total Gap=" + std::to_string(totalGapValues[i]));
-				Utility::saveData(reciever[i], "../../data" + output_folder + stream.str() + ".txt", comments);
+				Utility::saveData(reciever[i], "../../data/" + output_folder + stream.str() + ".txt", comments);
 				comments.pop_back();
-				Utility::saveData(oneParticleEnergies[i], "../../data" + output_folder + stream.str() + "_one_particle.txt", comments);
+				Utility::saveData(oneParticleEnergies[i], "../../data/" + output_folder + stream.str() + "_one_particle.txt", comments);
 			}
 		}
 	}

@@ -36,68 +36,10 @@ namespace Hubbard {
 		hamilton(3, 3) = eps;
 	}
 
-	void UsingBroyden::compute_quartics()
-	{
-		Model::compute_quartics();
-		const Eigen::Vector2i vec_Q = { Constants::K_DISCRETIZATION, Constants::K_DISCRETIZATION };
-		auto f = [&](int kx, int ky) -> double {
-			return (V / BASIS_SIZE) * 2 * (cos((M_PI * kx) / Constants::K_DISCRETIZATION) + cos((M_PI * ky) / Constants::K_DISCRETIZATION));
-		};
-
-		quartic.push_back(Eigen::MatrixXd::Zero(BASIS_SIZE, BASIS_SIZE));
-		quartic.push_back(Eigen::MatrixXd::Zero(BASIS_SIZE, BASIS_SIZE));
-		quartic.push_back(Eigen::MatrixXd::Zero(BASIS_SIZE, BASIS_SIZE));
-
-		// compute the two new terms
-		double sum_of_all_F[2] = { 0, 0 };
-		for (int k = 0; k < BASIS_SIZE; k++)
-		{
-			sum_of_all_F[0] += f(x(k), y(k)) * _NUM(k);
-			sum_of_all_F[1] += f(x(k), y(k)) * _CDW(k);
-		}
-
-#pragma omp parallel for
-		for (int k = 0; k < BASIS_SIZE; k++)
-		{
-			Eigen::Vector2i vec_k, vec_l;
-			double buffer[4] = { 0,0,0,0 };
-			vec_k = { x(k), y(k) };
-			for (int l = 0; l < BASIS_SIZE; l++)
-			{
-				vec_l = { x(l), y(l) };
-				buffer[0] += f(vec_l(0), vec_l(1)) * sc_type(-vec_k - vec_l, vec_k + vec_l);
-				buffer[1] += f(vec_l(0), vec_l(1)) * sc_type(-vec_k - vec_l, vec_k + vec_l + vec_Q);
-				buffer[2] += f(vec_l(0), vec_l(1)) * cdw_type(-vec_k - vec_l, -vec_k - vec_l);
-				buffer[3] += f(vec_l(0), vec_l(1)) * cdw_type(-vec_k - vec_l, -vec_k - vec_l + vec_Q);
-
-				// number 6 -> 1a
-				quartic[6](k, l) += f(0, 0) * sc_type(vec_l, -vec_l) * sc_type(-vec_k, vec_k);
-				quartic[6](k, l) += f(vec_Q(0), vec_Q(1)) * sc_type(vec_l, -vec_l - vec_Q) * sc_type(-vec_k, vec_k - vec_Q);
-				quartic[6](k, l) += f(x(k) - x(l), y(k) - y(l)) * cdw_type(vec_l, vec_l) * cdw_type(-vec_k, -vec_k);
-				quartic[6](k, l) += f(x(k) - x(l) + vec_Q(0), y(k) - y(l) + vec_Q(1)) * cdw_type(vec_l, vec_l - vec_Q) * cdw_type(-vec_k - vec_Q, -vec_k);
-
-				quartic[4](k, l) += f(0, 0) * sc_type(vec_l, -vec_l) * sc_type(-vec_k, vec_k);
-				quartic[4](k, l) += f(vec_Q(0), vec_Q(1)) * sc_type(vec_l, -vec_l - vec_Q) * sc_type(-vec_k - vec_Q, vec_k);
-				if (k == l) {
-					quartic[4](k, l) += sum_of_all_F[0] * cdw_type(vec_l, vec_k);
-				}
-				else if (vec_k == vec_l + vec_Q || vec_k == vec_l - vec_Q) {
-					quartic[4](k, l) += sum_of_all_F[1] * cdw_type(vec_l, vec_k);
-				}
-			}
-			quartic[5](k, k) += sc_type(vec_k, -vec_k) * buffer[0];
-			quartic[5](k, k) += sc_type(vec_k + vec_Q, -vec_k) * buffer[1];
-			quartic[5](k, k) -= cdw_type(-vec_k, -vec_k) * buffer[2];
-			quartic[5](k, k) -= cdw_type(-vec_k + vec_Q, -vec_k) * buffer[3];
-			quartic[5](k, k) += 2 * f(0, 0) * cdw_type(-vec_k, -vec_k) * sum_of_all[0];
-			quartic[5](k, k) += 2 * f(vec_Q(0), vec_Q(1)) * cdw_type(-vec_k + vec_Q, -vec_k) * sum_of_all[1];
-		}
-	}
-
 	void UsingBroyden::fill_M_N()
 	{
 		Model::fill_M_N();
-
+		return;
 		auto f = [&](int kx, int ky) -> double {
 			return (V / BASIS_SIZE) * 2 * (cos((M_PI * kx) / Constants::K_DISCRETIZATION) + cos((M_PI * ky) / Constants::K_DISCRETIZATION));
 		};

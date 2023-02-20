@@ -18,77 +18,22 @@ namespace Hubbard {
 		chemical_potential = U / 2;
 	}
 
-	void Model::compute_quartics()
-	{
-		const Eigen::Vector2i vec_Q = { Constants::K_DISCRETIZATION, Constants::K_DISCRETIZATION };
-
-#pragma omp parallel for
-		for (int k = 0; k < BASIS_SIZE; k++)
-		{
-			Eigen::Vector2i vec_k, vec_l;
-			vec_k = { x(k), y(k) };
-			for (int l = 0; l < BASIS_SIZE; l++)
-			{
-				vec_l = { x(l), y(l) };
-				quartic[0](k, l) += sc_type(vec_l, -vec_l) * sc_type(-vec_k, vec_k);
-				quartic[0](k, l) += sc_type(vec_l + vec_Q, -vec_l) * sc_type(-vec_k, vec_k + vec_Q);
-				quartic[0](k, l) -= cdw_type(-vec_k, -vec_k) * cdw_type(-vec_l, -vec_l);
-				quartic[0](k, l) -= cdw_type(-vec_k + vec_Q, -vec_k) * cdw_type(-vec_l, -vec_l + vec_Q);
-				if (k == l) { // Factor 2 because of the spin sum
-					quartic[0](k, l) += 2 * sum_of_all[0] * cdw_type(-vec_l, -vec_k);
-				}
-				else if (vec_k == vec_l + vec_Q || vec_k == vec_l - vec_Q) {
-					quartic[0](k, l) += 2 * sum_of_all[1] * cdw_type(-vec_l, -vec_k);;
-				}
-
-				quartic[1](k, l) += sc_type(vec_l, -vec_l) * sc_type(-vec_k, vec_k);
-				quartic[1](k, l) += sc_type(vec_l, -vec_l - vec_Q) * sc_type(-vec_k, vec_k - vec_Q);
-				quartic[1](k, l) += cdw_type(vec_l, vec_l) * cdw_type(-vec_k, -vec_k);
-				quartic[1](k, l) += cdw_type(vec_l, vec_l - vec_Q) * cdw_type(-vec_k - vec_Q, -vec_k);
-
-				quartic[3](k, l) += cdw_type(-vec_k, -vec_k) * cdw_type(-vec_l, -vec_l);
-				quartic[3](k, l) += cdw_type(-vec_k - vec_Q, -vec_k) * cdw_type(-vec_l, -vec_l - vec_Q);
-				if (k == l) {
-					quartic[3](k, l) -= sum_of_all[0] * cdw_type(-vec_l, -vec_k);
-				}
-				else if (vec_k == vec_l + vec_Q || vec_k == vec_l - vec_Q) {
-					quartic[3](k, l) -= sum_of_all[1] * cdw_type(-vec_l, -vec_k);
-				}
-			}
-			// the formulas include delta_kl, hence we dont need to recompute the same term for each l
-			quartic[2](k, k) += sc_type(vec_k, -vec_k) * sum_of_all[2];
-			quartic[2](k, k) += sc_type(vec_k, -vec_k + vec_Q) * sum_of_all[3];
-			quartic[2](k, k) += cdw_type(vec_k, vec_k) * sum_of_all[0];
-			quartic[2](k, k) += cdw_type(vec_k + vec_Q, vec_k) * sum_of_all[1];
-		}
-	}
-
 	double Model::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
 	{
-		if (term.operators.size() == 0) return term.multiplicity;
-		const Eigen::Vector2i l_idx = { x(l) + Constants::K_DISCRETIZATION, y(l) + Constants::K_DISCRETIZATION };
-		const Eigen::Vector2i k_idx = { x(k) + Constants::K_DISCRETIZATION, y(k) + Constants::K_DISCRETIZATION };
+		const Eigen::Vector2i l_idx = { x(l), y(l) };
+		const Eigen::Vector2i k_idx = { x(k), y(k) };
+		Eigen::Vector2i q_idx = { 0,0 };
+		std::vector<Eigen::Vector2i> indizes = { l_idx, k_idx, q_idx };
+		Eigen::Vector2i momentum_value, coeff_momentum;
+		coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
 
-		auto computeMomentum_kl = [&](const SymbolicOperators::WickOperator& op) -> Eigen::Vector2i {
-			Eigen::Vector2i buffer = { 0,0 };
-			int idx = op.momentum.isUsed('k');
-			int jdx = op.momentum.isUsed('l');
-
-			if (idx > -1) {
-				buffer += op.momentum.momentum_list[idx].first * k_idx;
-			}
-			if (jdx > -1) {
-				buffer += op.momentum.momentum_list[jdx].first * l_idx;
-			}
-			if (op.momentum.add_Q) {
-				buffer(0) += Constants::K_DISCRETIZATION;
-				buffer(1) += Constants::K_DISCRETIZATION;
-			}
-			clean_factor_2pi(buffer);
-			return buffer;
-		};
+		if (term.coefficients.size() != 1) throw std::invalid_argument("Undefined number of coefficients: " + std::to_string(term.coefficients.size()));
+		if (term.operators.size() == 0) {
+			return term.multiplicity * computeCoefficient(term.coefficients[0], coeff_momentum);
+		}
 
 		if (term.sum_momenta.size() > 0) {
+			if (term.sum_momenta.size() > 1) throw std::invalid_argument("Too many sums: " + term.sum_momenta.size());
 			if (term.operators.size() == 1) {
 				// bilinear term
 				auto it = wick_map.find(term.operators[0].type);
@@ -96,11 +41,28 @@ namespace Hubbard {
 
 				if (term.sum_momenta.size() > 1) throw std::invalid_argument("Term with more than one momentum summation: " + term.sum_momenta.size());
 				if (term.delta_momenta.size() == 0) throw std::invalid_argument("There is a summation without delta_kl in a bilinear term.");
-				return term.multiplicity * sum_of_all[it->second];
+				return term.multiplicity * computeCoefficient(term.coefficients[0]) * sum_of_all[it->second];
 			}
 			if (term.operators.size() == 2) {
 				// quartic term
-
+				double sumBuffer = 0;
+				double returnBuffer = 0;
+				for (int q = 0; q < BASIS_SIZE; q++)
+				{
+					q_idx = { x(q), y(q) };
+					sumBuffer = 0;
+					for (size_t i = 0; i < term.operators.size(); i++)
+					{
+						auto it = wick_map.find(term.operators[i].type);
+						if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[i].type);
+						indizes = { l_idx, k_idx, q_idx };
+						momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k', 'q' });
+						sumBuffer += expecs[it->second](momentum_value(0), momentum_value(1));
+					}
+					coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k', 'q' });
+					returnBuffer += computeCoefficient(term.coefficients[0], coeff_momentum) * sumBuffer;
+				}
+				return term.multiplicity * returnBuffer;
 			}
 			throw std::invalid_argument("There are more than 2 WickOperators: " + term.operators.size());
 		}
@@ -110,29 +72,38 @@ namespace Hubbard {
 		{
 			auto it = wick_map.find(term.operators[i].type);
 			if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[i].type);
-			Eigen::Vector2i momentum_value = computeMomentum_kl(term.operators[i]);
+			Eigen::Vector2i momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k' });
 			returnBuffer += expecs[it->second](momentum_value(0), momentum_value(1));
 		}
-		return term.multiplicity * returnBuffer;
+		return term.multiplicity * computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 	}
 
 	void Model::fill_M_N()
 	{
 		M = Eigen::MatrixXd::Zero(BASIS_SIZE, BASIS_SIZE);
 		N = Eigen::MatrixXd::Zero(BASIS_SIZE, BASIS_SIZE);
-
-		for (int k = 0; k < BASIS_SIZE; k++)
-		{
-			N(k, k) = -(1 - 2 * _NUM(k));
-
-			M(k, k) += 2 * (unperturbed_energy((M_PI * x(k)) / Constants::K_DISCRETIZATION, (M_PI * y(k)) / Constants::K_DISCRETIZATION)
-				- chemical_potential) * (1 - 2 * _NUM(k));
-
-			M(k, k) += (2 * U / BASIS_SIZE) * (sum_of_all[0] - quartic[2](k, k));
-
-			for (int l = 0; l < BASIS_SIZE; l++)
+		for (const auto& term : wicks) {
+			for (int k = 0; k < BASIS_SIZE; k++)
 			{
-				M(l, k) += (U / BASIS_SIZE) * (1 - 2 * (_NUM(l) + _NUM(k) - quartic[1](l, k) - quartic[3](l, k)));
+				N(k, k) = -(1 - 2 * _NUM(k));
+
+				if (term.delta_momenta.size() > 0) {
+					if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
+					if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
+					if (term.delta_momenta[0].second.momentum_list.size() != 1) throw std::invalid_argument("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size());
+
+					int l_buf = k;
+					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
+						l_buf += (BASIS_SIZE / 2) + Constants::K_DISCRETIZATION;
+					}
+					M(k, k) += computeTerm(term, l_buf, k);
+				}
+				else {
+					for (int l = 0; l < BASIS_SIZE; l++)
+					{
+						M(l, k) += computeTerm(term, l, k);
+					}
+				}
 			}
 		}
 	}
@@ -159,6 +130,7 @@ namespace Hubbard {
 
 	void Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
+		loadWick("../wick_terms.txt");
 		// First off we need to compute every possible expectation value
 		// We use the mean field system's symmetries
 		// i.e. there are only the standard SC, CDW, Eta and N operators non-zero
@@ -196,13 +168,6 @@ namespace Hubbard {
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for expectation values: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-		begin = std::chrono::steady_clock::now();
-
-		compute_quartics();
-
-		end = std::chrono::steady_clock::now();
-		std::cout << "Time for quartic values: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
@@ -267,7 +232,7 @@ namespace Hubbard {
 
 		Eigen::MatrixXd inverse_solve = M.inverse() * N;
 		R.compute(inverse_solve, M, BASIS_SIZE);
-		R.writeDataToFile("../../dataresolvent.txt");
+		R.writeDataToFile("../../data/resolvent.txt");
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for resolvent: "
@@ -323,67 +288,5 @@ namespace Hubbard {
 				}
 			}
 		}
-	}
-
-	Model::ModelParameters::ModelParameters(double _temperature, double _U, double _V, double _global_step, double _second_step,
-		std::string _global_iterator_type, std::string _second_iterator_type)
-		: global_iterator_type(_global_iterator_type), second_iterator_type(_second_iterator_type),
-		global_step(_global_step), second_step(_second_step), temperature(_temperature), U(_U), V(_V)
-	{
-		if (second_iterator_type == "T") {
-			second_it_min = temperature;
-		}
-		else if (second_iterator_type == "U") {
-			second_it_min = U;
-		}
-		else if (second_iterator_type == "V") {
-			second_it_min = V;
-		}
-		else {
-			second_it_min = 0;
-		}
-	}
-
-	// // // // // // // // // // // //
-	void Model::ModelParameters::incrementer(std::string& s, const double step)
-	{
-		if (s == "T") {
-			temperature += step;
-		}
-		else if (s == "U") {
-			U += step;
-		}
-		else if (s == "V") {
-			V += step;
-		}
-	}
-	void Model::ModelParameters::setSecondIterator(int it_num)
-	{
-		if (second_iterator_type == "T") {
-			temperature = second_it_min + it_num * second_step;
-		}
-		else if (second_iterator_type == "U") {
-			U = second_it_min + it_num * second_step;
-		}
-		else if (second_iterator_type == "V") {
-			V = second_it_min + it_num * second_step;
-		}
-	}
-	void Model::ModelParameters::incrementGlobalIterator()
-	{
-		incrementer(global_iterator_type, global_step);
-		setSecondIterator(0);
-	}
-	void Model::ModelParameters::incrementSecondIterator()
-	{
-		incrementer(second_iterator_type, second_step);
-	}
-	void Model::ModelParameters::printGlobal() const
-	{
-		std::cout << global_iterator_type << " = " << getGlobal();
-	}
-	void Model::data_set::print() const {
-		std::cout << delta_cdw << "\t" << delta_sc << "\t" << delta_eta
-			<< "\t" << sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta) << std::endl;
 	}
 }

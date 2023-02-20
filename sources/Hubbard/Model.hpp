@@ -3,8 +3,9 @@
 #include <Eigen/Sparse>
 #include <memory>
 #include <map>
+#include <optional>
 #include "Constants.hpp"
-#include "WickTerm.hpp"
+#include "../../../FermionCommute/sources/WickTerm.hpp"
 
 namespace Hubbard {
 	class Model
@@ -23,7 +24,7 @@ namespace Hubbard {
 		// maps an index; [0, N_K) -> [-pi, pi)
 		template <typename T>
 		inline double index_to_k_vector(const T index) const {
-			return (((2 * index * M_PI) / Constants::K_DISCRETIZATION) - M_PI);
+			return (((index * M_PI) / Constants::K_DISCRETIZATION) - M_PI);
 		};
 
 		/*
@@ -39,7 +40,7 @@ namespace Hubbard {
 
 		Eigen::MatrixXd M, N;
 
-		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"g", 2}, {"\\eta", 3}};
+		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
 		std::vector<SymbolicOperators::WickTerm> wicks;
 
 		// Computes the respective x or y component from a given input index
@@ -59,6 +60,7 @@ namespace Hubbard {
 			}
 			return -1;
 		};
+		// returns a value in [0, N_K), note that N_K = 2*constants::k_disc
 		inline void clean_factor_2pi(Eigen::Vector2i& toClean) const {
 			// + Q is required for the modulo operation later
 			// as well as referencing, which works on indizes from 0 to [2pi] and not from [-pi] to [pi]
@@ -108,8 +110,30 @@ namespace Hubbard {
 		};
 		virtual void fillHamiltonian(double k_x, double k_y) = 0;
 
-		virtual void compute_quartics();
-		virtual double computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
+		inline Eigen::Vector2i computeMomentum(const SymbolicOperators::Momentum& momentum, const std::vector<Eigen::Vector2i>& indizes, const std::vector<char>& momenta) const {
+			Eigen::Vector2i buffer = { 0,0 };
+			for (int i = 0; i < momenta.size(); ++i)
+			{
+				int mom_idx = momentum.isUsed(momenta[i]);
+				if (mom_idx < 0) continue;
+				buffer += momentum.momentum_list[mom_idx].first * indizes[i];
+			}
+			clean_factor_2pi(buffer);
+			return buffer;
+		};
+
+		virtual inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const std::optional<Eigen::Vector2i>& momentum = std::nullopt) const {
+			if (coeff.name == "\\epsilon_0") {
+				if (!(momentum.has_value())) throw std::length_error("Calling epsilon(k) without specifying k!");
+				return (unperturbed_energy(index_to_k_vector(momentum.value()(0)), index_to_k_vector(momentum.value()(1))) - chemical_potential);
+			}
+			if (coeff.name == "\\frac{U}{N}") {
+				return (U / BASIS_SIZE);
+			}
+			std::cerr << "error: " << coeff << std::endl;
+			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
+		};
+		double computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 		virtual void fill_M_N();
 	public:
 		class ModelParameters {
