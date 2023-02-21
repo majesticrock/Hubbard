@@ -102,7 +102,7 @@ namespace Hubbard {
 			for (int j = 0; j <= i; j++)
 			{
 				// fill N
-				for (const auto& term : wicks_N[j * number_of_basis_terms + i]) {
+				for (const auto& term : wicks_N[i * triangular_number(i) + j]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
 						if (term.delta_momenta.size() > 0) {
@@ -126,7 +126,7 @@ namespace Hubbard {
 				}
 
 				// fill M
-				for (const auto& term : wicks_M[j * number_of_basis_terms + i]) {
+				for (const auto& term : wicks_M[i * triangular_number(i) + j]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
 						if (term.delta_momenta.size() > 0) {
@@ -160,6 +160,8 @@ namespace Hubbard {
 		this->delta_cdw = 0.1;
 		this->delta_sc = 0.1;
 		this->delta_eta = 0.001;
+
+		this->number_of_basis_terms = 2;
 	}
 
 	Model::Model(ModelParameters& _params)
@@ -170,12 +172,13 @@ namespace Hubbard {
 		this->delta_cdw = 0.1;
 		this->delta_sc = 0.1;
 		this->delta_eta = 0.001;
+		this->number_of_basis_terms = 2;
 	}
 
 	void Model::loadWick(const std::string& filename)
 	{
-		wicks_M.resize(number_of_basis_terms * (number_of_basis_terms + 1) / 2);
-		wicks_N.resize(number_of_basis_terms * (number_of_basis_terms + 1) / 2);
+		wicks_M.resize(triangular_number(number_of_basis_terms));
+		wicks_N.resize(triangular_number(number_of_basis_terms));
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
 			for (int j = 0; j <= i; j++)
@@ -184,16 +187,16 @@ namespace Hubbard {
 					// create an input file stream and a text archive to deserialize the vector
 					std::ifstream ifs(filename + "M_" + std::to_string(i) + "_" + std::to_string(j) + ".txt");
 					boost::archive::text_iarchive ia(ifs);
-					wicks_M[j * number_of_basis_terms + i].clear();
-					ia >> wicks_M[j * number_of_basis_terms + i];
+					wicks_M[i * triangular_number(i) + j].clear();
+					ia >> wicks_M[i * triangular_number(i) + j];
 					ifs.close();
 				}
 				{
 					// create an input file stream and a text archive to deserialize the vector
 					std::ifstream ifs(filename + "N_" + std::to_string(i) + "_" + std::to_string(j) + ".txt");
 					boost::archive::text_iarchive ia(ifs);
-					wicks_N[j * number_of_basis_terms + i].clear();
-					ia >> wicks_N[j * number_of_basis_terms + i];
+					wicks_N[i * triangular_number(i) + j].clear();
+					ia >> wicks_N[i * triangular_number(i) + j];
 					ifs.close();
 				}
 			}

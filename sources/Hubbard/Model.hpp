@@ -39,7 +39,7 @@ namespace Hubbard {
 		std::vector<Eigen::MatrixXd> quartic;
 
 		Eigen::MatrixXd M, N;
-		int number_of_basis_terms = 1;
+		int number_of_basis_terms;
 
 		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
 		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M, wicks_N;
@@ -191,5 +191,9 @@ namespace Hubbard {
 			return sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta);
 		};
 		void loadWick(const std::string& filename);
+	};
+
+	constexpr int triangular_number(const int i) {
+		return (i * (i + 1) / 2);
 	};
 }
