@@ -86,7 +86,7 @@ namespace Hubbard {
 			Eigen::Vector2i momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k' });
 			returnBuffer += expecs[it->second](momentum_value(0), momentum_value(1));
 		}
-		if (term.coefficients.size() == 1){
+		if (term.coefficients.size() == 1) {
 			return term.multiplicity * computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}
 		return term.multiplicity * returnBuffer;
@@ -97,6 +97,8 @@ namespace Hubbard {
 		M = Eigen::MatrixXd::Zero(number_of_basis_terms * BASIS_SIZE, number_of_basis_terms * BASIS_SIZE);
 		N = Eigen::MatrixXd::Zero(number_of_basis_terms * BASIS_SIZE, number_of_basis_terms * BASIS_SIZE);
 
+		double valueBuffer = 0;
+
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
 			for (int j = 0; j <= i; j++)
@@ -105,6 +107,7 @@ namespace Hubbard {
 				for (const auto& term : wicks_N[i * triangular_number(i) + j]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
+						valueBuffer = 0;
 						if (term.delta_momenta.size() > 0) {
 							if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
 							if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
@@ -114,12 +117,16 @@ namespace Hubbard {
 							if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 								l_buf += (BASIS_SIZE / 2) + Constants::K_DISCRETIZATION;
 							}
-							N(k, k) += computeTerm(term, l_buf, k);
+							valueBuffer = computeTerm(term, l_buf, k);
+							N(i * BASIS_SIZE + k, j * BASIS_SIZE + k) += valueBuffer;
+							if (i != j) N(j * BASIS_SIZE + k, i * BASIS_SIZE + k) += valueBuffer;
 						}
 						else {
 							for (int l = 0; l < BASIS_SIZE; l++)
 							{
-								N(l, k) += computeTerm(term, l, k);
+								valueBuffer = computeTerm(term, l, k);
+								N(i * BASIS_SIZE + l, j * BASIS_SIZE + k) += valueBuffer;
+								if (i != j) N(j * BASIS_SIZE + k, i * BASIS_SIZE + l) += valueBuffer;
 							}
 						}
 					}
@@ -129,6 +136,7 @@ namespace Hubbard {
 				for (const auto& term : wicks_M[i * triangular_number(i) + j]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
+						valueBuffer = 0;
 						if (term.delta_momenta.size() > 0) {
 							if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
 							if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
@@ -138,12 +146,16 @@ namespace Hubbard {
 							if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 								l_buf += (BASIS_SIZE / 2) + Constants::K_DISCRETIZATION;
 							}
-							M(k, k) += computeTerm(term, l_buf, k);
+							valueBuffer = computeTerm(term, l_buf, k);
+							M(i * BASIS_SIZE + k, j * BASIS_SIZE + k) += valueBuffer;
+							if (i != j) M(j * BASIS_SIZE + k, i * BASIS_SIZE + k) += valueBuffer;
 						}
 						else {
 							for (int l = 0; l < BASIS_SIZE; l++)
 							{
-								M(l, k) += computeTerm(term, l, k);
+								valueBuffer = computeTerm(term, l, k);
+								M(i * BASIS_SIZE + l, j * BASIS_SIZE + k) += valueBuffer;
+								if (i != j) M(j * BASIS_SIZE + k, i * BASIS_SIZE + l) += valueBuffer;
 							}
 						}
 					}
@@ -259,7 +271,7 @@ namespace Hubbard {
 			for (size_t j = i + 1; j < test.cols(); j++)
 			{
 				if (abs(test(i, j)) > 1e-8) {
-					std::cout << "Not hermitian: " << test(i, j) << "\t\t" << i << "\t" << j << std::endl;
+					throw std::invalid_argument("Not hermitian: " + std::to_string(test(i, j)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
 				}
 			}
 			if (abs(N(i, i)) < 1e-8) {
@@ -271,6 +283,14 @@ namespace Hubbard {
 		Eigen::EigenSolver<Eigen::MatrixXd> gen_solver;
 		Eigen::MatrixXd inverse_M = M.completeOrthogonalDecomposition().pseudoInverse();
 		Eigen::MatrixXd inverse_N = N.completeOrthogonalDecomposition().pseudoInverse();
+
+		solver.compute(M);
+		for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+		{
+			if (solver.eigenvalues()(i) < 0) {
+				throw std::invalid_argument(": M is not positive!    " + std::to_string(solver.eigenvalues()(i)));
+			}
+		}
 
 		gen_solver.compute(inverse_N * M, false);
 		for (size_t i = 0; i < gen_solver.eigenvalues().size(); i++)
@@ -289,16 +309,6 @@ namespace Hubbard {
 		std::cout << "Time for solving M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-		solver.compute(M);
-		for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-		{
-			if (solver.eigenvalues()(i) < 0) {
-				std::cerr << i << ": M is not positive!    " << solver.eigenvalues()(i) << std::endl;
-			}
-			//if (abs(solver.eigenvalues()(i)) < 1e-5) {
-			//	std::cout << solver.eigenvalues()(i) << "\n" << solver.eigenvalues().col(i) << std::endl << std::endl;
-			//}
-		}
 		return;
 		begin = std::chrono::steady_clock::now();
 		Eigen::VectorXd startingState = Eigen::VectorXd::Ones(BASIS_SIZE);
