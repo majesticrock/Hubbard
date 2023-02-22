@@ -66,7 +66,7 @@ namespace Hubbard {
 		if (V > 0) {
 			this->delta_sc *= 0.25;
 		}
-		else {
+		else if (V < 0) {
 			this->delta_cdw *= 0.25;
 		}
 		this->delta_eta = 0;

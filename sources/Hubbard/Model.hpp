@@ -76,27 +76,9 @@ namespace Hubbard {
 				}
 			}
 		};
-		// Returns a c^+ c^+ (cc) type term, i.e. the SC or the eta order parameter
-		inline double sc_type(Eigen::Vector2i left, Eigen::Vector2i right) const {
-			clean_factor_2pi(left);
-			clean_factor_2pi(right);
-
-			int offset = equal_up_to_Q(-left, right);
-			if (offset < 0) return 0;
-			return expecs[2 + offset](right(0), right(1));
-		};
-		// Returns a c^+ c type term, i.e. the CDW order parameter or the number operator
-		inline double cdw_type(Eigen::Vector2i left, Eigen::Vector2i right) const {
-			clean_factor_2pi(left);
-			clean_factor_2pi(right);
-
-			int offset = equal_up_to_Q(left, right);
-			if (offset < 0) return 0;
-			return expecs[offset](left(0), left(1));
-		};
 
 		inline double fermi_dirac(const double energy) const {
-			if (temperature > 1e-7) {
+			if (temperature > 1e-8) {
 				return (1. / (1 + exp(energy / temperature)));
 			}
 			else {
@@ -131,7 +113,6 @@ namespace Hubbard {
 			if (coeff.name == "\\frac{U}{N}") {
 				return (U / BASIS_SIZE);
 			}
-			std::cerr << "error: " << coeff << std::endl;
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
 		double computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
