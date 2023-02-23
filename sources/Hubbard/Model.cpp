@@ -56,14 +56,14 @@ namespace Hubbard {
 				for (int q = 0; q < BASIS_SIZE; q++)
 				{
 					q_idx = { x(q), y(q) };
-					sumBuffer = 0;
+					sumBuffer = 1;
 					for (size_t i = 0; i < term.operators.size(); i++)
 					{
 						auto it = wick_map.find(term.operators[i].type);
 						if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[i].type);
 						indizes = { l_idx, k_idx, q_idx };
 						momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k', 'q' });
-						sumBuffer += expecs[it->second](momentum_value(0), momentum_value(1));
+						sumBuffer *= expecs[it->second](momentum_value(0), momentum_value(1));
 					}
 					coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k', 'q' });
 					if (term.coefficients.size() == 1) {
@@ -76,13 +76,13 @@ namespace Hubbard {
 			throw std::invalid_argument("There are more than 2 WickOperators: " + term.operators.size());
 		}
 
-		double returnBuffer = 0;
+		double returnBuffer = 1;
 		for (size_t i = 0; i < term.operators.size(); i++)
 		{
 			auto it = wick_map.find(term.operators[i].type);
 			if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[i].type);
 			Eigen::Vector2i momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k' });
-			returnBuffer += expecs[it->second](momentum_value(0), momentum_value(1));
+			returnBuffer *= expecs[it->second](momentum_value(0), momentum_value(1));
 		}
 		if (term.coefficients.size() == 1) {
 			return term.multiplicity * computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
