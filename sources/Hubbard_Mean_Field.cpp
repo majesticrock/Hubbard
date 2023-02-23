@@ -127,11 +127,11 @@ int main(int argc, char** argv)
 				local.setSecondIterator(U);
 				Hubbard::Model::data_set ret;
 				if (input.getBool("use_broyden")) {
-					Hubbard::UsingBroyden model(local);
+					Hubbard::UsingBroyden model(local, 0);
 					ret = model.computePhases();
 				}
 				else {
-					Hubbard::HubbardCDW model(local);
+					Hubbard::HubbardCDW model(local, 0);
 					ret = model.computePhases();
 				}
 
@@ -189,10 +189,10 @@ int main(int argc, char** argv)
 		{
 			std::unique_ptr<Hubbard::Model> model;
 			if (input.getBool("use_broyden")) {
-				model = std::make_unique<Hubbard::UsingBroyden>(Hubbard::UsingBroyden(modelParameters));
+				model = std::make_unique<Hubbard::UsingBroyden>(Hubbard::UsingBroyden(modelParameters, input.getInt("number_of_basis_terms")));
 			}
 			else {
-				model = std::make_unique<Hubbard::HubbardCDW>(Hubbard::HubbardCDW(modelParameters));
+				model = std::make_unique<Hubbard::HubbardCDW>(Hubbard::HubbardCDW(modelParameters, input.getInt("number_of_basis_terms")));
 			}
 			model->computePhases();
 			totalGapValues[T] = model->getTotalGapValue();

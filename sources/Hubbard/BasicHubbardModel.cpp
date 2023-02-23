@@ -28,8 +28,8 @@ namespace Hubbard {
 		hamilton(3, 3) = -unperturbed_energy(-k_x + M_PI, -k_y + M_PI);
 	}
 
-	BasicHubbardModel::BasicHubbardModel(ModelParameters& _params)
-		: Model(_params)
+	BasicHubbardModel::BasicHubbardModel(ModelParameters& _params, int _number_of_basis_terms)
+		: Model(_params, _number_of_basis_terms)
 	{
 		this->delta_sc = 0.1;
 		this->delta_cdw = 0.1;

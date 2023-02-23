@@ -14,6 +14,6 @@ namespace Hubbard {
 		};
 
 	public:
-		HubbardCDW(ModelParameters& _params);
+		HubbardCDW(ModelParameters& _params, int _number_of_basis_terms);
 	};
 }

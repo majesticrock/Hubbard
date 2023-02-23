@@ -156,8 +156,8 @@ namespace Hubbard {
 			void print() const;
 		};
 
-		Model(double _temperature, double _U);
-		Model(ModelParameters& _params);
+		Model(double _temperature, double _U, int _number_of_basis_terms);
+		Model(ModelParameters& _params, int _number_of_basis_terms);
 		// reciever is the vector the resulting data will be stored in
 		// direction gives the angle between the k-path and the k_x axis in multiples of M_PI
 		void getEnergies(std::vector<std::vector<double>>& reciever, double direction);

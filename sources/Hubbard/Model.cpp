@@ -25,7 +25,7 @@ namespace Hubbard {
 		Eigen::Vector2i q_idx = { 0,0 };
 		std::vector<Eigen::Vector2i> indizes = { l_idx, k_idx, q_idx };
 		Eigen::Vector2i momentum_value, coeff_momentum;
-		
+
 		if (term.coefficients.size() > 1) throw std::invalid_argument("Undefined number of coefficients: " + std::to_string(term.coefficients.size()));
 		if (term.operators.size() == 0) {
 			if (term.coefficients.size() == 1) {
@@ -85,6 +85,7 @@ namespace Hubbard {
 			returnBuffer *= expecs[it->second](momentum_value(0), momentum_value(1));
 		}
 		if (term.coefficients.size() == 1) {
+			coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
 			return term.multiplicity * computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}
 		return term.multiplicity * returnBuffer;
@@ -113,7 +114,7 @@ namespace Hubbard {
 
 							int l_buf = k;
 							if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
-								Eigen::Vector2i l_buf_vec = {x(k), y(k)};
+								Eigen::Vector2i l_buf_vec = { x(k), y(k) };
 								l_buf_vec(0) += Constants::K_DISCRETIZATION;
 								l_buf_vec(1) += Constants::K_DISCRETIZATION;
 								clean_factor_2pi(l_buf_vec);
@@ -146,7 +147,7 @@ namespace Hubbard {
 
 							int l_buf = k;
 							if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
-								Eigen::Vector2i l_buf_vec = {x(k), y(k)};
+								Eigen::Vector2i l_buf_vec = { x(k), y(k) };
 								l_buf_vec(0) += Constants::K_DISCRETIZATION;
 								l_buf_vec(1) += Constants::K_DISCRETIZATION;
 								clean_factor_2pi(l_buf_vec);
@@ -170,8 +171,8 @@ namespace Hubbard {
 		}
 	}
 
-	Model::Model(double _temperature, double _U)
-		: temperature(_temperature), U(_U)
+	Model::Model(double _temperature, double _U, int _number_of_basis_terms)
+		: temperature(_temperature), U(_U), number_of_basis_terms(_number_of_basis_terms)
 	{
 		this->chemical_potential = U / 2;
 		this->BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
@@ -179,18 +180,17 @@ namespace Hubbard {
 		this->delta_sc = 0.1;
 		this->delta_eta = 0.001;
 
-		this->number_of_basis_terms = 1;
+		this->number_of_basis_terms = 2;
 	}
 
-	Model::Model(ModelParameters& _params)
-		: temperature(_params.temperature), U(_params.U)
+	Model::Model(ModelParameters& _params, int _number_of_basis_terms)
+		: temperature(_params.temperature), U(_params.U), number_of_basis_terms(_number_of_basis_terms)
 	{
 		this->chemical_potential = U / 2;
 		this->BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
 		this->delta_cdw = 0.1;
 		this->delta_sc = 0.1;
 		this->delta_eta = 0.001;
-		this->number_of_basis_terms = 1;
 	}
 
 	void Model::loadWick(const std::string& filename)
@@ -258,7 +258,7 @@ namespace Hubbard {
 
 		std::cout << "Filling of all spin ups = " << sum_of_all[0] / BASIS_SIZE << std::endl;
 		computeChemicalPotential();
-		loadWick("../wick_");
+		loadWick("../commutators/wick_");
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for expectation values: "
@@ -288,8 +288,8 @@ namespace Hubbard {
 		M += 1e-13 * Eigen::MatrixXd::Identity(BASIS_SIZE, BASIS_SIZE);
 		//N += 1e-6 * Eigen::MatrixXd::Identity(BASIS_SIZE, BASIS_SIZE);
 		Eigen::EigenSolver<Eigen::MatrixXd> gen_solver;
-		Eigen::MatrixXd inverse_M = M.completeOrthogonalDecomposition().pseudoInverse();
-		Eigen::MatrixXd inverse_N = N.completeOrthogonalDecomposition().pseudoInverse();
+		Eigen::MatrixXd inverse_M = M.inverse();
+		//Eigen::MatrixXd inverse_N = N.completeOrthogonalDecomposition().pseudoInverse();
 
 		solver.compute(M);
 		for (size_t i = 0; i < solver.eigenvalues().size(); i++)
@@ -299,7 +299,7 @@ namespace Hubbard {
 			}
 		}
 
-		gen_solver.compute(inverse_N * M, false);
+		gen_solver.compute(inverse_M * N, false);
 		for (size_t i = 0; i < gen_solver.eigenvalues().size(); i++)
 		{
 			if (abs(gen_solver.eigenvalues()(i).imag()) > 1e-8) {

@@ -13,7 +13,7 @@ namespace Hubbard {
 			this->delta_eta = eta * this->U / BASIS_SIZE;
 		};
 	public:
-		BasicHubbardModel(ModelParameters& _params);
+		BasicHubbardModel(ModelParameters& _params, int _number_of_basis_terms);
 
 		data_set computePhases(const bool print = false) override;
 	};
