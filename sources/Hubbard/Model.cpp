@@ -179,8 +179,6 @@ namespace Hubbard {
 		this->delta_cdw = 0.1;
 		this->delta_sc = 0.1;
 		this->delta_eta = 0.001;
-
-		this->number_of_basis_terms = 2;
 	}
 
 	Model::Model(ModelParameters& _params, int _number_of_basis_terms)
@@ -260,12 +258,49 @@ namespace Hubbard {
 		computeChemicalPotential();
 		loadWick("../commutators/wick_");
 
+		/*for (int i = 0; i < 4; i++)
+		{
+			for (int k = 0; k < 2 * Constants::K_DISCRETIZATION; k++)
+			{ // -pi,-pi  to pi,-pi
+				std::cout << expecs[i](k, Constants::K_DISCRETIZATION) << std::endl;
+			}
+			std::cout << "i" << std::endl;
+		}
+		std::cout << "################" << std::endl;
+		for (int i = 0; i < 4; i++)
+		{
+			std::cout << sum_of_all[i]/BASIS_SIZE << std::endl;
+		}
+		std::cout << "################" << std::endl;
+		for (int l = 0; l < 2*Constants::K_DISCRETIZATION; l++)
+		{
+			int k = l;
+
+			//Eigen::Vector2i l_buf_vec = { x(l), y(l) };
+			//l_buf_vec(0) += Constants::K_DISCRETIZATION;
+			//l_buf_vec(1) += Constants::K_DISCRETIZATION;
+			//clean_factor_2pi(l_buf_vec);
+			//k = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
+
+			//std::cout << x(k) << ", " << y(k) << "\t";
+			//std::cout << x(l) << ", " << y(l) << std::endl;
+			std::cout << computeTerm(wicks_M[0][11], l, k) << std::endl;
+		}
+
+		std::cout << wicks_M[0][10] << std::endl;
+		return;*/
+
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for expectation values: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
 		fill_M_N();
+
+		for (size_t i = 0; i < M.rows(); i++)
+		{
+			if (M(i, i) <= 0) std::cout << M(i, i) << std::endl;
+		}
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "

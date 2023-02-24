@@ -101,6 +101,10 @@ namespace Hubbard {
 				if (mom_idx < 0) continue;
 				buffer += momentum.momentum_list[mom_idx].first * indizes[i];
 			}
+			if (momentum.add_Q) {
+				buffer(0) += Constants::K_DISCRETIZATION;
+				buffer(1) += Constants::K_DISCRETIZATION;
+			}
 			clean_factor_2pi(buffer);
 			return buffer;
 		};
