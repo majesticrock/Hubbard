@@ -251,55 +251,33 @@ namespace Hubbard {
 					expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(idx, 0);
 					sum_of_all[idx] += rho(idx, 0);
 				}
+				//std::cout << rho(0, 0) << ";" << rho(1, 1) << ";" << rho(2, 2) << ";" << rho(3, 3) << std::endl;
 			}
 		}
 
 		std::cout << "Filling of all spin ups = " << sum_of_all[0] / BASIS_SIZE << std::endl;
 		computeChemicalPotential();
 		loadWick("../commutators/wick_");
-
-		/*for (int i = 0; i < 4; i++)
-		{
-			for (int k = 0; k < 2 * Constants::K_DISCRETIZATION; k++)
-			{ // -pi,-pi  to pi,-pi
-				std::cout << expecs[i](k, Constants::K_DISCRETIZATION) << std::endl;
-			}
-			std::cout << "i" << std::endl;
-		}
-		std::cout << "################" << std::endl;
-		for (int i = 0; i < 4; i++)
-		{
-			std::cout << sum_of_all[i]/BASIS_SIZE << std::endl;
-		}
-		std::cout << "################" << std::endl;
-		for (int l = 0; l < 2*Constants::K_DISCRETIZATION; l++)
-		{
-			int k = l;
-
-			//Eigen::Vector2i l_buf_vec = { x(l), y(l) };
-			//l_buf_vec(0) += Constants::K_DISCRETIZATION;
-			//l_buf_vec(1) += Constants::K_DISCRETIZATION;
-			//clean_factor_2pi(l_buf_vec);
-			//k = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
-
-			//std::cout << x(k) << ", " << y(k) << "\t";
-			//std::cout << x(l) << ", " << y(l) << std::endl;
-			std::cout << computeTerm(wicks_M[0][11], l, k) << std::endl;
-		}
-
-		std::cout << wicks_M[0][10] << std::endl;
-		return;*/
-
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for expectation values: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
 		fill_M_N();
-
-		for (size_t i = 0; i < M.rows(); i++)
+		M += 1e-13 * Eigen::MatrixXd::Identity(BASIS_SIZE, BASIS_SIZE);
+		for (int l = 0; l < BASIS_SIZE; l++)
 		{
-			if (M(i, i) <= 0) std::cout << M(i, i) << std::endl;
+			int k = l;
+			if (M(k, l) < 0) {
+				std::cout << expecs[0](x(k) + Constants::K_DISCRETIZATION, y(k) + Constants::K_DISCRETIZATION)
+					<< ";" << expecs[0]((x(k) + 2 * Constants::K_DISCRETIZATION) % (2 * Constants::K_DISCRETIZATION),
+						(y(k) + 2 * Constants::K_DISCRETIZATION) % (2 * Constants::K_DISCRETIZATION))
+					<< ";" << unperturbed_energy(index_to_k_vector(x(k) + Constants::K_DISCRETIZATION),
+						index_to_k_vector(y(k) + Constants::K_DISCRETIZATION)) << std::endl;;
+
+				std::cout << "\t" << k << "\t" << M(k, l) << "  \t"
+					<< computeTerm(wicks_M[0][0], l, k) << "\t" << computeTerm(wicks_M[0][1], l, k) << std::endl;
+			}
 		}
 
 		end = std::chrono::steady_clock::now();
@@ -320,7 +298,7 @@ namespace Hubbard {
 				N(i, i) = 0;
 			}
 		}
-		M += 1e-13 * Eigen::MatrixXd::Identity(BASIS_SIZE, BASIS_SIZE);
+
 		//N += 1e-6 * Eigen::MatrixXd::Identity(BASIS_SIZE, BASIS_SIZE);
 		Eigen::EigenSolver<Eigen::MatrixXd> gen_solver;
 		Eigen::MatrixXd inverse_M = M.inverse();
@@ -382,24 +360,24 @@ namespace Hubbard {
 
 	void Model::getAllEnergies(std::vector<std::vector<double>>& reciever)
 	{
-		reciever.resize(2 * Constants::K_DISCRETIZATION, std::vector<double>(2 * Constants::K_DISCRETIZATION));
+		reciever.resize(4 * Constants::K_DISCRETIZATION, std::vector<double>(2 * Constants::K_DISCRETIZATION));
 		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver;
 		double k_val = 0;
 		double l_val = 0;
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 		{
 			k_val = k * M_PI / Constants::K_DISCRETIZATION;
-			for (int l = 0; l < Constants::K_DISCRETIZATION; l++)
+			for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 			{
 				l_val = l * M_PI / Constants::K_DISCRETIZATION;
 				fillHamiltonian(k_val, l_val);
 				solver.compute(hamilton, false);
-				reciever[k + Constants::K_DISCRETIZATION][l] = solver.eigenvalues()(0);
+				reciever[k + Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(0);
 
 				for (int i = 1; i < 4; i++)
 				{
 					if (abs(solver.eigenvalues()(0) - solver.eigenvalues()(i)) > 1e-8) {
-						reciever[(k + Constants::K_DISCRETIZATION) % (2 * Constants::K_DISCRETIZATION)][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(i);
+						reciever[k + 3 * Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(i);
 						break;
 					}
 				}
