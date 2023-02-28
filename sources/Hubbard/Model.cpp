@@ -103,7 +103,7 @@ namespace Hubbard {
 			for (int j = 0; j <= i; j++)
 			{
 				// fill N
-				for (const auto& term : wicks_N[i * triangular_number(i) + j]) {
+				for (const auto& term : wicks_N[triangular_number(i) + j]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
 						valueBuffer = 0;
@@ -136,7 +136,7 @@ namespace Hubbard {
 				}
 
 				// fill M
-				for (const auto& term : wicks_M[i * triangular_number(i) + j]) {
+				for (const auto& term : wicks_M[triangular_number(i) + j]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
 						valueBuffer = 0;
@@ -203,16 +203,16 @@ namespace Hubbard {
 					// create an input file stream and a text archive to deserialize the vector
 					std::ifstream ifs(filename + "M_" + std::to_string(i) + "_" + std::to_string(j) + ".txt");
 					boost::archive::text_iarchive ia(ifs);
-					wicks_M[i * triangular_number(i) + j].clear();
-					ia >> wicks_M[i * triangular_number(i) + j];
+					wicks_M[triangular_number(i) + j].clear();
+					ia >> wicks_M[triangular_number(i) + j];
 					ifs.close();
 				}
 				{
 					// create an input file stream and a text archive to deserialize the vector
 					std::ifstream ifs(filename + "N_" + std::to_string(i) + "_" + std::to_string(j) + ".txt");
 					boost::archive::text_iarchive ia(ifs);
-					wicks_N[i * triangular_number(i) + j].clear();
-					ia >> wicks_N[i * triangular_number(i) + j];
+					wicks_N[triangular_number(i) + j].clear();
+					ia >> wicks_N[triangular_number(i) + j];
 					ifs.close();
 				}
 			}

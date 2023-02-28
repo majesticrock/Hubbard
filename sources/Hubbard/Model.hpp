@@ -179,7 +179,7 @@ namespace Hubbard {
 		void loadWick(const std::string& filename);
 	};
 
-	constexpr int triangular_number(const int i) {
+	constexpr size_t triangular_number(const size_t i) {
 		return (i * (i + 1) / 2);
 	};
 }
