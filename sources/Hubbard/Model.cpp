@@ -93,17 +93,17 @@ namespace Hubbard {
 
 	void Model::fill_M_N()
 	{
-		M = Eigen::MatrixXd::Zero(number_of_basis_terms * BASIS_SIZE, number_of_basis_terms * BASIS_SIZE);
-		N = Eigen::MatrixXd::Zero(number_of_basis_terms * BASIS_SIZE, number_of_basis_terms * BASIS_SIZE);
+		M = Eigen::MatrixXd::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		N = Eigen::MatrixXd::Zero(TOTAL_BASIS, TOTAL_BASIS);
 
 		double valueBuffer = 0;
 
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
-			for (int j = 0; j <= i; j++)
+			for (int j = 0; j < number_of_basis_terms; j++)
 			{
 				// fill N
-				for (const auto& term : wicks_N[triangular_number(i) + j]) {
+				for (const auto& term : wicks_N[number_of_basis_terms * i + j]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
 						valueBuffer = 0;
@@ -121,22 +121,22 @@ namespace Hubbard {
 								l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
 							}
 							valueBuffer = computeTerm(term, l_buf, k);
-							N(i * BASIS_SIZE + l_buf, j * BASIS_SIZE + k) += valueBuffer;
-							if (i != j) N(j * BASIS_SIZE + k, i * BASIS_SIZE + l_buf) += valueBuffer;
+							N(j * BASIS_SIZE + l_buf, i * BASIS_SIZE + k) += valueBuffer;
+							//if (i != j) N(j * BASIS_SIZE + k, i * BASIS_SIZE + l_buf) += valueBuffer;
 						}
 						else {
 							for (int l = 0; l < BASIS_SIZE; l++)
 							{
 								valueBuffer = computeTerm(term, l, k);
-								N(i * BASIS_SIZE + l, j * BASIS_SIZE + k) += valueBuffer;
-								if (i != j) N(j * BASIS_SIZE + k, i * BASIS_SIZE + l) += valueBuffer;
+								N(j * BASIS_SIZE + l, i * BASIS_SIZE + k) += valueBuffer;
+								//if (i != j) N(j * BASIS_SIZE + k, i * BASIS_SIZE + l) += valueBuffer;
 							}
 						}
 					}
 				}
 
 				// fill M
-				for (const auto& term : wicks_M[triangular_number(i) + j]) {
+				for (const auto& term : wicks_M[number_of_basis_terms * i + j]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
 						valueBuffer = 0;
@@ -155,14 +155,14 @@ namespace Hubbard {
 							}
 							valueBuffer = computeTerm(term, l_buf, k);
 							M(i * BASIS_SIZE + l_buf, j * BASIS_SIZE + k) += valueBuffer;
-							if (i != j) M(j * BASIS_SIZE + k, i * BASIS_SIZE + l_buf) += valueBuffer;
+							//if (i != j) M(j * BASIS_SIZE + k, i * BASIS_SIZE + l_buf) += valueBuffer;
 						}
 						else {
 							for (int l = 0; l < BASIS_SIZE; l++)
 							{
 								valueBuffer = computeTerm(term, l, k);
 								M(i * BASIS_SIZE + l, j * BASIS_SIZE + k) += valueBuffer;
-								if (i != j) M(j * BASIS_SIZE + k, i * BASIS_SIZE + l) += valueBuffer;
+								//if (i != j) M(j * BASIS_SIZE + k, i * BASIS_SIZE + l) += valueBuffer;
 							}
 						}
 					}
@@ -171,21 +171,23 @@ namespace Hubbard {
 		}
 	}
 
-	Model::Model(double _temperature, double _U, int _number_of_basis_terms)
-		: temperature(_temperature), U(_U), number_of_basis_terms(_number_of_basis_terms)
+	Model::Model(double _temperature, double _U, int _number_of_basis_terms, int _start_basis_at)
+		: temperature(_temperature), U(_U), number_of_basis_terms(_number_of_basis_terms), start_basis_at(_start_basis_at)
 	{
 		this->chemical_potential = U / 2;
 		this->BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
+		this->TOTAL_BASIS = this->BASIS_SIZE * this->number_of_basis_terms;
 		this->delta_cdw = 0.1;
 		this->delta_sc = 0.1;
 		this->delta_eta = 0.001;
 	}
 
-	Model::Model(ModelParameters& _params, int _number_of_basis_terms)
-		: temperature(_params.temperature), U(_params.U), number_of_basis_terms(_number_of_basis_terms)
+	Model::Model(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
+		: temperature(_params.temperature), U(_params.U), number_of_basis_terms(_number_of_basis_terms), start_basis_at(_start_basis_at)
 	{
 		this->chemical_potential = U / 2;
 		this->BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
+		this->TOTAL_BASIS = this->BASIS_SIZE * this->number_of_basis_terms;
 		this->delta_cdw = 0.1;
 		this->delta_sc = 0.1;
 		this->delta_eta = 0.001;
@@ -193,26 +195,28 @@ namespace Hubbard {
 
 	void Model::loadWick(const std::string& filename)
 	{
-		wicks_M.resize(triangular_number(number_of_basis_terms));
-		wicks_N.resize(triangular_number(number_of_basis_terms));
+		//wicks_M.resize(triangular_number(number_of_basis_terms));
+		//wicks_N.resize(triangular_number(number_of_basis_terms));
+		wicks_M.resize(number_of_basis_terms * number_of_basis_terms);
+		wicks_N.resize(number_of_basis_terms * number_of_basis_terms);
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
-			for (int j = 0; j <= i; j++)
+			for (int j = 0; j < number_of_basis_terms; j++)
 			{
 				{
 					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "M_" + std::to_string(i) + "_" + std::to_string(j) + ".txt");
+					std::ifstream ifs(filename + "M_" + std::to_string(i + start_basis_at) + "_" + std::to_string(j + start_basis_at) + ".txt");
 					boost::archive::text_iarchive ia(ifs);
-					wicks_M[triangular_number(i) + j].clear();
-					ia >> wicks_M[triangular_number(i) + j];
+					wicks_M[i * number_of_basis_terms + j].clear();
+					ia >> wicks_M[i * number_of_basis_terms + j];
 					ifs.close();
 				}
 				{
 					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "N_" + std::to_string(i) + "_" + std::to_string(j) + ".txt");
+					std::ifstream ifs(filename + "N_" + std::to_string(i + start_basis_at) + "_" + std::to_string(j + start_basis_at) + ".txt");
 					boost::archive::text_iarchive ia(ifs);
-					wicks_N[triangular_number(i) + j].clear();
-					ia >> wicks_N[triangular_number(i) + j];
+					wicks_N[i * number_of_basis_terms + j].clear();
+					ia >> wicks_N[i * number_of_basis_terms + j];
 					ifs.close();
 				}
 			}
@@ -255,8 +259,22 @@ namespace Hubbard {
 			}
 		}
 
-		std::cout << "Filling of all spin ups = " << sum_of_all[0] / BASIS_SIZE << std::endl;
+		double deviation = 0;
+		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
+		{
+			for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
+			{
+				double a = unperturbed_energy((k * M_PI) / Constants::K_DISCRETIZATION, (l * M_PI) / Constants::K_DISCRETIZATION);
+				double b = (-U / (2 * BASIS_SIZE)) * (sum_of_all[1] / expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION))
+					* (1 - 2 * expecs[0](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION));
+				//std::cout << a << ";" << b << ";" << abs(a - b) << std::endl;
+				deviation += (a - b) * (a - b);
+			}
+		}
+		std::cout << "Deviation from epsilon-g formula: " << sqrt(deviation) << std::endl;
+
 		computeChemicalPotential();
+		std::cout << "Filling of all spin ups = " << sum_of_all[0] / BASIS_SIZE << std::endl;
 		loadWick("../commutators/wick_");
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for expectation values: "
@@ -264,61 +282,66 @@ namespace Hubbard {
 		begin = std::chrono::steady_clock::now();
 
 		fill_M_N();
-		M += 1e-13 * Eigen::MatrixXd::Identity(BASIS_SIZE, BASIS_SIZE);
-		for (int l = 0; l < BASIS_SIZE; l++)
+		for (size_t i = 0; i < M.rows(); i++)
 		{
-			int k = l;
-			if (M(k, l) < 0) {
-				std::cout << expecs[0](x(k) + Constants::K_DISCRETIZATION, y(k) + Constants::K_DISCRETIZATION)
-					<< ";" << expecs[0]((x(k) + 2 * Constants::K_DISCRETIZATION) % (2 * Constants::K_DISCRETIZATION),
-						(y(k) + 2 * Constants::K_DISCRETIZATION) % (2 * Constants::K_DISCRETIZATION))
-					<< ";" << unperturbed_energy(index_to_k_vector(x(k) + Constants::K_DISCRETIZATION),
-						index_to_k_vector(y(k) + Constants::K_DISCRETIZATION)) << std::endl;;
-
-				std::cout << "\t" << k << "\t" << M(k, l) << "  \t"
-					<< computeTerm(wicks_M[0][0], l, k) << "\t" << computeTerm(wicks_M[0][1], l, k) << std::endl;
+			for (size_t j = 0; j < M.cols(); j++)
+			{
+				if (abs(M(i, j)) < 1e-13) {
+					M(i, j) = 0;
+				}
+				//std::cout << M(i, j) << ";";
 			}
+			//std::cout << std::endl;
 		}
 
+		M += 1e-6 * Eigen::MatrixXd::Identity(M.rows(), M.rows());
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
-		const Eigen::MatrixXd test = M - M.transpose();
-		for (size_t i = 0; i < test.rows(); i++)
+		Eigen::MatrixXd M_T = M.transpose();
+		//M += M_T;
+		//M *= 0.5;
+		const Eigen::MatrixXd test_M = M - M.transpose();
+		for (size_t i = 0; i < test_M.rows(); i++)
 		{
-			for (size_t j = i + 1; j < test.cols(); j++)
+			for (size_t j = i + 1; j < test_M.cols(); j++)
 			{
-				if (abs(test(i, j)) > 1e-8) {
-					throw std::invalid_argument("Not hermitian: " + std::to_string(test(i, j)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
+				if (abs(test_M(i, j)) > 1e-6) {
+					throw std::invalid_argument("M is not hermitian: " + std::to_string(M(i, j)) + " || " + std::to_string(M(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
+				}
+			}
+		}
+		const Eigen::MatrixXd test_N = N - N.transpose();
+		for (size_t i = 0; i < test_N.rows(); i++)
+		{
+			for (size_t j = i + 1; j < test_N.cols(); j++)
+			{
+				if (abs(test_N(i, j)) > 1e-12) {
+					throw std::invalid_argument("N is not hermitian: " + std::to_string(N(i, j)) + " || " + std::to_string(N(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
 				}
 			}
 			if (abs(N(i, i)) < 1e-8) {
 				N(i, i) = 0;
 			}
 		}
-
-		//N += 1e-6 * Eigen::MatrixXd::Identity(BASIS_SIZE, BASIS_SIZE);
-		Eigen::EigenSolver<Eigen::MatrixXd> gen_solver;
-		Eigen::MatrixXd inverse_M = M.inverse();
-		//Eigen::MatrixXd inverse_N = N.completeOrthogonalDecomposition().pseudoInverse();
-
 		solver.compute(M);
+		bool singular = false;
 		for (size_t i = 0; i < solver.eigenvalues().size(); i++)
 		{
 			if (solver.eigenvalues()(i) < 0) {
+				std::cout << std::scientific << std::setprecision(12) << solver.eigenvalues()(i) << std::endl;
 				throw std::invalid_argument(": M is not positive!    " + std::to_string(solver.eigenvalues()(i)));
 			}
-		}
-
-		gen_solver.compute(inverse_M * N, false);
-		for (size_t i = 0; i < gen_solver.eigenvalues().size(); i++)
-		{
-			if (abs(gen_solver.eigenvalues()(i).imag()) > 1e-8) {
-				std::cerr << "Complex eigenvalue! " << gen_solver.eigenvalues()(i) << std::endl;
+			if (solver.eigenvalues()(i) < 1e-8 && !singular) {
+				singular = true;
+				std::cerr << "Warning: M is singular! :" << solver.eigenvalues()(i) << std::endl;
 			}
 		}
+		
+		Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> gen_solver;
+		gen_solver.compute(N, M, false);
 		reciever.resize(1);
 		Eigen::VectorXd ev = gen_solver.eigenvalues().real();
 		reciever[0] = std::vector<double>(ev.data(), ev.data() + ev.size());
@@ -331,12 +354,12 @@ namespace Hubbard {
 
 		return;
 		begin = std::chrono::steady_clock::now();
-		Eigen::VectorXd startingState = Eigen::VectorXd::Ones(BASIS_SIZE);
+		Eigen::VectorXd startingState = Eigen::VectorXd::Ones(TOTAL_BASIS);
 		startingState.normalize();
 		Utility::Resolvent R(startingState);
 
 		Eigen::MatrixXd inverse_solve = M.inverse() * N;
-		R.compute(inverse_solve, M, BASIS_SIZE);
+		R.compute(inverse_solve, M, 200);
 		R.writeDataToFile("../../data/resolvent.txt");
 
 		end = std::chrono::steady_clock::now();

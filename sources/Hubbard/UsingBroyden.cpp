@@ -58,8 +58,8 @@ namespace Hubbard {
 		}
 	}
 
-	UsingBroyden::UsingBroyden(ModelParameters& _params, int _number_of_basis_terms)
-		: Model(_params, _number_of_basis_terms), V(_params.V)
+	UsingBroyden::UsingBroyden(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
+		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
 		this->delta_cdw = abs(U - V) * 0.5;
 		this->delta_sc = abs(U + V) * 0.5;

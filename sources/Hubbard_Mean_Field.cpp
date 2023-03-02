@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 
 #include <omp.h>
-#ifdef NDEBUG
+#ifndef _DEBUG
 #include <mpi.h>
 #endif
 
@@ -27,7 +27,7 @@ std::ostream& operator<<(std::ostream& os, const Hubbard::Model::ModelParameters
 
 int main(int argc, char** argv)
 {
-#ifdef NDEBUG
+#ifndef _DEBUG
 	if (argc < 2) {
 		std::cerr << "Invalid number of arguments: Use mpirun -n <threads> <path_to_executable> <configfile>" << std::endl;
 		return -1;
@@ -127,11 +127,11 @@ int main(int argc, char** argv)
 				local.setSecondIterator(U);
 				Hubbard::Model::data_set ret;
 				if (input.getBool("use_broyden")) {
-					Hubbard::UsingBroyden model(local, 0);
+					Hubbard::UsingBroyden model(local, 0, 0);
 					ret = model.computePhases();
 				}
 				else {
-					Hubbard::HubbardCDW model(local, 0);
+					Hubbard::HubbardCDW model(local, 0, 0);
 					ret = model.computePhases();
 				}
 
@@ -149,7 +149,7 @@ int main(int argc, char** argv)
 			recieve_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 			recieve_eta.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		}
-#ifdef NDEBUG
+#ifndef _DEBUG
 		MPI_Gather(data_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Gather(data_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Gather(data_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -189,10 +189,10 @@ int main(int argc, char** argv)
 		{
 			std::unique_ptr<Hubbard::Model> model;
 			if (input.getBool("use_broyden")) {
-				model = std::make_unique<Hubbard::UsingBroyden>(Hubbard::UsingBroyden(modelParameters, input.getInt("number_of_basis_terms")));
+				model = std::make_unique<Hubbard::UsingBroyden>(Hubbard::UsingBroyden(modelParameters, input.getInt("number_of_basis_terms"), input.getInt("start_basis_at")));
 			}
 			else {
-				model = std::make_unique<Hubbard::HubbardCDW>(Hubbard::HubbardCDW(modelParameters, input.getInt("number_of_basis_terms")));
+				model = std::make_unique<Hubbard::HubbardCDW>(Hubbard::HubbardCDW(modelParameters, input.getInt("number_of_basis_terms"), input.getInt("start_basis_at")));
 			}
 			model->computePhases();
 			totalGapValues[T] = model->getTotalGapValue();
@@ -224,7 +224,7 @@ int main(int argc, char** argv)
 			}
 		}
 	}
-#ifdef NDEBUG
+#ifndef _DEBUG
 	return MPI_Finalize();
 #else
 	return 0;

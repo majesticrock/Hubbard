@@ -12,6 +12,7 @@ namespace Hubbard {
 	{
 	protected:
 		int BASIS_SIZE;
+		int TOTAL_BASIS;
 		double delta_sc, delta_cdw, delta_eta;
 		Eigen::MatrixXd hamilton;
 		double temperature;
@@ -40,6 +41,7 @@ namespace Hubbard {
 
 		Eigen::MatrixXd M, N;
 		int number_of_basis_terms;
+		int start_basis_at;
 
 		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
 		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M, wicks_N;
@@ -161,8 +163,8 @@ namespace Hubbard {
 			void print() const;
 		};
 
-		Model(double _temperature, double _U, int _number_of_basis_terms);
-		Model(ModelParameters& _params, int _number_of_basis_terms);
+		Model(double _temperature, double _U, int _number_of_basis_terms, int _start_basis_at);
+		Model(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
 		// reciever is the vector the resulting data will be stored in
 		// direction gives the angle between the k-path and the k_x axis in multiples of M_PI
 		void getEnergies(std::vector<std::vector<double>>& reciever, double direction);

@@ -25,7 +25,7 @@ namespace Hubbard {
 
 		virtual void fill_M_N() override;
 	public:
-		UsingBroyden(ModelParameters& _params, int _number_of_basis_terms);
+		UsingBroyden(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
 
 		data_set computePhases(const bool print = false) override;
 	};

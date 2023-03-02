@@ -5,8 +5,8 @@
 using Eigen::MatrixXd;
 
 namespace Hubbard {
-	HubbardCDW::HubbardCDW(ModelParameters& _params, int _number_of_basis_terms)
-		: BasicHubbardModel(_params, _number_of_basis_terms), V(_params.V)
+	HubbardCDW::HubbardCDW(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
+		: BasicHubbardModel(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
 		this->delta_cdw = abs(U - V) * 0.5;
 		this->delta_sc = abs(U + V) * 0.5;
