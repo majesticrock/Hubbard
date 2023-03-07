@@ -287,20 +287,18 @@ namespace Hubbard {
 			for (size_t j = 0; j < M.cols(); j++)
 			{
 				if (abs(M(i, j)) < 1e-13) {
-					M(i, j) = 0;
+					//M(i, j) = 0;
 				}
-				//std::cout << M(i, j) << ";";
 			}
-			//std::cout << std::endl;
 		}
 
-		M += 1e-6 * Eigen::MatrixXd::Identity(M.rows(), M.rows());
+		M += 1e-7 * Eigen::MatrixXd::Identity(M.rows(), M.rows());
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
-		Eigen::MatrixXd M_T = M.transpose();
+		//Eigen::MatrixXd M_T = M.transpose();
 		//M += M_T;
 		//M *= 0.5;
 		const Eigen::MatrixXd test_M = M - M.transpose();
@@ -327,19 +325,24 @@ namespace Hubbard {
 			}
 		}
 		solver.compute(M);
-		bool singular = false;
+		int singular = 0;
 		for (size_t i = 0; i < solver.eigenvalues().size(); i++)
 		{
 			if (solver.eigenvalues()(i) < 0) {
+				if (solver.eigenvalues()(i) == 0.0 || solver.eigenvalues()(i) == -0.0) continue;
 				std::cout << std::scientific << std::setprecision(12) << solver.eigenvalues()(i) << std::endl;
 				throw std::invalid_argument(": M is not positive!    " + std::to_string(solver.eigenvalues()(i)));
 			}
-			if (solver.eigenvalues()(i) < 1e-8 && !singular) {
-				singular = true;
-				std::cerr << "Warning: M is singular! :" << solver.eigenvalues()(i) << std::endl;
+			if (solver.eigenvalues()(i) < 1e-6) {
+				if(singular++ == 0) std::cerr << "Warning: M is singular! :" << solver.eigenvalues()(i) << std::endl;
 			}
 		}
-		
+		std::cout << "Total count of singular eigenvalues of M: " << singular << std::endl;
+		end = std::chrono::steady_clock::now();
+		std::cout << "Time for checking M and N: "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+
+		begin = std::chrono::steady_clock::now();
 		Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> gen_solver;
 		gen_solver.compute(N, M, false);
 		reciever.resize(1);
@@ -351,8 +354,7 @@ namespace Hubbard {
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for solving M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-
-		return;
+	
 		begin = std::chrono::steady_clock::now();
 		Eigen::VectorXd startingState = Eigen::VectorXd::Ones(TOTAL_BASIS);
 		startingState.normalize();

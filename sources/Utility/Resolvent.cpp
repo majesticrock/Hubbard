@@ -90,7 +90,7 @@ namespace Utility {
 			}
 			if (oldEigenValue != 0.0) {
 				if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
-					goOn = false;
+					//goOn = false;
 				}
 			}
 			oldEigenValue = newEigenValue;
