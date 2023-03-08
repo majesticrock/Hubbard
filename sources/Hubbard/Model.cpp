@@ -264,15 +264,15 @@ namespace Hubbard {
 		{
 			for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 			{
-				double a = unperturbed_energy((k * M_PI) / Constants::K_DISCRETIZATION, (l * M_PI) / Constants::K_DISCRETIZATION);
-				double b = (-U / (2 * BASIS_SIZE)) * (sum_of_all[1] / expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION))
+				double a = unperturbed_energy((k * M_PI) / Constants::K_DISCRETIZATION, (l * M_PI) / Constants::K_DISCRETIZATION) * expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
+				double b = (-U / (2 * BASIS_SIZE)) * sum_of_all[1]
 					* (1 - 2 * expecs[0](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION));
 				//std::cout << a << ";" << b << ";" << abs(a - b) << std::endl;
 				deviation += (a - b) * (a - b);
 			}
 		}
 		std::cout << "Deviation from epsilon-g formula: " << sqrt(deviation) << std::endl;
-
+		return;
 		computeChemicalPotential();
 		std::cout << "Filling of all spin ups = " << sum_of_all[0] / BASIS_SIZE << std::endl;
 		loadWick("../commutators/wick_");
