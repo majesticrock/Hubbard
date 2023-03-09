@@ -272,7 +272,7 @@ namespace Hubbard {
 			}
 		}
 		std::cout << "Deviation from epsilon-g formula: " << sqrt(deviation) << std::endl;
-		return;
+		
 		computeChemicalPotential();
 		std::cout << "Filling of all spin ups = " << sum_of_all[0] / BASIS_SIZE << std::endl;
 		loadWick("../commutators/wick_");
