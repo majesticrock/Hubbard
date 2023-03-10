@@ -62,7 +62,7 @@ namespace Hubbard {
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
 		this->delta_cdw = abs(U - V) * 0.5;
-		this->delta_sc = abs(U + V) * 0.5;
+		this->delta_sc = 0;//abs(U + V) * 0.5;
 		if (V > 0) {
 			this->delta_sc *= 0.25;
 		}
@@ -93,8 +93,8 @@ namespace Hubbard {
 			{
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					double k_x = ((k + l) * (0.5 * M_PI)) / Constants::K_DISCRETIZATION;
-					double k_y = ((k - l) * (0.5 * M_PI)) / Constants::K_DISCRETIZATION;
+					double k_x = ((k) * M_PI) / (Constants::K_DISCRETIZATION);
+					double k_y = ((l) * M_PI) / (Constants::K_DISCRETIZATION);
 					fillHamiltonian(k_x, k_y);
 					solver.compute(hamilton);
 					rho.fill(0);
@@ -103,23 +103,11 @@ namespace Hubbard {
 						rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
 					}
 					rho = solver.eigenvectors() * rho * (solver.eigenvectors().transpose());
-					F(0) += (rho(1, 0) - rho(2, 3));
-					F(1) += (rho(0, 2) + rho(1, 3));
-					F(2) += (rho(0, 3) + rho(1, 2));
-
-					//new_sc(0) += cos(k_x) * (rho(0, 2) - rho(1, 3));
-					//new_sc(1) += cos(k_y) * (rho(0, 2) - rho(1, 3));
-					//new_sc(2) += sin(k_x) * (rho(0, 2) - rho(1, 3));
-					//new_sc(3) += sin(k_y) * (rho(0, 2) - rho(1, 3));
-					//
-					//new_eta(0) += cos(k_x) * (rho(0, 3) - rho(1, 2));
-					//new_eta(1) += cos(k_y) * (rho(0, 3) - rho(1, 2));
-					//new_eta(2) += sin(k_x) * (rho(0, 3) - rho(1, 2));
-					//new_eta(3) += sin(k_y) * (rho(0, 3) - rho(1, 2));
+					F(0) += rho(0, 1);
+					F(1) += rho(0, 2);
+					F(2) += rho(0, 3);
 				}
 			}
-			//old_sc = new_sc / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
-			//old_eta = new_eta / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 			setParameters(F);
 			F -= x;
 		};

@@ -10,7 +10,6 @@
 #include <chrono>
 #include <omp.h>
 #include <fstream>
-#include "../Utility/Resolvent.hpp"
 
 namespace Hubbard {
 	void Model::computeChemicalPotential()
@@ -241,8 +240,10 @@ namespace Hubbard {
 		}
 	}
 
-	void Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
+	std::unique_ptr<Utility::Resolvent> Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
+		//Constants::K_DISCRETIZATION *= 2;
+		//BASIS_SIZE *= 4;
 		// First off we need to compute every possible expectation value
 		// We use the mean field system's symmetries
 		// i.e. there are only the standard SC, CDW, Eta and N operators non-zero
@@ -254,8 +255,6 @@ namespace Hubbard {
 		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver;
 
 		expecs = std::vector<Eigen::MatrixXd>(4, Eigen::MatrixXd::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
-		quartic = std::vector<Eigen::MatrixXd>(4, Eigen::MatrixXd::Zero(BASIS_SIZE, BASIS_SIZE));
-
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 		{
 			for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
@@ -281,7 +280,8 @@ namespace Hubbard {
 		{
 			for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 			{
-				double a = unperturbed_energy((k * M_PI) / Constants::K_DISCRETIZATION, (l * M_PI) / Constants::K_DISCRETIZATION) * expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
+				double a = unperturbed_energy((k * M_PI) / Constants::K_DISCRETIZATION, (l * M_PI) / Constants::K_DISCRETIZATION) 
+					* expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
 				double b = (-U / (2 * BASIS_SIZE)) * sum_of_all[1]
 					* (1 - 2 * expecs[0](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION));
 				deviation += (a - b) * (a - b);
@@ -388,11 +388,13 @@ namespace Hubbard {
 		Eigen::MatrixXd inverse_solve = M.inverse() * N;
 		R.compute(inverse_solve, M, 200);
 		//R.compute(solver_matrix, Eigen::MatrixXd::Identity(M.rows(), M.cols()), 200);
-		R.writeDataToFile("../../data/resolvent.txt");
+		//R.writeDataToFile("../../data/resolvent.txt");
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for resolvent: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+
+		return std::make_unique<Utility::Resolvent>(R);
 	}
 
 	void Model::getEnergies(std::vector<std::vector<double>>& reciever, double direction)

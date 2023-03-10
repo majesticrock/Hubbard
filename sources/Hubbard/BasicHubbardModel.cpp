@@ -32,8 +32,8 @@ namespace Hubbard {
 		: Model(_params, _number_of_basis_terms, _start_basis_at)
 	{
 		this->delta_sc = 0.1;
-		this->delta_cdw = 0.1;
-		this->delta_eta = 0.01;
+		this->delta_cdw = 0;
+		this->delta_eta = 0;
 
 		this->hamilton = MatrixXd::Zero(4, 4);
 	}

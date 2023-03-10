@@ -184,7 +184,7 @@ int main(int argc, char** argv)
 		std::vector<std::vector<data_vector>> oneParticleEnergies(FIRST_IT_STEPS);
 		std::vector<double> param(FIRST_IT_STEPS);
 		std::vector<double> totalGapValues(FIRST_IT_STEPS);
-
+		std::unique_ptr<Utility::Resolvent> R;
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
 		{
 			std::unique_ptr<Hubbard::Model> model;
@@ -196,7 +196,7 @@ int main(int argc, char** argv)
 			}
 			model->computePhases();
 			totalGapValues[T] = model->getTotalGapValue();
-			model->computeCollectiveModes(reciever[T]);
+			R = model->computeCollectiveModes(reciever[T]);
 			model->getAllEnergies(oneParticleEnergies[T]);
 			param[T] = modelParameters.getGlobal();
 			modelParameters.incrementGlobalIterator();
@@ -219,6 +219,7 @@ int main(int argc, char** argv)
 				stream << std::fixed << std::setprecision(2) << param[i];
 				comments.push_back("Total Gap=" + std::to_string(totalGapValues[i]));
 				Utility::saveData(reciever[i], "../../data/" + output_folder + stream.str() + ".txt", comments);
+				R->writeDataToFile("../../data/" + output_folder + stream.str() + "_resolvent.txt");
 				comments.pop_back();
 				Utility::saveData(oneParticleEnergies[i], "../../data/" + output_folder + stream.str() + "_one_particle.txt", comments);
 			}

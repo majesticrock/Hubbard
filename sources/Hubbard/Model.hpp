@@ -6,6 +6,7 @@
 #include <optional>
 #include "Constants.hpp"
 #include "../../../FermionCommute/sources/WickTerm.hpp"
+#include "../Utility/Resolvent.hpp"
 
 namespace Hubbard {
 	class Model
@@ -173,7 +174,7 @@ namespace Hubbard {
 		virtual data_set computePhases(const bool print = false) = 0;
 		// version 2 use the non mean field hamilton for the commutation,
 		// but the mean field system to obtain the expectation values
-		void computeCollectiveModes(std::vector<std::vector<double>>& reciever);
+		std::unique_ptr<Utility::Resolvent> computeCollectiveModes(std::vector<std::vector<double>>& reciever);
 		// Returns the total gap value sqrt(sc^2 + cdw^2 + eta^2)
 		inline double getTotalGapValue() const {
 			return sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta);
