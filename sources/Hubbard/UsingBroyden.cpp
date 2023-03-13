@@ -62,7 +62,7 @@ namespace Hubbard {
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
 		this->delta_cdw = abs(U - V) * 0.5;
-		this->delta_sc = 0;//abs(U + V) * 0.5;
+		this->delta_sc = abs(U + V) * 0.5;
 		if (V > 0) {
 			this->delta_sc *= 0.25;
 		}

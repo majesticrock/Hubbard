@@ -1,8 +1,11 @@
 #pragma once
+#define _USE_MATH_DEFINES
+
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <memory>
 #include <map>
+#include <cmath>
 #include <optional>
 #include "Constants.hpp"
 #include "../../../FermionCommute/sources/WickTerm.hpp"
@@ -80,7 +83,7 @@ namespace Hubbard {
 			}
 		};
 
-		constexpr double fermi_dirac(double energy) const {
+		inline double fermi_dirac(double energy) const {
 			//energy += chemical_potential;
 			if (temperature > 1e-8) {
 				return (1. / (1 + exp(energy / temperature)));
@@ -92,7 +95,7 @@ namespace Hubbard {
 				return ((energy > 0) ? 0 : 1);
 			}
 		};
-		constexpr double unperturbed_energy(double k_x, double k_y) const {
+		inline double unperturbed_energy(double k_x, double k_y) const {
 			return -2 * (cos(k_x) + cos(k_y));// - chemical_potential;
 		};
 		virtual void fillHamiltonian(double k_x, double k_y) = 0;

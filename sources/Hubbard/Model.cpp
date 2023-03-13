@@ -242,6 +242,7 @@ namespace Hubbard {
 
 	std::unique_ptr<Utility::Resolvent> Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
+		std::cout << "Gap values:  " << delta_cdw << "  " << delta_sc << "  " << delta_eta << std::endl;
 		//Constants::K_DISCRETIZATION *= 2;
 		//BASIS_SIZE *= 4;
 		// First off we need to compute every possible expectation value
@@ -303,16 +304,17 @@ namespace Hubbard {
 			for (size_t j = 0; j < M.cols(); j++)
 			{
 				if (abs(M(i, j)) < 1e-13) {
-					//M(i, j) = 0;
+					M(i, j) = 0;
 				}
 			}
 		}
 
-		M += 1e-6 * Eigen::MatrixXd::Identity(M.rows(), M.rows());
+		M += 1e-12 * Eigen::MatrixXd::Identity(M.rows(), M.rows());
+		//N += 1e-12 * Eigen::MatrixXd::Identity(M.rows(), M.rows());
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-		begin = std::chrono::steady_clock::now();
+		/*begin = std::chrono::steady_clock::now();
 
 		//Eigen::MatrixXd M_T = M.transpose();
 		//M += M_T;
@@ -343,32 +345,36 @@ namespace Hubbard {
 
 		solver.compute(M);
 		int singular = 0;
+		auto m_ev = solver.eigenvalues();
 		for (size_t i = 0; i < solver.eigenvalues().size(); i++)
 		{
 			if (solver.eigenvalues()(i) < 0) {
 				if (solver.eigenvalues()(i) == 0.0 || solver.eigenvalues()(i) == -0.0) continue;
 				std::cout << std::scientific << std::setprecision(12) << solver.eigenvalues()(i) << std::endl;
 				throw std::invalid_argument(": M is not positive!    " + std::to_string(solver.eigenvalues()(i)));
+				
 			}
-			if (solver.eigenvalues()(i) < 1e-6) {
-				if(singular++ == 0) std::cerr << "Warning: M is singular! :" << solver.eigenvalues()(i) << std::endl;
+			if (solver.eigenvalues()(i) < 1e-10) {
+				if(singular++ == 0) std::cout << "Warning: M is singular! :" << solver.eigenvalues()(i) << std::endl;
+				//m_ev(i) = 1e-10;
 			}
 		}
+		M = solver.eigenvectors() * m_ev.asDiagonal() * solver.eigenvectors().transpose();
 		std::cout << "Total count of singular eigenvalues of M: " << singular << std::endl;
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for checking M and N: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;*/
 		begin = std::chrono::steady_clock::now();
 
 		Eigen::LLT<Eigen::MatrixXd> llt_M(M);
-		Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> gen_solver;
-		gen_solver.compute(N, M, false);
+		//Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> gen_solver;
+		//gen_solver.compute(N, M, false);
 
-		//Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> gen_solver;
-		//Eigen::MatrixXd l_matrix = llt_M.matrixL();
-		//Eigen::MatrixXd inverse_llt_M = l_matrix.inverse();
-		//Eigen::MatrixXd solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
-		//gen_solver.compute(solver_matrix, false);
+		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> gen_solver;
+		Eigen::MatrixXd l_matrix = llt_M.matrixL();
+		Eigen::MatrixXd inverse_llt_M = l_matrix.inverse();
+		Eigen::MatrixXd solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
+		gen_solver.compute(solver_matrix, false);
 
 		reciever.resize(1);
 		Eigen::VectorXd ev = gen_solver.eigenvalues().real();
@@ -381,14 +387,14 @@ namespace Hubbard {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 	
 		begin = std::chrono::steady_clock::now();
-		Eigen::VectorXd startingState = Eigen::VectorXd::Ones(M.rows());
+		Eigen::VectorXd startingState = Eigen::VectorXd::Random(M.rows());
 		startingState.normalize();
 		Utility::Resolvent R(startingState);
 
-		Eigen::MatrixXd inverse_solve = M.inverse() * N;
-		R.compute(inverse_solve, M, 200);
-		//R.compute(solver_matrix, Eigen::MatrixXd::Identity(M.rows(), M.cols()), 200);
-		//R.writeDataToFile("../../data/resolvent.txt");
+		//Eigen::MatrixXd inverse_solve = M.inverse() * N;
+		//R.compute(inverse_solve, M, 200);
+		R.compute(solver_matrix, Eigen::MatrixXd::Identity(M.rows(), M.cols()), 200);
+		R.writeDataToFile("../../data/resolvent.txt");
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for resolvent: "
