@@ -8,8 +8,8 @@ namespace Hubbard {
 	HubbardCDW::HubbardCDW(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: BasicHubbardModel(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
-		this->delta_cdw = abs(U - V) * 0.5;
-		this->delta_sc = abs(U + V) * 0.5;
+		this->delta_cdw = std::abs(U - V) * 0.5;
+		this->delta_sc = std::abs(U + V) * 0.5;
 		if (V > 0) {
 			this->delta_sc *= 0.25;
 		}

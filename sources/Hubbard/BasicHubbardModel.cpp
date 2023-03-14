@@ -80,18 +80,18 @@ namespace Hubbard {
 			old_parameters[1] = delta_sc;
 			old_parameters[2] = delta_eta;
 			setParameters(cdw, sc, eta);
-			error_cdw = abs(delta_cdw - old_parameters[0]);
-			error_sc = abs(delta_sc - old_parameters[1]);
-			error_eta = abs(delta_eta - old_parameters[2]);
+			error_cdw = std::abs(delta_cdw - old_parameters[0]);
+			error_sc = std::abs(delta_sc - old_parameters[1]);
+			error_eta = std::abs(delta_eta - old_parameters[2]);
 			error = error_cdw + error_sc + error_eta;
 
 			delta_cdw = 0.5 * old_parameters[0] + 0.5 * delta_cdw;
 			delta_sc = 0.5 * old_parameters[1] + 0.5 * delta_sc;
 			delta_eta = 0.5 * old_parameters[2] + 0.5 * delta_eta;
 
-			error_cdw_osc = abs(delta_cdw + old_parameters[0]);
-			error_sc_osc = abs(delta_sc + old_parameters[1]);
-			error_eta_osc = abs(delta_eta + old_parameters[2]);
+			error_cdw_osc = std::abs(delta_cdw + old_parameters[0]);
+			error_sc_osc = std::abs(delta_sc + old_parameters[1]);
+			error_eta_osc = std::abs(delta_eta + old_parameters[2]);
 
 			delta_cdw = ((error_cdw_osc) < EPSILON) ? 0 : delta_cdw;
 			delta_sc = ((error_sc_osc) < EPSILON) ? 0 : delta_sc;

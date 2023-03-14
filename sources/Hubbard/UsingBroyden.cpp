@@ -61,8 +61,8 @@ namespace Hubbard {
 	UsingBroyden::UsingBroyden(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
-		this->delta_cdw = abs(U - V) * 0.5;
-		this->delta_sc = abs(U + V) * 0.5;
+		this->delta_cdw = std::abs(U - V) * 0.5;
+		this->delta_sc = std::abs(U + V) * 0.5;
 		if (V > 0) {
 			this->delta_sc *= 0.25;
 		}
@@ -117,13 +117,13 @@ namespace Hubbard {
 		for (size_t i = 0; i < 200 && f0.squaredNorm() > 1e-15; i++)
 		{
 			func(x0, f0);
-			if (abs(x0(0) + delta_cdw) < 1e-10) {
+			if (std::abs(x0(0) + delta_cdw) < 1e-10) {
 				delta_cdw = 0;
 			}
-			if (abs(x0(1) + delta_sc) < 1e-10) {
+			if (std::abs(x0(1) + delta_sc) < 1e-10) {
 				delta_sc = 0;
 			}
-			if (abs(x0(2) + delta_eta) < 1e-10) {
+			if (std::abs(x0(2) + delta_eta) < 1e-10) {
 				delta_eta = 0;
 			}
 			x0(0) = delta_cdw;

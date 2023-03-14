@@ -85,11 +85,11 @@ namespace Utility {
 			if (iterNum >= toSolve.rows()) {
 				goOn = false;
 			}
-			if (abs(gammas.back()) < 1e-7) {
+			if (std::abs(gammas.back()) < 1e-7) {
 				goOn = false;
 			}
 			if (oldEigenValue != 0.0) {
-				if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
+				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 					goOn = false;
 				}
 			}
@@ -121,8 +121,8 @@ namespace Utility {
 		VectorXcd second = this->startingState; // corresponds to |q_1>
 		resolvent_data res;
 		auto norm_buffer = second.dot(symplectic * second);
-		assertm(abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
-		res.b_i.push_back(abs(norm_buffer));
+		assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
+		res.b_i.push_back(std::abs(norm_buffer));
 
 		second /= sqrt(res.b_i.back());
 		basisVectors.push_back(first);
@@ -145,13 +145,13 @@ namespace Utility {
 			// algorithm
 			buffer = toSolve * basisVectors.back();
 			norm_buffer = basisVectors.back().dot(symplectic * buffer);
-			assertm(abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
+			assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
 			deltas.push_back(norm_buffer.real());
 
 			currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 			norm_buffer = sqrt(currentSolution.dot(symplectic * currentSolution));
-			assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
-			gammas.push_back(abs(norm_buffer));
+			assertm(std::abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
+			gammas.push_back(std::abs(norm_buffer));
 			basisVectors.push_back(currentSolution / gammas.back());
 
 			iterNum++;
@@ -179,11 +179,11 @@ namespace Utility {
 			if (iterNum >= toSolve.rows()) {
 				goOn = false;
 			}
-			if (abs(gammas.back()) < 1e-8) {
+			if (std::abs(gammas.back()) < 1e-8) {
 				goOn = false;
 			}
 			if (oldEigenValue != 0.0) {
-				if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
+				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 					goOn = false;
 				}
 			}
@@ -215,8 +215,8 @@ namespace Utility {
 		VectorXcd second = this->startingState; // corresponds to |q_1>
 		resolvent_data res;
 		auto norm_buffer = second.dot(symplectic * second);
-		assertm(abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
-		res.b_i.push_back(abs(norm_buffer));
+		assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
+		res.b_i.push_back(std::abs(norm_buffer));
 
 		second /= sqrt(res.b_i.back());
 		basisVectors.push_back(first);
@@ -239,13 +239,13 @@ namespace Utility {
 			// algorithm
 			buffer = toSolve * basisVectors.back();
 			norm_buffer = basisVectors.back().dot(N * basisVectors.back());
-			assertm(abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
+			assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
 			deltas.push_back(norm_buffer.real());
 
 			currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 			norm_buffer = sqrt(currentSolution.dot(symplectic * currentSolution));
-			assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
-			gammas.push_back(abs(norm_buffer));
+			assertm(std::abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
+			gammas.push_back(std::abs(norm_buffer));
 			basisVectors.push_back(currentSolution / gammas.back());
 
 			iterNum++;
@@ -273,11 +273,11 @@ namespace Utility {
 			if (iterNum >= toSolve.rows()) {
 				goOn = false;
 			}
-			if (abs(gammas.back()) < 1e-8) {
+			if (std::abs(gammas.back()) < 1e-8) {
 				goOn = false;
 			}
 			if (oldEigenValue != 0.0) {
-				if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
+				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 					goOn = false;
 				}
 			}

@@ -75,7 +75,7 @@ namespace Hubbard {
 			{
 				toClean(i) += Constants::K_DISCRETIZATION;
 				if (toClean(i) < 0) {
-					toClean(i) = ((2 * Constants::K_DISCRETIZATION) - abs(toClean(i) % (2 * Constants::K_DISCRETIZATION))) % (2 * Constants::K_DISCRETIZATION);
+					toClean(i) = ((2 * Constants::K_DISCRETIZATION) - std::abs(toClean(i) % (2 * Constants::K_DISCRETIZATION))) % (2 * Constants::K_DISCRETIZATION);
 				}
 				else {
 					toClean(i) = (toClean(i) % (2 * Constants::K_DISCRETIZATION)) % (2 * Constants::K_DISCRETIZATION);
@@ -89,7 +89,7 @@ namespace Hubbard {
 				return (1. / (1 + exp(energy / temperature)));
 			}
 			else {
-				if (abs(energy) < 1e-12) {
+				if (std::abs(energy) < 1e-12) {
 					return 0.5;
 				}
 				return ((energy > 0) ? 0 : 1);

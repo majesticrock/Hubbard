@@ -172,7 +172,7 @@ namespace Hubbard {
 		//return;
 		//for (size_t i = 0; i < N.rows(); i++)
 		//{
-		//	if (abs(N(i, i)) < 1e-10) {
+		//	if (std::abs(N(i, i)) < 1e-10) {
 		//		size_t numRows = N.rows() - 1;
 		//		size_t numCols = N.cols();
 		//
@@ -303,7 +303,7 @@ namespace Hubbard {
 		{
 			for (size_t j = 0; j < M.cols(); j++)
 			{
-				if (abs(M(i, j)) < 1e-13) {
+				if (std::abs(M(i, j)) < 1e-13) {
 					M(i, j) = 0;
 				}
 			}
@@ -324,7 +324,7 @@ namespace Hubbard {
 		{
 			for (size_t j = i + 1; j < test_M.cols(); j++)
 			{
-				if (abs(test_M(i, j)) > 1e-6) {
+				if (std::abs(test_M(i, j)) > 1e-6) {
 					throw std::invalid_argument("M is not hermitian: " + std::to_string(M(i, j)) + " || " + std::to_string(M(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
 				}
 			}
@@ -334,11 +334,11 @@ namespace Hubbard {
 		{
 			for (size_t j = i + 1; j < test_N.cols(); j++)
 			{
-				if (abs(test_N(i, j)) > 1e-12) {
+				if (std::abs(test_N(i, j)) > 1e-12) {
 					throw std::invalid_argument("N is not hermitian: " + std::to_string(N(i, j)) + " || " + std::to_string(N(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
 				}
 			}
-			if (abs(N(i, i)) < 1e-8) {
+			if (std::abs(N(i, i)) < 1e-8) {
 				N(i, i) = 0;
 			}
 		}
@@ -435,7 +435,7 @@ namespace Hubbard {
 
 				for (int i = 1; i < 4; i++)
 				{
-					if (abs(solver.eigenvalues()(0) - solver.eigenvalues()(i)) > 1e-8) {
+					if (std::abs(solver.eigenvalues()(0) - solver.eigenvalues()(i)) > 1e-8) {
 						reciever[k + 3 * Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(i);
 						break;
 					}
