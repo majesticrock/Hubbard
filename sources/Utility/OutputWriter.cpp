@@ -4,7 +4,7 @@
 #include <ctime>
 
 namespace Utility {
-	void saveData(std::vector<double>& data, std::string filename)
+	void saveData(const std::vector<double>& data, const std::string& filename)
 	{
 		std::ofstream out(filename);
 		if (out.is_open()) {
@@ -21,7 +21,7 @@ namespace Utility {
 			std::cerr << "Could not open output filestream for file: " << filename << std::endl;
 		}
 	}
-	void saveData(std::vector<std::vector<double>>& data, std::string filename)
+	void saveData(const std::vector<std::vector<double>>& data, const std::string& filename)
 	{
 		std::ofstream out(filename);
 		if (out.is_open()) {
@@ -44,7 +44,7 @@ namespace Utility {
 			std::cerr << "Could not open output filestream for file: " << filename << std::endl;
 		}
 	}
-	void saveData(std::vector<std::vector<double>>& data, std::string filename, std::vector<std::string> comments)
+	void saveData(const std::vector<std::vector<double>>& data, const std::string& filename, const std::vector<std::string>& comments)
 	{
 		std::ofstream out(filename);
 		if (out.is_open()) {
@@ -72,7 +72,7 @@ namespace Utility {
 			std::cerr << "Could not open output filestream for file: " << filename << std::endl;
 		}
 	}
-	void saveData(std::vector<double>& data, const int linebreak, std::string filename, std::vector<std::string> comments) {
+	void saveData(const std::vector<double>& data, const int linebreak, const std::string& filename, const std::vector<std::string>& comments) {
 		std::ofstream out(filename);
 		if (out.is_open()) {
 			out << "# " << time_stamp() << "\n#\n";

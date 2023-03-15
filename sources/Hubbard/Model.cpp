@@ -314,7 +314,7 @@ namespace Hubbard {
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-		/*begin = std::chrono::steady_clock::now();
+	/*	begin = std::chrono::steady_clock::now();
 
 		//Eigen::MatrixXd M_T = M.transpose();
 		//M += M_T;
@@ -359,11 +359,12 @@ namespace Hubbard {
 				//m_ev(i) = 1e-10;
 			}
 		}
-		M = solver.eigenvectors() * m_ev.asDiagonal() * solver.eigenvectors().transpose();
+		//M = solver.eigenvectors() * m_ev.asDiagonal() * solver.eigenvectors().transpose();
 		std::cout << "Total count of singular eigenvalues of M: " << singular << std::endl;
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for checking M and N: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;*/
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+*/
 		begin = std::chrono::steady_clock::now();
 
 		Eigen::LLT<Eigen::MatrixXd> llt_M(M);
@@ -387,10 +388,14 @@ namespace Hubbard {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 	
 		begin = std::chrono::steady_clock::now();
-		Eigen::VectorXd startingState = Eigen::VectorXd::Random(M.rows());
+		Eigen::VectorXd startingState = Eigen::VectorXd::Zero(M.rows());
+		for (size_t i = 0; i < BASIS_SIZE; i++)
+		{
+			startingState(i) = 1;
+		}
+		startingState = inverse_llt_M.transpose() * startingState;
 		startingState.normalize();
 		Utility::Resolvent R(startingState);
-
 		//Eigen::MatrixXd inverse_solve = M.inverse() * N;
 		//R.compute(inverse_solve, M, 200);
 		R.compute(solver_matrix, Eigen::MatrixXd::Identity(M.rows(), M.cols()), 200);

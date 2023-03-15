@@ -39,23 +39,6 @@ namespace Hubbard {
 	void UsingBroyden::fill_M_N()
 	{
 		Model::fill_M_N();
-		return;
-		auto f = [&](int kx, int ky) -> double {
-			return (V / BASIS_SIZE) * 2 * (cos((M_PI * kx) / Constants::K_DISCRETIZATION) + cos((M_PI * ky) / Constants::K_DISCRETIZATION));
-		};
-#pragma omp parallel for
-		for (int k = 0; k < BASIS_SIZE; k++)
-		{
-			M(k, k) += 4 * (2 * f(0, 0) * sum_of_all[0] + quartic[5](k, k));
-			for (int l = 0; l < BASIS_SIZE; l++)
-			{
-				// k,k is on purpose; delta_kl * f(k+p) * n_{p sigma}
-				M(k, k) -= 4 * f(x(k) + x(l), y(k) + y(l)) * _NUM(l);
-
-				M(l, k) += 2 * f(x(l) - x(k), y(l) - y(k)) * (1 - 2 * (_NUM(l) + _NUM(k) - quartic[0](l, k)));
-				M(l, k) += 4 * (quartic[4](l, k) + quartic[6](l, k));
-			}
-		}
 	}
 
 	UsingBroyden::UsingBroyden(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
