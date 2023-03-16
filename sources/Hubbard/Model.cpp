@@ -393,12 +393,13 @@ namespace Hubbard {
 		{
 			startingState(i) = 1;
 		}
-		startingState = inverse_llt_M.transpose() * startingState;
 		startingState.normalize();
+		startingState = inverse_llt_M * (N * startingState);
+		
 		Utility::Resolvent R(startingState);
 		//Eigen::MatrixXd inverse_solve = M.inverse() * N;
 		//R.compute(inverse_solve, M, 200);
-		R.compute(solver_matrix, Eigen::MatrixXd::Identity(M.rows(), M.cols()), 200);
+		R.compute(solver_matrix, Eigen::MatrixXd::Identity(M.rows(), M.cols()), 100);
 		R.writeDataToFile("../../data/resolvent.txt");
 
 		end = std::chrono::steady_clock::now();
