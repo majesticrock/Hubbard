@@ -52,18 +52,16 @@ int main(int argc, char** argv)
 	Hubbard::Constants::K_DISCRETIZATION = input.getInt("k_discretization");
 
 #ifdef _DO_TEST
-	Hubbard::Model::ModelParameters mP(0.1, -2, 0, 0, 0, "", "");
-	Hubbard::HubbardCDW model(mP);
+	Hubbard::Model::ModelParameters mP(0, -2, -2, 0, 0, "", "");
+	Hubbard::HubbardCDW model(mP, 0, 0);
 
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 	model.computePhases(true).print();
 	std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
 	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 
-	std::cout << "\n\n";
-	model.parseCommutatorData();
 	std::cout << "\n\n" << std::endl;
-	Hubbard::UsingBroyden model2(mP);
+	Hubbard::UsingBroyden model2(mP, 0, 0);
 
 	test_b = std::chrono::steady_clock::now();
 	model2.computePhases(true).print();
