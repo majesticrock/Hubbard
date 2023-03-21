@@ -25,7 +25,7 @@ namespace Hubbard {
 			this->delta_sc = 0.5 * (F(1) + this->delta_sc);
 			this->delta_eta = 0.5 * (F(2) + this->delta_eta);
 
-			this->cos_occupation *= ((-1 * V) / (16 * BASIS_SIZE));
+			this->cos_occupation *= ((-V) / (16 * BASIS_SIZE));
 			this->cos_occupation_old = cos_occupation;
 		};
 		virtual inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {

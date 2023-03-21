@@ -10,11 +10,11 @@ LDLIBS =  -L/sw/gcc/5.3.0/rtf/lib64 -lboost_serialization
 
 WARNINGS = -Wall -Wno-sign-compare
 
-OPT = -march=native -O3
+OPT = -m64 -march=cascadelake -O3
 
 COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp WickCleaner.cpp
 
-HBBRD_SRCS=Model.cpp ModelModesV1.cpp BasicHubbardModel.cpp HubbardCDW.cpp UsingBroyden.cpp
+HBBRD_SRCS=Model.cpp ModelSubClasses.cpp BasicHubbardModel.cpp HubbardCDW.cpp UsingBroyden.cpp
 UTIL_SRCS=InputFileReader.cpp OutputWriter.cpp Roots_Broyden.cpp Resolvent.cpp
 
 PART_SRCS=
