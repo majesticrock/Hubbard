@@ -25,8 +25,8 @@
                                 ## Feature-Output by "cat /etc/slurm/slurm.conf | grep Feature"
 module purge
 module add gcc/11.3.0-full
-module add mpi/openmpi3-x86_64
-cd /home/althueser/phd/HubbardMeanField/        ## go to working directory
+module add boost/1.71.0
+cd /home/althueser/phdcpp/HubbardMeanField/        ## go to working directory
 
 date
 echo "--- START ---"
