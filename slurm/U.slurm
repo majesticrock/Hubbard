@@ -26,7 +26,7 @@
 module purge
 module add gcc/11.3.0-full
 module add boost/1.71.0
-cd /home/althueser/phd/HubbardMeanField/        ## go to working directory
+cd /home/althueser/phdcpp/HubbardMeanField/      ## go to working directory
 
 date
 echo "--- START ---"
