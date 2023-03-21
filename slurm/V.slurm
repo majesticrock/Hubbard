@@ -5,7 +5,7 @@
 
 ## Mandatory:
 #SBATCH --job-name=V
-#SBATCH --output=/home/althueser/phd/HubbardMeanField/output_V.txt    ## File for stdout & stderr
+#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_V.txt    ## File for stdout & stderr
 #SBATCH --time=12:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=mpi       ## choose queue
 
@@ -26,7 +26,7 @@
 module purge
 module add gcc/11.3.0-full
 module add boost/1.71.0
-cd /home/althueser/phdcpp/HubbardMeanField/        ## go to working directory
+cd /home/althueser/phd/cpp/HubbardMeanField/        ## go to working directory
 
 date
 echo "--- START ---"
