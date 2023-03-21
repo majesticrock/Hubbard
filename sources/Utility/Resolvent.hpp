@@ -22,6 +22,7 @@ namespace Utility {
 			}
 			return position;
 		};
+		size_t noEigenvalueChangeAt = 0;
 	public:
 		// Sets the starting state
 		inline void setStartingState(const Eigen::VectorXcd& state) {

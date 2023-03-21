@@ -90,7 +90,8 @@ namespace Utility {
 			}
 			if (oldEigenValue != 0.0) {
 				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
-					goOn = false;
+					//goOn = false;
+					if(noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 				}
 			}
 			oldEigenValue = newEigenValue;
@@ -184,7 +185,8 @@ namespace Utility {
 			}
 			if (oldEigenValue != 0.0) {
 				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
-					goOn = false;
+					//goOn = false;
+					if(noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 				}
 			}
 			oldEigenValue = newEigenValue;
@@ -278,7 +280,8 @@ namespace Utility {
 			}
 			if (oldEigenValue != 0.0) {
 				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
-					goOn = false;
+					//goOn = false;
+					if(noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 				}
 			}
 			oldEigenValue = newEigenValue;
@@ -293,10 +296,10 @@ namespace Utility {
 
 	void Resolvent::writeDataToFile(std::string filename) const
 	{
-		std::cout << "Total Lanczos iterations: " << this->data[0].a_i.size() << std::endl;
+		std::cout << "Total Lanczos iterations: " << this->data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
 		std::ofstream out(filename);
 		if (out.is_open()) {
-			out << "# " << Utility::time_stamp() << "\n\n" << std::scientific << std::setprecision(8);
+			out << "# " << Utility::time_stamp() << "\n# No Change Iteration: " << noEigenvalueChangeAt << "\n\n" << std::scientific << std::setprecision(12);
 			for (auto& set : this->data) {
 				for (auto& elem : set.a_i) {
 					out << elem << " ";

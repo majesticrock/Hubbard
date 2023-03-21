@@ -178,6 +178,26 @@ namespace Hubbard {
 				}
 			}
 		}
+
+		//return;
+		//for (size_t i = 0; i < N.rows(); i++)
+		//{
+		//	if (std::abs(N(i, i)) < 1e-10) {
+		//		size_t numRows = N.rows() - 1;
+		//		size_t numCols = N.cols();
+		//
+		//		N.block(i, 0, numRows - i, numCols) = N.block(i + 1, 0, numRows - i, numCols);
+		//		M.block(i, 0, numRows - i, numCols) = M.block(i + 1, 0, numRows - i, numCols);
+		//		N.conservativeResize(numRows, numCols);
+		//		M.conservativeResize(numRows, numCols);
+		//		--numCols;
+		//		
+		//		N.block(0, i, numRows, numCols - i) = N.block(0, i + 1, numRows, numCols - i);
+		//		M.block(0, i, numRows, numCols - i) = M.block(0, i + 1, numRows, numCols - i);
+		//		N.conservativeResize(numRows, numCols);
+		//		M.conservativeResize(numRows, numCols);
+		//	}
+		//}
 	}
 
 	Model::Model(double _temperature, double _U, int _number_of_basis_terms, int _start_basis_at)
@@ -400,7 +420,7 @@ namespace Hubbard {
 		Utility::Resolvent R(startingState);
 		//Eigen::MatrixXd inverse_solve = M.inverse() * N;
 		//R.compute(inverse_solve, M, 200);
-		R.compute(solver_matrix, Eigen::MatrixXd::Identity(M.rows(), M.cols()), 100);
+		R.compute(solver_matrix, Eigen::MatrixXd::Identity(M.rows(), M.cols()), 200);
 		R.writeDataToFile("../../data/resolvent.txt");
 
 		end = std::chrono::steady_clock::now();
