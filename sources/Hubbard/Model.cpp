@@ -367,7 +367,6 @@ namespace Hubbard {
 			solver.compute(M);
 			int singular = 0;
 			//auto m_ev = solver.eigenvalues();
-#pragma omp parallel for
 			for (size_t i = 0; i < solver.eigenvalues().size(); i++)
 			{
 				if (solver.eigenvalues()(i) < 0) {
@@ -396,13 +395,32 @@ namespace Hubbard {
 		//Eigen::MatrixXd l_matrix = llt_M.matrixL();
 		Eigen::MatrixXd inverse_llt_M = solver.operatorInverseSqrt();
 		Eigen::MatrixXd solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
-		gen_solver.compute(solver_matrix, false);
+		gen_solver.compute(solver_matrix);
 
 		reciever.resize(1);
-		Eigen::VectorXd ev = gen_solver.eigenvalues().real();
-		reciever[0] = std::vector<double>(ev.data(), ev.data() + ev.size());
 
-		std::sort(reciever.back().begin(), reciever.back().end());
+		//Eigen::VectorXd ev = gen_solver.eigenvalues().real();
+		//reciever[0] = std::vector<double>(ev.data(), ev.data() + ev.size());
+		//std::sort(reciever.back().begin(), reciever.back().end());
+
+		{
+			Eigen::VectorXd state = Eigen::VectorXd::Zero(M.rows());
+			for (size_t i = 0; i < BASIS_SIZE; i++)
+			{
+				state(i) = 1;
+			}
+			state.normalize();
+			state = gen_solver.eigenvectors().transpose() * (inverse_llt_M * (N * state));
+
+			const double RANGE = 10;
+			const int STEPS = 10000;
+			for (double z = -RANGE; z < RANGE; z += ((2 * RANGE) / STEPS))
+			{
+				std::complex<double> z_tilde = std::complex<double>(1/z, 5e-2);
+				Eigen::VectorXcd diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
+				reciever[0].push_back(-(z_tilde * state.dot(diag.asDiagonal() * state)).imag());
+			}
+		}
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for solving M and N: "

@@ -91,7 +91,7 @@ namespace Utility {
 			if (oldEigenValue != 0.0) {
 				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 					//goOn = false;
-					if(noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+					if(!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 				}
 			}
 			oldEigenValue = newEigenValue;
@@ -186,7 +186,7 @@ namespace Utility {
 			if (oldEigenValue != 0.0) {
 				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 					//goOn = false;
-					if(noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+					if(!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 				}
 			}
 			oldEigenValue = newEigenValue;
@@ -281,7 +281,7 @@ namespace Utility {
 			if (oldEigenValue != 0.0) {
 				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 					//goOn = false;
-					if(noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+					if(!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 				}
 			}
 			oldEigenValue = newEigenValue;

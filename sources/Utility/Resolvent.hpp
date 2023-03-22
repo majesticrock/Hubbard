@@ -22,14 +22,14 @@ namespace Utility {
 			}
 			return position;
 		};
-		size_t noEigenvalueChangeAt = 0;
+		size_t noEigenvalueChangeAt;
 	public:
 		// Sets the starting state
 		inline void setStartingState(const Eigen::VectorXcd& state) {
 			this->startingState = state;
 		};
-		Resolvent(const Eigen::VectorXcd& _StargingState) : startingState(_StargingState) {};
-		Resolvent() {};
+		Resolvent(const Eigen::VectorXcd& _StargingState) : startingState(_StargingState), noEigenvalueChangeAt(0) {};
+		Resolvent() : noEigenvalueChangeAt(0) {};
 
 		// Computes the resolvent's parameters a_i and b_i
 		void compute(const Eigen::MatrixXd& toSolve, const Eigen::MatrixXd& symplectic, int maxIter, double errorMargin = 1e-10);
