@@ -5,7 +5,6 @@
 #include <iomanip>
 #include "BasicHubbardModel.hpp"
 
-using Eigen::MatrixXd;
 
 namespace Hubbard {
 	void BasicHubbardModel::fillHamiltonian(double k_x, double k_y)
@@ -19,7 +18,7 @@ namespace Hubbard {
 		hamilton(1, 3) = delta_sc;
 		hamilton(2, 3) = -delta_cdw;
 
-		Eigen::MatrixXd buffer = hamilton.transpose();
+		matrixL buffer = hamilton.transpose();
 		hamilton += buffer;
 
 		hamilton(0, 0) = unperturbed_energy(k_x, k_y);
@@ -35,13 +34,13 @@ namespace Hubbard {
 		this->delta_cdw = 0;
 		this->delta_eta = 0;
 
-		this->hamilton = MatrixXd::Zero(4, 4);
+		this->hamilton = matrixL::Zero(4, 4);
 	}
 
 	Hubbard::Model::data_set BasicHubbardModel::computePhases(const bool print/*=false*/)
 	{
-		MatrixXd rho = MatrixXd::Zero(4, 4);
-		Eigen::SelfAdjointEigenSolver<MatrixXd> solver;
+		matrixL rho = matrixL::Zero(4, 4);
+		Eigen::SelfAdjointEigenSolver<matrixL> solver;
 		const double EPSILON = 1e-8;
 		double sc = 0, cdw = 0, eta = 0;
 		double old_parameters[3] = { 100, 100, 100 };

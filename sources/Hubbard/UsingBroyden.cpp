@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define _NUM(momentum) (expecs[0](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
 #define _CDW(momentum) (expecs[1](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
 #define _SC(momentum) (expecs[2](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
@@ -9,8 +8,6 @@
 #include <iostream>
 #include <iomanip>
 #include "../Utility/Roots_Broyden.hpp"
-
-using Eigen::MatrixXd;
 
 namespace Hubbard {
 	void UsingBroyden::computeChemicalPotential()
@@ -32,14 +29,14 @@ namespace Hubbard {
 		hamilton(1, 3) = delta_sc;// -V * old_sc.dot(cos_sin);
 		hamilton(2, 3) = -delta_cdw;
 
-		Eigen::MatrixXd buffer = hamilton.transpose();
+		matrixL buffer = hamilton.transpose();
 		hamilton += buffer;
 		//double eps = unperturbed_energy(k_x, k_y);
 		double n_buffer = 2 * (cos(k_x) + cos(k_y)) * cos_occupation_old;
 		hamilton(0, 0) = unperturbed_energy(k_x, k_y) + n_buffer;
-		hamilton(1, 1) = unperturbed_energy(k_x + M_PI, k_y + M_PI) - n_buffer;
+		hamilton(1, 1) = unperturbed_energy(k_x + L_PI, k_y + L_PI) - n_buffer;
 		hamilton(2, 2) = -unperturbed_energy(k_x, k_y) - n_buffer;
-		hamilton(3, 3) = -unperturbed_energy(k_x + M_PI, k_y + M_PI) + n_buffer;
+		hamilton(3, 3) = -unperturbed_energy(k_x + L_PI, k_y + L_PI) + n_buffer;
 	}
 
 	UsingBroyden::UsingBroyden(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
@@ -55,7 +52,7 @@ namespace Hubbard {
 		}
 		this->delta_eta = 0;
 
-		this->hamilton = MatrixXd::Zero(4, 4);
+		this->hamilton = matrixL::Zero(4, 4);
 		this->old_eta << 0.1, 0.1, 0.1, 0.1;
 		this->old_sc << 0.1, 0.1, 0.1, 0.1;
 		cos_occupation_old = V * 0.1;
@@ -63,8 +60,8 @@ namespace Hubbard {
 
 	Model::data_set UsingBroyden::computePhases(const bool print/*=false*/)
 	{
-		MatrixXd rho = MatrixXd::Zero(4, 4);
-		Eigen::SelfAdjointEigenSolver<MatrixXd> solver;
+		matrixL rho = matrixL::Zero(4, 4);
+		Eigen::SelfAdjointEigenSolver<matrixL> solver;
 
 		auto lambda_func = [&](const Eigen::VectorXd& x, Eigen::VectorXd& F) {
 			delta_cdw = x(0);
@@ -77,10 +74,10 @@ namespace Hubbard {
 			F = Eigen::Vector3d::Zero();
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				double k_x = (k * M_PI) / (Constants::K_DISCRETIZATION);
+				double k_x = (k * L_PI) / (Constants::K_DISCRETIZATION);
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					double k_y = (l * M_PI) / (Constants::K_DISCRETIZATION);
+					double k_y = (l * L_PI) / (Constants::K_DISCRETIZATION);
 					fillHamiltonian(k_x, k_y);
 					solver.compute(hamilton);
 					rho.fill(0);

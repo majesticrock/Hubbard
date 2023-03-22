@@ -1,5 +1,5 @@
 #pragma once
-#define _USE_MATH_DEFINES
+#define L_PI 3.141592653589793238462643383279502884L /* pi */
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
@@ -12,24 +12,27 @@
 #include "../Utility/Resolvent.hpp"
 
 namespace Hubbard {
+	typedef Eigen::Matrix<long double, Eigen::Dynamic, Eigen::Dynamic> matrixL;
+	typedef Eigen::Vector<long double, Eigen::Dynamic> vectorL;
+
 	class Model
 	{
 	protected:
 		int BASIS_SIZE;
 		int TOTAL_BASIS;
-		double delta_sc, delta_cdw, delta_eta;
-		Eigen::MatrixXd hamilton;
-		double temperature;
-		double U;
+		long double delta_sc, delta_cdw, delta_eta;
+		matrixL hamilton;
+		long double temperature;
+		long double U;
 
-		double chemical_potential;
+		long double chemical_potential;
 		// Might not be necessary, depends on the V dependence
 		virtual void computeChemicalPotential();
 
 		// maps an index; [0, N_K) -> [-pi, pi)
 		template <typename T>
-		inline double index_to_k_vector(const T index) const {
-			return (((index * M_PI) / Constants::K_DISCRETIZATION) - M_PI);
+		inline long double index_to_k_vector(const T index) const {
+			return (((index * L_PI) / Constants::K_DISCRETIZATION) - L_PI);
 		};
 
 		/*
@@ -38,19 +41,18 @@ namespace Hubbard {
 		* 2 - sc
 		* 3 - eta
 		*/
-		std::vector<Eigen::MatrixXd> expecs;
-		double sum_of_all[4] = { 0, 0, 0, 0 };
-		// Quartic expecs - contracted using Wick's theorem (exact on MF level)
-		std::vector<Eigen::MatrixXd> quartic;
+		std::vector<matrixL> expecs;
+		long double sum_of_all[4] = { 0, 0, 0, 0 };
 
-		Eigen::MatrixXd M, N;
+		matrixL M, N;
 		int number_of_basis_terms;
 		int start_basis_at;
 
 		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
 		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M, wicks_N;
 
-		inline double fermi_dirac(double energy) const {
+		template <typename T>
+		inline T fermi_dirac(T energy) const {
 			//energy += chemical_potential;
 			if (temperature > 1e-8) {
 				return (1. / (1 + exp(energy / temperature)));
@@ -62,7 +64,8 @@ namespace Hubbard {
 				return ((energy > 0) ? 0 : 1);
 			}
 		};
-		inline double unperturbed_energy(double k_x, double k_y) const {
+		template <typename T>
+		inline T unperturbed_energy(T k_x, T k_y) const {
 			return -2 * (cos(k_x) + cos(k_y));// - chemical_potential;
 		};
 		virtual void fillHamiltonian(double k_x, double k_y) = 0;
@@ -116,7 +119,7 @@ namespace Hubbard {
 			return buffer;
 		};
 
-		virtual inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const {
+		virtual inline long double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const {
 			if (coeff.name == "\\epsilon_0") {
 				//if (!(momentum.has_value())) throw std::length_error("Calling epsilon(k) without specifying k!");
 				return (unperturbed_energy(index_to_k_vector(momentum(0)), index_to_k_vector(momentum(1))) - chemical_potential);
@@ -126,7 +129,7 @@ namespace Hubbard {
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
-		double computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
+		long double computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 		virtual void fill_M_N();
 	public:
 		class ModelParameters {
@@ -163,14 +166,14 @@ namespace Hubbard {
 			void printGlobal() const;
 		};
 		struct data_set {
-			double delta_cdw, delta_sc, delta_eta;
+			long double delta_cdw, delta_sc, delta_eta;
 			void print() const;
 		};
 
 		Model(double _temperature, double _U, int _number_of_basis_terms, int _start_basis_at);
 		Model(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
 		// reciever is the vector the resulting data will be stored in
-		// direction gives the angle between the k-path and the k_x axis in multiples of M_PI
+		// direction gives the angle between the k-path and the k_x axis in multiples of L_PI
 		void getEnergies(std::vector<std::vector<double>>& reciever, double direction);
 		// saves all one particle energies to reciever
 		void getAllEnergies(std::vector<std::vector<double>>& reciever);

@@ -2,8 +2,6 @@
 
 #include "HubbardCDW.hpp"
 
-using Eigen::MatrixXd;
-
 namespace Hubbard {
 	HubbardCDW::HubbardCDW(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: BasicHubbardModel(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
@@ -18,6 +16,6 @@ namespace Hubbard {
 		}
 		this->delta_eta = 0.01;
 
-		this->hamilton = MatrixXd::Zero(4, 4);
+		this->hamilton = matrixL::Zero(4, 4);
 	}
 }

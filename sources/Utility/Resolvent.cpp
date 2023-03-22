@@ -29,7 +29,7 @@ namespace Utility {
 		// First filling
 		std::vector<VectorXd> basisVectors;
 		VectorXd first = VectorXd::Zero(matrixSize); // corresponds to |q_0>
-		VectorXd second = this->startingState.real(); // corresponds to |q_1>
+		VectorXd second = this->startingState.real().cast<double>(); // corresponds to |q_1>
 		resolvent_data res;
 		res.b_i.push_back(second.dot(symplectic * second));
 
@@ -119,7 +119,7 @@ namespace Utility {
 		// First filling
 		std::vector<VectorXcd> basisVectors;
 		VectorXcd first = VectorXcd::Zero(matrixSize); // corresponds to |q_0>
-		VectorXcd second = this->startingState; // corresponds to |q_1>
+		VectorXcd second = this->startingState.cast<std::complex<double>>(); // corresponds to |q_1>
 		resolvent_data res;
 		auto norm_buffer = second.dot(symplectic * second);
 		assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
@@ -199,6 +199,95 @@ namespace Utility {
 		this->data.push_back(res);
 	}
 
+	void Resolvent::compute(const matrixL& toSolve, int maxIter, double errorMargin){
+		size_t matrixSize = toSolve.rows();
+		matrixL identity(matrixSize, matrixSize);
+		identity.setIdentity();
+
+		if (toSolve.rows() != toSolve.cols()) {
+			std::cerr << "Matrix is not square!" << std::endl;
+			throw;
+		}
+
+		vectorL currentSolution(matrixSize); // corresponds to |q_(i+1)>
+		// First filling
+		std::vector<vectorL> basisVectors;
+		vectorL first = vectorL::Zero(matrixSize); // corresponds to |q_0>
+		vectorL second = this->startingState.real(); // corresponds to |q_1>
+		resolvent_data res;
+		res.b_i.push_back(second.dot(second));
+
+		second /= sqrt(res.b_i.back());
+		basisVectors.push_back(first);
+		basisVectors.push_back(second);
+
+		std::vector<double> deltas, gammas;
+		gammas.push_back(1);
+
+		vectorL eigenDelta(1);
+		vectorL eigenGamma(1);
+
+		Eigen::SelfAdjointEigenSolver<matrixL> diagonalize;
+		vectorL diagonal; //stores the diagonal elements in a vector
+		double oldEigenValue = 0, newEigenValue = 0;
+		unsigned int position = 0;
+		long iterNum = 0;
+		bool goOn = true;
+		vectorL buffer;
+		while (goOn) {
+			// algorithm
+			buffer = toSolve * basisVectors.back();
+			deltas.push_back(basisVectors.back().dot(buffer));
+			currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
+			double norm_squared = currentSolution.dot(currentSolution);
+			assertm(norm_squared > 0, "Norm in loop is complex!");
+
+			gammas.push_back(sqrt(norm_squared));
+			basisVectors.push_back(currentSolution / gammas.back());
+			iterNum++;
+
+			// construct the tridiagonal matrix, diagonalize it and find the lowest eigenvalue
+			eigenDelta.conservativeResize(iterNum);
+			eigenGamma.conservativeResize(iterNum - 1);
+			eigenDelta(iterNum - 1) = deltas[iterNum - 1];
+			if (iterNum > 1) {
+				eigenGamma(iterNum - 2) = gammas[iterNum - 1];
+			}
+			diagonalize.computeFromTridiagonal(eigenDelta, eigenGamma, 0);
+			diagonal = diagonalize.eigenvalues().real();
+
+			if (diagonalize.eigenvalues().imag().norm() > 1e-8) {
+				std::cerr << "Atleast one eigenvalue is complex!" << std::endl;
+			}
+			position = findSmallestValue(diagonal);
+			newEigenValue = diagonal(position);
+
+			// breaking conditions
+			if (iterNum >= maxIter) {
+				goOn = false;
+			}
+			if (iterNum >= toSolve.rows()) {
+				goOn = false;
+			}
+			if (std::abs(gammas.back()) < 1e-7) {
+				goOn = false;
+			}
+			if (oldEigenValue != 0.0) {
+				if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
+					//goOn = false;
+					if(!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+				}
+			}
+			oldEigenValue = newEigenValue;
+		}
+		for (long i = 0; i < deltas.size(); i++)
+		{
+			res.a_i.push_back(deltas[i]);
+			res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
+		}
+		this->data.push_back(res);
+	}
+
 	void Resolvent::computeFromNM(const Eigen::MatrixXcd& toSolve, const Eigen::MatrixXcd& symplectic, const Eigen::MatrixXcd& N, int maxIter, double errorMargin)
 	{
 		auto matrixSize = toSolve.rows();
@@ -214,7 +303,7 @@ namespace Utility {
 		// First filling
 		std::vector<VectorXcd> basisVectors;
 		VectorXcd first = VectorXcd::Zero(matrixSize); // corresponds to |q_0>
-		VectorXcd second = this->startingState; // corresponds to |q_1>
+		VectorXcd second = this->startingState.cast<std::complex<double>>(); // corresponds to |q_1>
 		resolvent_data res;
 		auto norm_buffer = second.dot(symplectic * second);
 		assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");

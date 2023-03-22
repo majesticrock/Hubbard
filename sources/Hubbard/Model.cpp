@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES
 #define _NUM(momentum) (expecs[0](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
 #define _CDW(momentum) (expecs[1](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
 #define _SC(momentum) (expecs[2](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
@@ -17,7 +16,7 @@ namespace Hubbard {
 		chemical_potential = U / 2;
 	}
 
-	double Model::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
+	long double Model::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
 	{
 		const Eigen::Vector2i l_idx = { x(l), y(l) };
 		const Eigen::Vector2i k_idx = { x(k), y(k) };
@@ -35,8 +34,8 @@ namespace Hubbard {
 		}
 
 		auto compute_single_sum = [&]() -> double {
-			double sumBuffer = 0;
-			double returnBuffer = 0;
+			long double sumBuffer = 0;
+			long double returnBuffer = 0;
 			for (int q = 0; q < BASIS_SIZE; q++)
 			{
 				q_idx = { x(q), y(q) };
@@ -102,13 +101,13 @@ namespace Hubbard {
 
 	void Model::fill_M_N()
 	{
-		M = Eigen::MatrixXd::Zero(TOTAL_BASIS, TOTAL_BASIS);
-		N = Eigen::MatrixXd::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		M = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		N = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
 
 #pragma omp parallel for
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
-			double valueBuffer = 0;
+			long double valueBuffer = 0;
 			for (int j = 0; j < number_of_basis_terms; j++)
 			{
 				// fill N
@@ -262,15 +261,15 @@ namespace Hubbard {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
-		Eigen::MatrixXd rho = Eigen::MatrixXd::Zero(4, 4);
-		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver;
+		matrixL rho = matrixL::Zero(4, 4);
+		Eigen::SelfAdjointEigenSolver<matrixL> solver;
 
-		expecs = std::vector<Eigen::MatrixXd>(4, Eigen::MatrixXd::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
+		expecs = std::vector<matrixL>(4, matrixL::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 		{
 			for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 			{
-				fillHamiltonian((k * M_PI) / Constants::K_DISCRETIZATION, (l * M_PI) / Constants::K_DISCRETIZATION);
+				fillHamiltonian((k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION);
 				solver.compute(hamilton);
 				rho.fill(0);
 				for (int i = 0; i < 4; i++)
@@ -291,7 +290,7 @@ namespace Hubbard {
 		//{
 		//	for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 		//	{
-		//		double a = unperturbed_energy((k * M_PI) / Constants::K_DISCRETIZATION, (l * M_PI) / Constants::K_DISCRETIZATION)
+		//		double a = unperturbed_energy((k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION)
 		//			* expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
 		//		double b = (-U / (2 * BASIS_SIZE)) * sum_of_all[1]
 		//			* (1 - 2 * expecs[0](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION));
@@ -335,8 +334,8 @@ namespace Hubbard {
 			//std::cout << M(i, i) << std::endl;
 		}
 		//std::cout << M << std::endl;
-		M += 1e-12 * Eigen::MatrixXd::Identity(M.rows(), M.rows());
-		//N += 1e-12 * Eigen::MatrixXd::Identity(M.rows(), M.rows());
+		M += 1e-14 * matrixL::Identity(M.rows(), M.rows());
+		//N += 1e-12 * matrixL::Identity(M.rows(), M.rows());
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
@@ -387,38 +386,39 @@ namespace Hubbard {
 		}
 		begin = std::chrono::steady_clock::now();
 
-		//Eigen::LLT<Eigen::MatrixXd> llt_M(M);
-		//Eigen::GeneralizedSelfAdjointEigenSolver<Eigen::MatrixXd> gen_solver;
+		//Eigen::LLT<matrixL> llt_M(M);
+		//Eigen::GeneralizedSelfAdjointEigenSolver<matrixL> gen_solver;
 		//gen_solver.compute(N, M, false);
 
-		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> gen_solver;
-		//Eigen::MatrixXd l_matrix = llt_M.matrixL();
-		Eigen::MatrixXd inverse_llt_M = solver.operatorInverseSqrt();
-		Eigen::MatrixXd solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
+		Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
+		//matrixL l_matrix = llt_M.matrixL();
+		matrixL inverse_llt_M = solver.operatorInverseSqrt();
+		matrixL solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
 		gen_solver.compute(solver_matrix);
 
 		reciever.resize(1);
 
-		//Eigen::VectorXd ev = gen_solver.eigenvalues().real();
+		//vectorL ev = gen_solver.eigenvalues().real();
 		//reciever[0] = std::vector<double>(ev.data(), ev.data() + ev.size());
-		//std::sort(reciever.back().begin(), reciever.back().end());
+		//std::sort(reciever.front().begin(), reciever.front().end());
 
+		vectorL startingState = vectorL::Zero(M.rows());
+		for (size_t i = 0; i < BASIS_SIZE; i++)
 		{
-			Eigen::VectorXd state = Eigen::VectorXd::Zero(M.rows());
-			for (size_t i = 0; i < BASIS_SIZE; i++)
-			{
-				state(i) = 1;
-			}
-			state.normalize();
-			state = gen_solver.eigenvectors().transpose() * (inverse_llt_M * (N * state));
+			startingState(i) = 1;
+		}
+		startingState.normalize();
+		startingState = inverse_llt_M * (N * startingState);
+		{
+			vectorL state = gen_solver.eigenvectors().transpose() * startingState;
 
 			const double RANGE = 10;
-			const int STEPS = 10000;
+			const int STEPS = 15000;
 			for (double z = -RANGE; z < RANGE; z += ((2 * RANGE) / STEPS))
 			{
-				std::complex<double> z_tilde = std::complex<double>(1/z, 5e-2);
-				Eigen::VectorXcd diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
-				reciever[0].push_back(-(z_tilde * state.dot(diag.asDiagonal() * state)).imag());
+				std::complex<long double> z_tilde = std::complex<long double>(1/z, 5e-2);
+				Eigen::Vector<std::complex<long double>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
+				reciever[0].emplace_back(-(z_tilde * state.dot(diag.asDiagonal() * state)).imag());
 			}
 		}
 
@@ -427,18 +427,11 @@ namespace Hubbard {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
 		begin = std::chrono::steady_clock::now();
-		Eigen::VectorXd startingState = Eigen::VectorXd::Zero(M.rows());
-		for (size_t i = 0; i < BASIS_SIZE; i++)
-		{
-			startingState(i) = 1;
-		}
-		startingState.normalize();
-		startingState = inverse_llt_M * (N * startingState);
 
 		Utility::Resolvent R(startingState);
-		//Eigen::MatrixXd inverse_solve = M.inverse() * N;
+		//matrixL inverse_solve = M.inverse() * N;
 		//R.compute(inverse_solve, M, 200);
-		R.compute(solver_matrix, Eigen::MatrixXd::Identity(M.rows(), M.cols()), 200);
+		R.compute(solver_matrix, 200);
 		R.writeDataToFile("../../data/resolvent.txt");
 
 		end = std::chrono::steady_clock::now();
@@ -451,12 +444,12 @@ namespace Hubbard {
 	void Model::getEnergies(std::vector<std::vector<double>>& reciever, double direction)
 	{
 		reciever.reserve(2 * Constants::K_DISCRETIZATION);
-		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver;
+		Eigen::SelfAdjointEigenSolver<matrixL> solver;
 		double k_val = 0;
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 		{
-			k_val = k * M_PI / Constants::K_DISCRETIZATION;
-			fillHamiltonian(cos(M_PI * direction) * k_val, sin(M_PI * direction) * k_val);
+			k_val = k * L_PI / Constants::K_DISCRETIZATION;
+			fillHamiltonian(cos(L_PI * direction) * k_val, sin(L_PI * direction) * k_val);
 			solver.compute(hamilton, false);
 			reciever.push_back(std::vector<double>(solver.eigenvalues().data(), solver.eigenvalues().data() + solver.eigenvalues().size()));
 		}
@@ -465,15 +458,15 @@ namespace Hubbard {
 	void Model::getAllEnergies(std::vector<std::vector<double>>& reciever)
 	{
 		reciever.resize(4 * Constants::K_DISCRETIZATION, std::vector<double>(2 * Constants::K_DISCRETIZATION));
-		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> solver;
+		Eigen::SelfAdjointEigenSolver<matrixL> solver;
 		double k_val = 0;
 		double l_val = 0;
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 		{
-			k_val = k * M_PI / Constants::K_DISCRETIZATION;
+			k_val = k * L_PI / Constants::K_DISCRETIZATION;
 			for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 			{
-				l_val = l * M_PI / Constants::K_DISCRETIZATION;
+				l_val = l * L_PI / Constants::K_DISCRETIZATION;
 				fillHamiltonian(k_val, l_val);
 				solver.compute(hamilton, false);
 				reciever[k + Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(0);
