@@ -334,13 +334,13 @@ namespace Hubbard {
 			//std::cout << M(i, i) << std::endl;
 		}
 		//std::cout << M << std::endl;
-		M += 1e-14 * matrixL::Identity(M.rows(), M.rows());
+		M += 1e-12 * matrixL::Identity(M.rows(), M.rows());
 		//N += 1e-12 * matrixL::Identity(M.rows(), M.rows());
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
-
+		
 		{
 #pragma omp parallel for
 			for (size_t i = 0; i < M.rows(); i++)
@@ -384,24 +384,11 @@ namespace Hubbard {
 			std::cout << "Time for checking M and N: "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		}
+		
 		begin = std::chrono::steady_clock::now();
 
-		//Eigen::LLT<matrixL> llt_M(M);
-		//Eigen::GeneralizedSelfAdjointEigenSolver<matrixL> gen_solver;
-		//gen_solver.compute(N, M, false);
-
-		Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
-		//matrixL l_matrix = llt_M.matrixL();
 		matrixL inverse_llt_M = solver.operatorInverseSqrt();
 		matrixL solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
-		gen_solver.compute(solver_matrix);
-
-		reciever.resize(1);
-
-		//vectorL ev = gen_solver.eigenvalues().real();
-		//reciever[0] = std::vector<double>(ev.data(), ev.data() + ev.size());
-		//std::sort(reciever.front().begin(), reciever.front().end());
-
 		vectorL startingState = vectorL::Zero(M.rows());
 		for (size_t i = 0; i < BASIS_SIZE; i++)
 		{
@@ -409,6 +396,15 @@ namespace Hubbard {
 		}
 		startingState.normalize();
 		startingState = inverse_llt_M * (N * startingState);
+
+		
+		Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
+		gen_solver.compute(solver_matrix);
+		reciever.resize(1);
+		//vectorL ev = gen_solver.eigenvalues().real();
+		//reciever[0] = std::vector<double>(ev.data(), ev.data() + ev.size());
+		//std::sort(reciever.front().begin(), reciever.front().end());
+
 		{
 			vectorL state = gen_solver.eigenvectors().transpose() * startingState;
 
@@ -422,11 +418,11 @@ namespace Hubbard {
 			}
 		}
 
-		end = std::chrono::steady_clock::now();
-		std::cout << "Time for solving M and N: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-
-		begin = std::chrono::steady_clock::now();
+		//end = std::chrono::steady_clock::now();
+		//std::cout << "Time for solving M and N: "
+		//	<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+		//
+		//begin = std::chrono::steady_clock::now();
 
 		Utility::Resolvent R(startingState);
 		//matrixL inverse_solve = M.inverse() * N;
