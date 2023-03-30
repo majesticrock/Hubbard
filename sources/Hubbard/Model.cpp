@@ -390,7 +390,7 @@ namespace Hubbard {
 		matrixL inverse_llt_M = solver.operatorInverseSqrt();
 		matrixL solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
 		vectorL startingState = vectorL::Zero(M.rows());
-		for (size_t i = 0; i < BASIS_SIZE; i++)
+		for (size_t i = 0; i < 2 * BASIS_SIZE; i++)
 		{
 			startingState(i) = 1;
 		}
