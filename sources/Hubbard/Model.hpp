@@ -68,6 +68,9 @@ namespace Hubbard {
 		inline T unperturbed_energy(T k_x, T k_y) const {
 			return -2 * (cos(k_x) + cos(k_y));// - chemical_potential;
 		};
+		inline long double unperturbed_energy(size_t k) const {
+			return -2 * (cos(index_to_k_vector(x(k))) + cos(index_to_k_vector(y(k))));// - chemical_potential;
+		};
 		virtual void fillHamiltonian(double k_x, double k_y) = 0;
 
 		// Computes the respective x or y component from a given input index
