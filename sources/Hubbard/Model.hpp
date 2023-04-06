@@ -17,6 +17,8 @@ namespace Hubbard {
 
 	class Model
 	{
+	private:
+		void initializeParameters();
 	protected:
 		int BASIS_SIZE;
 		int TOTAL_BASIS;
@@ -66,7 +68,7 @@ namespace Hubbard {
 		};
 		template <typename T>
 		inline T unperturbed_energy(T k_x, T k_y) const {
-			return -2 * (cos(k_x) + cos(k_y));// - chemical_potential;
+			return -2 * (cos(k_x) + cos(k_y));
 		};
 		inline long double unperturbed_energy(size_t k) const {
 			return -2 * (cos(index_to_k_vector(x(k))) + cos(index_to_k_vector(y(k))));// - chemical_potential;
@@ -133,7 +135,8 @@ namespace Hubbard {
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
 		long double computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
-		virtual void fill_M_N();
+		void fill_M_N();
+		void fill_M_N_xp_basis();
 	public:
 		class ModelParameters {
 		private:
