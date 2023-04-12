@@ -1,8 +1,3 @@
-#define _NUM(momentum) (expecs[0](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
-#define _CDW(momentum) (expecs[1](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
-#define _SC(momentum) (expecs[2](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
-#define _ETA(momentum) (expecs[3](x(momentum) + Constants::K_DISCRETIZATION, y(momentum) + Constants::K_DISCRETIZATION))
-
 #include "Model.hpp"
 #include <iostream>
 #include <iomanip>
@@ -179,7 +174,7 @@ namespace Hubbard {
 
 	void Model::fill_M_N_xp_basis()
 	{
-		const std::vector<int> cdw_basis_positions = { 2,3,6,7 };
+		const std::vector<int> cdw_basis_positions = { 2,3,8,9 };
 
 		M = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
 		N = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
@@ -327,6 +322,7 @@ namespace Hubbard {
 		wicks_M.resize(number_of_basis_terms * number_of_basis_terms);
 		wicks_N.resize(number_of_basis_terms * number_of_basis_terms);
 		const int name_offset = (start_basis_at < 0) ? 0 : start_basis_at;
+
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
 			for (int j = 0; j < number_of_basis_terms; j++)
@@ -351,7 +347,7 @@ namespace Hubbard {
 		}
 	}
 
-	std::unique_ptr<Utility::Resolvent> Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
+	std::unique_ptr<Utility::Resolvent<long double>> Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
 		std::cout << "Gap values:  " << delta_cdw << "  " << delta_sc << "  " << delta_eta << std::endl;
 		//Constants::K_DISCRETIZATION *= 2;
@@ -410,15 +406,6 @@ namespace Hubbard {
 				}
 			}
 		}
-		reciever.resize(M.rows(), std::vector<double>(M.cols()));
-		for (int i = 0; i < M.rows(); i++) {
-			for (int j = 0; j < M.cols(); j++) {
-				reciever[i][j] = M(i, j);
-			}
-		}
-		return nullptr;
-		//std::cout << M << std::endl;
-		//std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		M += 1e-13 * matrixL::Identity(M.rows(), M.rows());
 		//N += 1e-12 * matrixL::Identity(M.rows(), M.rows());
 		end = std::chrono::steady_clock::now();
@@ -426,6 +413,7 @@ namespace Hubbard {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
+/**/
 		{
 #pragma omp parallel for
 			for (size_t i = 0; i < M.rows(); i++)
@@ -465,16 +453,15 @@ namespace Hubbard {
 			std::cout << "Total count of singular eigenvalues of M: " << singular << std::endl;
 			end = std::chrono::steady_clock::now();
 
-			/*
-			Eigen::FullPivLU<matrixL> lu_M(M);
-			Eigen::FullPivLU<matrixL> lu_N(N);
-			lu_M.setThreshold(1e-9);
-			lu_N.setThreshold(1e-9);
-			matrixL kernel_M = lu_M.kernel();
-			matrixL kernel_N = lu_N.kernel();
-			std::cout << "Dimensions:\t\tM = " << lu_M.dimensionOfKernel() << "    N = " << lu_N.dimensionOfKernel() << std::endl;
-			vectorL test;
-
+			//Eigen::FullPivLU<matrixL> lu_M(M);
+			//Eigen::FullPivLU<matrixL> lu_N(N);
+			//lu_M.setThreshold(1e-9);
+			//lu_N.setThreshold(1e-9);
+			//matrixL kernel_M = lu_M.kernel();
+			//matrixL kernel_N = lu_N.kernel();
+			//std::cout << "Dimensions:\t\tM = " << lu_M.dimensionOfKernel() << "    N = " << lu_N.dimensionOfKernel() << std::endl;
+			//vectorL test;
+			//
 			//for (size_t i = 0; i < kernel_N.cols(); i++)
 			//{
 			//	std::cout << "\n\ni=" << i << "\n";
@@ -510,7 +497,7 @@ namespace Hubbard {
 			//	std::cout << "Rank: " << test_lu.rank() << std::endl;
 			//}
 			//std::cout << kernel_M.rows() << "\t" << kernel_M.cols() << "\n\n\n" << kernel_N.rows() << "\t" << kernel_N.cols() << std::endl;
-			*/
+			
 			std::cout << "Time for checking M and N: "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		}
@@ -519,23 +506,32 @@ namespace Hubbard {
 
 		matrixL inverse_llt_M = solver.operatorInverseSqrt();
 		matrixL solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
-		vectorL startingState = vectorL::Zero(M.rows());
+		vectorL startingState = vectorL::Zero(N.rows());
 		for (size_t i = 0; i < BASIS_SIZE; i++)
 		{
-			startingState(i) = 1;
+			startingState(5 * BASIS_SIZE + i) = 1;
 			//startingState(i + BASIS_SIZE) = -1;
 		}
 		startingState.normalize();
-		startingState = inverse_llt_M * (N * startingState);
+		//matrixL N_new;
+		//matrixL M_new;
+		//{
+		//	matrixL L = N.block(0, 5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE);
+		//	matrixL K_plus = M.block(0, 0, 5 * BASIS_SIZE, 5 * BASIS_SIZE);
+		//	matrixL K_minus = M.block(5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE, 3 * BASIS_SIZE);
+		//	N_new = L * K_minus.inverse() * L.transpose();
+		//	M_new = N_new.inverse() * K_plus;
+		//	startingState = L * startingState;
+		//}
 
-		
-		Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
+		startingState = inverse_llt_M * (N * startingState);
+		/*Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
 		gen_solver.compute(solver_matrix);
 		reciever.resize(1);
 		vectorL ev = gen_solver.eigenvalues().real();
 		reciever[0] = std::vector<double>(ev.data(), ev.data() + ev.size());
 		std::sort(reciever.front().begin(), reciever.front().end());
-		/**//*
+		*//*
 		{
 			vectorL state = gen_solver.eigenvectors().transpose() * startingState;
 
@@ -547,21 +543,20 @@ namespace Hubbard {
 				Eigen::Vector<std::complex<long double>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
 				reciever[0].emplace_back(-(z_tilde * state.dot(diag.asDiagonal() * state)).imag());
 			}
-		}*/
+		}
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for solving M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-		
-		begin = std::chrono::steady_clock::now();
+		begin = std::chrono::steady_clock::now();*/
 
-		Utility::Resolvent R(startingState);
+		Utility::Resolvent<long double> R(startingState);
 		R.compute(solver_matrix, 200);
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for resolvent: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-		return std::make_unique<Utility::Resolvent>(R);
+		return std::make_unique<Utility::Resolvent<long double>>(R);
 	}
 
 	void Model::getEnergies(std::vector<std::vector<double>>& reciever, double direction)

@@ -182,7 +182,7 @@ int main(int argc, char** argv)
 		std::vector<std::vector<data_vector>> oneParticleEnergies(FIRST_IT_STEPS);
 		std::vector<double> param(FIRST_IT_STEPS);
 		std::vector<double> totalGapValues(FIRST_IT_STEPS);
-		std::unique_ptr<Utility::Resolvent> R;
+		std::unique_ptr<Utility::Resolvent<long double>> R;
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
 		{
 			std::unique_ptr<Hubbard::Model> model;
