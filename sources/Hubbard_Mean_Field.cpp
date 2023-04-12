@@ -217,7 +217,13 @@ int main(int argc, char** argv)
 				stream << std::fixed << std::setprecision(2) << param[i];
 				comments.push_back("Total Gap=" + std::to_string(totalGapValues[i]));
 				Utility::saveData(reciever[i], "../../data/" + output_folder + stream.str() + ".txt", comments);
-				R->writeDataToFile("../../data/" + output_folder + stream.str() + "_resolvent.txt");
+				if (R) {
+					R->writeDataToFile("../../data/" + output_folder + stream.str() + "_resolvent.txt");
+				}
+				else {
+					std::cout << "Resolvent returned a null pointer." << std::endl;
+				}
+				
 				comments.pop_back();
 				Utility::saveData(oneParticleEnergies[i], "../../data/" + output_folder + stream.str() + "_one_particle.txt", comments);
 			}

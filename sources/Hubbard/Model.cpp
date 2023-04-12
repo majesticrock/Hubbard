@@ -410,6 +410,13 @@ namespace Hubbard {
 				}
 			}
 		}
+		reciever.resize(M.rows(), std::vector<double>(M.cols()));
+		for (int i = 0; i < M.rows(); i++) {
+			for (int j = 0; j < M.cols(); j++) {
+				reciever[i][j] = M(i, j);
+			}
+		}
+		return nullptr;
 		//std::cout << M << std::endl;
 		//std::this_thread::sleep_for(std::chrono::milliseconds(500));
 		M += 1e-13 * matrixL::Identity(M.rows(), M.rows());
