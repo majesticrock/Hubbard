@@ -406,7 +406,16 @@ namespace Hubbard {
 				}
 			}
 		}
-		M += 1e-13 * matrixL::Identity(M.rows(), M.rows());
+		for (size_t i = 0; i < N.rows(); i++)
+		{
+			for (size_t j = 0; j < N.cols(); j++)
+			{
+				if (std::abs(N(i, j)) < 1e-13) {
+					N(i, j) = 0;
+				}
+			}
+		}
+		M += 1e-12 * matrixL::Identity(M.rows(), M.rows());
 		//N += 1e-12 * matrixL::Identity(M.rows(), M.rows());
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
@@ -504,27 +513,27 @@ namespace Hubbard {
 
 		begin = std::chrono::steady_clock::now();
 
-		matrixL inverse_llt_M = solver.operatorInverseSqrt();
-		matrixL solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
-		vectorL startingState = vectorL::Zero(N.rows());
+		//matrixL inverse_llt_M = solver.operatorInverseSqrt();
+		//matrixL solver_matrix = inverse_llt_M * N * inverse_llt_M.transpose();
+		vectorL startingState = vectorL::Zero(3 * BASIS_SIZE);
 		for (size_t i = 0; i < BASIS_SIZE; i++)
 		{
-			startingState(5 * BASIS_SIZE + i) = 1;
+			startingState(i) = 1;
 			//startingState(i + BASIS_SIZE) = -1;
 		}
 		startingState.normalize();
-		//matrixL N_new;
-		//matrixL M_new;
-		//{
-		//	matrixL L = N.block(0, 5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE);
-		//	matrixL K_plus = M.block(0, 0, 5 * BASIS_SIZE, 5 * BASIS_SIZE);
-		//	matrixL K_minus = M.block(5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE, 3 * BASIS_SIZE);
-		//	N_new = L * K_minus.inverse() * L.transpose();
-		//	M_new = N_new.inverse() * K_plus;
-		//	startingState = L * startingState;
-		//}
+		matrixL N_new;
+		matrixL M_new;
+		{
+			matrixL L = N.block(0, 5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE);
+			matrixL K_plus = M.block(0, 0, 5 * BASIS_SIZE, 5 * BASIS_SIZE);
+			matrixL K_minus = M.block(5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE, 3 * BASIS_SIZE);
+			N_new = L * K_minus.inverse() * L.transpose();
+			M_new = N_new.inverse() * K_plus;
+			startingState = L * startingState;
+		}
 
-		startingState = inverse_llt_M * (N * startingState);
+		//startingState = inverse_llt_M * (N * startingState);
 		/*Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
 		gen_solver.compute(solver_matrix);
 		reciever.resize(1);
@@ -550,7 +559,18 @@ namespace Hubbard {
 		begin = std::chrono::steady_clock::now();*/
 
 		Utility::Resolvent<long double> R(startingState);
-		R.compute(solver_matrix, 200);
+		
+		solver.compute(N_new);
+		for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+		{
+			if (solver.eigenvalues()(i) < 0) {
+				if (solver.eigenvalues()(i) == 0.0 || solver.eigenvalues()(i) == -0.0) continue;
+				std::cout << std::scientific << std::setprecision(12) << solver.eigenvalues()(i) << std::endl;
+			}
+		}
+		N_new += 1e-6 * matrixL::Identity(N_new.rows(), N_new.rows());
+
+		R.compute(M_new, N_new, 200);
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for resolvent: "
