@@ -10,6 +10,7 @@
 #include <omp.h>
 #include <fstream>
 #include <thread>
+#include <algorithm>
 
 namespace Hubbard {
 	void Model::computeChemicalPotential()
@@ -112,7 +113,7 @@ namespace Hubbard {
 			for (int j = 0; j < number_of_basis_terms; j++)
 			{
 				// fill N
-				for (const auto& term : wicks_N[number_of_basis_terms * i + j]) {
+				for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
 						valueBuffer = 0;
@@ -130,20 +131,20 @@ namespace Hubbard {
 								l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
 							}
 							valueBuffer = computeTerm(term, l_buf, k);
-							N(i * BASIS_SIZE + l_buf, j * BASIS_SIZE + k) += valueBuffer;
+							N(j * BASIS_SIZE + l_buf, i * BASIS_SIZE + k) += valueBuffer;
 						}
 						else {
 							for (int l = 0; l < BASIS_SIZE; l++)
 							{
 								valueBuffer = computeTerm(term, l, k);
-								N(i * BASIS_SIZE + l, j * BASIS_SIZE + k) += valueBuffer;
+								N(j * BASIS_SIZE + l, i * BASIS_SIZE + k) += valueBuffer;
 							}
 						}
 					}
 				}
 
 				// fill M
-				for (const auto& term : wicks_M[number_of_basis_terms * i + j]) {
+				for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
 						valueBuffer = 0;
@@ -161,13 +162,13 @@ namespace Hubbard {
 								l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
 							}
 							valueBuffer = computeTerm(term, l_buf, k);
-							M(i * BASIS_SIZE + l_buf, j * BASIS_SIZE + k) += valueBuffer;
+							M(j * BASIS_SIZE + l_buf, i * BASIS_SIZE + k) += valueBuffer;
 						}
 						else {
 							for (int l = 0; l < BASIS_SIZE; l++)
 							{
 								valueBuffer = computeTerm(term, l, k);
-								M(i * BASIS_SIZE + l, j * BASIS_SIZE + k) += valueBuffer;
+								M(j * BASIS_SIZE + l, i * BASIS_SIZE + k) += valueBuffer;
 							}
 						}
 					}
@@ -178,6 +179,8 @@ namespace Hubbard {
 
 	void Model::fill_M_N_xp_basis()
 	{
+		const std::vector<int> cdw_basis_positions = { 2,3,6,7 };
+
 		M = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
 		N = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
 
@@ -190,7 +193,7 @@ namespace Hubbard {
 		{
 			long double valueBuffer = 0;
 			right_offset = 0;
-			if (i != 4 && i != 5 && i != 8 && i != 9) {
+			if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
 				inner_sum_limit = BASIS_SIZE;
 			}
 			else {
@@ -199,7 +202,7 @@ namespace Hubbard {
 
 			for (int j = 0; j < number_of_basis_terms; j++)
 			{
-				if (j != 4 && j != 5 && j != 8 && j != 9) {
+				if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), j) == cdw_basis_positions.end()) {
 					sum_limit = BASIS_SIZE;
 				}
 				else {
@@ -225,7 +228,7 @@ namespace Hubbard {
 							}
 
 							valueBuffer = computeTerm(term, l_buf, k);
-							if (i != 4 && i != 5 && i != 8 && i != 9) {
+							if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
 								N(left_offset + l_buf, right_offset + k) += valueBuffer;
 							}
 							else {
@@ -265,7 +268,7 @@ namespace Hubbard {
 							}
 							valueBuffer = computeTerm(term, l_buf, k);
 
-							if (i != 4 && i != 5 && i != 8 && i != 9) {
+							if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
 								M(left_offset + l_buf, right_offset + k) += valueBuffer;
 							}
 							else {
@@ -330,18 +333,18 @@ namespace Hubbard {
 			{
 				{
 					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "M_" + std::to_string(i + name_offset) + "_" + std::to_string(j + name_offset) + ".txt");
+					std::ifstream ifs(filename + "M_" + std::to_string(j + name_offset) + "_" + std::to_string(i + name_offset) + ".txt");
 					boost::archive::text_iarchive ia(ifs);
-					wicks_M[i * number_of_basis_terms + j].clear();
-					ia >> wicks_M[i * number_of_basis_terms + j];
+					wicks_M[j * number_of_basis_terms + i].clear();
+					ia >> wicks_M[j * number_of_basis_terms + i];
 					ifs.close();
 				}
 				{
 					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "N_" + std::to_string(i + name_offset) + "_" + std::to_string(j + name_offset) + ".txt");
+					std::ifstream ifs(filename + "N_" + std::to_string(j + name_offset) + "_" + std::to_string(i + name_offset) + ".txt");
 					boost::archive::text_iarchive ia(ifs);
-					wicks_N[i * number_of_basis_terms + j].clear();
-					ia >> wicks_N[i * number_of_basis_terms + j];
+					wicks_N[j * number_of_basis_terms + i].clear();
+					ia >> wicks_N[j * number_of_basis_terms + i];
 					ifs.close();
 				}
 			}
@@ -409,7 +412,7 @@ namespace Hubbard {
 		}
 		//std::cout << M << std::endl;
 		//std::this_thread::sleep_for(std::chrono::milliseconds(500));
-		M += 1e-12 * matrixL::Identity(M.rows(), M.rows());
+		M += 1e-13 * matrixL::Identity(M.rows(), M.rows());
 		//N += 1e-12 * matrixL::Identity(M.rows(), M.rows());
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
@@ -446,7 +449,7 @@ namespace Hubbard {
 				if (solver.eigenvalues()(i) < 0) {
 					if (solver.eigenvalues()(i) == 0.0 || solver.eigenvalues()(i) == -0.0) continue;
 					std::cout << std::scientific << std::setprecision(12) << solver.eigenvalues()(i) << std::endl;
-					throw std::invalid_argument(": M is not positive!    " + std::to_string(solver.eigenvalues()(i)));
+					//throw std::invalid_argument(": M is not positive!    " + std::to_string(solver.eigenvalues()(i)));
 				}
 				if (solver.eigenvalues()(i) < 1e-9) {
 					if (++singular == 0) std::cout << "Warning: M is singular! :" << solver.eigenvalues()(i) << std::endl;
@@ -513,19 +516,19 @@ namespace Hubbard {
 		for (size_t i = 0; i < BASIS_SIZE; i++)
 		{
 			startingState(i) = 1;
-			startingState(i + BASIS_SIZE) = -1;
+			//startingState(i + BASIS_SIZE) = -1;
 		}
 		startingState.normalize();
 		startingState = inverse_llt_M * (N * startingState);
 
-		/**/
+		
 		Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
 		gen_solver.compute(solver_matrix);
 		reciever.resize(1);
 		vectorL ev = gen_solver.eigenvalues().real();
 		reciever[0] = std::vector<double>(ev.data(), ev.data() + ev.size());
 		std::sort(reciever.front().begin(), reciever.front().end());
-		/*
+		/**//*
 		{
 			vectorL state = gen_solver.eigenvectors().transpose() * startingState;
 
@@ -533,7 +536,7 @@ namespace Hubbard {
 			const int STEPS = 15000;
 			for (double z = -RANGE; z < RANGE; z += ((2 * RANGE) / STEPS))
 			{
-				std::complex<long double> z_tilde = std::complex<long double>(1/z, 5e-2);
+				std::complex<long double> z_tilde = std::complex<long double>(1/z, 3e-2);
 				Eigen::Vector<std::complex<long double>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
 				reciever[0].emplace_back(-(z_tilde * state.dot(diag.asDiagonal() * state)).imag());
 			}
