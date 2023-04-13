@@ -5,7 +5,6 @@
 #include <iomanip>
 #include "BasicHubbardModel.hpp"
 
-
 namespace Hubbard {
 	void BasicHubbardModel::fillHamiltonian(double k_x, double k_y)
 	{

@@ -13,7 +13,7 @@ namespace Hubbard {
 		double cos_occupation;
 		double cos_occupation_old;
 	protected:
-		long double V;
+		double_prec V;
 
 		virtual void computeChemicalPotential() override;
 		virtual void fillHamiltonian(double k_x, double k_y) override;
@@ -28,7 +28,7 @@ namespace Hubbard {
 			this->cos_occupation *= ((-V) / (16 * BASIS_SIZE));
 			this->cos_occupation_old = cos_occupation;
 		};
-		virtual inline long double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {
+		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {
 			if (coeff.name == "\\tilde{V}") {
 				//if (!(momentum.has_value())) throw std::invalid_argument("Calling V without specifying a momentum!");
 				// Eventuell ein Faktor 2?

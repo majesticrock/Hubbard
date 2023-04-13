@@ -90,7 +90,7 @@ namespace Utility {
 				deltas.push_back(basisVectors.back().dot(symplectic * buffer));
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 				T norm_squared = currentSolution.dot(symplectic * currentSolution);
-				assertm(norm_squared > 0, "Norm in loop is complex!");
+				assertm(norm_squared > 0, ("Norm in loop is complex!" + std::to_string(norm_squared)));
 
 				gammas.push_back(sqrt(norm_squared));
 				basisVectors.push_back(currentSolution / gammas.back());
@@ -125,7 +125,7 @@ namespace Utility {
 				if (oldEigenValue != 0.0) {
 					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
-						if(!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 					}
 				}
 				oldEigenValue = newEigenValue;
@@ -221,7 +221,7 @@ namespace Utility {
 				if (oldEigenValue != 0.0) {
 					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
-						if(!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 					}
 				}
 				oldEigenValue = newEigenValue;
@@ -277,7 +277,7 @@ namespace Utility {
 				deltas.push_back(basisVectors.back().dot(buffer));
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 				T norm_squared = currentSolution.dot(currentSolution);
-				assertm(norm_squared > 0, "Norm in loop is complex!");
+				assertm(norm_squared > 0, ("Norm in loop is complex!" + std::to_string(norm_squared)));
 
 				gammas.push_back(sqrt(norm_squared));
 				basisVectors.push_back(currentSolution / gammas.back());
@@ -312,7 +312,7 @@ namespace Utility {
 				if (oldEigenValue != 0.0) {
 					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
-						if(!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 					}
 				}
 				oldEigenValue = newEigenValue;
@@ -408,7 +408,7 @@ namespace Utility {
 				if (oldEigenValue != 0.0) {
 					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
-						if(!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 					}
 				}
 				oldEigenValue = newEigenValue;
