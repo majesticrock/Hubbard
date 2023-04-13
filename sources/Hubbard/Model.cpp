@@ -456,13 +456,12 @@ namespace Hubbard {
 
 			solver.compute(M);
 			int singular = 0;
-			//auto m_ev = solver.eigenvalues();
 			for (size_t i = 0; i < solver.eigenvalues().size(); i++)
 			{
 				if (solver.eigenvalues()(i) < 0) {
 					if (solver.eigenvalues()(i) == 0.0 || solver.eigenvalues()(i) == -0.0) continue;
 					std::cout << std::scientific << std::setprecision(12) << solver.eigenvalues()(i) << std::endl;
-					//throw std::invalid_argument(": M is not positive!    " + std::to_string(solver.eigenvalues()(i)));
+					throw std::invalid_argument(": M is not positive!    " + std::to_string(solver.eigenvalues()(i)));
 				}
 				if (solver.eigenvalues()(i) < 1e-9) {
 					if (++singular == 0) std::cout << "Warning: M is singular! :" << solver.eigenvalues()(i) << std::endl;
@@ -470,56 +469,47 @@ namespace Hubbard {
 			}
 			std::cout << "Total count of singular eigenvalues of M: " << singular << std::endl;
 			end = std::chrono::steady_clock::now();
-
-			//Eigen::FullPivLU<matrixL> lu_M(M);
-			//Eigen::FullPivLU<matrixL> lu_N(N);
-			//lu_M.setThreshold(1e-9);
-			//lu_N.setThreshold(1e-9);
-			//matrixL kernel_M = lu_M.kernel();
-			//matrixL kernel_N = lu_N.kernel();
-			//std::cout << "Dimensions:\t\tM = " << lu_M.dimensionOfKernel() << "    N = " << lu_N.dimensionOfKernel() << std::endl;
-			//vectorL test;
-			//
-			//for (size_t i = 0; i < kernel_N.cols(); i++)
-			//{
-			//	std::cout << "\n\ni=" << i << "\n";
-			//	for (size_t n = 0; n < 8; n++)
-			//	{
-			//		for (size_t k = 0; k < BASIS_SIZE; k++)
-			//		{
-			//			std::cout << unperturbed_energy(k) << "\t"
-			//				<< (std::abs(kernel_N.col(i)(n*BASIS_SIZE + k)) > 1e-8 ? kernel_N.col(i)(n * BASIS_SIZE + k) : 0) << std::endl;
-			//		}
-			//	}
-			//	test = M * kernel_N.col(i);
-			//	if (test.norm() > 1e-8) {
-			//		std::cout << test.norm() << " kern(N) is not wholly within kern(M)" << std::endl;
-			//	}
-			//}
-			//std::vector<size_t> outsiders;
-			//for (size_t i = 0; i < kernel_M.cols(); i++)
-			//{
-			//	test = N * kernel_M.col(i);
-			//	if (test.norm() > 1e-8) {
-			//		std::cout << test.norm() << " kern(M) is not wholly within kern(N)" << std::endl;
-			//		outsiders.push_back(i);
-			//	}
-			//}
-			//for (size_t i = 0; i < outsiders.size(); i++)
-			//{
-			//	matrixL tester(N.rows(), outsiders.size() + 1);
-			//	tester << kernel_M.col(outsiders[0]), kernel_M.col(outsiders[1]),
-			//		N * kernel_M.col(i);
-			//
-			//	Eigen::FullPivLU<matrixL> test_lu(tester);
-			//	std::cout << "Rank: " << test_lu.rank() << std::endl;
-			//}
-			//std::cout << kernel_M.rows() << "\t" << kernel_M.cols() << "\n\n\n" << kernel_N.rows() << "\t" << kernel_N.cols() << std::endl;
+			/*
+			Eigen::FullPivLU<matrixL> lu_M(M);
+			Eigen::FullPivLU<matrixL> lu_N(N);
+			lu_M.setThreshold(1e-9);
+			lu_N.setThreshold(1e-9);
+			matrixL kernel_M = lu_M.kernel();
+			matrixL kernel_N = lu_N.kernel();
+			std::cout << "Dimensions:\t\tM = " << lu_M.dimensionOfKernel() << "    N = " << lu_N.dimensionOfKernel() << std::endl;
+			vectorL test;
 			
+			for (size_t i = 0; i < kernel_N.cols(); i++)
+			{
+				test = M * kernel_N.col(i);
+				if (test.norm() > 1e-8) {
+					std::cout << test.norm() << " kern(N) is not wholly within kern(M)" << std::endl;
+				}
+			}
+			std::vector<size_t> outsiders;
+			for (size_t i = 0; i < kernel_M.cols(); i++)
+			{
+				test = N * kernel_M.col(i);
+				if (test.norm() > 1e-8) {
+					std::cout << test.norm() << " kern(M) is not wholly within kern(N)" << std::endl;
+					outsiders.push_back(i);
+				}
+			}
+			for (size_t i = 0; i < outsiders.size(); i++)
+			{
+				matrixL tester(N.rows(), outsiders.size() + 1);
+				tester << kernel_M.col(outsiders[0]), kernel_M.col(outsiders[1]),
+					N * kernel_M.col(i);
+			
+				Eigen::FullPivLU<matrixL> test_lu(tester);
+				std::cout << "Rank: " << test_lu.rank() << std::endl;
+			}
+			std::cout << kernel_M.rows() << "\t" << kernel_M.cols() << "\n\n\n" << kernel_N.rows() << "\t" << kernel_N.cols() << std::endl;
+			*/
 			std::cout << "Time for checking M and N: "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		}
-		return nullptr;
+		//return nullptr;
 		begin = std::chrono::steady_clock::now();
 
 		//matrixL inverse_llt_M = solver.operatorInverseSqrt();
@@ -540,6 +530,16 @@ namespace Hubbard {
 			N_new = L * K_minus.inverse() * L.transpose();
 			M_new = N_new.inverse() * K_plus;
 			startingState = L * startingState;
+
+			solver.compute(K_minus.inverse());
+			for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+			{
+				if (solver.eigenvalues()(i) < 0) {
+					if (solver.eigenvalues()(i) == 0.0 || solver.eigenvalues()(i) == -0.0) continue;
+					std::cout << std::scientific << std::setprecision(12) << solver.eigenvalues()(i) << std::endl;
+				}
+			}
+			N_new += 1e-6 * matrixL::Identity(N_new.rows(), N_new.rows());
 		}
 
 		//startingState = inverse_llt_M * (N * startingState);
@@ -569,16 +569,6 @@ namespace Hubbard {
 
 		Utility::Resolvent<long double> R(startingState);
 		
-		solver.compute(N_new);
-		for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-		{
-			if (solver.eigenvalues()(i) < 0) {
-				if (solver.eigenvalues()(i) == 0.0 || solver.eigenvalues()(i) == -0.0) continue;
-				std::cout << std::scientific << std::setprecision(12) << solver.eigenvalues()(i) << std::endl;
-			}
-		}
-		N_new += 1e-6 * matrixL::Identity(N_new.rows(), N_new.rows());
-
 		R.compute(M_new, N_new, 200);
 
 		end = std::chrono::steady_clock::now();
