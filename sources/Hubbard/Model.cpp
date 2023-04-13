@@ -415,6 +415,16 @@ namespace Hubbard {
 				}
 			}
 		}
+		reciever.resize(M.rows(), std::vector<double>(M.rows()));
+		for (size_t i = 0; i < M.rows(); i++)
+		{
+			for (size_t j = 0; j < M.rows(); j++)
+			{
+				reciever[i][j] = M(i, j);
+			}
+		}
+
+		
 		M += 1e-12 * matrixL::Identity(M.rows(), M.rows());
 		//N += 1e-12 * matrixL::Identity(M.rows(), M.rows());
 		end = std::chrono::steady_clock::now();
@@ -422,7 +432,6 @@ namespace Hubbard {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
-/**/
 		{
 #pragma omp parallel for
 			for (size_t i = 0; i < M.rows(); i++)
@@ -510,7 +519,7 @@ namespace Hubbard {
 			std::cout << "Time for checking M and N: "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		}
-
+		return nullptr;
 		begin = std::chrono::steady_clock::now();
 
 		//matrixL inverse_llt_M = solver.operatorInverseSqrt();
