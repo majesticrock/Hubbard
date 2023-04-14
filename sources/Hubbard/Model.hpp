@@ -50,6 +50,7 @@ namespace Hubbard {
 		double_prec sum_of_all[4] = { 0, 0, 0, 0 };
 
 		matrixL M, N;
+		matrixL K_plus, K_minus, L;
 		int number_of_basis_terms;
 		int start_basis_at;
 

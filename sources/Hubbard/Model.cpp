@@ -9,7 +9,7 @@
 #include <Eigen/SVD>
 
 namespace Hubbard {
-	constexpr double SQRT_SALT = 1e-5;
+	constexpr double SQRT_SALT = 1e-6;
 	constexpr double SALT = SQRT_SALT * SQRT_SALT;
 
 	void Model::computeChemicalPotential()
@@ -179,23 +179,25 @@ namespace Hubbard {
 	void Model::fill_M_N_xp_basis()
 	{
 		const std::vector<int> cdw_basis_positions = { 2,3,8,9 };
-		const size_t offsets[10] = {
+		const size_t hermitian_offsets[6] = {
 			0,									BASIS_SIZE,
 			(3 * BASIS_SIZE) / 2,				2 * BASIS_SIZE,
-			3 * BASIS_SIZE,						4 * BASIS_SIZE,
-			5 * BASIS_SIZE,						6 * BASIS_SIZE,
-			6 * BASIS_SIZE + (BASIS_SIZE / 2),	7 * BASIS_SIZE
+			3 * BASIS_SIZE,						4 * BASIS_SIZE
+		};
+		const size_t antihermitian_offsets[4] = {
+			0,						BASIS_SIZE,
+			(3 * BASIS_SIZE) / 2,	2 * BASIS_SIZE
 		};
 
-		M = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
-		N = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		K_plus = matrixL::Zero(5 * BASIS_SIZE, 5 * BASIS_SIZE);
+		K_minus = matrixL::Zero(3 * BASIS_SIZE, 3 * BASIS_SIZE);
+		L = matrixL::Zero(5 * BASIS_SIZE, 3 * BASIS_SIZE);
 
 #pragma omp parallel for
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
 			size_t sum_limit = BASIS_SIZE;
 			size_t inner_sum_limit = BASIS_SIZE;
-			double_prec valueBuffer = 0;
 			if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
 				inner_sum_limit = BASIS_SIZE;
 			}
@@ -211,51 +213,54 @@ namespace Hubbard {
 				else {
 					sum_limit = BASIS_SIZE / 2;
 				}
-				// fill N
-				for (const auto& term : wicks_N[number_of_basis_terms * i + j]) {
-					for (int k = 0; k < sum_limit; k++)
-					{
-						valueBuffer = 0;
-						if (term.delta_momenta.size() > 0) {
-							if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
-							if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
-							if (term.delta_momenta[0].second.momentum_list.size() != 1) throw std::invalid_argument("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size());
 
-							int l_buf = k;
-							if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
-								Eigen::Vector2i l_buf_vec = { x(k), y(k) };
-								l_buf_vec(0) += Constants::K_DISCRETIZATION;
-								l_buf_vec(1) += Constants::K_DISCRETIZATION;
-								clean_factor_2pi(l_buf_vec);
-								l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
-							}
+				// L
+				if (i < 6 && j > 5) {
+					for (const auto& term : wicks_N[number_of_basis_terms * i + j]) {
+						for (int k = 0; k < sum_limit; k++)
+						{
+							if (term.delta_momenta.size() > 0) {
+								if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
+								if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
+								if (term.delta_momenta[0].second.momentum_list.size() != 1) throw std::invalid_argument("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size());
 
-							valueBuffer = computeTerm(term, l_buf, k);
-							if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
-								N(offsets[i] + l_buf, offsets[j] + k) += valueBuffer;
+								int l_buf = k;
+								if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
+									Eigen::Vector2i l_buf_vec = { x(k), y(k) };
+									l_buf_vec(0) += Constants::K_DISCRETIZATION;
+									l_buf_vec(1) += Constants::K_DISCRETIZATION;
+									clean_factor_2pi(l_buf_vec);
+									l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
+								}
+
+								if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
+									L(hermitian_offsets[i] + l_buf, antihermitian_offsets[j - 6] + k) += computeTerm(term, l_buf, k);
+								}
+								else {
+									if (l_buf >= BASIS_SIZE / 2) {
+										continue;
+									}
+									L(hermitian_offsets[i] + l_buf, antihermitian_offsets[j - 6] + k) += computeTerm(term, l_buf, k);
+								}
 							}
 							else {
-								if (l_buf >= BASIS_SIZE / 2) {
-									continue;
+								for (int l = 0; l < inner_sum_limit; l++)
+								{
+									L(hermitian_offsets[i] + l, antihermitian_offsets[j - 6] + k) += computeTerm(term, l, k);
 								}
-								N(offsets[i] + l_buf, offsets[j] + k) += valueBuffer;
 							}
-						}
-						else {
-							for (int l = 0; l < inner_sum_limit; l++)
-							{
-								valueBuffer = computeTerm(term, l, k);
-								N(offsets[i] + l, offsets[j] + k) += valueBuffer;
-							}
-						}
-					} // end k-loop
-				} // end term-loop
-
-				// fill M
+						} // end k-loop
+					} // end term-loop
+				}
+				
+				// K_+ / K_-
+				// Ignore the offdiagonal blocks as they are 0
+				if (i < 6 && j > 5) continue;
+				if (j < 6 && i > 5) continue;
+				
 				for (const auto& term : wicks_M[number_of_basis_terms * i + j]) {
 					for (int k = 0; k < sum_limit; k++)
 					{
-						valueBuffer = 0;
 						if (term.delta_momenta.size() > 0) {
 							if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
 							if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
@@ -269,23 +274,36 @@ namespace Hubbard {
 								clean_factor_2pi(l_buf_vec);
 								l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
 							}
-							valueBuffer = computeTerm(term, l_buf, k);
 
 							if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
-								M(offsets[i] + l_buf, offsets[j] + k) += valueBuffer;
+								if (i < 6) {
+									K_plus(hermitian_offsets[i] + l_buf, hermitian_offsets[j] + k) += computeTerm(term, l_buf, k);
+								}
+								else {
+									K_minus(antihermitian_offsets[i - 6] + l_buf, antihermitian_offsets[j - 6] + k) += computeTerm(term, l_buf, k);
+								}	
 							}
 							else {
 								if (l_buf >= BASIS_SIZE / 2) {
 									continue;
 								}
-								M(offsets[i] + l_buf, offsets[j] + k) += valueBuffer;
+								if (i < 6) {
+									K_plus(hermitian_offsets[i] + l_buf, hermitian_offsets[j] + k) += computeTerm(term, l_buf, k);
+								}
+								else {
+									K_minus(antihermitian_offsets[i - 6] + l_buf, antihermitian_offsets[j - 6] + k) += computeTerm(term, l_buf, k);
+								}
 							}
 						}
 						else {
 							for (int l = 0; l < inner_sum_limit; l++)
 							{
-								valueBuffer = computeTerm(term, l, k);
-								M(offsets[i] + l, offsets[j] + k) += valueBuffer;
+								if (i < 6) {
+									K_plus(hermitian_offsets[i] + l, hermitian_offsets[j] + k) += computeTerm(term, l, k);
+								}
+								else {
+									K_minus(antihermitian_offsets[i - 6] + l, antihermitian_offsets[j - 6] + k) += computeTerm(term, l, k);
+								}
 							}
 						}
 					} // end k-loop
@@ -356,8 +374,6 @@ namespace Hubbard {
 	std::unique_ptr<Utility::Resolvent<double_prec>> Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
 		std::cout << "Gap values:  " << delta_cdw << "  " << delta_sc << "  " << delta_eta << std::endl;
-		//Constants::K_DISCRETIZATION *= 2;
-		//BASIS_SIZE *= 4;
 		// First off we need to compute every possible expectation value
 		// We use the mean field system's symmetries
 		// i.e. there are only the standard SC, CDW, Eta and N operators non-zero
@@ -449,14 +465,19 @@ namespace Hubbard {
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-		vectorL startingState = vectorL::Zero(3 * BASIS_SIZE);
+		matrixL buffer = K_plus;
+		K_plus = K_minus;
+		K_minus = buffer;
+		L.transposeInPlace();
+
+		vectorL startingState = vectorL::Zero(K_minus.rows());
 		for (size_t i = 0; i < BASIS_SIZE; i++)
 		{
 			startingState(i) = 1;
 		}
 		startingState.normalize();
 		matrixL N_new;
-		matrixL M_new;
+		// M_new = K_plus
 		matrixL solver_matrix;
 		matrixL inv_sqrt_mat;
 
@@ -464,17 +485,13 @@ namespace Hubbard {
 		omp_set_nested(1);
 		Eigen::initParallel();
 		{
-			matrixL L = N.block(0, 5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE);
-			// M_new = K_plus
-			M_new = M.block(0, 0, 5 * BASIS_SIZE, 5 * BASIS_SIZE);
-			matrixL K_minus = M.block(5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE, 3 * BASIS_SIZE);
 #pragma omp parallel sections
 			{
 #pragma omp section
 				{
 					std::chrono::time_point begin_in = std::chrono::steady_clock::now();
 
-					Eigen::SelfAdjointEigenSolver<matrixL> solver(M_new);
+					Eigen::SelfAdjointEigenSolver<matrixL> solver(K_plus);
 					vectorL K_EV = solver.eigenvalues();
 					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
 					{
@@ -486,10 +503,10 @@ namespace Hubbard {
 							K_EV(i) = SALT;
 						}
 					}
-					M_new = solver.eigenvectors() * K_EV.asDiagonal() * solver.eigenvectors().adjoint();
+					K_plus = solver.eigenvectors() * K_EV.asDiagonal() * solver.eigenvectors().adjoint();
 
 					std::chrono::time_point end_in = std::chrono::steady_clock::now();
-					std::cout << "Time for getting M_new: "
+					std::cout << "Time for getting K_plus: "
 						<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 				}
 #pragma omp section
@@ -523,7 +540,7 @@ namespace Hubbard {
 							throw std::invalid_argument("N_new is not positive!  " + std::to_string(solver.eigenvalues()(i)));
 						}
 						else if (k_inv_ev(i) < SALT) {
-							k_inv_ev(i) = sqrt(SALT);
+							k_inv_ev(i) = SQRT_SALT;
 						}
 						else {
 							k_inv_ev(i) = 1. / sqrt(k_inv_ev(i));
@@ -540,22 +557,22 @@ namespace Hubbard {
 		}
 
 		begin = std::chrono::steady_clock::now();
-		solver_matrix = inv_sqrt_mat * M_new * inv_sqrt_mat;
-		//Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
-		//gen_solver.compute(solver_matrix);
-		//reciever.resize(1);
-		//{
-		//	vectorL state = gen_solver.eigenvectors().transpose() * startingState;
-		//
-		//	const double RANGE = 10;
-		//	const int STEPS = 15000;
-		//	for (double z = 0; z < RANGE; z += (RANGE / STEPS))
-		//	{
-		//		std::complex<double_prec> z_tilde = std::complex<double_prec>(z*z, 1e-2);
-		//		Eigen::Vector<std::complex<double_prec>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
-		//		reciever[0].emplace_back(-(state.dot(diag.asDiagonal() * state)).imag());
-		//	}
-		//}
+		solver_matrix = inv_sqrt_mat * K_plus * inv_sqrt_mat;
+		Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
+		gen_solver.compute(solver_matrix);
+		reciever.resize(1);
+		{
+			vectorL state = gen_solver.eigenvectors().transpose() * startingState;
+		
+			const double RANGE = 10;
+			const int STEPS = 15000;
+			for (double z = 0; z < RANGE; z += (RANGE / STEPS))
+			{
+				std::complex<double_prec> z_tilde = std::complex<double_prec>(z*z, 1e-2);
+				Eigen::Vector<std::complex<double_prec>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
+				reciever[0].emplace_back(-(state.dot(diag.asDiagonal() * state)).imag());
+			}
+		}
 
 		Utility::Resolvent<double_prec> R(startingState);
 		R.compute(solver_matrix, 200);
