@@ -11,7 +11,7 @@
 namespace Hubbard {
 	constexpr double SQRT_SALT = 1e-5;
 	constexpr double SALT = SQRT_SALT * SQRT_SALT;
-	
+
 	void Model::computeChemicalPotential()
 	{
 		chemical_potential = U / 2;
@@ -179,19 +179,23 @@ namespace Hubbard {
 	void Model::fill_M_N_xp_basis()
 	{
 		const std::vector<int> cdw_basis_positions = { 2,3,8,9 };
+		const size_t offsets[10] = {
+			0,									BASIS_SIZE,
+			(3 * BASIS_SIZE) / 2,				2 * BASIS_SIZE,
+			3 * BASIS_SIZE,						4 * BASIS_SIZE,
+			5 * BASIS_SIZE,						6 * BASIS_SIZE,
+			6 * BASIS_SIZE + (BASIS_SIZE / 2),	7 * BASIS_SIZE
+		};
 
 		M = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
 		N = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
 
-		size_t left_offset = 0;
-		size_t right_offset = 0;
-		size_t sum_limit = BASIS_SIZE;
-		size_t inner_sum_limit = BASIS_SIZE;
-
+#pragma omp parallel for
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
+			size_t sum_limit = BASIS_SIZE;
+			size_t inner_sum_limit = BASIS_SIZE;
 			double_prec valueBuffer = 0;
-			right_offset = 0;
 			if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
 				inner_sum_limit = BASIS_SIZE;
 			}
@@ -228,20 +232,20 @@ namespace Hubbard {
 
 							valueBuffer = computeTerm(term, l_buf, k);
 							if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
-								N(left_offset + l_buf, right_offset + k) += valueBuffer;
+								N(offsets[i] + l_buf, offsets[j] + k) += valueBuffer;
 							}
 							else {
 								if (l_buf >= BASIS_SIZE / 2) {
 									continue;
 								}
-								N(left_offset + l_buf, right_offset + k) += valueBuffer;
+								N(offsets[i] + l_buf, offsets[j] + k) += valueBuffer;
 							}
 						}
 						else {
 							for (int l = 0; l < inner_sum_limit; l++)
 							{
 								valueBuffer = computeTerm(term, l, k);
-								N(left_offset + l, right_offset + k) += valueBuffer;
+								N(offsets[i] + l, offsets[j] + k) += valueBuffer;
 							}
 						}
 					}
@@ -268,27 +272,25 @@ namespace Hubbard {
 							valueBuffer = computeTerm(term, l_buf, k);
 
 							if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
-								M(left_offset + l_buf, right_offset + k) += valueBuffer;
+								M(offsets[i] + l_buf, offsets[j] + k) += valueBuffer;
 							}
 							else {
 								if (l_buf >= BASIS_SIZE / 2) {
 									continue;
 								}
-								M(left_offset + l_buf, right_offset + k) += valueBuffer;
+								M(offsets[i] + l_buf, offsets[j] + k) += valueBuffer;
 							}
 						}
 						else {
 							for (int l = 0; l < inner_sum_limit; l++)
 							{
 								valueBuffer = computeTerm(term, l, k);
-								M(left_offset + l, right_offset + k) += valueBuffer;
+								M(offsets[i] + l, offsets[j] + k) += valueBuffer;
 							}
 						}
 					}
 				}
-				right_offset += sum_limit;
 			}
-			left_offset += inner_sum_limit;
 		}
 	}
 
@@ -363,30 +365,31 @@ namespace Hubbard {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
-		matrixL rho = matrixL::Zero(4, 4);
-		Eigen::SelfAdjointEigenSolver<matrixL> solver;
-
-		expecs = std::vector<matrixL>(4, matrixL::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
-		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 		{
-			for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
+			matrixL rho = matrixL::Zero(4, 4);
+			Eigen::SelfAdjointEigenSolver<matrixL> solver;
+
+			expecs = std::vector<matrixL>(4, matrixL::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
+			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				fillHamiltonian((k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION);
-				solver.compute(hamilton);
-				rho.fill(0);
-				for (int i = 0; i < 4; i++)
+				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
-				}
-				rho = solver.eigenvectors() * rho * (solver.eigenvectors().transpose());
-				for (int idx = 0; idx < 4; idx++)
-				{
-					expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(idx, 0);
-					sum_of_all[idx] += rho(idx, 0);
+					fillHamiltonian((k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION);
+					solver.compute(hamilton);
+					rho.fill(0);
+					for (int i = 0; i < 4; i++)
+					{
+						rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
+					}
+					rho = solver.eigenvectors() * rho * (solver.eigenvectors().transpose());
+					for (int idx = 0; idx < 4; idx++)
+					{
+						expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(idx, 0);
+						sum_of_all[idx] += rho(idx, 0);
+					}
 				}
 			}
 		}
-
 		computeChemicalPotential();
 		std::cout << "Filling of all spin ups = " << sum_of_all[0] / BASIS_SIZE << std::endl;
 		loadWick("../commutators/wick_");
@@ -419,13 +422,6 @@ namespace Hubbard {
 				}
 			}
 		}
-
-		//M += SALT * matrixL::Identity(M.rows(), M.rows());
-		//N += 1e-12 * matrixL::Identity(M.rows(), M.rows());
-		end = std::chrono::steady_clock::now();
-		std::cout << "Time for filling of M and N: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-		/*begin = std::chrono::steady_clock::now();
 		{
 #pragma omp parallel for
 			for (size_t i = 0; i < M.rows(); i++)
@@ -447,26 +443,9 @@ namespace Hubbard {
 					N(i, i) = 0;
 				}
 			}
-
-			solver.compute(M);
-			int singular = 0;
-			for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-			{
-				if (solver.eigenvalues()(i) < 0) {
-					if (solver.eigenvalues()(i) == 0.0 || solver.eigenvalues()(i) == -0.0) continue;
-					std::cout << std::scientific << std::setprecision(12) << solver.eigenvalues()(i) << std::endl;
-					throw std::invalid_argument(": M is not positive!    " + std::to_string(solver.eigenvalues()(i)));
-				}
-				if (solver.eigenvalues()(i) < 1e-9) {
-					if (++singular == 0) std::cout << "Warning: M is singular! :" << solver.eigenvalues()(i) << std::endl;
-				}
-			}
-			std::cout << "Total count of singular eigenvalues of M: " << singular << std::endl;
-			end = std::chrono::steady_clock::now();
-
 			std::cout << "Time for checking M and N: "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-		}*/
+		}
 		begin = std::chrono::steady_clock::now();
 
 		vectorL startingState = vectorL::Zero(3 * BASIS_SIZE);
@@ -477,91 +456,104 @@ namespace Hubbard {
 		startingState.normalize();
 		matrixL N_new;
 		matrixL M_new;
+		matrixL solver_matrix;
+		matrixL inv_sqrt_mat;
+
+		omp_set_num_threads(8);
+		omp_set_nested(1);
+		Eigen::initParallel();
 		{
 			matrixL L = N.block(0, 5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE);
-			matrixL K_plus = M.block(0, 0, 5 * BASIS_SIZE, 5 * BASIS_SIZE);
+			// M_new = K_plus
+			M_new = M.block(0, 0, 5 * BASIS_SIZE, 5 * BASIS_SIZE);
 			matrixL K_minus = M.block(5 * BASIS_SIZE, 5 * BASIS_SIZE, 3 * BASIS_SIZE, 3 * BASIS_SIZE);
-
-			solver.compute(K_plus);
-			vectorL K_EV = solver.eigenvalues();
-			for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+#pragma omp parallel sections
 			{
-				if (K_EV(i) < SALT) {
-					K_EV(i) = SALT;
+#pragma omp section
+				{
+					std::chrono::time_point begin_in = std::chrono::steady_clock::now();
+
+					Eigen::SelfAdjointEigenSolver<matrixL> solver(M_new);
+					vectorL K_EV = solver.eigenvalues();
+					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+					{
+						if (K_EV(i) < -SALT) {
+							std::cerr << K_EV(i) << std::endl;
+							throw std::invalid_argument("K_+ is not positive!  " + std::to_string(K_EV(i)));
+						}
+						else if (K_EV(i) < SALT) {
+							K_EV(i) = SALT;
+						}
+					}
+					M_new = solver.eigenvectors() * K_EV.asDiagonal() * solver.eigenvectors().adjoint();
+
+					std::chrono::time_point end_in = std::chrono::steady_clock::now();
+					std::cout << "Time for getting M_new: "
+						<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
+				}
+#pragma omp section
+				{
+					std::chrono::time_point begin_in = std::chrono::steady_clock::now();
+
+					Eigen::SelfAdjointEigenSolver<matrixL> solver(K_minus);
+					vectorL k_inv_ev = solver.eigenvalues();
+					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+					{
+						if (solver.eigenvalues()(i) < -SALT) {
+							std::cerr << solver.eigenvalues()(i) << std::endl;
+							throw std::invalid_argument("K_- is not positive!  " + std::to_string(solver.eigenvalues()(i)));
+						}
+						else if (solver.eigenvalues()(i) < SALT) {
+							k_inv_ev(i) = (1 / SALT);
+						}
+						else {
+							k_inv_ev(i) = 1. / solver.eigenvalues()(i);
+						}
+					}
+					matrixL buffer_matrix = L * solver.eigenvectors();
+					N_new = buffer_matrix * k_inv_ev.asDiagonal() * buffer_matrix.adjoint();
+
+					solver.compute(N_new);
+					k_inv_ev = solver.eigenvalues();
+					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+					{
+						if (solver.eigenvalues()(i) < -SALT) {
+							std::cerr << solver.eigenvalues()(i) << std::endl;
+							throw std::invalid_argument("N_new is not positive!  " + std::to_string(solver.eigenvalues()(i)));
+						}
+						else if (k_inv_ev(i) < SALT) {
+							k_inv_ev(i) = sqrt(SALT);
+						}
+						else {
+							k_inv_ev(i) = 1. / sqrt(k_inv_ev(i));
+						}
+					}
+					inv_sqrt_mat = solver.eigenvectors() * k_inv_ev.asDiagonal() * solver.eigenvectors().adjoint();
+					startingState = inv_sqrt_mat * L * startingState;
+
+					std::chrono::time_point end_in = std::chrono::steady_clock::now();
+					std::cout << "Time for getting N_new and its inverse sqrt: "
+						<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 				}
 			}
-			K_plus = solver.eigenvectors() * K_EV.asDiagonal() * solver.eigenvectors().adjoint();
-			solver.compute(K_minus);
-			K_EV = solver.eigenvalues();
-			vectorL k_inv_ev = K_EV;
-			for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-			{
-				if (K_EV(i) < SALT) {
-					K_EV(i) = SALT;
-				}
-				k_inv_ev(i) = 1. / K_EV(i);
-			}
-			K_minus = solver.eigenvectors() * K_EV.asDiagonal() * solver.eigenvectors().adjoint();
-
-			N_new = L * solver.eigenvectors() * k_inv_ev.asDiagonal() * solver.eigenvectors().adjoint() * L.adjoint();
-			M_new = K_plus;
-			startingState = L * startingState;
 		}
 
-		//startingState = inverse_llt_M * (N * startingState);
-		/*Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
-		gen_solver.compute(solver_matrix);
-		reciever.resize(1);
-		vectorL ev = gen_solver.eigenvalues().real();
-		reciever[0] = std::vector<double>(ev.data(), ev.data() + ev.size());
-		std::sort(reciever.front().begin(), reciever.front().end());
-		*//*
-		{
-			vectorL state = gen_solver.eigenvectors().transpose() * startingState;
-
-			const double RANGE = 10;
-			const int STEPS = 15000;
-			for (double z = -RANGE; z < RANGE; z += ((2 * RANGE) / STEPS))
-			{
-				std::complex<double_prec> z_tilde = std::complex<double_prec>(1/z, 3e-2);
-				Eigen::Vector<std::complex<double_prec>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
-				reciever[0].emplace_back(-(z_tilde * state.dot(diag.asDiagonal() * state)).imag());
-			}
-		}
-		end = std::chrono::steady_clock::now();
-		std::cout << "Time for solving M and N: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-		begin = std::chrono::steady_clock::now();*/
-
-		solver.compute(N_new);
-		vectorL inv_sqrt_ev = solver.eigenvalues();
-		for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-		{
-			if (inv_sqrt_ev(i) < SALT) {
-				inv_sqrt_ev(i) = sqrt(SALT);
-			}
-			else {
-				inv_sqrt_ev(i) = 1. / sqrt(inv_sqrt_ev(i));
-			}
-		}
-		matrixL inv_sqrt_mat = solver.eigenvectors() * inv_sqrt_ev.asDiagonal() * solver.eigenvectors().adjoint();
-		matrixL solver_matrix = inv_sqrt_mat * M_new * inv_sqrt_mat;
-
-		Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
-		gen_solver.compute(solver_matrix);
-		reciever.resize(1);
-		{
-			vectorL state = gen_solver.eigenvectors().transpose() * startingState;
-
-			const double RANGE = 10;
-			const int STEPS = 15000;
-			for (double z = 0; z < RANGE; z += (RANGE / STEPS))
-			{
-				std::complex<double_prec> z_tilde = std::complex<double_prec>(z*z, 1e-2);
-				Eigen::Vector<std::complex<double_prec>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
-				reciever[0].emplace_back(-(state.dot(diag.asDiagonal() * state)).imag());
-			}
-		}
+		solver_matrix = inv_sqrt_mat * M_new * inv_sqrt_mat;
+		//Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
+		//gen_solver.compute(solver_matrix);
+		//reciever.resize(1);
+		//{
+		//	vectorL state = gen_solver.eigenvectors().transpose() * startingState;
+		//
+		//	const double RANGE = 10;
+		//	const int STEPS = 15000;
+		//	for (double z = 0; z < RANGE; z += (RANGE / STEPS))
+		//	{
+		//		std::complex<double_prec> z_tilde = std::complex<double_prec>(z*z, 1e-2);
+		//		Eigen::Vector<std::complex<double_prec>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
+		//		reciever[0].emplace_back(-(state.dot(diag.asDiagonal() * state)).imag());
+		//	}
+		//}
 
 		Utility::Resolvent<double_prec> R(startingState);
 		R.compute(solver_matrix, 200);

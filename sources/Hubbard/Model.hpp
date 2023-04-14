@@ -23,8 +23,8 @@ namespace Hubbard {
 	private:
 		void initializeParameters();
 	protected:
-		int BASIS_SIZE;
-		int TOTAL_BASIS;
+		size_t BASIS_SIZE;
+		size_t TOTAL_BASIS;
 		double_prec delta_sc, delta_cdw, delta_eta;
 		matrixL hamilton;
 		double_prec temperature;
