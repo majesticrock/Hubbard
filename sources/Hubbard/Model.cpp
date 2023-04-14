@@ -248,8 +248,8 @@ namespace Hubbard {
 								N(offsets[i] + l, offsets[j] + k) += valueBuffer;
 							}
 						}
-					}
-				}
+					} // end k-loop
+				} // end term-loop
 
 				// fill M
 				for (const auto& term : wicks_M[number_of_basis_terms * i + j]) {
@@ -288,8 +288,8 @@ namespace Hubbard {
 								M(offsets[i] + l, offsets[j] + k) += valueBuffer;
 							}
 						}
-					}
-				}
+					} // end k-loop
+				} // end term-loop
 			}
 		}
 	}
@@ -443,10 +443,11 @@ namespace Hubbard {
 					N(i, i) = 0;
 				}
 			}
-			std::cout << "Time for checking M and N: "
-				<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		}
-		begin = std::chrono::steady_clock::now();
+
+		end = std::chrono::steady_clock::now();
+		std::cout << "Time for filling of M and N: "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
 		vectorL startingState = vectorL::Zero(3 * BASIS_SIZE);
 		for (size_t i = 0; i < BASIS_SIZE; i++)
@@ -538,6 +539,7 @@ namespace Hubbard {
 			}
 		}
 
+		begin = std::chrono::steady_clock::now();
 		solver_matrix = inv_sqrt_mat * M_new * inv_sqrt_mat;
 		//Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
 		//gen_solver.compute(solver_matrix);
