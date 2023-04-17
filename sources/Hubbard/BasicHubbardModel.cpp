@@ -17,7 +17,7 @@ namespace Hubbard {
 		hamilton(1, 3) = delta_sc;
 		hamilton(2, 3) = -delta_cdw;
 
-		matrixL buffer = hamilton.transpose();
+		Matrix_L buffer = hamilton.transpose();
 		hamilton += buffer;
 
 		hamilton(0, 0) = unperturbed_energy(k_x, k_y);
@@ -33,13 +33,13 @@ namespace Hubbard {
 		this->delta_cdw = 0;
 		this->delta_eta = 0;
 
-		this->hamilton = matrixL::Zero(4, 4);
+		this->hamilton = Matrix_L::Zero(4, 4);
 	}
 
 	Hubbard::Model::data_set BasicHubbardModel::computePhases(const bool print/*=false*/)
 	{
-		matrixL rho = matrixL::Zero(4, 4);
-		Eigen::SelfAdjointEigenSolver<matrixL> solver;
+		Matrix_L rho = Matrix_L::Zero(4, 4);
+		Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
 		const double EPSILON = 1e-8;
 		double sc = 0, cdw = 0, eta = 0;
 		double old_parameters[3] = { 100, 100, 100 };

@@ -29,7 +29,7 @@ namespace Hubbard {
 		hamilton(1, 3) = delta_sc;// -V * old_sc.dot(cos_sin);
 		hamilton(2, 3) = -delta_cdw;
 
-		matrixL buffer = hamilton.transpose();
+		Matrix_L buffer = hamilton.transpose();
 		hamilton += buffer;
 		//double eps = unperturbed_energy(k_x, k_y);
 		double n_buffer = 2 * (cos(k_x) + cos(k_y)) * cos_occupation_old;
@@ -52,7 +52,7 @@ namespace Hubbard {
 		}
 		this->delta_eta = 0;
 
-		this->hamilton = matrixL::Zero(4, 4);
+		this->hamilton = Matrix_L::Zero(4, 4);
 		this->old_eta << 0.1, 0.1, 0.1, 0.1;
 		this->old_sc << 0.1, 0.1, 0.1, 0.1;
 		cos_occupation_old = V * 0.1;
@@ -60,8 +60,8 @@ namespace Hubbard {
 
 	Model::data_set UsingBroyden::computePhases(const bool print/*=false*/)
 	{
-		matrixL rho = matrixL::Zero(4, 4);
-		Eigen::SelfAdjointEigenSolver<matrixL> solver;
+		Matrix_L rho = Matrix_L::Zero(4, 4);
+		Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
 
 		auto lambda_func = [&](const Eigen::VectorXd& x, Eigen::VectorXd& F) {
 			delta_cdw = x(0);

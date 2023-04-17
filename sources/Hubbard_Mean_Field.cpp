@@ -182,7 +182,7 @@ int main(int argc, char** argv)
 		std::vector<std::vector<data_vector>> oneParticleEnergies(FIRST_IT_STEPS);
 		std::vector<double> param(FIRST_IT_STEPS);
 		std::vector<double> totalGapValues(FIRST_IT_STEPS);
-		std::unique_ptr<Utility::Resolvent<Hubbard::double_prec>> R;
+		std::unique_ptr<std::vector<Hubbard::Resolvent_L>> resolvents;
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
 		{
 			std::unique_ptr<Hubbard::Model> model;
@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 			}
 			model->computePhases();
 			totalGapValues[T] = model->getTotalGapValue();
-			R = model->computeCollectiveModes(reciever[T]);
+			resolvents = model->computeCollectiveModes(reciever[T]);
 			model->getAllEnergies(oneParticleEnergies[T]);
 			param[T] = modelParameters.getGlobal();
 			modelParameters.incrementGlobalIterator();
@@ -213,19 +213,25 @@ int main(int argc, char** argv)
 
 			for (int i = 0; i < FIRST_IT_STEPS; i++)
 			{
-				std::stringstream stream;
-				stream << std::fixed << std::setprecision(2) << param[i];
+				std::string param_name = std::to_string(param[i]);
+				param_name.erase(param_name.find_last_not_of('0') + 1, std::string::npos);
+				param_name.erase(param_name.find_last_not_of('.') + 1, std::string::npos);
+
 				comments.push_back("Total Gap=" + std::to_string(totalGapValues[i]));
-				Utility::saveData(reciever[i], "../../data/" + output_folder + stream.str() + ".txt", comments);
-				if (R) {
-					R->writeDataToFile("../../data/" + output_folder + stream.str() + "_resolvent.txt");
+				Utility::saveData(reciever[i], "../../data/" + output_folder + param_name + ".txt", comments);
+				if (resolvents) {
+					std::string names[4] = { "phase_SC", "phase_CDW", "higgs_SC", "higgs_CDW" };
+					for (size_t i = 0; i < 4; i++)
+					{
+						(*resolvents)[i].writeDataToFile("../../data/" + output_folder + param_name + "_resolvent_" + names[i] + ".txt");
+					}
 				}
 				else {
 					std::cout << "Resolvent returned a null pointer." << std::endl;
 				}
 
 				comments.pop_back();
-				Utility::saveData(oneParticleEnergies[i], "../../data/" + output_folder + stream.str() + "_one_particle.txt", comments);
+				Utility::saveData(oneParticleEnergies[i], "../../data/" + output_folder + param_name + "_one_particle.txt", comments);
 			}
 		}
 	}

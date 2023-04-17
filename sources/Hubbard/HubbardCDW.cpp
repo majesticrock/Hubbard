@@ -16,6 +16,6 @@ namespace Hubbard {
 		}
 		this->delta_eta = 0.01;
 
-		this->hamilton = matrixL::Zero(4, 4);
+		this->hamilton = Matrix_L::Zero(4, 4);
 	}
 }

@@ -102,8 +102,8 @@ namespace Hubbard {
 
 	void Model::fill_M_N()
 	{
-		M = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
-		N = matrixL::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		M = Matrix_L::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		N = Matrix_L::Zero(TOTAL_BASIS, TOTAL_BASIS);
 
 #pragma omp parallel for
 		for (int i = 0; i < number_of_basis_terms; i++)
@@ -189,11 +189,11 @@ namespace Hubbard {
 			(3 * BASIS_SIZE) / 2,	2 * BASIS_SIZE
 		};
 
-		K_plus = matrixL::Zero(5 * BASIS_SIZE, 5 * BASIS_SIZE);
-		K_minus = matrixL::Zero(3 * BASIS_SIZE, 3 * BASIS_SIZE);
-		L = matrixL::Zero(5 * BASIS_SIZE, 3 * BASIS_SIZE);
+		K_plus = Matrix_L::Zero(5 * BASIS_SIZE, 5 * BASIS_SIZE);
+		K_minus = Matrix_L::Zero(3 * BASIS_SIZE, 3 * BASIS_SIZE);
+		L = Matrix_L::Zero(5 * BASIS_SIZE, 3 * BASIS_SIZE);
 
-#pragma omp parallel for
+//#pragma omp parallel for
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
 			size_t sum_limit = BASIS_SIZE;
@@ -252,12 +252,12 @@ namespace Hubbard {
 						} // end k-loop
 					} // end term-loop
 				}
-				
+
 				// K_+ / K_-
 				// Ignore the offdiagonal blocks as they are 0
 				if (i < 6 && j > 5) continue;
 				if (j < 6 && i > 5) continue;
-				
+
 				for (const auto& term : wicks_M[number_of_basis_terms * i + j]) {
 					for (int k = 0; k < sum_limit; k++)
 					{
@@ -281,7 +281,7 @@ namespace Hubbard {
 								}
 								else {
 									K_minus(antihermitian_offsets[i - 6] + l_buf, antihermitian_offsets[j - 6] + k) += computeTerm(term, l_buf, k);
-								}	
+								}
 							}
 							else {
 								if (l_buf >= BASIS_SIZE / 2) {
@@ -371,7 +371,7 @@ namespace Hubbard {
 		}
 	}
 
-	std::unique_ptr<Utility::Resolvent<double_prec>> Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
+	std::unique_ptr<std::vector<Resolvent_L>> Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
 		std::cout << "Gap values:  " << delta_cdw << "  " << delta_sc << "  " << delta_eta << std::endl;
 		// First off we need to compute every possible expectation value
@@ -382,10 +382,10 @@ namespace Hubbard {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		{
-			matrixL rho = matrixL::Zero(4, 4);
-			Eigen::SelfAdjointEigenSolver<matrixL> solver;
+			Matrix_L rho = Matrix_L::Zero(4, 4);
+			Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
 
-			expecs = std::vector<matrixL>(4, matrixL::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
+			expecs = std::vector<Matrix_L>(4, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
@@ -420,43 +420,40 @@ namespace Hubbard {
 		else {
 			fill_M_N();
 		}
-		for (size_t i = 0; i < M.rows(); i++)
+		for (size_t i = 0; i < L.rows(); i++)
 		{
-			for (size_t j = 0; j < M.cols(); j++)
+			for (size_t j = 0; j < L.cols(); j++)
 			{
-				if (std::abs(M(i, j)) < 1e-13) {
-					M(i, j) = 0;
+				if (std::abs(L(i, j)) < SALT) {
+					L(i, j) = 0;
 				}
 			}
 		}
-		for (size_t i = 0; i < N.rows(); i++)
+		for (size_t i = 0; i < K_plus.rows(); i++)
 		{
-			for (size_t j = 0; j < N.cols(); j++)
+			for (size_t j = 0; j < K_plus.cols(); j++)
 			{
-				if (std::abs(N(i, j)) < 1e-13) {
-					N(i, j) = 0;
+				if (std::abs(K_plus(i, j)) < SALT) {
+					K_plus(i, j) = 0;
+				}
+				if (std::abs(K_plus(i, j) - K_plus(j, i)) > SALT) {
+					std::cerr << std::scientific << std::setprecision(12) << std::abs(K_plus(i, j) - K_plus(j, i)) << std::endl;
+					throw std::invalid_argument("K_+ is not hermitian: " + std::to_string(K_plus(i, j))
+						+ " || " + std::to_string(K_plus(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
 				}
 			}
 		}
+		for (size_t i = 0; i < K_minus.rows(); i++)
 		{
-#pragma omp parallel for
-			for (size_t i = 0; i < M.rows(); i++)
+			for (size_t j = 0; j < K_minus.cols(); j++)
 			{
-				for (size_t j = i + 1; j < M.cols(); j++)
-				{
-					if (std::abs(M(i, j) - M(j, i)) > 1e-11) {
-						std::cerr << std::scientific << std::setprecision(12) << std::abs(M(i, j) - M(j, i)) << std::endl;
-						throw std::invalid_argument("M is not hermitian: " + std::to_string(M(i, j))
-							+ " || " + std::to_string(M(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
-					}
-					if (std::abs(N(i, j) - N(j, i)) > 1e-11) {
-						std::cerr << std::scientific << std::setprecision(12) << std::abs(N(i, j) - N(j, i)) << std::endl;
-						throw std::invalid_argument("N is not hermitian: " + std::to_string(N(i, j))
-							+ " || " + std::to_string(N(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
-					}
+				if (std::abs(K_minus(i, j)) < SALT) {
+					K_minus(i, j) = 0;
 				}
-				if (std::abs(N(i, i)) < 1e-8) {
-					N(i, i) = 0;
+				if (std::abs(K_minus(i, j) - K_minus(j, i)) > SALT) {
+					std::cerr << std::scientific << std::setprecision(12) << std::abs(K_minus(i, j) - K_minus(j, i)) << std::endl;
+					throw std::invalid_argument("K_- is not hermitian: " + std::to_string(K_minus(i, j))
+						+ " || " + std::to_string(K_minus(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
 				}
 			}
 		}
@@ -465,105 +462,132 @@ namespace Hubbard {
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-		matrixL buffer = K_plus;
-		K_plus = K_minus;
-		K_minus = buffer;
-		L.transposeInPlace();
-
-		vectorL startingState = vectorL::Zero(K_minus.rows());
-		for (size_t i = 0; i < BASIS_SIZE; i++)
+		Vector_L startingState_SC[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
+		Vector_L startingState_CDW[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
+		for (int j = 0; j < 2; j++)
 		{
-			startingState(i) = 1;
+			for (size_t i = 0; i < BASIS_SIZE; i++)
+			{
+				startingState_SC[j](i) = 1;
+				startingState_CDW[j](2 * BASIS_SIZE + i) = 1;
+			}
+			startingState_SC[j].normalize();
+			startingState_CDW[j].normalize();
 		}
-		startingState.normalize();
-		matrixL N_new;
+
 		// M_new = K_plus
-		matrixL solver_matrix;
-		matrixL inv_sqrt_mat;
+		Matrix_L solver_matrix;
+		Eigen::SelfAdjointEigenSolver<Matrix_L> k_solver[2];
 
 		omp_set_num_threads(8);
 		omp_set_nested(1);
 		Eigen::initParallel();
-		{
+
 #pragma omp parallel sections
+		{
+#pragma omp section
 			{
+				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
+				k_solver[0].compute(K_plus);
+				std::chrono::time_point end_in = std::chrono::steady_clock::now();
+				std::cout << "Time for solving K_+: "
+					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
+			}
 #pragma omp section
-				{
-					std::chrono::time_point begin_in = std::chrono::steady_clock::now();
-
-					Eigen::SelfAdjointEigenSolver<matrixL> solver(K_plus);
-					vectorL K_EV = solver.eigenvalues();
-					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-					{
-						if (K_EV(i) < -SALT) {
-							std::cerr << K_EV(i) << std::endl;
-							throw std::invalid_argument("K_+ is not positive!  " + std::to_string(K_EV(i)));
-						}
-						else if (K_EV(i) < SALT) {
-							K_EV(i) = SALT;
-						}
-					}
-					K_plus = solver.eigenvectors() * K_EV.asDiagonal() * solver.eigenvectors().adjoint();
-
-					std::chrono::time_point end_in = std::chrono::steady_clock::now();
-					std::cout << "Time for getting K_plus: "
-						<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
-				}
-#pragma omp section
-				{
-					std::chrono::time_point begin_in = std::chrono::steady_clock::now();
-
-					Eigen::SelfAdjointEigenSolver<matrixL> solver(K_minus);
-					vectorL k_inv_ev = solver.eigenvalues();
-					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-					{
-						if (solver.eigenvalues()(i) < -SALT) {
-							std::cerr << solver.eigenvalues()(i) << std::endl;
-							throw std::invalid_argument("K_- is not positive!  " + std::to_string(solver.eigenvalues()(i)));
-						}
-						else if (solver.eigenvalues()(i) < SALT) {
-							k_inv_ev(i) = (1 / SALT);
-						}
-						else {
-							k_inv_ev(i) = 1. / solver.eigenvalues()(i);
-						}
-					}
-					matrixL buffer_matrix = L * solver.eigenvectors();
-					N_new = buffer_matrix * k_inv_ev.asDiagonal() * buffer_matrix.adjoint();
-
-					solver.compute(N_new);
-					k_inv_ev = solver.eigenvalues();
-					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-					{
-						if (solver.eigenvalues()(i) < -SALT) {
-							std::cerr << solver.eigenvalues()(i) << std::endl;
-							throw std::invalid_argument("N_new is not positive!  " + std::to_string(solver.eigenvalues()(i)));
-						}
-						else if (k_inv_ev(i) < SALT) {
-							k_inv_ev(i) = SQRT_SALT;
-						}
-						else {
-							k_inv_ev(i) = 1. / sqrt(k_inv_ev(i));
-						}
-					}
-					inv_sqrt_mat = solver.eigenvectors() * k_inv_ev.asDiagonal() * solver.eigenvectors().adjoint();
-					startingState = inv_sqrt_mat * L * startingState;
-
-					std::chrono::time_point end_in = std::chrono::steady_clock::now();
-					std::cout << "Time for getting N_new and its inverse sqrt: "
-						<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
-				}
+			{
+				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
+				k_solver[1].compute(K_minus);
+				std::chrono::time_point end_in = std::chrono::steady_clock::now();
+				std::cout << "Time for solving K_-: "
+					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 			}
 		}
 
+		/* plus(minus)_index indicates whether the upper left block is for the
+		* Hermitian or the anti-Hermitian operators.
+		* The default is that the upper left block contains the Hermtian operators,
+		* then plus_index = 0 and minus_index = 1
+		*/
+		auto compute_solver_matrix = [&](size_t plus_index, size_t minus_index) {
+			std::chrono::time_point begin_in = std::chrono::steady_clock::now();
+			if(minus_index == 0) L.transposeInPlace();
+			solver_matrix.resize(k_solver[plus_index].eigenvalues().rows(), k_solver[plus_index].eigenvalues().rows());
+			Vector_L K_EV = k_solver[minus_index].eigenvalues();
+			for (size_t i = 0; i < k_solver[minus_index].eigenvalues().size(); i++)
+			{
+				if (k_solver[minus_index].eigenvalues()(i) < -SALT) {
+					std::cerr << k_solver[minus_index].eigenvalues()(i) << std::endl;
+					throw std::invalid_argument("K_- is not positive!  " + std::to_string(k_solver[minus_index].eigenvalues()(i)));
+				}
+				else if (k_solver[minus_index].eigenvalues()(i) < SALT) {
+					K_EV(i) = (1 / SALT);
+				}
+				else {
+					K_EV(i) = 1. / k_solver[minus_index].eigenvalues()(i);
+				}
+			}
+			Matrix_L buffer_matrix = L * k_solver[minus_index].eigenvectors();
+			Matrix_L N_new = buffer_matrix * K_EV.asDiagonal() * buffer_matrix.adjoint();
+
+			std::chrono::time_point end_in = std::chrono::steady_clock::now();
+			std::cout << "Time for computing N_new: "
+				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
+			begin_in = std::chrono::steady_clock::now();
+
+			Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
+			solver.compute(N_new);
+			Vector_L n_ev = solver.eigenvalues();
+			for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+			{
+				if (solver.eigenvalues()(i) < -SALT) {
+					std::cerr << solver.eigenvalues()(i) << std::endl;
+					throw std::invalid_argument("N_new is not positive!  " + std::to_string(solver.eigenvalues()(i)));
+				}
+				else if (n_ev(i) < SALT) {
+					n_ev(i) = SQRT_SALT;
+				}
+				else {
+					n_ev(i) = 1. / sqrt(n_ev(i));
+				}
+			}
+			// Starting here, N_new = 1/sqrt(N_new)
+			// I forego another matrix to save some memory
+			N_new = solver.eigenvectors() * n_ev.asDiagonal() * solver.eigenvectors().adjoint();
+			startingState_SC[plus_index] = N_new * L * startingState_SC[plus_index];
+			startingState_CDW[plus_index] = N_new * L * startingState_CDW[plus_index];
+
+			end_in = std::chrono::steady_clock::now();
+			std::cout << "Time for adjusting N_new: "
+				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
+
+			begin_in = std::chrono::steady_clock::now();
+			K_EV = k_solver[plus_index].eigenvalues();
+			for (size_t i = 0; i < k_solver[plus_index].eigenvalues().size(); i++)
+			{
+				if (K_EV(i) < -SALT) {
+					std::cerr << K_EV(i) << std::endl;
+					throw std::invalid_argument("K_+ is not positive!  " + std::to_string(K_EV(i)));
+				}
+				else if (K_EV(i) < SALT) {
+					K_EV(i) = SALT;
+				}
+			}
+			buffer_matrix = N_new * k_solver[plus_index].eigenvectors();
+			solver_matrix = buffer_matrix * K_EV.asDiagonal() * buffer_matrix.adjoint();
+			end_in = std::chrono::steady_clock::now();
+			std::cout << "Time for computing solver_matrix: "
+				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
+		};
+
 		begin = std::chrono::steady_clock::now();
-		solver_matrix = inv_sqrt_mat * K_plus * inv_sqrt_mat;
-		Eigen::SelfAdjointEigenSolver<matrixL> gen_solver;
+
+		/* Computation using the exact matrix inverse
+		Eigen::SelfAdjointEigenSolver<Matrix_L> gen_solver;
 		gen_solver.compute(solver_matrix);
 		reciever.resize(1);
 		{
-			vectorL state = gen_solver.eigenvectors().transpose() * startingState;
-		
+			Vector_L state = gen_solver.eigenvectors().transpose() * startingState;
+
 			const double RANGE = 10;
 			const int STEPS = 15000;
 			for (double z = 0; z < RANGE; z += (RANGE / STEPS))
@@ -572,22 +596,41 @@ namespace Hubbard {
 				Eigen::Vector<std::complex<double_prec>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
 				reciever[0].emplace_back(-(state.dot(diag.asDiagonal() * state)).imag());
 			}
+		}*/
+
+		std::unique_ptr<std::vector<Resolvent_L>> resolvents = std::make_unique< std::vector<Resolvent_L>>(std::vector<Resolvent_L>());
+		resolvents->reserve(4);
+
+		for (size_t i = 0; i < 2; i++)
+		{
+			// It is going to compute the anti-Hermitian first
+			compute_solver_matrix(i, 1 - i);
+			resolvents->push_back(Resolvent_L(startingState_SC[i]));
+			resolvents->push_back(Resolvent_L(startingState_CDW[i]));
+#pragma omp parallel sections
+			{
+#pragma omp section
+				{
+					(*resolvents)[2 * i].compute(solver_matrix, 200);
+				}
+#pragma omp section
+				{
+					(*resolvents)[2 * i + 1].compute(solver_matrix, 200);
+				}
+			}
 		}
 
-		Utility::Resolvent<double_prec> R(startingState);
-		R.compute(solver_matrix, 200);
-
 		end = std::chrono::steady_clock::now();
-		std::cout << "Time for resolvent: "
+		std::cout << "Time for resolvents: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-		return std::make_unique<Utility::Resolvent<double_prec>>(R);
+		return resolvents;
 	}
 
 	void Model::getEnergies(std::vector<std::vector<double>>& reciever, double direction)
 	{
 		reciever.reserve(2 * Constants::K_DISCRETIZATION);
-		Eigen::SelfAdjointEigenSolver<matrixL> solver;
+		Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
 		double k_val = 0;
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 		{
@@ -601,7 +644,7 @@ namespace Hubbard {
 	void Model::getAllEnergies(std::vector<std::vector<double>>& reciever)
 	{
 		reciever.resize(4 * Constants::K_DISCRETIZATION, std::vector<double>(2 * Constants::K_DISCRETIZATION));
-		Eigen::SelfAdjointEigenSolver<matrixL> solver;
+		Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
 		double k_val = 0;
 		double l_val = 0;
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)

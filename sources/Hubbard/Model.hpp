@@ -15,8 +15,9 @@ namespace Hubbard {
 	// Defines the working precision of the entire project
 	// Change to float, double or long double - so far double produces the best results
 	typedef double double_prec;
-	typedef Eigen::Matrix<double_prec, Eigen::Dynamic, Eigen::Dynamic> matrixL;
-	typedef Eigen::Vector<double_prec, Eigen::Dynamic> vectorL;
+	typedef Eigen::Matrix<double_prec, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
+	typedef Eigen::Vector<double_prec, Eigen::Dynamic> Vector_L;
+	typedef Utility::Resolvent<double_prec> Resolvent_L;
 
 	class Model
 	{
@@ -26,7 +27,7 @@ namespace Hubbard {
 		size_t BASIS_SIZE;
 		size_t TOTAL_BASIS;
 		double_prec delta_sc, delta_cdw, delta_eta;
-		matrixL hamilton;
+		Matrix_L hamilton;
 		double_prec temperature;
 		double_prec U;
 
@@ -46,11 +47,11 @@ namespace Hubbard {
 		* 2 - sc
 		* 3 - eta
 		*/
-		std::vector<matrixL> expecs;
+		std::vector<Matrix_L> expecs;
 		double_prec sum_of_all[4] = { 0, 0, 0, 0 };
 
-		matrixL M, N;
-		matrixL K_plus, K_minus, L;
+		Matrix_L M, N;
+		Matrix_L K_plus, K_minus, L;
 		int number_of_basis_terms;
 		int start_basis_at;
 
@@ -190,7 +191,7 @@ namespace Hubbard {
 		virtual data_set computePhases(const bool print = false) = 0;
 		// version 2 use the non mean field hamilton for the commutation,
 		// but the mean field system to obtain the expectation values
-		std::unique_ptr<Utility::Resolvent<double_prec>> computeCollectiveModes(std::vector<std::vector<double>>& reciever);
+		std::unique_ptr<std::vector<Resolvent_L>> computeCollectiveModes(std::vector<std::vector<double>>& reciever);
 		// Returns the total gap value sqrt(sc^2 + cdw^2 + eta^2)
 		inline double getTotalGapValue() const {
 			return sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta);
