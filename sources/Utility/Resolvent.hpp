@@ -8,9 +8,30 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include "OutputWriter.hpp"
+#include "OutputConvenience.hpp"
 
 namespace Utility {
+	template <typename T>
+	struct ResolventData {
+		std::vector<T> a_i;
+		std::vector<T> b_i;
+	};
+
+	template <typename T>
+	inline std::ostream& operator<<( std::ostream& os, const ResolventData<T>& data )
+	{
+		for (const auto& elem : data.a_i) {
+			os << elem << " ";
+		}
+		os << "0 \n";
+		for (const auto& elem : data.b_i) {
+			os << elem << " ";
+		}
+		os << "\n";
+		
+  		return os;
+	}
+
 	// choose the floating point precision, i.e. float, double or long double
 	template <typename T>
 	class Resolvent
@@ -21,11 +42,8 @@ namespace Utility {
 		typedef Eigen::Vector<std::complex<T>, Eigen::Dynamic> vector_cT;
 		typedef Eigen::Matrix<std::complex<T>, Eigen::Dynamic, Eigen::Dynamic> matrix_cT;
 
-		struct resolvent_data {
-			std::vector<T> a_i;
-			std::vector<T> b_i;
-		};
 		vector_cT startingState;
+		typedef ResolventData<T> resolvent_data;
 		std::vector<resolvent_data> data;
 
 		constexpr unsigned int findSmallestValue(const vector_T& diagonal) const {
@@ -425,6 +443,10 @@ namespace Utility {
 		// Asummes that the data has been computed before...
 		void writeDataToFile(const std::string& filename) const
 		{
+			saveData_boost(this->data, filename + ".dat.gz");
+			saveData(this->data, filename + ".txt");
+			return;
+
 			std::cout << "Total Lanczos iterations: " << this->data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
 			std::ofstream out(filename);
 			if (out.is_open()) {

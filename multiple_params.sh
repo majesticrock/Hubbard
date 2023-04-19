@@ -2,12 +2,11 @@
 
 # Define the token to search for and the new value to set
 TOKEN="model_parameters"
-NEW_VALUES=("0 -2 0.1" "0 -2 0.2" "0 -2 0.3")
+NEW_VALUES=("0 -0.2 -0.1" "0 -0.4 -0.1" "0 -0.6 -0.1" "0 -0.8 -0.1" "0 -1.0 -0.1" "0 -1.2 -0.1" "0 -1.4 -0.1" "0 -1.6 -0.1")
 
 for NEW_VALUE in "${NEW_VALUES[@]}"; do
   # Loop through each line in the config file
   while read line; do
-    # Skip lines beginning with #
     if [[ $line == \#* ]]; then
       continue
     fi
@@ -16,9 +15,8 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
     TOKEN_NAME=$(echo "$line" | awk '{print $1}')
     TOKEN_VALUE=$(echo "$line" | cut -d' ' -f2-)
     
-    # Check if the current token matches the one we're looking for
     if [[ "$TOKEN_NAME" == "$TOKEN" ]]; then
-      # If so, replace the value with the new one
+      # replace the value with the new one
       sed -i "s/$TOKEN_NAME $TOKEN_VALUE/$TOKEN_NAME $NEW_VALUE/" params/params_auto.config
       break
     fi

@@ -12,11 +12,11 @@
 #include <memory>
 
 #include "Utility/InputFileReader.hpp"
-#include "Utility/OutputWriter.hpp"
 #include "Hubbard/BasicHubbardModel.hpp"
 #include "Hubbard/HubbardCDW.hpp"
 #include "Hubbard/UsingBroyden.hpp"
 #include "Hubbard/Constants.hpp"
+#include "Utility/OutputConvenience.hpp"
 
 int Hubbard::Constants::K_DISCRETIZATION = 100;
 
@@ -223,7 +223,7 @@ int main(int argc, char** argv)
 					std::string names[4] = { "phase_SC", "phase_CDW", "higgs_SC", "higgs_CDW" };
 					for (size_t i = 0; i < 4; i++)
 					{
-						(*resolvents)[i].writeDataToFile("../../data/" + output_folder + param_name + "_resolvent_" + names[i] + ".txt");
+						(*resolvents)[i].writeDataToFile("../../data/" + output_folder + param_name + "_resolvent_" + names[i]);
 					}
 				}
 				else {

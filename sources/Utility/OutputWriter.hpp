@@ -3,8 +3,22 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <fstream>
+#include <iostream>
+#include <ctime>
 
 namespace Utility {
+	// Casts a floating point number to a std::string with desired precision n
+	template <typename T>
+	std::string to_string_with_precision(const T a_value, const int n)
+	{
+		std::ostringstream out;
+		out.precision(n);
+		out << std::fixed << a_value;
+		return out.str();
+	}
+
+	// Returns the local time - the preprocessor statements deal with different OSs
 	inline std::tm localtime_xp(std::time_t timer)
 	{
 		std::tm bt{};
@@ -20,6 +34,7 @@ namespace Utility {
 		return bt;
 	}
 
+	// Returns the current time in a readable format
 	// default = "YYYY-MM-DD HH:MM:SS"
 	inline std::string time_stamp(const std::string& fmt = "%F %T")
 	{
@@ -28,17 +43,60 @@ namespace Utility {
 		return { buf, std::strftime(buf, sizeof(buf), fmt.c_str(), &bt) };
 	}
 
-	template <typename T>
-	std::string to_string_with_precision(const T a_value, const int n)
-	{
-		std::ostringstream out;
-		out.precision(n);
-		out << std::fixed << a_value;
-		return out.str();
-	}
+	// data_type is a type that overloads the << operator - e.g. float or double, but custom types are allowed too
+	// outstream_type is a type of output stream, e.g. std::ofstream or std::ostringstream
+	template <typename data_type, typename outstream_type>
+	class OutputWriter{
+	public:
+		// Writes the current time stamp and comments to the file
+		// If the latter is not provided only the time stamp is written
+		void writeComments(outstream_type& out, const std::vector<std::string>& comments = std::vector<std::string>()) const 
+		{
+			out << "# " << time_stamp() << "\n#\n";
+			for (int i = 0; i < comments.size(); i++)
+			{
+				out << "# " << comments[i] << "\n";
+			}
+		};
 
-	void saveData(const std::vector<double>& data, const std::string& filename);
-	void saveData(const std::vector<std::vector<double>>& data, const std::string& filename);
-	void saveData(const std::vector<std::vector<double>>& data, const std::string& filename, const std::vector<std::string>& comments);
-	void saveData(const std::vector<double>& data, const int linebreak, const std::string& filename, const std::vector<std::string>& comments);
+		// Appends a line consisting of <data> to <out>
+		void appendLine(const std::vector<data_type>& data, outstream_type& out) const 
+		{
+			for (int i = 0; i < data.size(); i++)
+			{
+				out << data[i];
+				if(i < data.size() - 1){
+					out << " ";
+				}
+			}
+			out << "\n";
+		}
+
+		void saveData(const data_type& data, outstream_type& out, 
+			const std::vector<std::string>& comments = std::vector<std::string>()) const
+		{
+			writeComments(out, comments);
+			out << std::scientific << std::setprecision(10);
+			out << data;
+		};
+
+		void saveData(const std::vector<data_type>& data, outstream_type& out, 
+			const std::vector<std::string>& comments = std::vector<std::string>()) const 
+		{
+			writeComments(out, comments);
+			out << std::scientific << std::setprecision(10);
+			appendLine(data, out);
+		};
+
+		void saveData(const std::vector<std::vector<data_type>>& data, outstream_type& out, 
+			const std::vector<std::string>& comments = std::vector<std::string>()) const 
+		{
+			writeComments(out, comments);
+			out << std::scientific << std::setprecision(10);
+			for (int i = 0; i < data.size(); i++)
+			{
+				appendLine(data[i], out);
+			}
+		};
+	};
 }

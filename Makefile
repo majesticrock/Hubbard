@@ -6,7 +6,7 @@ INCLUDEFLAGS = -isystem ~/usr/local/include
 
 CXXFLAGS = -g $(WARNINGS) -std=c++17 $(OPT) -fopenmp
 
-LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -lboost_serialization
+LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -lboost_serialization -lz -lboost_iostreams
 
 WARNINGS = -Wall -Wno-sign-compare
 
@@ -15,7 +15,7 @@ OPT = -march=native -O3
 COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp WickCleaner.cpp
 
 HBBRD_SRCS=Model.cpp ModelSubClasses.cpp BasicHubbardModel.cpp HubbardCDW.cpp UsingBroyden.cpp
-UTIL_SRCS=InputFileReader.cpp OutputWriter.cpp Roots_Broyden.cpp
+UTIL_SRCS=InputFileReader.cpp Roots_Broyden.cpp
 
 PART_SRCS=
 SRCS=$(addprefix Utility/, $(UTIL_SRCS)) $(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS) Hubbard_Mean_Field.cpp
