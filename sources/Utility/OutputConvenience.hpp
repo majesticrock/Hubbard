@@ -106,11 +106,11 @@ namespace Utility {
 			// The extra stringstream is a proper std::ostream (boost::iostreams are not)
 			// and can thereby be used with the standard operator<< overloading
 			std::ostringstream oss;
-			ow.writeComments(out, comments);
+			ow.writeComments(oss, comments);
 			for (size_t n = linebreak; n < data.size(); n += linebreak)
 			{
 				std::vector<data_type> part_vec(data.begin() + n - linebreak, data.begin() + n);
-				ow.appendLine(part_vec, out);
+				ow.appendLine(part_vec, oss);
 			}
 			out << oss.str();
 

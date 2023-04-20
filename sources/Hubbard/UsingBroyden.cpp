@@ -32,7 +32,7 @@ namespace Hubbard {
 		Matrix_L buffer = hamilton.transpose();
 		hamilton += buffer;
 		//double eps = unperturbed_energy(k_x, k_y);
-		double n_buffer = 2 * (cos(k_x) + cos(k_y)) * cos_occupation_old;
+		double n_buffer = -2 * (cos(k_x) + cos(k_y)) * delta_occupation;
 		hamilton(0, 0) = unperturbed_energy(k_x, k_y) + n_buffer;
 		hamilton(1, 1) = unperturbed_energy(k_x + L_PI, k_y + L_PI) - n_buffer;
 		hamilton(2, 2) = -unperturbed_energy(k_x, k_y) - n_buffer;
@@ -51,11 +51,9 @@ namespace Hubbard {
 			this->delta_cdw *= 0.25;
 		}
 		this->delta_eta = 0;
+		this->delta_occupation = std::abs(V) * 0.1;
 
 		this->hamilton = Matrix_L::Zero(4, 4);
-		this->old_eta << 0.1, 0.1, 0.1, 0.1;
-		this->old_sc << 0.1, 0.1, 0.1, 0.1;
-		cos_occupation_old = V * 0.1;
 	}
 
 	Model::data_set UsingBroyden::computePhases(const bool print/*=false*/)
@@ -67,11 +65,9 @@ namespace Hubbard {
 			delta_cdw = x(0);
 			delta_sc = x(1);
 			delta_eta = x(2);
-			new_sc = Eigen::Vector4d::Zero();
-			new_eta = Eigen::Vector4d::Zero();
-			cos_occupation = 0;
+			delta_occupation = x(3);
 
-			F = Eigen::Vector3d::Zero();
+			F = Eigen::Vector4d::Zero();
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				double k_x = (k * L_PI) / (Constants::K_DISCRETIZATION);
@@ -89,15 +85,16 @@ namespace Hubbard {
 					F(0) += rho(0, 1);
 					F(1) += rho(0, 2);
 					F(2) += rho(0, 3);
-					cos_occupation += cos(k_x) * (rho(0, 0) - rho(2, 2));
+					F(3) += cos(k_x) * 0.5 * (rho(0, 0) - rho(2, 2));
+					//cos_occupation += cos(k_x) * 0.5 * (rho(0, 0) - rho(2, 2));
 				}
 			}
 			setParameters(F);
 			F -= x;
 		};
 		std::function<void(const Eigen::VectorXd&, Eigen::VectorXd&)> func = lambda_func;
-		Eigen::VectorXd x0 = Eigen::Vector3d(delta_cdw, delta_sc, delta_eta);
-		Eigen::VectorXd f0 = Eigen::Vector3d(delta_cdw, delta_sc, delta_eta);
+		Eigen::VectorXd x0 = Eigen::Vector4d(delta_cdw, delta_sc, delta_eta, delta_occupation);
+		Eigen::VectorXd f0 = Eigen::Vector4d(delta_cdw, delta_sc, delta_eta, delta_occupation);
 		for (size_t i = 0; i < 200 && f0.squaredNorm() > 1e-15; i++)
 		{
 			func(x0, f0);
@@ -113,12 +110,14 @@ namespace Hubbard {
 			x0(0) = delta_cdw;
 			x0(1) = delta_sc;
 			x0(2) = delta_eta;
+			x0(3) = delta_occupation;
+
 			if (print) {
 				std::cout << i << ":\t" << std::fixed << std::setprecision(8)
-					<< delta_cdw << "\t" << delta_sc << "\t" << delta_eta << "\t" << cos_occupation << std::endl;
+					<< delta_cdw << "\t" << delta_sc << "\t" << delta_eta << "\t" << delta_occupation << std::endl;
 			}
 		}
-
+		
 		if (!Utility::Roots::Broyden::compute(func, x0)) {
 			std::cerr << "No convergence for [T, U, V] = [" << this->temperature << ", " << this->U << ", " << this->V << "]" << std::endl;
 			delta_cdw = 0;
@@ -142,7 +141,7 @@ namespace Hubbard {
 			}
 			std::cout << ")   -> |f0| = " << f0.norm() << std::endl;
 
-			std::cout << "n cos = " << cos_occupation << std::endl;
+			std::cout << "n cos = " << delta_occupation << std::endl;
 		}
 
 		return ret;

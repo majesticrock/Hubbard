@@ -2,7 +2,7 @@
 
 # Define the token to search for and the new value to set
 TOKEN="model_parameters"
-NEW_VALUES=("0 -0.2 -0.1" "0 -0.4 -0.1" "0 -0.6 -0.1" "0 -0.8 -0.1" "0 -1.0 -0.1" "0 -1.2 -0.1" "0 -1.4 -0.1" "0 -1.6 -0.1")
+NEW_VALUES=("0 -1 -0.3" "0 -1 -0.2" "0 -1 -0.1" "0 -1 -0.05" "0 -1 0.05" "0 -1 0.1" "0 -1 0.2" "0 -1 0.3")
 
 for NEW_VALUE in "${NEW_VALUES[@]}"; do
   # Loop through each line in the config file

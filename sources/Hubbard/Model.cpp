@@ -11,6 +11,7 @@
 namespace Hubbard {
 	constexpr double SQRT_SALT = 1e-6;
 	constexpr double SALT = SQRT_SALT * SQRT_SALT;
+	constexpr double ERROR_MARGIN = 1e-10;
 
 	void Model::computeChemicalPotential()
 	{
@@ -193,7 +194,7 @@ namespace Hubbard {
 		K_minus = Matrix_L::Zero(3 * BASIS_SIZE, 3 * BASIS_SIZE);
 		L = Matrix_L::Zero(5 * BASIS_SIZE, 3 * BASIS_SIZE);
 
-//#pragma omp parallel for
+#pragma omp parallel for
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
 			size_t sum_limit = BASIS_SIZE;
@@ -419,6 +420,16 @@ namespace Hubbard {
 		}
 		else {
 			fill_M_N();
+
+			Eigen::SelfAdjointEigenSolver<Matrix_L> solver(M);
+			for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+			{
+				if (solver.eigenvalues()(i) < -SALT) {
+					std::cerr << solver.eigenvalues()(i) << std::endl;
+					throw std::invalid_argument("M is not positive!  " + std::to_string(solver.eigenvalues()(i)));
+				}
+			}
+			return nullptr;
 		}
 		for (size_t i = 0; i < L.rows(); i++)
 		{
@@ -436,7 +447,7 @@ namespace Hubbard {
 				if (std::abs(K_plus(i, j)) < SALT) {
 					K_plus(i, j) = 0;
 				}
-				if (std::abs(K_plus(i, j) - K_plus(j, i)) > SALT) {
+				if (std::abs(K_plus(i, j) - K_plus(j, i)) > ERROR_MARGIN) {
 					std::cerr << std::scientific << std::setprecision(12) << std::abs(K_plus(i, j) - K_plus(j, i)) << std::endl;
 					throw std::invalid_argument("K_+ is not hermitian: " + std::to_string(K_plus(i, j))
 						+ " || " + std::to_string(K_plus(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
@@ -450,7 +461,7 @@ namespace Hubbard {
 				if (std::abs(K_minus(i, j)) < SALT) {
 					K_minus(i, j) = 0;
 				}
-				if (std::abs(K_minus(i, j) - K_minus(j, i)) > SALT) {
+				if (std::abs(K_minus(i, j) - K_minus(j, i)) > ERROR_MARGIN) {
 					std::cerr << std::scientific << std::setprecision(12) << std::abs(K_minus(i, j) - K_minus(j, i)) << std::endl;
 					throw std::invalid_argument("K_- is not hermitian: " + std::to_string(K_minus(i, j))
 						+ " || " + std::to_string(K_minus(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));

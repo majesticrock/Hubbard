@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 
 	std::vector<std::vector<double>> energies;
 	model2.getEnergies(energies, 1);
-	Utility::saveData(energies, "../../data/energies.txt");
+	Utility::saveData(energies, "../../data/energies.dat.gz");
 	return MPI_Finalize();
 #endif // _DO_TEST
 	// Setup the parameters T, U, V
@@ -166,9 +166,9 @@ int main(int argc, char** argv)
 			std::string output_folder = input.getString("output_folder");
 			std::filesystem::create_directories("../../data/phases/" + output_folder);
 
-			Utility::saveData_boost(recieve_cdw, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw.txt", comments);
-			Utility::saveData_boost(recieve_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "sc.txt", comments);
-			Utility::saveData_boost(recieve_eta, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.txt", comments);
+			Utility::saveData_boost(recieve_cdw, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw.dat.gz", comments);
+			Utility::saveData_boost(recieve_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "sc.dat.gz", comments);
+			Utility::saveData_boost(recieve_eta, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.dat.gz", comments);
 		}
 	}
 	else if (input.getString("compute_what") == "modes") {
@@ -180,7 +180,6 @@ int main(int argc, char** argv)
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		std::vector<data_vector> reciever;
 		std::vector<data_vector> oneParticleEnergies;
-		double param;
 		double totalGapValue;
 		std::unique_ptr<std::vector<Hubbard::Resolvent_L>> resolvents;
 
@@ -197,7 +196,6 @@ int main(int argc, char** argv)
 		totalGapValue = model->getTotalGapValue();
 		resolvents = model->computeCollectiveModes(reciever);
 		model->getAllEnergies(oneParticleEnergies);
-		param = modelParameters.getGlobal();
 		modelParameters.incrementGlobalIterator();
 
 		if (rank == 0) {
@@ -211,19 +209,15 @@ int main(int argc, char** argv)
 			std::string output_folder = input.getString("output_folder") + modelParameters.getFileName();
 			std::filesystem::create_directories("../../data/" + output_folder);
 
-			std::string param_name = std::to_string(param);
-			param_name.erase(param_name.find_last_not_of('0') + 1, std::string::npos);
-			param_name.erase(param_name.find_last_not_of('.') + 1, std::string::npos);
-
 			comments.push_back("Total Gap=" + std::to_string(totalGapValue));
 			if (!(reciever.empty())) {
-				Utility::saveData(reciever, "../../data/" + output_folder + param_name + ".txt", comments);
+				Utility::saveData_boost(reciever, "../../data/" + output_folder + ".dat.gz", comments);
 			}
 			if (resolvents) {
 				std::string names[4] = { "phase_SC", "phase_CDW", "higgs_SC", "higgs_CDW" };
 				for (size_t i = 0; i < 4; i++)
 				{
-					(*resolvents)[i].writeDataToFile("../../data/" + output_folder + param_name + "_resolvent_" + names[i]);
+					(*resolvents)[i].writeDataToFile("../../data/" + output_folder + "resolvent_" + names[i]);
 				}
 			}
 			else {
@@ -231,7 +225,7 @@ int main(int argc, char** argv)
 			}
 
 			comments.pop_back();
-			Utility::saveData_boost(oneParticleEnergies, "../../data/" + output_folder + param_name + "_one_particle.txt", comments);
+			Utility::saveData_boost(oneParticleEnergies, "../../data/" + output_folder + "one_particle.dat.gz", comments);
 		}
 	}
 #ifndef _DEBUG

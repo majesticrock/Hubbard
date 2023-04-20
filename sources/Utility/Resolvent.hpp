@@ -443,28 +443,8 @@ namespace Utility {
 		// Asummes that the data has been computed before...
 		void writeDataToFile(const std::string& filename) const
 		{
-			saveData_boost(this->data, filename + ".dat.gz");
-			saveData(this->data, filename + ".txt");
-			return;
-
 			std::cout << "Total Lanczos iterations: " << this->data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
-			std::ofstream out(filename);
-			if (out.is_open()) {
-				out << "# " << Utility::time_stamp() << "\n# No Change Iteration: " << noEigenvalueChangeAt << "\n\n" << std::scientific << std::setprecision(12);
-				for (const auto& set : this->data) {
-					for (const auto& elem : set.a_i) {
-						out << elem << " ";
-					}
-					out << "0 \n";
-					for (const auto& elem : set.b_i) {
-						out << elem << " ";
-					}
-					out << "\n";
-				}
-			}
-			else {
-				std::cerr << "Could not open output filestream! " << filename << std::endl;
-			}
+			saveData_boost(this->data, filename + ".dat.gz");
 		};
 	};
 }
