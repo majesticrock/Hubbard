@@ -46,11 +46,11 @@ namespace Utility {
 	// data_type is a type that overloads the << operator - e.g. float or double, but custom types are allowed too
 	// outstream_type is a type of output stream, e.g. std::ofstream or std::ostringstream
 	template <typename data_type, typename outstream_type>
-	class OutputWriter{
+	class OutputWriter {
 	public:
 		// Writes the current time stamp and comments to the file
 		// If the latter is not provided only the time stamp is written
-		void writeComments(outstream_type& out, const std::vector<std::string>& comments = std::vector<std::string>()) const 
+		void writeComments(outstream_type& out, const std::vector<std::string>& comments = std::vector<std::string>()) const
 		{
 			out << "# " << time_stamp() << "\n#\n";
 			for (int i = 0; i < comments.size(); i++)
@@ -60,19 +60,19 @@ namespace Utility {
 		};
 
 		// Appends a line consisting of <data> to <out>
-		void appendLine(const std::vector<data_type>& data, outstream_type& out) const 
+		void appendLine(const std::vector<data_type>& data, outstream_type& out) const
 		{
 			for (int i = 0; i < data.size(); i++)
 			{
 				out << data[i];
-				if(i < data.size() - 1){
+				if (i < data.size() - 1) {
 					out << " ";
 				}
 			}
 			out << "\n";
 		}
 
-		void saveData(const data_type& data, outstream_type& out, 
+		void saveData(const data_type& data, outstream_type& out,
 			const std::vector<std::string>& comments = std::vector<std::string>()) const
 		{
 			writeComments(out, comments);
@@ -80,16 +80,16 @@ namespace Utility {
 			out << data;
 		};
 
-		void saveData(const std::vector<data_type>& data, outstream_type& out, 
-			const std::vector<std::string>& comments = std::vector<std::string>()) const 
+		void saveData(const std::vector<data_type>& data, outstream_type& out,
+			const std::vector<std::string>& comments = std::vector<std::string>()) const
 		{
 			writeComments(out, comments);
 			out << std::scientific << std::setprecision(10);
 			appendLine(data, out);
 		};
 
-		void saveData(const std::vector<std::vector<data_type>>& data, outstream_type& out, 
-			const std::vector<std::string>& comments = std::vector<std::string>()) const 
+		void saveData(const std::vector<std::vector<data_type>>& data, outstream_type& out,
+			const std::vector<std::string>& comments = std::vector<std::string>()) const
 		{
 			writeComments(out, comments);
 			out << std::scientific << std::setprecision(10);

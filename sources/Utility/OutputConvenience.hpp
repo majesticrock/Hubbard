@@ -9,83 +9,86 @@
 #include <sstream>
 #endif
 
-namespace Utility{
+namespace Utility {
 #ifdef _USE_BOOST
-    template <typename data_type>
-    void saveData_boost(const data_type& data, const std::string& filename, 
-			const std::vector<std::string>& comments = std::vector<std::string>())
-    {
+	template <typename data_type>
+	void saveData_boost(const data_type& data, const std::string& filename,
+		const std::vector<std::string>& comments = std::vector<std::string>())
+	{
 		// create file
-  		std::ofstream ofile(filename, std::ios_base::out | std::ios_base::binary);
-        if(ofile.is_open()){
-  		    boost::iostreams::filtering_ostream out;
-  		    out.push(boost::iostreams::gzip_compressor());
-  		    out.push(ofile);
+		std::ofstream ofile(filename, std::ios_base::out | std::ios_base::binary);
+		if (ofile.is_open()) {
+			boost::iostreams::filtering_ostream out;
+			out.push(boost::iostreams::gzip_compressor());
+			out.push(ofile);
 
-            OutputWriter<data_type, std::ostringstream> ow;
-            // The extra stringstream is a proper std::ostream (boost::iostreams are not)
-            // and can thereby be used with the standard operator<< overloading
-            std::ostringstream oss;
-            ow.saveData(data, oss, comments);
-            out << oss.str();
+			OutputWriter<data_type, std::ostringstream> ow;
+			// The extra stringstream is a proper std::ostream (boost::iostreams are not)
+			// and can thereby be used with the standard operator<< overloading
+			std::ostringstream oss;
+			ow.saveData(data, oss, comments);
+			out << oss.str();
 
-  		    out.pop(); // flushes the filter chain and closes the file
-        } else {
+			out.pop(); // flushes the filter chain and closes the file
+		}
+		else {
 			std::cerr << "Could not open output filestream for file: " << filename << std::endl;
 		}
 	}
 
-    template <typename data_type>
-    void saveData_boost(const std::vector<data_type>& data, const std::string& filename, 
-			const std::vector<std::string>& comments = std::vector<std::string>())
-    {
+	template <typename data_type>
+	void saveData_boost(const std::vector<data_type>& data, const std::string& filename,
+		const std::vector<std::string>& comments = std::vector<std::string>())
+	{
 		// create file
-  		std::ofstream ofile(filename, std::ios_base::out | std::ios_base::binary);
-        if(ofile.is_open()){
-  		    boost::iostreams::filtering_ostream out;
-  		    out.push(boost::iostreams::gzip_compressor());
-  		    out.push(ofile);
+		std::ofstream ofile(filename, std::ios_base::out | std::ios_base::binary);
+		if (ofile.is_open()) {
+			boost::iostreams::filtering_ostream out;
+			out.push(boost::iostreams::gzip_compressor());
+			out.push(ofile);
 
-            OutputWriter<data_type, std::ostringstream> ow;
-            // The extra stringstream is a proper std::ostream (boost::iostreams are not)
-            // and can thereby be used with the standard operator<< overloading
-            std::ostringstream oss;
-            ow.saveData(data, oss, comments);
-            out << oss.str();
+			OutputWriter<data_type, std::ostringstream> ow;
+			// The extra stringstream is a proper std::ostream (boost::iostreams are not)
+			// and can thereby be used with the standard operator<< overloading
+			std::ostringstream oss;
+			ow.saveData(data, oss, comments);
+			out << oss.str();
 
-  		    out.pop(); // flushes the filter chain and closes the file
-        } else {
+			out.pop(); // flushes the filter chain and closes the file
+		}
+		else {
 			std::cerr << "Could not open output filestream for file: " << filename << std::endl;
 		}
 	}
 
-    template <typename data_type>
-    void saveData_boost(const std::vector<std::vector<data_type>>& data, const std::string& filename, 
-			const std::vector<std::string>& comments = std::vector<std::string>())
-    {
+	template <typename data_type>
+	void saveData_boost(const std::vector<std::vector<data_type>>& data, const std::string& filename,
+		const std::vector<std::string>& comments = std::vector<std::string>())
+	{
 		// create file
-  		std::ofstream ofile(filename, std::ios_base::out | std::ios_base::binary);
-        if(ofile.is_open()){
-  		    boost::iostreams::filtering_ostream out;
-  		    out.push(boost::iostreams::gzip_compressor());
-  		    out.push(ofile);
+		std::ofstream ofile(filename, std::ios_base::out | std::ios_base::binary);
+		if (ofile.is_open()) {
+			boost::iostreams::filtering_ostream out;
+			out.push(boost::iostreams::gzip_compressor());
+			out.push(ofile);
 
-            OutputWriter<data_type, std::ostringstream> ow;
-            // The extra stringstream is a proper std::ostream (boost::iostreams are not)
-            // and can thereby be used with the standard operator<< overloading
-            std::ostringstream oss;
-            ow.saveData(data, oss, comments);
-            out << oss.str();
+			OutputWriter<data_type, std::ostringstream> ow;
+			// The extra stringstream is a proper std::ostream (boost::iostreams are not)
+			// and can thereby be used with the standard operator<< overloading
+			std::ostringstream oss;
+			ow.saveData(data, oss, comments);
+			out << oss.str();
 
-  		    out.pop(); // flushes the filter chain and closes the file
-        } else {
+			out.pop(); // flushes the filter chain and closes the file
+		}
+		else {
 			std::cerr << "Could not open output filestream for file: " << filename << std::endl;
 		}
 	}
 
 	// This function assumes that the number of elements of <data> is divisible by linebreak
 	template <typename data_type>
-	void saveData_boost(const std::vector<data_type>& data, const int linebreak, const std::string& filename, 
+	void saveData_boost(const std::vector<data_type>& data, const int linebreak, const std::string& filename,
 		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
 		if (data.size() % linebreak != 0) {
@@ -119,10 +122,10 @@ namespace Utility{
 	};
 #endif
 
-    // Provides an easy-to-use method that uses std::ofstream to write <data> to <filename> in plain text
+	// Provides an easy-to-use method that uses std::ofstream to write <data> to <filename> in plain text
 	template <typename data_type>
-	void saveData(const std::vector<data_type>& data, const std::string& filename, 
-			const std::vector<std::string>& comments = std::vector<std::string>()) 
+	void saveData(const std::vector<data_type>& data, const std::string& filename,
+		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
 		std::ofstream out(filename);
 		if (out.is_open()) {
@@ -136,7 +139,7 @@ namespace Utility{
 
 	// Provides an easy-to-use method that uses std::ofstream to write <data> to <filename> in plain text
 	template <typename data_type>
-	void saveData(const std::vector<std::vector<data_type>>& data, const std::string& filename, 
+	void saveData(const std::vector<std::vector<data_type>>& data, const std::string& filename,
 		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
 		std::ofstream out(filename);
@@ -153,7 +156,7 @@ namespace Utility{
 	template <typename data_type>
 	void saveData(const std::vector<data_type>& data, const int linebreak, const std::string& filename, const std::vector<std::string>& comments)
 	{
-		if(data.size() % linebreak != 0){
+		if (data.size() % linebreak != 0) {
 			std::cerr << "The numbe rof data elements is not divisible by linebreak!" << std::endl;
 			return;
 		}
@@ -161,10 +164,9 @@ namespace Utility{
 		if (out.is_open()) {
 			OutputWriter<data_type, std::ofstream> ow;
 			ow.writeComments(out, comments);
-			
-			for (size_t n = linebreak; n < data.size(); n+=linebreak)
+
+			for (size_t n = linebreak; n < data.size(); n += linebreak)
 			{
-				
 				std::vector<data_type> part_vec(data.begin() + n - linebreak, data.begin() + n);
 				ow.appendLine(part_vec, out);
 			}
