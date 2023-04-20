@@ -164,11 +164,11 @@ int main(int argc, char** argv)
 				+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
 			std::string output_folder = input.getString("output_folder");
-			std::filesystem::create_directories("../../data/" + output_folder);
+			std::filesystem::create_directories("../../data/phases/" + output_folder);
 
-			Utility::saveData(recieve_cdw, SECOND_IT_STEPS, "../../data/" + output_folder + "cdw.txt", comments);
-			Utility::saveData(recieve_sc, SECOND_IT_STEPS, "../../data/" + output_folder + "sc.txt", comments);
-			Utility::saveData(recieve_eta, SECOND_IT_STEPS, "../../data/" + output_folder + "eta.txt", comments);
+			Utility::saveData_boost(recieve_cdw, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw.txt", comments);
+			Utility::saveData_boost(recieve_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "sc.txt", comments);
+			Utility::saveData_boost(recieve_eta, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.txt", comments);
 		}
 	}
 	else if (input.getString("compute_what") == "modes") {
@@ -178,27 +178,27 @@ int main(int argc, char** argv)
 			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-		std::vector<std::vector<data_vector>> reciever(FIRST_IT_STEPS);
-		std::vector<std::vector<data_vector>> oneParticleEnergies(FIRST_IT_STEPS);
-		std::vector<double> param(FIRST_IT_STEPS);
-		std::vector<double> totalGapValues(FIRST_IT_STEPS);
+		std::vector<data_vector> reciever;
+		std::vector<data_vector> oneParticleEnergies;
+		double param;
+		double totalGapValue;
 		std::unique_ptr<std::vector<Hubbard::Resolvent_L>> resolvents;
-		for (int T = 0; T < FIRST_IT_STEPS; T++)
-		{
-			std::unique_ptr<Hubbard::Model> model;
-			if (input.getBool("use_broyden")) {
-				model = std::make_unique<Hubbard::UsingBroyden>(Hubbard::UsingBroyden(modelParameters, input.getInt("number_of_basis_terms"), input.getInt("start_basis_at")));
-			}
-			else {
-				model = std::make_unique<Hubbard::HubbardCDW>(Hubbard::HubbardCDW(modelParameters, input.getInt("number_of_basis_terms"), input.getInt("start_basis_at")));
-			}
-			model->computePhases();
-			totalGapValues[T] = model->getTotalGapValue();
-			resolvents = model->computeCollectiveModes(reciever[T]);
-			model->getAllEnergies(oneParticleEnergies[T]);
-			param[T] = modelParameters.getGlobal();
-			modelParameters.incrementGlobalIterator();
+
+		std::unique_ptr<Hubbard::Model> model;
+		if (input.getBool("use_broyden")) {
+			model = std::make_unique<Hubbard::UsingBroyden>(
+				Hubbard::UsingBroyden(modelParameters, input.getInt("number_of_basis_terms"), input.getInt("start_basis_at")));
 		}
+		else {
+			model = std::make_unique<Hubbard::HubbardCDW>(
+				Hubbard::HubbardCDW(modelParameters, input.getInt("number_of_basis_terms"), input.getInt("start_basis_at")));
+		}
+		model->computePhases();
+		totalGapValue = model->getTotalGapValue();
+		resolvents = model->computeCollectiveModes(reciever);
+		model->getAllEnergies(oneParticleEnergies);
+		param = modelParameters.getGlobal();
+		modelParameters.incrementGlobalIterator();
 
 		if (rank == 0) {
 			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
@@ -208,31 +208,30 @@ int main(int argc, char** argv)
 			comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
 				+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
-			std::string output_folder = input.getString("output_folder") + input.getString("global_iterator_type") + "_modes/";
+			std::string output_folder = input.getString("output_folder") + modelParameters.getFileName();
 			std::filesystem::create_directories("../../data/" + output_folder);
 
-			for (int i = 0; i < FIRST_IT_STEPS; i++)
-			{
-				std::string param_name = std::to_string(param[i]);
-				param_name.erase(param_name.find_last_not_of('0') + 1, std::string::npos);
-				param_name.erase(param_name.find_last_not_of('.') + 1, std::string::npos);
+			std::string param_name = std::to_string(param);
+			param_name.erase(param_name.find_last_not_of('0') + 1, std::string::npos);
+			param_name.erase(param_name.find_last_not_of('.') + 1, std::string::npos);
 
-				comments.push_back("Total Gap=" + std::to_string(totalGapValues[i]));
-				Utility::saveData(reciever[i], "../../data/" + output_folder + param_name + ".txt", comments);
-				if (resolvents) {
-					std::string names[4] = { "phase_SC", "phase_CDW", "higgs_SC", "higgs_CDW" };
-					for (size_t i = 0; i < 4; i++)
-					{
-						(*resolvents)[i].writeDataToFile("../../data/" + output_folder + param_name + "_resolvent_" + names[i]);
-					}
-				}
-				else {
-					std::cout << "Resolvent returned a null pointer." << std::endl;
-				}
-
-				comments.pop_back();
-				Utility::saveData(oneParticleEnergies[i], "../../data/" + output_folder + param_name + "_one_particle.txt", comments);
+			comments.push_back("Total Gap=" + std::to_string(totalGapValue));
+			if (!(reciever.empty())) {
+				Utility::saveData(reciever, "../../data/" + output_folder + param_name + ".txt", comments);
 			}
+			if (resolvents) {
+				std::string names[4] = { "phase_SC", "phase_CDW", "higgs_SC", "higgs_CDW" };
+				for (size_t i = 0; i < 4; i++)
+				{
+					(*resolvents)[i].writeDataToFile("../../data/" + output_folder + param_name + "_resolvent_" + names[i]);
+				}
+			}
+			else {
+				std::cout << "Resolvent returned a null pointer." << std::endl;
+			}
+
+			comments.pop_back();
+			Utility::saveData_boost(oneParticleEnergies, "../../data/" + output_folder + param_name + "_one_particle.txt", comments);
 		}
 	}
 #ifndef _DEBUG

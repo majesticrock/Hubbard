@@ -175,6 +175,21 @@ namespace Hubbard {
 				return -128;
 			};
 			void printGlobal() const;
+			inline std::string getFileName() const {
+				std::string ret = "T=" + std::to_string(temperature);
+				ret.erase(ret.find_last_not_of('0') + 1, std::string::npos);
+				ret.erase(ret.find_last_not_of('.') + 1, std::string::npos);
+
+				ret += "/U=" + std::to_string(U);
+				ret.erase(ret.find_last_not_of('0') + 1, std::string::npos);
+				ret.erase(ret.find_last_not_of('.') + 1, std::string::npos);
+
+				ret += "_V=" + std::to_string(V);
+				ret.erase(ret.find_last_not_of('0') + 1, std::string::npos);
+				ret.erase(ret.find_last_not_of('.') + 1, std::string::npos);
+
+				return ret;
+			};
 		};
 		struct data_set {
 			double_prec delta_cdw, delta_sc, delta_eta;
