@@ -6,8 +6,8 @@ namespace Hubbard {
 	class BasicHubbardModel : public Model
 	{
 	protected:
-		virtual void fillHamiltonian(double k_x, double k_y) override;
-		virtual inline void setParameters(double cdw, double sc, double eta) {
+		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
+		virtual inline void setParameters(double_prec cdw, double_prec sc, double_prec eta) {
 			this->delta_cdw = cdw * this->U / BASIS_SIZE;
 			this->delta_sc = sc * this->U / BASIS_SIZE;
 			this->delta_eta = eta * this->U / BASIS_SIZE;

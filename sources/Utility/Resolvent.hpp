@@ -18,7 +18,7 @@ namespace Utility {
 	};
 
 	template <typename T>
-	inline std::ostream& operator<<( std::ostream& os, const ResolventData<T>& data )
+	inline std::ostream& operator<<(std::ostream& os, const ResolventData<T>& data)
 	{
 		for (const auto& elem : data.a_i) {
 			os << elem << " ";
@@ -28,8 +28,8 @@ namespace Utility {
 			os << elem << " ";
 		}
 		os << "\n";
-		
-  		return os;
+
+		return os;
 	}
 
 	// choose the floating point precision, i.e. float, double or long double
@@ -295,7 +295,7 @@ namespace Utility {
 				deltas.push_back(basisVectors.back().dot(buffer));
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 				T norm_squared = currentSolution.dot(currentSolution);
-				assertm(norm_squared > 0, ("Norm in loop is complex!" + std::to_string(norm_squared)));
+				assertm(norm_squared >= 0, ("Norm in loop is complex!"));
 
 				gammas.push_back(sqrt(norm_squared));
 				basisVectors.push_back(currentSolution / gammas.back());

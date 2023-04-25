@@ -1,6 +1,4 @@
 #pragma once
-#define L_PI 3.141592653589793238462643383279502884L /* pi */
-
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <memory>
@@ -13,8 +11,9 @@
 
 namespace Hubbard {
 	// Defines the working precision of the entire project
-	// Change to float, double or long double - so far double produces the best results
+	// Change to float, double_prec or long double_prec - so far double_prec produces the best results
 	typedef double double_prec;
+	constexpr double_prec L_PI = 3.141592653589793238462643383279502884L; /* pi */
 	typedef Eigen::Matrix<double_prec, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
 	typedef Eigen::Vector<double_prec, Eigen::Dynamic> Vector_L;
 	typedef Utility::Resolvent<double_prec> Resolvent_L;
@@ -26,7 +25,7 @@ namespace Hubbard {
 	protected:
 		size_t BASIS_SIZE;
 		size_t TOTAL_BASIS;
-		double_prec delta_sc, delta_cdw, delta_eta;
+		double_prec delta_sc, delta_cdw, delta_eta, delta_occupation;
 		Matrix_L hamilton;
 		double_prec temperature;
 		double_prec U;
@@ -60,7 +59,6 @@ namespace Hubbard {
 
 		template <typename T>
 		inline T fermi_dirac(T energy) const {
-			//energy += chemical_potential;
 			if (temperature > 1e-8) {
 				return (1. / (1 + exp(energy / temperature)));
 			}
@@ -76,9 +74,9 @@ namespace Hubbard {
 			return -2 * (cos(k_x) + cos(k_y));
 		};
 		inline double_prec unperturbed_energy(size_t k) const {
-			return -2 * (cos(index_to_k_vector(x(k))) + cos(index_to_k_vector(y(k))));// - chemical_potential;
+			return -2 * (cos(index_to_k_vector(x(k))) + cos(index_to_k_vector(y(k))));
 		};
-		virtual void fillHamiltonian(double k_x, double k_y) = 0;
+		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) = 0;
 
 		// Computes the respective x or y component from a given input index
 		inline int x(int idx) const {
@@ -113,7 +111,8 @@ namespace Hubbard {
 				}
 			}
 		};
-		inline Eigen::Vector2i computeMomentum(const SymbolicOperators::Momentum& momentum, const std::vector<Eigen::Vector2i>& indizes, const std::vector<char>& momenta) const {
+		inline Eigen::Vector2i computeMomentum(const SymbolicOperators::Momentum& momentum,
+			const std::vector<Eigen::Vector2i>& indizes, const std::vector<char>& momenta) const {
 			Eigen::Vector2i buffer = { 0,0 };
 			for (int i = 0; i < momenta.size(); ++i)
 			{
@@ -147,22 +146,22 @@ namespace Hubbard {
 		private:
 			std::string global_iterator_type;
 			std::string second_iterator_type;
-			double global_step;
-			double second_step;
-			double second_it_min;
+			double_prec global_step;
+			double_prec second_step;
+			double_prec second_it_min;
 
-			void incrementer(std::string& s, const double step);
+			void incrementer(std::string& s, const double_prec step);
 		public:
-			double temperature;
-			double U;
-			double V;
+			double_prec temperature;
+			double_prec U;
+			double_prec V;
 
-			ModelParameters(double _temperature, double _U, double _V, double global_step, double second_step,
+			ModelParameters(double_prec _temperature, double_prec _U, double_prec _V, double_prec global_step, double_prec second_step,
 				std::string _global_iterator_type, std::string _second_iterator_type);
 			void setSecondIterator(int it_num);
 			void incrementGlobalIterator();
 			void incrementSecondIterator();
-			inline double getGlobal() const {
+			inline double_prec getGlobal() const {
 				if (global_iterator_type == "T") {
 					return temperature;
 				}
@@ -175,32 +174,18 @@ namespace Hubbard {
 				return -128;
 			};
 			void printGlobal() const;
-			inline std::string getFileName() const {
-				std::string ret = "T=" + std::to_string(temperature);
-				ret.erase(ret.find_last_not_of('0') + 1, std::string::npos);
-				ret.erase(ret.find_last_not_of('.') + 1, std::string::npos);
-
-				ret += "/U=" + std::to_string(U);
-				ret.erase(ret.find_last_not_of('0') + 1, std::string::npos);
-				ret.erase(ret.find_last_not_of('.') + 1, std::string::npos);
-
-				ret += "_V=" + std::to_string(V);
-				ret.erase(ret.find_last_not_of('0') + 1, std::string::npos);
-				ret.erase(ret.find_last_not_of('.') + 1, std::string::npos);
-
-				return ret;
-			};
+			std::string getFileName() const;
 		};
 		struct data_set {
 			double_prec delta_cdw, delta_sc, delta_eta;
 			void print() const;
 		};
 
-		Model(double _temperature, double _U, int _number_of_basis_terms, int _start_basis_at);
+		Model(double_prec _temperature, double_prec _U, int _number_of_basis_terms, int _start_basis_at);
 		Model(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
 		// reciever is the vector the resulting data will be stored in
 		// direction gives the angle between the k-path and the k_x axis in multiples of L_PI
-		void getEnergies(std::vector<std::vector<double>>& reciever, double direction);
+		void getEnergies(std::vector<std::vector<double>>& reciever, double_prec direction);
 		// saves all one particle energies to reciever
 		void getAllEnergies(std::vector<std::vector<double>>& reciever);
 		virtual data_set computePhases(const bool print = false) = 0;
@@ -208,7 +193,7 @@ namespace Hubbard {
 		// but the mean field system to obtain the expectation values
 		std::unique_ptr<std::vector<Resolvent_L>> computeCollectiveModes(std::vector<std::vector<double>>& reciever);
 		// Returns the total gap value sqrt(sc^2 + cdw^2 + eta^2)
-		inline double getTotalGapValue() const {
+		inline double_prec getTotalGapValue() const {
 			return sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta);
 		};
 		void loadWick(const std::string& filename);

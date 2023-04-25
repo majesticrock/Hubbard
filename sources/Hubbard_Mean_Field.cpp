@@ -51,8 +51,9 @@ int main(int argc, char** argv)
 	Utility::InputFileReader input(argv[1]);
 	Hubbard::Constants::K_DISCRETIZATION = input.getInt("k_discretization");
 
+	//#define _DO_TEST
 #ifdef _DO_TEST
-	Hubbard::Model::ModelParameters mP(0, -2, -2, 0, 0, "", "");
+	Hubbard::Model::ModelParameters mP(0, -0.2, -0.2, 0, 0, "", "");
 	Hubbard::HubbardCDW model(mP, 0, 0);
 
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
@@ -70,7 +71,7 @@ int main(int argc, char** argv)
 
 	std::vector<std::vector<double>> energies;
 	model2.getEnergies(energies, 1);
-	Utility::saveData(energies, "../../data/energies.dat.gz");
+	Utility::saveData_boost(energies, "../../data/energies.dat.gz");
 	return MPI_Finalize();
 #endif // _DO_TEST
 	// Setup the parameters T, U, V
@@ -173,6 +174,7 @@ int main(int argc, char** argv)
 	}
 	else if (input.getString("compute_what") == "modes") {
 		omp_set_num_threads(8);
+
 		Hubbard::Model::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 			(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, 0,
 			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
@@ -196,12 +198,8 @@ int main(int argc, char** argv)
 		totalGapValue = model->getTotalGapValue();
 		resolvents = model->computeCollectiveModes(reciever);
 		model->getAllEnergies(oneParticleEnergies);
-		modelParameters.incrementGlobalIterator();
 
 		if (rank == 0) {
-			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-			std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-
 			std::vector<std::string> comments;
 			comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
 				+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
@@ -215,7 +213,7 @@ int main(int argc, char** argv)
 			}
 			if (resolvents) {
 				std::string names[4] = { "phase_SC", "phase_CDW", "higgs_SC", "higgs_CDW" };
-				for (size_t i = 0; i < 4; i++)
+				for (size_t i = 0; i < resolvents->size(); i++)
 				{
 					(*resolvents)[i].writeDataToFile("../../data/" + output_folder + "resolvent_" + names[i]);
 				}
@@ -223,6 +221,8 @@ int main(int argc, char** argv)
 			else {
 				std::cout << "Resolvent returned a null pointer." << std::endl;
 			}
+			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+			std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
 			comments.pop_back();
 			Utility::saveData_boost(oneParticleEnergies, "../../data/" + output_folder + "one_particle.dat.gz", comments);

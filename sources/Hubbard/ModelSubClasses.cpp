@@ -1,7 +1,9 @@
 #include "Model.hpp"
+#include <string>
+#include <sstream>
 
 namespace Hubbard {
-	Model::ModelParameters::ModelParameters(double _temperature, double _U, double _V, double _global_step, double _second_step,
+	Model::ModelParameters::ModelParameters(double_prec _temperature, double_prec _U, double_prec _V, double_prec _global_step, double_prec _second_step,
 		std::string _global_iterator_type, std::string _second_iterator_type)
 		: global_iterator_type(_global_iterator_type), second_iterator_type(_second_iterator_type),
 		global_step(_global_step), second_step(_second_step), temperature(_temperature), U(_U), V(_V)
@@ -20,7 +22,7 @@ namespace Hubbard {
 		}
 	}
 
-	void Model::ModelParameters::incrementer(std::string& s, const double step)
+	void Model::ModelParameters::incrementer(std::string& s, const double_prec step)
 	{
 		if (s == "T") {
 			temperature += step;
@@ -56,6 +58,32 @@ namespace Hubbard {
 	void Model::ModelParameters::printGlobal() const
 	{
 		std::cout << global_iterator_type << " = " << getGlobal();
+	}
+	std::string Model::ModelParameters::getFileName() const
+	{
+		auto improved_string = [](double number) -> std::string {
+			if (std::floor(number) == number) {
+				// If the number is a whole number, format it with one decimal place
+				std::ostringstream out;
+				out.precision(1);
+				out << std::fixed << number;
+				return out.str();
+			}
+			else {
+				std::string str = std::to_string(number);
+				// Remove trailing zeroes
+				str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+				str.erase(str.find_last_not_of('.') + 1, std::string::npos);
+				return str;
+			}
+		};
+
+		std::string ret = "T=" + improved_string(temperature);
+		ret += "/U=" + improved_string(U);
+		ret += "_V=" + improved_string(V);
+
+		ret += "/";
+		return ret;
 	}
 	void Model::data_set::print() const {
 		std::cout << delta_cdw << "\t" << delta_sc << "\t" << delta_eta

@@ -6,7 +6,7 @@
 #include "BasicHubbardModel.hpp"
 
 namespace Hubbard {
-	void BasicHubbardModel::fillHamiltonian(double k_x, double k_y)
+	void BasicHubbardModel::fillHamiltonian(double_prec k_x, double_prec k_y)
 	{
 		hamilton.fill(0);
 
@@ -40,14 +40,14 @@ namespace Hubbard {
 	{
 		Matrix_L rho = Matrix_L::Zero(4, 4);
 		Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
-		const double EPSILON = 1e-8;
-		double sc = 0, cdw = 0, eta = 0;
-		double old_parameters[3] = { 100, 100, 100 };
-		double error = 100;
-		double error_cdw = 100, error_cdw_osc = 100;
-		double error_sc = 100, error_sc_osc = 100;
-		double error_eta = 100, error_eta_osc = 100;
-		const int MAX_STEPS = 10000;
+		constexpr double_prec EPSILON = 1e-8;
+		double_prec sc = 0, cdw = 0, eta = 0;
+		double_prec old_parameters[3] = { 100, 100, 100 };
+		double_prec error = 100;
+		double_prec error_cdw = 100, error_cdw_osc = 100;
+		double_prec error_sc = 100, error_sc_osc = 100;
+		double_prec error_eta = 100, error_eta_osc = 100;
+		constexpr int MAX_STEPS = 10000;
 		for (size_t i = 0; i < MAX_STEPS && error > EPSILON; i++)
 		{
 			sc = 0;
@@ -96,7 +96,7 @@ namespace Hubbard {
 			delta_eta = ((error_eta_osc) < EPSILON) ? 0 : delta_eta;
 
 			if (print) {
-				double total = 0;
+				double_prec total = 0;
 				for (size_t i = 0; i < 3; i++)
 				{
 					total += old_parameters[i] * old_parameters[i];

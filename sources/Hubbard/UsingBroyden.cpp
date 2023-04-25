@@ -15,28 +15,25 @@ namespace Hubbard {
 		Model::computeChemicalPotential();
 		chemical_potential += 0.5 * V;
 	}
-	void UsingBroyden::fillHamiltonian(double k_x, double k_y)
+	void UsingBroyden::fillHamiltonian(double_prec k_x, double_prec k_y)
 	{
 		hamilton.fill(0);
 
-		//Eigen::Vector4d cos_sin;
-		//cos_sin << cos(k_x), cos(k_y), sin(k_x), sin(k_y);
 		hamilton(0, 1) = delta_cdw;
-		hamilton(0, 2) = delta_sc;//+ V * old_sc.dot(cos_sin);
-		hamilton(0, 3) = delta_eta;// - V * old_eta.dot(cos_sin);
+		hamilton(0, 2) = delta_sc;
+		hamilton(0, 3) = delta_eta;
 
-		hamilton(1, 2) = delta_eta;// + V * old_eta.dot(cos_sin);
-		hamilton(1, 3) = delta_sc;// -V * old_sc.dot(cos_sin);
+		hamilton(1, 2) = delta_eta;
+		hamilton(1, 3) = delta_sc;
 		hamilton(2, 3) = -delta_cdw;
 
 		Matrix_L buffer = hamilton.transpose();
 		hamilton += buffer;
-		//double eps = unperturbed_energy(k_x, k_y);
-		double n_buffer = -2 * (cos(k_x) + cos(k_y)) * delta_occupation;
-		hamilton(0, 0) = unperturbed_energy(k_x, k_y) + n_buffer;
-		hamilton(1, 1) = unperturbed_energy(k_x + L_PI, k_y + L_PI) - n_buffer;
-		hamilton(2, 2) = -unperturbed_energy(k_x, k_y) - n_buffer;
-		hamilton(3, 3) = -unperturbed_energy(k_x + L_PI, k_y + L_PI) + n_buffer;
+		const double_prec eps = unperturbed_energy(k_x, k_y) - (2 * delta_occupation * (cos(k_x) + cos(k_y)));
+		hamilton(0, 0) = eps;
+		hamilton(1, 1) = -eps;
+		hamilton(2, 2) = -eps;
+		hamilton(3, 3) = eps;
 	}
 
 	UsingBroyden::UsingBroyden(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
@@ -50,8 +47,8 @@ namespace Hubbard {
 		else if (V < 0) {
 			this->delta_cdw *= 0.25;
 		}
-		this->delta_eta = 0;
-		this->delta_occupation = std::abs(V) * 0.1;
+		this->delta_eta = 0.1;
+		this->delta_occupation = V * 0.1;
 
 		this->hamilton = Matrix_L::Zero(4, 4);
 	}
@@ -70,10 +67,10 @@ namespace Hubbard {
 			F = Eigen::Vector4d::Zero();
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				double k_x = (k * L_PI) / (Constants::K_DISCRETIZATION);
+				double_prec k_x = (k * L_PI) / (Constants::K_DISCRETIZATION);
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					double k_y = (l * L_PI) / (Constants::K_DISCRETIZATION);
+					double_prec k_y = (l * L_PI) / (Constants::K_DISCRETIZATION);
 					fillHamiltonian(k_x, k_y);
 					solver.compute(hamilton);
 					rho.fill(0);
@@ -85,7 +82,7 @@ namespace Hubbard {
 					F(0) += rho(0, 1);
 					F(1) += rho(0, 2);
 					F(2) += rho(0, 3);
-					F(3) += cos(k_x) * 0.5 * (rho(0, 0) - rho(2, 2));
+					F(3) += cos(k_x) * rho(0, 0);
 					//cos_occupation += cos(k_x) * 0.5 * (rho(0, 0) - rho(2, 2));
 				}
 			}
@@ -117,7 +114,7 @@ namespace Hubbard {
 					<< delta_cdw << "\t" << delta_sc << "\t" << delta_eta << "\t" << delta_occupation << std::endl;
 			}
 		}
-		
+
 		if (!Utility::Roots::Broyden::compute(func, x0)) {
 			std::cerr << "No convergence for [T, U, V] = [" << this->temperature << ", " << this->U << ", " << this->V << "]" << std::endl;
 			delta_cdw = 0;
@@ -130,12 +127,12 @@ namespace Hubbard {
 			func(x0, f0);
 			std::cout << "T=" << temperature << "   U=" << U << "   V=" << V << "\n";
 			std::cout << "x0 = (";
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < x0.size(); i++)
 			{
 				std::cout << " " << x0(i) << " ";
 			}
 			std::cout << ")\nf0 = (";
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < f0.size(); i++)
 			{
 				std::cout << " " << f0(i) << " ";
 			}
