@@ -14,7 +14,7 @@ OPT = -march=native -O3
 
 COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp WickCleaner.cpp
 
-HBBRD_SRCS=Model.cpp ModelSubClasses.cpp BasicHubbardModel.cpp HubbardCDW.cpp UsingBroyden.cpp
+HBBRD_SRCS=Model.cpp ModelFiller.cpp ModelSubClasses.cpp BasicHubbardModel.cpp HubbardCDW.cpp UsingBroyden.cpp
 UTIL_SRCS=InputFileReader.cpp Roots_Broyden.cpp
 
 PART_SRCS=
