@@ -29,7 +29,7 @@ namespace Hubbard {
 
 		Matrix_L buffer = hamilton.transpose();
 		hamilton += buffer;
-		const double_prec eps = unperturbed_energy(k_x, k_y) - (2 * delta_occupation * (cos(k_x) + cos(k_y)));
+		const double_prec eps = renormalizedEnergy(k_x, k_y);
 		hamilton(0, 0) = eps;
 		hamilton(1, 1) = -eps;
 		hamilton(2, 2) = -eps;
@@ -47,7 +47,8 @@ namespace Hubbard {
 		else if (V < 0) {
 			this->delta_cdw *= 0.25;
 		}
-		this->delta_eta = 0.1;
+		this->delta_cdw = 0;
+		this->delta_eta = 0;
 		this->delta_occupation = V * 0.1;
 
 		this->hamilton = Matrix_L::Zero(4, 4);
@@ -56,6 +57,7 @@ namespace Hubbard {
 	Model::data_set UsingBroyden::computePhases(const bool print/*=false*/)
 	{
 		Matrix_L rho = Matrix_L::Zero(4, 4);
+		Matrix_L trafo = Matrix_L::Zero(4, 4);
 		Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
 
 		auto lambda_func = [&](const Eigen::VectorXd& x, Eigen::VectorXd& F) {
@@ -71,6 +73,7 @@ namespace Hubbard {
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
 					double_prec k_y = (l * L_PI) / (Constants::K_DISCRETIZATION);
+
 					fillHamiltonian(k_x, k_y);
 					solver.compute(hamilton);
 					rho.fill(0);
@@ -79,11 +82,11 @@ namespace Hubbard {
 						rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
 					}
 					rho = solver.eigenvectors() * rho * (solver.eigenvectors().transpose());
+
 					F(0) += rho(0, 1);
 					F(1) += rho(0, 2);
 					F(2) += rho(0, 3);
 					F(3) += cos(k_x) * rho(0, 0);
-					//cos_occupation += cos(k_x) * 0.5 * (rho(0, 0) - rho(2, 2));
 				}
 			}
 			setParameters(F);

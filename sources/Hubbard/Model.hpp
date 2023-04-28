@@ -33,6 +33,18 @@ namespace Hubbard {
 		double_prec chemical_potential;
 		// Might not be necessary, depends on the V dependence
 		virtual void computeChemicalPotential();
+		inline virtual double_prec renormalizedEnergy(double_prec k_x, double_prec k_y) const {
+			return unperturbed_energy(k_x, k_y);
+		};
+		// The renormalizedEnergy is twice degenerate and comes in +/- pairs.
+		// This function only returns the plus version
+		// It is furthermore only valid iff Delta_eta = 0 and CDW and SC are real.
+		inline double_prec gappedEnergy(double_prec k_x, double_prec k_y) const {
+			double_prec ret = renormalizedEnergy(k_x, k_y);
+			ret *= ret;
+			ret += delta_cdw * delta_cdw + delta_sc * delta_sc;
+			return sqrt(ret);
+		};
 
 		// maps an index; [0, N_K) -> [-pi, pi)
 		template <typename T>

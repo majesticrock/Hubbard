@@ -5,6 +5,7 @@
 #include <omp.h>
 #include <fstream>
 #include <algorithm>
+#include "../Utility/Lanczos.hpp"
 
 namespace Hubbard {
 	constexpr double_prec SQRT_SALT = 1e-5;
@@ -75,6 +76,7 @@ namespace Hubbard {
 					if (std::abs(rho(3, 0)) > SALT) {
 						std::cerr << "Warning: <eta> does not vanish! " << rho(3, 0) << std::endl;
 					}
+					std::cout << rho(2, 0) << std::endl;
 				}
 			}
 		}
@@ -96,11 +98,12 @@ namespace Hubbard {
 			Eigen::SelfAdjointEigenSolver<Matrix_L> solver(M);
 			for (size_t i = 0; i < solver.eigenvalues().size(); i++)
 			{
-				if (solver.eigenvalues()(i) < -SALT) {
-					std::cerr << solver.eigenvalues()(i) << std::endl;
-					throw std::invalid_argument("M is not positive!  " + std::to_string(solver.eigenvalues()(i)));
+				if (solver.eigenvalues()(i) < 0) {
+					std::cout << solver.eigenvalues()(i) << "\n\n" << solver.eigenvectors().col(i) << std::endl << std::endl;
 				}
 			}
+
+			std::cout << M << std::endl;
 			return nullptr;
 		}
 
@@ -170,14 +173,17 @@ namespace Hubbard {
 		Eigen::initParallel();
 
 		Eigen::JacobiSVD<Matrix_L> K_SVD;
-		//K_SVD.setThreshold(1e-10);
+		K_SVD.setThreshold(1e-4);
 		K_SVD.compute(K_minus, Eigen::ComputeThinU | Eigen::ComputeThinV);
 
+		std::cout << "Recon:   " << (K_SVD.matrixU() * K_SVD.singularValues().asDiagonal() * K_SVD.matrixV().transpose() - K_minus).norm() << std::endl;
 		std::cout << "SVD diff:   " << (K_SVD.matrixU() - K_SVD.matrixV()).norm() << std::endl;
-		//std::cout << K_SVD.singularValues() << std::endl;
-		//std::cout << K_SVD.matrixU() << "\n\n\n\n\n" << K_SVD.matrixV() << std::endl;
+		std::cout << K_SVD.singularValues() << std::endl << std::endl;
+		k_solver[1].compute(K_minus);
+		std::cout << k_solver[1].eigenvalues() << std::endl;
+		std::cout << K_SVD.matrixU() << "\n\n\n\n\n" << K_SVD.matrixV() << std::endl;
 
-		//return nullptr;
+		return nullptr;
 
 #pragma omp parallel sections
 		{
@@ -204,14 +210,21 @@ namespace Hubbard {
 				Vector_L& evs = const_cast<Vector_L&>(k_solver[0].eigenvalues());
 				for (size_t i = 0; i < evs.size(); i++)
 				{
-					//if (evs(i) < -SALT) {
+					if (evs(i) < -SALT) {
 						std::cerr << "K_+:   " << evs(i) << std::endl;
 						//throw std::invalid_argument("K_+ is not positive!  " + std::to_string(evs(i)));
-					//}
+					}
 					if (evs(i) < SALT) {
 						evs(i) = 0;//SALT;
 					}
 				}
+				//Utility::NumericalSolver::Lanczos<double_prec> lan(Vector_L::Ones(K_plus.rows()));
+				//lan.compute(K_plus, K_plus.rows());
+				//std::cout << std::fixed << std::setprecision(8);
+				//for (size_t i = 0; i < 20; i++)
+				//{
+				//	std::cout << "K_+:   " << evs(i) << "\t" << lan.getEigenValues()(i) << std::endl;
+				//}
 
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_+: "
@@ -244,9 +257,17 @@ namespace Hubbard {
 						//throw std::invalid_argument("K_- is not positive!  " + std::to_string(evs(i)));
 					}
 					if (evs(i) < SALT) {
-						evs(i) = 0;// SALT;
+						//evs(i) = 0;// SALT;
 					}
 				}
+
+				//Utility::NumericalSolver::Lanczos<double_prec> lan(Vector_L::Ones(K_minus.rows()));
+				//lan.compute(K_minus, K_minus.rows());
+				//std::cout << std::fixed << std::setprecision(8);
+				//for (size_t i = 0; i < 20; i++)
+				//{
+				//	std::cout << "K_-:   " << evs(i) << "\t" << lan.getEigenValues()(i) << std::endl;
+				//}
 
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_-: "

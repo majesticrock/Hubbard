@@ -103,14 +103,12 @@ namespace Hubbard{
 #pragma omp parallel for
 		for (int i = 0; i < number_of_basis_terms; i++)
 		{
-			double_prec valueBuffer = 0;
 			for (int j = 0; j < number_of_basis_terms; j++)
 			{
 				// fill N
 				for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
-						valueBuffer = 0;
 						if (term.delta_momenta.size() > 0) {
 							if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
 							if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
@@ -124,14 +122,12 @@ namespace Hubbard{
 								clean_factor_2pi(l_buf_vec);
 								l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
 							}
-							valueBuffer = computeTerm(term, l_buf, k);
-							N(j * BASIS_SIZE + l_buf, i * BASIS_SIZE + k) += valueBuffer;
+							N(j * BASIS_SIZE + l_buf, i * BASIS_SIZE + k) += computeTerm(term, l_buf, k);
 						}
 						else {
 							for (int l = 0; l < BASIS_SIZE; l++)
 							{
-								valueBuffer = computeTerm(term, l, k);
-								N(j * BASIS_SIZE + l, i * BASIS_SIZE + k) += valueBuffer;
+								N(j * BASIS_SIZE + l, i * BASIS_SIZE + k) += computeTerm(term, l, k);
 							}
 						}
 					}
@@ -141,7 +137,6 @@ namespace Hubbard{
 				for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
 					for (int k = 0; k < BASIS_SIZE; k++)
 					{
-						valueBuffer = 0;
 						if (term.delta_momenta.size() > 0) {
 							if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
 							if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
@@ -155,14 +150,12 @@ namespace Hubbard{
 								clean_factor_2pi(l_buf_vec);
 								l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
 							}
-							valueBuffer = computeTerm(term, l_buf, k);
-							M(j * BASIS_SIZE + l_buf, i * BASIS_SIZE + k) += valueBuffer;
+							M(j * BASIS_SIZE + l_buf, i * BASIS_SIZE + k) += computeTerm(term, l_buf, k);
 						}
 						else {
 							for (int l = 0; l < BASIS_SIZE; l++)
 							{
-								valueBuffer = computeTerm(term, l, k);
-								M(j * BASIS_SIZE + l, i * BASIS_SIZE + k) += valueBuffer;
+								M(j * BASIS_SIZE + l, i * BASIS_SIZE + k) += computeTerm(term, l, k);
 							}
 						}
 					}
