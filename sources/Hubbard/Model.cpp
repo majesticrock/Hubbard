@@ -76,7 +76,8 @@ namespace Hubbard {
 					if (std::abs(rho(3, 0)) > SALT) {
 						std::cerr << "Warning: <eta> does not vanish! " << rho(3, 0) << std::endl;
 					}
-					std::cout << rho(2, 0) << std::endl;
+					std::cout << std::endl;
+					std::cout << rho << std::endl;
 				}
 			}
 		}
