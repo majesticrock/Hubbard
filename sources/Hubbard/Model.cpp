@@ -172,18 +172,7 @@ namespace Hubbard {
 		omp_set_nested(1);
 		Eigen::initParallel();
 
-		Eigen::JacobiSVD<Matrix_L> K_SVD;
-		K_SVD.setThreshold(1e-4);
-		K_SVD.compute(K_minus, Eigen::ComputeThinU | Eigen::ComputeThinV);
 
-		std::cout << "Recon:   " << (K_SVD.matrixU() * K_SVD.singularValues().asDiagonal() * K_SVD.matrixV().transpose() - K_minus).norm() << std::endl;
-		std::cout << "SVD diff:   " << (K_SVD.matrixU() - K_SVD.matrixV()).norm() << std::endl;
-		std::cout << K_SVD.singularValues() << std::endl << std::endl;
-		k_solver[1].compute(K_minus);
-		std::cout << k_solver[1].eigenvalues() << std::endl;
-		std::cout << K_SVD.matrixU() << "\n\n\n\n\n" << K_SVD.matrixV() << std::endl;
-
-		return nullptr;
 
 #pragma omp parallel sections
 		{

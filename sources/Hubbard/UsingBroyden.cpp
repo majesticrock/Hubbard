@@ -29,7 +29,7 @@ namespace Hubbard {
 
 		Matrix_L buffer = hamilton.transpose();
 		hamilton += buffer;
-		const double_prec eps = renormalizedEnergy(k_x, k_y);
+		const double_prec eps = renormalizedEnergy(k_x, k_y); //unperturbed_energy(k_x, k_y) - (2 * delta_occupation * (cos(k_x) + cos(k_y))); //
 		hamilton(0, 0) = eps;
 		hamilton(1, 1) = -eps;
 		hamilton(2, 2) = -eps;
@@ -47,8 +47,6 @@ namespace Hubbard {
 		else if (V < 0) {
 			this->delta_cdw *= 0.25;
 		}
-		this->delta_cdw = 0;
-		this->delta_eta = 0;
 		this->delta_occupation = V * 0.1;
 
 		this->hamilton = Matrix_L::Zero(4, 4);
