@@ -80,7 +80,6 @@ namespace Hubbard {
 			}
 		}
 		computeChemicalPotential();
-		std::cout << "Filling of all spin ups = " << sum_of_all[0] / BASIS_SIZE << std::endl;
 		loadWick("../commutators/wick_");
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for expectation values: "
@@ -178,12 +177,7 @@ namespace Hubbard {
 				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
 				k_solver[0].compute(K_plus);
 
-				double_prec tol = k_solver[0].eigenvalues().norm() * Eigen::NumTraits<double>::epsilon();
-				
-				std::cout << "K_+ recon:    "
-					<< (k_solver[0].eigenvectors() * k_solver[0].eigenvalues().asDiagonal() * k_solver[0].eigenvectors().transpose()
-					- K_plus).norm() << std::endl;
-
+				double_prec tol = k_solver[0].eigenvalues().norm() * ERROR_MARGIN;
 				if (k_solver[0].info() == Eigen::Success && (k_solver[0].eigenvalues().array() >= -tol).all()) {
 					std::cout << "K_+: eigenvalues are real and accurate up to tolerance" << std::endl;
 				}
@@ -204,13 +198,6 @@ namespace Hubbard {
 						evs(i) = 0;//SALT;
 					}
 				}
-				//Utility::NumericalSolver::Lanczos<double_prec> lan(Vector_L::Ones(K_plus.rows()));
-				//lan.compute(K_plus, K_plus.rows());
-				//std::cout << std::fixed << std::setprecision(8);
-				//for (size_t i = 0; i < 20; i++)
-				//{
-				//	std::cout << "K_+:   " << evs(i) << "\t" << lan.getEigenValues()(i) << std::endl;
-				//}
 
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_+: "
@@ -223,9 +210,9 @@ namespace Hubbard {
 
 				std::cout << "K_- recon:    "
 					<< (k_solver[1].eigenvectors() * k_solver[1].eigenvalues().asDiagonal() * k_solver[1].eigenvectors().transpose()
-					- K_minus).norm() << std::endl;
+						- K_minus).norm() << std::endl;
 
-				double_prec tol = k_solver[1].eigenvalues().norm() * Eigen::NumTraits<double>::epsilon();
+				double_prec tol = k_solver[1].eigenvalues().norm() * ERROR_MARGIN;
 				if (k_solver[1].info() == Eigen::Success && (k_solver[1].eigenvalues().array() >= -tol).all()) {
 					std::cout << "K_-: eigenvalues are real and accurate up to tolerance" << std::endl;
 				}
@@ -243,17 +230,9 @@ namespace Hubbard {
 						//throw std::invalid_argument("K_- is not positive!  " + std::to_string(evs(i)));
 					}
 					if (evs(i) < SALT) {
-						//evs(i) = 0;// SALT;
+						evs(i) = 0;// SALT;
 					}
 				}
-
-				//Utility::NumericalSolver::Lanczos<double_prec> lan(Vector_L::Ones(K_minus.rows()));
-				//lan.compute(K_minus, K_minus.rows());
-				//std::cout << std::fixed << std::setprecision(8);
-				//for (size_t i = 0; i < 20; i++)
-				//{
-				//	std::cout << "K_-:   " << evs(i) << "\t" << lan.getEigenValues()(i) << std::endl;
-				//}
 
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_-: "
@@ -292,7 +271,7 @@ namespace Hubbard {
 
 			Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
 			solver.compute(N_new);
-			double_prec tol = solver.eigenvalues().norm() * Eigen::NumTraits<double_prec>::epsilon();
+			double_prec tol = solver.eigenvalues().norm() * ERROR_MARGIN;
 			if (solver.info() == Eigen::Success && (solver.eigenvalues().array() >= -tol).all()) {
 				std::cout << "N_new: eigenvalues are real and accurate up to tolerance" << std::endl;
 			}
