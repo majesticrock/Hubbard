@@ -167,6 +167,8 @@ int main(int argc, char** argv)
 			std::string output_folder = input.getString("output_folder");
 			std::filesystem::create_directories("../../data/phases/" + output_folder);
 
+			std::cout << recieve_cdw.size() << "   " << SECOND_IT_STEPS << std::endl;
+
 			Utility::saveData_boost(recieve_cdw, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw.dat.gz", comments);
 			Utility::saveData_boost(recieve_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "sc.dat.gz", comments);
 			Utility::saveData_boost(recieve_eta, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.dat.gz", comments);

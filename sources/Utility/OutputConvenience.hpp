@@ -92,7 +92,7 @@ namespace Utility {
 		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
 		if (data.size() % linebreak != 0) {
-			std::cerr << "The numbe rof data elements is not divisible by linebreak!" << std::endl;
+			std::cerr << "The number of data elements is not divisible by linebreak!" << std::endl;
 			return;
 		}
 		// create file
@@ -107,7 +107,7 @@ namespace Utility {
 			// and can thereby be used with the standard operator<< overloading
 			std::ostringstream oss;
 			ow.writeComments(oss, comments);
-			for (size_t n = linebreak; n < data.size(); n += linebreak)
+			for (size_t n = 0; n < data.size(); n += linebreak)
 			{
 				std::vector<data_type> part_vec(data.begin() + n - linebreak, data.begin() + n);
 				ow.appendLine(part_vec, oss);
