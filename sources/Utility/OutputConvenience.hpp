@@ -109,7 +109,7 @@ namespace Utility {
 			ow.writeComments(oss, comments);
 			for (size_t n = 0; n < data.size(); n += linebreak)
 			{
-				std::vector<data_type> part_vec(data.begin() + n - linebreak, data.begin() + n);
+				std::vector<data_type> part_vec(data.begin() + n, data.begin() + n + linebreak);
 				ow.appendLine(part_vec, oss);
 			}
 			out << oss.str();
