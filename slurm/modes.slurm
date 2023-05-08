@@ -17,7 +17,7 @@
 ##SBATCH --mem-per-cpu=100mb    ## sets maximum allowed memory per mpi process
 
 #SBATCH --mail-user=joshua.althueser@tu-dortmund.de     ## replace mail by personal mail address
-#SBATCH --mail-type=ALL ## most relevant options: NONE, BEGIN, END, FAIL
+#SBATCH --mail-type=END ## most relevant options: NONE, BEGIN, END, FAIL
 
 ## Optional:
 #SBATCH --hint=nomultithread    ## deactivate Hyperthreading (recommended); for Hyperthreading comment out this line
@@ -31,7 +31,8 @@ cd /home/althueser/phd/cpp/HubbardMeanField/        ## go to working directory
 date
 echo "--- START ---"
 
-mpirun -n 1 ./build/main params/params_modes.config            ## execute binary using mpirun on the allocated computation resource; the number of cores is $
+## execute binary using mpirun on the allocated computation resource; the number of cores is $
+mpirun -n 1 ./build/main params/params_modes.config
 
 echo "--- END ---"
 date
