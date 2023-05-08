@@ -10,6 +10,7 @@ TOKEN="model_parameters"
 
 
 for NEW_VALUE in "${NEW_VALUES[@]}"; do
+  NEW_NAME=$(echo "$NEW_VALUE" | sed 's/ /_/g')
   # Loop through each line in the config file
   while read line; do
     if [[ $line == \#* ]]; then
@@ -22,14 +23,14 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
     
     if [[ "$TOKEN_NAME" == "$TOKEN" ]]; then
       # replace the value with the new one
-      sed "s/$TOKEN_NAME $TOKEN_VALUE/$TOKEN_NAME $NEW_VALUE/" params/params_auto.config > auto_generated/params_$NEW_VALUE.config
+      sed "s/$TOKEN_NAME $TOKEN_VALUE/$TOKEN_NAME $NEW_VALUE/" params/params_auto.config > auto_generated/params_$NEW_NAME.config
       break
     fi
   done < params/params_auto.config
-  cp slurm/modes.slurm auto_generated/i.slurm
-  sed -i "s/#SBATCH --job-name=modes/#SBATCH --job-name=$NEW_VALUE/" auto_generated/$NEW_VALUE.slurm
-  sed -i "s/#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt/#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output_$NEW_VALUE.txt/"
-  sed -i "s/mpirun -n 1 ./build/main params/params_modes.config/mpirun -n 1 ./build/main auto_generated/params_$NEW_VALUE.config" auto_generated/$NEW_VALUE.slurm
+  cp slurm/modes.slurm auto_generated/$NEW_NAME.slurm
+  sed -i "s|#SBATCH --job-name=modes|#SBATCH --job-name=$NEW_NAME|" auto_generated/$NEW_NAME.slurm
+  sed -i "s|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output_$NEW_NAME.txt|" auto_generated/$NEW_NAME.slurm
+  sed -i "s|mpirun -n 1 ./build/main params/params_modes.config|mpirun -n 1 ./build/main auto_generated/params_$NEW_NAME.config|" auto_generated/$NEW_NAME.slurm
 
   # Execute the program
   sbatch auto_generated/$NEW_VALUE.slurm
