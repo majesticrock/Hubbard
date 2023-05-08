@@ -5,7 +5,7 @@
 
 ## Mandatory:
 #SBATCH --job-name=modes
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt    ## File for stdout & stderr
+#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt
 #SBATCH --time=48:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=ultralong       ## choose queue
 

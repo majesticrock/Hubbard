@@ -1,7 +1,4 @@
 #!/bin/bash
-
-make
-
 rm -rf auto_generated/
 mkdir -p auto_generated
 # Define the name of the input file
@@ -30,6 +27,8 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
     fi
   done < params/params_auto.config
   cp slurm/modes.slurm auto_generated/i.slurm
+  sed -i "s/#SBATCH --job-name=modes/#SBATCH --job-name=$NEW_VALUE/" auto_generated/$NEW_VALUE.slurm
+  sed -i "s/#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt/#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output_$NEW_VALUE.txt/"
   sed -i "s/mpirun -n 1 ./build/main params/params_modes.config/mpirun -n 1 ./build/main auto_generated/params_$NEW_VALUE.config" auto_generated/$NEW_VALUE.slurm
 
   # Execute the program
