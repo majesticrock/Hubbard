@@ -7,6 +7,8 @@
 #include <algorithm>
 #include "../Utility/Lanczos.hpp"
 
+//#define _PSEUDO_INVERSE
+
 namespace Hubbard {
 	constexpr double_prec SQRT_SALT = 1e-5;
 	constexpr double_prec SALT = SQRT_SALT * SQRT_SALT;
@@ -195,7 +197,11 @@ namespace Hubbard {
 						//throw std::invalid_argument("K_+ is not positive!  " + std::to_string(evs(i)));
 					}
 					if (evs(i) < SALT) {
-						evs(i) = 0;//SALT;
+#ifdef _PSEUDO_INVERSE
+						evs(i) = 0;
+#else
+						evs(i) = SALT;
+#endif
 					}
 				}
 
@@ -230,7 +236,11 @@ namespace Hubbard {
 						//throw std::invalid_argument("K_- is not positive!  " + std::to_string(evs(i)));
 					}
 					if (evs(i) < SALT) {
-						evs(i) = 0;// SALT;
+#ifdef _PSEUDO_INVERSE
+						evs(i) = 0;
+#else
+						evs(i) = SALT;
+#endif
 					}
 				}
 
@@ -257,8 +267,11 @@ namespace Hubbard {
 					K_EV(i) = 1. / (k_solver[minus_index].eigenvalues()(i));
 				}
 				else {
-					// For the pseudoinverse...
+#ifdef _PSEUDO_INVERSE
 					K_EV(i) = 0;
+#else
+					K_EV(i) = SALT;
+#endif
 				}
 			}
 			Matrix_L buffer_matrix = L * k_solver[minus_index].eigenvectors();
@@ -287,7 +300,11 @@ namespace Hubbard {
 					throw std::invalid_argument("N_new is not positive!  " + std::to_string(solver.eigenvalues()(i)));
 				}
 				else if (n_ev(i) < SALT) {
-					n_ev(i) = 0;// SQRT_SALT;
+#ifdef _PSEUDO_INVERSE
+					n_ev(i) = 0;
+#else
+					n_ev(i) = SQRT_SALT;
+#endif
 				}
 				else {
 					n_ev(i) = 1. / sqrt(n_ev(i));
