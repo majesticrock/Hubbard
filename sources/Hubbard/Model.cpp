@@ -7,7 +7,8 @@
 #include <algorithm>
 #include "../Utility/Lanczos.hpp"
 
-//#define _PSEUDO_INVERSE
+// Both methods yield precisely the same data!
+#define _PSEUDO_INVERSE
 
 namespace Hubbard {
 	constexpr double_prec SQRT_SALT = 1e-5;
