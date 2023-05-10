@@ -6,14 +6,14 @@
 ## Mandatory:
 #SBATCH --job-name=modes
 #SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt
-#SBATCH --time=48:00:00         ## maximum runtime; hours:minutes:seconds
+#SBATCH --time=96:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=ultralong       ## choose queue
 
 #SBATCH --ntasks=1             ## sets number of total mpi processes
 #SBATCH --tasks-per-node=1    ## mpi processes spawned per node
 #SBATCH --cpus-per-task=8       ## logical cores used per mpi process: should be 1, except if you want to combine OpenMP with$
 
-#SBATCH --mem=48gb               ## sets maximum allowed memory per node
+#SBATCH --mem=196gb               ## sets maximum allowed memory per node
 ##SBATCH --mem-per-cpu=100mb    ## sets maximum allowed memory per mpi process
 
 #SBATCH --mail-user=joshua.althueser@tu-dortmund.de     ## replace mail by personal mail address
