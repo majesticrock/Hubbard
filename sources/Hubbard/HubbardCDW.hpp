@@ -8,6 +8,8 @@ namespace Hubbard {
 	protected:
 		const complex_prec I = { 0, 1 };
 
+		double_prec xi_sc, xi_eta;
+
 		double_prec V;
 		typedef Eigen::Matrix<complex_prec, 4, 4> Matrix_4cL;
 		Matrix_4cL complex_h;
@@ -15,15 +17,21 @@ namespace Hubbard {
 		virtual void computeChemicalPotential() override;
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
 
-		virtual inline void setParameters(double_prec cdw, double_prec sc, double_prec eta, double_prec cos_n) {
+		virtual inline void setParameters(double_prec cdw, double_prec sc, double_prec eta, 
+			double_prec cos_n, double_prec cos_sc, double_prec cos_eta) {
 			cdw *= (this->U - this->V) / BASIS_SIZE;
 			sc *= this->U / BASIS_SIZE;
 			eta *= this->U / BASIS_SIZE;
 			cos_n *= (V / (8 * BASIS_SIZE));
+			cos_sc *= (V / (8 * BASIS_SIZE));
+			cos_eta *= (V / (8 * BASIS_SIZE));
+
 			this->delta_cdw = 0.5 * (cdw + this->delta_cdw);
 			this->delta_sc = 0.5 * (sc + this->delta_sc);
 			this->delta_eta = 0.5 * (eta + this->delta_eta);
 			this->delta_occupation = 0.5 * (cos_n + this->delta_occupation);
+			this->xi_sc = 0.5 * (cos_sc + this->xi_sc);
+			this->xi_eta = 0.5 * (cos_eta + this->xi_eta);
 		};
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {
 			if (coeff.name == "\\tilde{V}") {
