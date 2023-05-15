@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
 	//#define _DO_TEST
 #ifdef _DO_TEST
-	Hubbard::Model::ModelParameters mP(0, -2, -1, 0, 0, "", "");
+	Hubbard::Model::ModelParameters mP(0, 200, 0, 0, 0, "", "");
 	Hubbard::HubbardCDW model(mP, 0, 0);
 
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();

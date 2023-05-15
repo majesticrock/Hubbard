@@ -14,11 +14,11 @@ namespace Hubbard {
 
 		complex_h(0, 1) = delta_cdw;
 		complex_h(0, 2) = delta_sc - I * (2 * xi_sc * (cos(k_x) + cos(k_y)));
-		complex_h(0, 3) = I * (delta_eta - 2 * xi_sc * (cos(k_x) + cos(k_y)));
+		complex_h(0, 3) = I * delta_eta - 2 * xi_eta * (cos(k_x) + cos(k_y));
 
-		complex_h(1, 2) = I * (delta_eta + 2 * xi_sc * (cos(k_x) + cos(k_y)));
+		complex_h(1, 2) = I * delta_eta + 2 * xi_eta * (cos(k_x) + cos(k_y));
 		complex_h(1, 3) = delta_sc + I * (2 * xi_sc * (cos(k_x) + cos(k_y)));
-		complex_h(2, 3) = -delta_cdw;
+		complex_h(2, 3) = -delta_cdw_down;
 
 		Matrix_4cL buffer = complex_h.adjoint();
 		complex_h += buffer;
@@ -39,6 +39,9 @@ namespace Hubbard {
 		else if (V < 0) {
 			this->delta_cdw *= 0.25;
 		}
+		this->delta_cdw_down = (U > 0) ? -this->delta_cdw : this->delta_cdw;
+
+		this->delta_eta = std::abs(U - V) * 0.2;
 		this->delta_occupation = V * 0.1;
 		this->xi_sc = V * 0.1;
 		this->xi_eta = V * 0.1;
@@ -67,6 +70,7 @@ namespace Hubbard {
 
 			complex_prec c_cdw = { 0, 0 }, c_sc = { 0, 0 }, c_eta = { 0, 0 };
 			complex_prec c_xi_sc = { 0,0 }, c_xi_eta = { 0,0 };
+			complex_prec c_cdw_down = { 0, 0 };
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
@@ -83,7 +87,8 @@ namespace Hubbard {
 					}
 					rho = solver.eigenvectors() * rho * solver.eigenvectors().adjoint();
 
-					c_cdw += 0.5 * (rho(0, 1) - rho(2, 3));
+					c_cdw += rho(0, 1);
+					c_cdw_down -= rho(2, 3);
 					c_sc += rho(0, 2);
 					c_eta += rho(0, 3);
 					cos_n += 0.5 * cos(k_x) * (rho(0, 0).real() + 1 - rho(2, 2).real());
@@ -94,19 +99,22 @@ namespace Hubbard {
 			}
 
 			if (std::abs(c_cdw.imag()) > 1e-8) {
-				std::cerr << "cdw: " << c_cdw << std::endl;
+				std::cout << "cdw: " << c_cdw << std::endl;
+			}
+			if (std::abs(c_cdw_down.imag()) > 1e-8) {
+				std::cout << "cdw_down: " << c_cdw_down << std::endl;
 			}
 			if (std::abs(c_sc.imag()) > 1e-8) {
-				std::cerr << "sc: " << c_sc << std::endl;
+				std::cout << "sc: " << c_sc << std::endl;
 			}
 			if (std::abs(c_eta.real()) > 1e-8) {
-				std::cerr << "eta: " << c_eta << std::endl;
+				std::cout << "eta: " << c_eta << std::endl;
 			}
 			if (std::abs(c_xi_sc.real()) > 1e-8) {
-				std::cerr << "xi sc: " << c_eta << std::endl;
+				std::cout << "xi sc: " << c_xi_sc << std::endl;
 			}
-			if (std::abs(c_xi_eta.real()) > 1e-8) {
-				std::cerr << "xi eta: " << c_eta << std::endl;
+			if (std::abs(c_xi_eta.imag()) > 1e-8) {
+				std::cout << "xi eta: " << c_xi_eta << std::endl;
 			}
 
 			cdw = c_cdw.real();
@@ -118,7 +126,7 @@ namespace Hubbard {
 			old_parameters[2] = delta_eta;
 			old_parameters[3] = delta_occupation;
 
-			setParameters(cdw, sc, eta, cos_n, c_xi_sc.imag(), c_xi_eta.imag());
+			setParameters(cdw, sc, eta, cos_n, c_xi_sc.imag(), c_xi_eta.real(), c_cdw_down.real());
 
 			error_cdw = std::abs(delta_cdw - old_parameters[0]);
 			error_sc = std::abs(delta_sc - old_parameters[1]);
@@ -147,7 +155,7 @@ namespace Hubbard {
 				}
 				std::cout << i << ":\t" << std::fixed << std::setprecision(8)
 					<< delta_cdw << "\t" << delta_sc << "\t" << delta_eta << "\t" << delta_occupation 
-					<< "\t" << xi_sc << "\t" << xi_eta << std::endl;
+					<< "\t" << xi_sc << "\t" << xi_eta << "\t" << delta_cdw_down << std::endl;
 			}
 			if (i == MAX_STEPS - 1) {
 				std::cerr << "[T, U] = [" << this->temperature << ", " << this->U << "]\tConvergence at " << error << std::endl;
