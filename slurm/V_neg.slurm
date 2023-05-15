@@ -4,8 +4,8 @@
 ## or look up the slurm documentation under https://slurm.schedmed.com/sbatch.html
 
 ## Mandatory:
-#SBATCH --job-name=U
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_U.txt    ## File for stdout & stderr
+#SBATCH --job-name=V_neg
+#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_V.txt    ## File for stdout & stderr
 #SBATCH --time=12:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=mpi       ## choose queue
 
@@ -31,7 +31,7 @@ cd /home/althueser/phd/cpp/HubbardMeanField/        ## go to working directory
 date
 echo "--- START ---"
 
-mpirun ./build/main params/params_U.config            ## execute binary using mpirun on the allocated computation resource; the number of cores is $
+mpirun ./build/main params/params_V_negative.config            ## execute binary using mpirun on the allocated computation resource; the number of cores is $
 
 echo "--- END ---"
 date

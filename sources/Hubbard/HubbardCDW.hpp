@@ -18,9 +18,9 @@ namespace Hubbard {
 		virtual void computeChemicalPotential() override;
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
 
-		virtual inline void setParameters(double_prec cdw, double_prec sc, double_prec eta, 
+		virtual inline void setParameters(double_prec cdw_up, double_prec sc, double_prec eta, 
 			double_prec cos_n, double_prec cos_sc, double_prec cos_eta, double_prec cdw_down) {
-			cdw *= (this->U - this->V) / BASIS_SIZE;
+			cdw_up *= (this->U - this->V) / BASIS_SIZE;
 			cdw_down *= (this->U - this->V) / BASIS_SIZE;
 			sc *= this->U / BASIS_SIZE;
 			eta *= this->U / BASIS_SIZE;
@@ -28,7 +28,7 @@ namespace Hubbard {
 			cos_sc *= (V / (8 * BASIS_SIZE));
 			cos_eta *= (V / (8 * BASIS_SIZE));
 
-			this->delta_cdw = 0.5 * (cdw + this->delta_cdw);
+			this->delta_cdw_up = 0.5 * (cdw_up + this->delta_cdw_up);
 			this->delta_cdw_down = 0.5 * (cdw_down + this->delta_cdw_down);
 			this->delta_sc = 0.5 * (sc + this->delta_sc);
 			this->delta_eta = 0.5 * (eta + this->delta_eta);

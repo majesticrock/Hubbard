@@ -53,14 +53,13 @@ int main(int argc, char** argv)
 
 	//#define _DO_TEST
 #ifdef _DO_TEST
-	Hubbard::Model::ModelParameters mP(0, 200, 0, 0, 0, "", "");
+	Hubbard::Model::ModelParameters mP(0, 2, -3, 0, 0, "", "");
 	Hubbard::HubbardCDW model(mP, 0, 0);
 
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 	model.computePhases(true).print();
 	std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
 	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
-	return MPI_Finalize();
 	std::cout << "\n\n" << std::endl;
 	Hubbard::UsingBroyden model2(mP, 0, 0);
 
@@ -111,7 +110,8 @@ int main(int argc, char** argv)
 			(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, (SECOND_IT_MAX - SECOND_IT_MIN) / SECOND_IT_STEPS,
 			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
-		data_vector data_cdw(FIRST_IT_STEPS * SECOND_IT_STEPS);
+		data_vector data_cdw_up(FIRST_IT_STEPS * SECOND_IT_STEPS);
+		data_vector data_cdw_down(FIRST_IT_STEPS * SECOND_IT_STEPS);
 		data_vector  data_sc(FIRST_IT_STEPS * SECOND_IT_STEPS);
 		data_vector data_eta(FIRST_IT_STEPS * SECOND_IT_STEPS);
 
@@ -134,7 +134,8 @@ int main(int argc, char** argv)
 					ret = model.computePhases();
 				}
 
-				data_cdw[(T * SECOND_IT_STEPS) + U] = ret.delta_cdw;
+				data_cdw_up[(T * SECOND_IT_STEPS) + U] = ret.delta_cdw_up;
+				data_cdw_down[(T * SECOND_IT_STEPS) + U] = ret.delta_cdw_down;
 				data_sc[(T * SECOND_IT_STEPS) + U] = ret.delta_sc;
 				data_eta[(T * SECOND_IT_STEPS) + U] = ret.delta_eta;
 				//modelParameters.incrementSecondIterator();
@@ -142,14 +143,16 @@ int main(int argc, char** argv)
 			modelParameters.incrementGlobalIterator();
 		}
 
-		std::vector<double> recieve_cdw, recieve_sc, recieve_eta;
+		std::vector<double> recieve_cdw_up, recieve_cdw_down, recieve_sc, recieve_eta;
 		if (rank == 0) {
-			recieve_cdw.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+			recieve_cdw_up.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+			recieve_cdw_down.resize(GLOBAL_IT_STEPS* SECOND_IT_STEPS);
 			recieve_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 			recieve_eta.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		}
 #ifndef _DEBUG
-		MPI_Gather(data_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Gather(data_cdw_up.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw_up.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Gather(data_cdw_down.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw_down.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Gather(data_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Gather(data_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 #endif
@@ -167,9 +170,8 @@ int main(int argc, char** argv)
 			std::string output_folder = input.getString("output_folder");
 			std::filesystem::create_directories("../../data/phases/" + output_folder);
 
-			std::cout << recieve_cdw.size() << "   " << SECOND_IT_STEPS << std::endl;
-
-			Utility::saveData_boost(recieve_cdw, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw.dat.gz", comments);
+			Utility::saveData_boost(recieve_cdw_up, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw_up.dat.gz", comments);
+			Utility::saveData_boost(recieve_cdw_down, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw_down.dat.gz", comments);
 			Utility::saveData_boost(recieve_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "sc.dat.gz", comments);
 			Utility::saveData_boost(recieve_eta, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.dat.gz", comments);
 		}
