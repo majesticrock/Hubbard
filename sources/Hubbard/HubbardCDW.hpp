@@ -16,6 +16,10 @@ namespace Hubbard {
 		Matrix_4cL complex_h;
 
 		virtual void computeChemicalPotential() override;
+		inline virtual double_prec renormalizedEnergy(double_prec k_x, double_prec k_y) const override {
+			return -2 * (1 + delta_occupation) * (cos(k_x) + cos(k_y));
+		};
+
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
 
 		virtual inline void setParameters(double_prec cdw_up, double_prec sc, double_prec eta, 

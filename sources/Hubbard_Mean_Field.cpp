@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
 	//#define _DO_TEST
 #ifdef _DO_TEST
-	Hubbard::Model::ModelParameters mP(0, 2, -3, 0, 0, "", "");
+	Hubbard::Model::ModelParameters mP(0, 0.1, 0.11, 0, 0, "", "");
 	Hubbard::HubbardCDW model(mP, 0, 0);
 
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 
 		data_vector data_cdw_up(FIRST_IT_STEPS * SECOND_IT_STEPS);
 		data_vector data_cdw_down(FIRST_IT_STEPS * SECOND_IT_STEPS);
-		data_vector  data_sc(FIRST_IT_STEPS * SECOND_IT_STEPS);
+		data_vector data_sc(FIRST_IT_STEPS * SECOND_IT_STEPS);
 		data_vector data_eta(FIRST_IT_STEPS * SECOND_IT_STEPS);
 
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -146,7 +146,7 @@ int main(int argc, char** argv)
 		std::vector<double> recieve_cdw_up, recieve_cdw_down, recieve_sc, recieve_eta;
 		if (rank == 0) {
 			recieve_cdw_up.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-			recieve_cdw_down.resize(GLOBAL_IT_STEPS* SECOND_IT_STEPS);
+			recieve_cdw_down.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 			recieve_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 			recieve_eta.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		}

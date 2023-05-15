@@ -22,7 +22,7 @@ namespace Hubbard {
 
 		Matrix_4cL buffer = complex_h.adjoint();
 		complex_h += buffer;
-		const double_prec eps = unperturbed_energy(k_x, k_y) - (2 * (cos(k_x) + cos(k_y)) * delta_occupation);
+		const double_prec eps = renormalizedEnergy(k_x, k_y);
 		complex_h(0, 0) = eps;
 		complex_h(1, 1) = -eps;
 		complex_h(2, 2) = -eps;
@@ -31,15 +31,16 @@ namespace Hubbard {
 	HubbardCDW::HubbardCDW(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
-		this->delta_cdw_up = std::abs(U - V) * 0.5;
-		this->delta_sc = std::abs(U + V) * 0.5;
+		this->delta_cdw_up = std::abs(U - V) * 0.5 + 0.1;
+		this->delta_sc = std::abs(U + V) * 0.5 + 0.1;
 		if (V > 0) {
 			this->delta_sc *= 0.25;
 		}
 		else if (V < 0) {
 			this->delta_cdw_up *= 0.25;
+			this->delta_cdw_down *= 0.25;
 		}
-		this->delta_cdw_down = (U > 0) ? -this->delta_cdw_up : this->delta_cdw_up;
+		this->delta_cdw_down = ((U - V) >= 0) ? -this->delta_cdw_up : this->delta_cdw_up;
 
 		this->delta_eta = std::abs(U - V) * 0.2;
 		this->delta_occupation = V * 0.1;

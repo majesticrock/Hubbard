@@ -34,15 +34,16 @@ namespace Hubbard {
 	UsingBroyden::UsingBroyden(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
-		this->delta_cdw_up = std::abs(U - V) * 0.5;
-		this->delta_sc = std::abs(U + V) * 0.5;
+		this->delta_cdw_up = std::abs(U - V) * 0.5 + 0.1;
+		this->delta_sc = std::abs(U + V) * 0.5 + 0.1;
 		if (V > 0) {
 			this->delta_sc *= 0.25;
 		}
 		else if (V < 0) {
 			this->delta_cdw_up *= 0.25;
+			this->delta_cdw_down *= 0.25;
 		}
-		this->delta_cdw_down = (U > 0) ? -this->delta_cdw_up : this->delta_cdw_up;
+		this->delta_cdw_down = ((U - V) > 0) ? -this->delta_cdw_up : this->delta_cdw_up;
 
 		this->delta_eta = 0;// std::abs(U - V) * 0.2;
 		this->delta_occupation = V * 0.1;
@@ -91,8 +92,10 @@ namespace Hubbard {
 			F -= x;
 		};
 		std::function<void(const ParameterVector&, ParameterVector&)> func = lambda_func;
-		ParameterVector x0 = ParameterVector(delta_cdw_up, delta_cdw_down, delta_sc, delta_eta, delta_occupation);
-		ParameterVector f0 = ParameterVector(delta_cdw_up, delta_cdw_down, delta_sc, delta_eta, delta_occupation);
+		ParameterVector f0; 
+		f0 << delta_cdw_up, delta_cdw_down, delta_sc, delta_eta, delta_occupation;
+		ParameterVector x0; 
+		x0 << delta_cdw_up, delta_cdw_down, delta_sc, delta_eta, delta_occupation;
 		for (size_t i = 0; i < 200 && f0.squaredNorm() > 1e-15; i++)
 		{
 			func(x0, f0);
