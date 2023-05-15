@@ -42,9 +42,9 @@ namespace Hubbard {
 		}
 		else if (V < 0) {
 			this->delta_cdw_up *= 0.25;
-			this->delta_cdw_down *= 0.25;
 		}
 		this->delta_cdw_down = ((U - V) > 0) ? -this->delta_cdw_up : this->delta_cdw_up;
+		this->delta_cdw_down *= 1.1;
 
 		this->delta_eta = 0;// std::abs(U - V) * 0.2;
 		this->delta_occupation_up = V * 0.1;
