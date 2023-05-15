@@ -88,6 +88,6 @@ namespace Hubbard {
 	void Model::data_set::print() const {
 		double_prec delta_cdw = 0.5 * (delta_cdw_up + delta_cdw_down);
 		std::cout << delta_cdw_up << "\t" << delta_cdw_down << "\t" << delta_sc << "\t" << delta_eta
-			<< "\t" << sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta) << std::endl;
+			<< "\n    Delta_tot = " << sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta) << std::endl;
 	}
 }

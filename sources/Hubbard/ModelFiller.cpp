@@ -6,8 +6,8 @@
 #include <fstream>
 #include <algorithm>
 
-namespace Hubbard{
-    void Model::computeChemicalPotential()
+namespace Hubbard {
+	void Model::computeChemicalPotential()
 	{
 		chemical_potential = U / 2;
 	}
@@ -300,7 +300,7 @@ namespace Hubbard{
 		}
 	}
 
-    void Model::loadWick(const std::string& filename)
+	void Model::loadWick(const std::string& filename)
 	{
 		wicks_M.resize(number_of_basis_terms * number_of_basis_terms);
 		wicks_N.resize(number_of_basis_terms * number_of_basis_terms);

@@ -47,7 +47,8 @@ namespace Hubbard {
 
 	std::unique_ptr<std::vector<Resolvent_L>> Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
-		std::cout << "Gap values:  " << delta_cdw_up << "  " << delta_cdw_down << "  " << delta_sc << "  " << delta_eta << " " << delta_occupation << std::endl;
+		std::cout << "Gap values:  " << delta_cdw_up << "  " << delta_cdw_down << "  " << delta_sc << "  "
+			<< delta_eta << " " << delta_occupation_up << " " << delta_occupation_down << std::endl;
 		// First off we need to compute every possible expectation value
 		// We use the mean field system's symmetries
 		// i.e. there are only the standard SC, CDW, Eta and N operators non-zero

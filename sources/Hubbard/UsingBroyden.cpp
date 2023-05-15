@@ -24,9 +24,10 @@ namespace Hubbard {
 
 		Matrix_L buffer = hamilton.transpose();
 		hamilton += buffer;
-		const double_prec eps = renormalizedEnergy(k_x, k_y); //unperturbed_energy(k_x, k_y) - (2 * delta_occupation * (cos(k_x) + cos(k_y))); //
+		double_prec eps = renormalizedEnergy_up(k_x, k_y);
 		hamilton(0, 0) = eps;
 		hamilton(1, 1) = -eps;
+		eps = renormalizedEnergy_down(k_x, k_y);
 		hamilton(2, 2) = -eps;
 		hamilton(3, 3) = eps;
 	}
@@ -46,7 +47,8 @@ namespace Hubbard {
 		this->delta_cdw_down = ((U - V) > 0) ? -this->delta_cdw_up : this->delta_cdw_up;
 
 		this->delta_eta = 0;// std::abs(U - V) * 0.2;
-		this->delta_occupation = V * 0.1;
+		this->delta_occupation_up = V * 0.1;
+		this->delta_occupation_down = V * 0.1;
 
 		this->hamilton = Matrix_L::Zero(4, 4);
 	}
@@ -62,7 +64,8 @@ namespace Hubbard {
 			delta_cdw_down = x(1);
 			delta_sc = x(2);
 			delta_eta = x(3);
-			delta_occupation = x(4);
+			delta_occupation_up = x(4);
+			delta_occupation_down = x(5);
 
 			F = ParameterVector::Zero();
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
@@ -85,17 +88,18 @@ namespace Hubbard {
 					F(1) += rho(0, 1);
 					F(2) += rho(0, 2);
 					F(3) += rho(0, 3);
-					F(4) += 0.5 * cos(k_x) * (rho(0, 0) + 1 - rho(2, 2));
+					F(4) += cos(k_x) * rho(0, 0);
+					F(5) += cos(k_x) * (1 - rho(2, 2));
 				}
 			}
 			setParameters(F);
 			F -= x;
 		};
 		std::function<void(const ParameterVector&, ParameterVector&)> func = lambda_func;
-		ParameterVector f0; 
-		f0 << delta_cdw_up, delta_cdw_down, delta_sc, delta_eta, delta_occupation;
-		ParameterVector x0; 
-		x0 << delta_cdw_up, delta_cdw_down, delta_sc, delta_eta, delta_occupation;
+		ParameterVector f0;
+		f0 << delta_cdw_up, delta_cdw_down, delta_sc, delta_eta, delta_occupation_up, delta_occupation_down;
+		ParameterVector x0;
+		x0 << delta_cdw_up, delta_cdw_down, delta_sc, delta_eta, delta_occupation_up, delta_occupation_down;
 		for (size_t i = 0; i < 200 && f0.squaredNorm() > 1e-15; i++)
 		{
 			func(x0, f0);
@@ -115,16 +119,17 @@ namespace Hubbard {
 			x0(1) = delta_cdw_down;
 			x0(2) = delta_sc;
 			x0(3) = delta_eta;
-			x0(4) = delta_occupation;
+			x0(4) = delta_occupation_up;
+			x0(5) = delta_occupation_down;
 
 			if (print) {
 				std::cout << i << ":\t" << std::fixed << std::setprecision(8)
-					<< delta_cdw_up << "\t" << delta_cdw_down << "\t" << delta_sc << "\t" << delta_eta 
-					<< "\t" << delta_occupation << std::endl;
+					<< delta_cdw_up << "\t" << delta_cdw_down << "\t" << delta_sc << "\t" << delta_eta
+					<< "\t" << delta_occupation_up << "\t" << delta_occupation_down << std::endl;
 			}
 		}
 
-		Utility::NumericalSolver::Roots::Broyden<double_prec, 5> broyden_solver;
+		Utility::NumericalSolver::Roots::Broyden<double_prec, 6> broyden_solver;
 		if (!broyden_solver.compute(func, x0)) {
 			std::cerr << "No convergence for [T, U, V] = [" << this->temperature << ", " << this->U << ", " << this->V << "]" << std::endl;
 			delta_cdw_up = 0;
@@ -137,7 +142,7 @@ namespace Hubbard {
 		if (print) {
 			func(x0, f0);
 			std::cout << "T=" << temperature << "   U=" << U << "   V=" << V << "\n";
-			std::cout << std::scientific << std::setprecision(8) << "x0 = (";
+			std::cout << "x0 = (";
 			for (int i = 0; i < x0.size(); i++)
 			{
 				std::cout << " " << x0(i) << " ";
@@ -147,9 +152,7 @@ namespace Hubbard {
 			{
 				std::cout << " " << f0(i) << " ";
 			}
-			std::cout << ")   -> |f0| = " << f0.norm() << std::endl;
-
-			std::cout << "n cos = " << delta_occupation << std::endl;
+			std::cout << ")\n -> |f0| = " << std::scientific << std::setprecision(8) << f0.norm() << std::endl;
 		}
 
 		return ret;

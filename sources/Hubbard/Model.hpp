@@ -25,7 +25,8 @@ namespace Hubbard {
 	protected:
 		size_t BASIS_SIZE;
 		size_t TOTAL_BASIS;
-		double_prec delta_sc, delta_cdw_up, delta_cdw_down, delta_eta, delta_occupation;
+		double_prec delta_sc, delta_cdw_up, delta_cdw_down, delta_eta;
+		double_prec delta_occupation_up, delta_occupation_down;
 		Matrix_L hamilton;
 		double_prec temperature;
 		double_prec U;
@@ -33,7 +34,10 @@ namespace Hubbard {
 		double_prec chemical_potential;
 		// Might not be necessary, depends on the V dependence
 		virtual void computeChemicalPotential();
-		inline virtual double_prec renormalizedEnergy(double_prec k_x, double_prec k_y) const {
+		inline virtual double_prec renormalizedEnergy_up(double_prec k_x, double_prec k_y) const {
+			return unperturbed_energy(k_x, k_y);
+		};
+		inline virtual double_prec renormalizedEnergy_down(double_prec k_x, double_prec k_y) const {
 			return unperturbed_energy(k_x, k_y);
 		};
 
