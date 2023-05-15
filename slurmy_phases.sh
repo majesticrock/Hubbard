@@ -1,8 +1,8 @@
 #!/bin/bash
 
-sbatch slurm/params_T_finite.config
-sbatch slurm/params_T.config
-sbatch slurm/params_U_negative.config
-sbatch slurm/params_U_positive.config
-sbatch slurm/params_V_negative.config
-sbatch slurm/params_V_positive.config
+sbatch slurm/T_finite.slurm
+sbatch slurm/T.slurm
+sbatch slurm/U_neg.slurm
+sbatch slurm/U_pos.slurm
+sbatch slurm/V_neg.slurm
+sbatch slurm/V_pos.slurm
