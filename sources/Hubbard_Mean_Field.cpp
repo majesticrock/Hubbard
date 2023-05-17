@@ -1,7 +1,11 @@
 #define _USE_MATH_DEFINES
 
+#ifdef _DEBUG
+#define _NO_MPI
+#endif
+
 #include <omp.h>
-#ifndef _DEBUG
+#ifndef _NO_MPI
 #include <mpi.h>
 #endif
 
@@ -27,7 +31,7 @@ std::ostream& operator<<(std::ostream& os, const Hubbard::Model::ModelParameters
 
 int main(int argc, char** argv)
 {
-#ifndef _DEBUG
+#ifndef _NO_MPI
 	if (argc < 2) {
 		std::cerr << "Invalid number of arguments: Use mpirun -n <threads> <path_to_executable> <configfile>" << std::endl;
 		return -1;
@@ -150,7 +154,7 @@ int main(int argc, char** argv)
 			recieve_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 			recieve_eta.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		}
-#ifndef _DEBUG
+#ifndef _NO_MPI
 		MPI_Gather(data_cdw_up.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw_up.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Gather(data_cdw_down.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw_down.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Gather(data_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -232,7 +236,7 @@ int main(int argc, char** argv)
 			Utility::saveData_boost(oneParticleEnergies, "../../data/" + output_folder + "one_particle.dat.gz", comments);
 		}
 	}
-#ifndef _DEBUG
+#ifndef _NO_MPI
 	return MPI_Finalize();
 #else
 	return 0;
