@@ -93,8 +93,6 @@ namespace Hubbard {
 
 		if (this->start_basis_at < 0) {
 			fill_M_N_xp_basis();
-			//K_plus += SALT * Matrix_L::Identity(K_plus.rows(), K_plus.cols());
-			//K_minus += SALT * Matrix_L::Identity(K_minus.rows(), K_minus.cols());
 		}
 		else {
 			fill_M_N();
@@ -156,15 +154,18 @@ namespace Hubbard {
 
 		Vector_L startingState_SC[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_CDW[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
+		Vector_L startingState_AFM[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		for (int j = 0; j < 2; j++)
 		{
 			for (size_t i = 0; i < BASIS_SIZE; i++)
 			{
 				startingState_SC[j](i) = 1;
 				startingState_CDW[j](2 * BASIS_SIZE + i) = 1;
+				startingState_AFM[j](2 * BASIS_SIZE + i) = (i < BASIS_SIZE / 2) ? 1 : -1;
 			}
 			startingState_SC[j].normalize();
 			startingState_CDW[j].normalize();
+			startingState_AFM[j].normalize();
 		}
 
 		// M_new = K_plus
@@ -318,6 +319,7 @@ namespace Hubbard {
 			N_new = solver.eigenvectors() * n_ev.asDiagonal() * solver.eigenvectors().adjoint();
 			startingState_SC[plus_index] = N_new * L * startingState_SC[plus_index];
 			startingState_CDW[plus_index] = N_new * L * startingState_CDW[plus_index];
+			startingState_AFM[plus_index] = N_new * L * startingState_AFM[plus_index];
 
 			end_in = std::chrono::steady_clock::now();
 			std::cout << "Time for adjusting N_new: "
@@ -333,25 +335,8 @@ namespace Hubbard {
 
 		begin = std::chrono::steady_clock::now();
 
-		/* Computation using the exact matrix inverse
-		Eigen::SelfAdjointEigenSolver<Matrix_L> gen_solver;
-		gen_solver.compute(solver_matrix);
-		reciever.resize(1);
-		{
-			Vector_L state = gen_solver.eigenvectors().transpose() * startingState;
-
-			const double_prec RANGE = 10;
-			const int STEPS = 15000;
-			for (double_prec z = 0; z < RANGE; z += (RANGE / STEPS))
-			{
-				std::complex<double_prec> z_tilde = std::complex<double_prec>(z*z, 1e-2);
-				Eigen::Vector<std::complex<double_prec>, Eigen::Dynamic> diag = 1. / (z_tilde - gen_solver.eigenvalues().array());
-				reciever[0].emplace_back(-(state.dot(diag.asDiagonal() * state)).imag());
-			}
-		}*/
-
 		std::unique_ptr<std::vector<Resolvent_L>> resolvents = std::make_unique< std::vector<Resolvent_L>>(std::vector<Resolvent_L>());
-		resolvents->reserve(4);
+		resolvents->reserve(6);
 
 		for (size_t i = 0; i < 2; i++)
 		{
@@ -359,15 +344,20 @@ namespace Hubbard {
 			compute_solver_matrix(i, 1 - i);
 			resolvents->push_back(Resolvent_L(startingState_SC[i]));
 			resolvents->push_back(Resolvent_L(startingState_CDW[i]));
+			resolvents->push_back(Resolvent_L(startingState_AFM[i]));
 #pragma omp parallel sections
 			{
 #pragma omp section
 				{
-					(*resolvents)[2 * i].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
+					(*resolvents)[3 * i].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
 				}
 #pragma omp section
 				{
-					(*resolvents)[2 * i + 1].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
+					(*resolvents)[3 * i + 1].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
+				}
+#pragma omp section
+				{
+					(*resolvents)[3 * i + 2].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
 				}
 			}
 		}

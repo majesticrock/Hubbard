@@ -6,12 +6,12 @@ namespace Hubbard {
 	class HubbardCDW : public Model
 	{
 	protected:
-		typedef Eigen::Vector<double_prec, 8> ParameterVector;
+		typedef Eigen::Vector<double_prec, 10> ParameterVector;
 		typedef Eigen::Matrix<complex_prec, 4, 4> Matrix_4cL;
 		const complex_prec I = { 0, 1 };
 
 		double_prec V;
-		double_prec xi_sc, xi_eta;
+		double_prec xi_sc_x, xi_sc_y, xi_eta_x, xi_eta_y;
 		Matrix_4cL complex_h;
 
 		virtual void computeChemicalPotential() override;
@@ -35,8 +35,10 @@ namespace Hubbard {
 			F(3) *= this->U / BASIS_SIZE; // Eta
 			F(4) *= V / (8 * BASIS_SIZE); // Occupation Up
 			F(5) *= V / (8 * BASIS_SIZE); // Occupation Down
-			F(6) *= V / (8 * BASIS_SIZE); // Xi SC
-			F(7) *= V / (8 * BASIS_SIZE); // Xi CDW
+			F(6) *= V / (8 * BASIS_SIZE); // Xi SC x
+			F(7) *= V / (8 * BASIS_SIZE); // Xi SC y
+			F(8) *= V / (8 * BASIS_SIZE); // Xi Eta x
+			F(9) *= V / (8 * BASIS_SIZE); // Xi Eta y
 
 			this->delta_cdw_up = 0.5 * (F(0) + this->delta_cdw_up);
 			this->delta_cdw_down = 0.5 * (F(1) + this->delta_cdw_down);
@@ -44,8 +46,10 @@ namespace Hubbard {
 			this->delta_eta = 0.5 * (F(3) + this->delta_eta);
 			this->delta_occupation_up = 0.5 * (F(4) + this->delta_occupation_up);
 			this->delta_occupation_down = 0.5 * (F(5) + this->delta_occupation_down);
-			this->xi_sc = 0.5 * (F(6) + this->xi_sc);
-			this->xi_eta = 0.5 * (F(7) + this->xi_eta);
+			this->xi_sc_x = 0.5 * (F(6) + this->xi_sc_x);
+			this->xi_sc_y = 0.5 * (F(7) + this->xi_sc_y);
+			this->xi_eta_x = 0.5 * (F(8) + this->xi_eta_x);
+			this->xi_eta_y = 0.5 * (F(9) + this->xi_eta_y);
 		};
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {
 			if (coeff.name == "\\tilde{V}") {
