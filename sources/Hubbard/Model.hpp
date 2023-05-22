@@ -26,10 +26,17 @@ namespace Hubbard {
 		size_t BASIS_SIZE;
 		size_t TOTAL_BASIS;
 		double_prec delta_sc, delta_cdw_up, delta_cdw_down, delta_eta;
+		double_prec xi_sc_x, xi_sc_y;
 		double_prec delta_occupation_up, delta_occupation_down;
-		Matrix_L hamilton;
+
+		typedef std::complex<double_prec> complex_prec;
+		typedef Eigen::Matrix<complex_prec, 4, 4> SpinorMatrix;
+		const complex_prec I = { 0, 1 };
+		SpinorMatrix hamilton;
+
 		double_prec temperature;
 		double_prec U;
+		double_prec U_OVER_N;
 
 		double_prec chemical_potential;
 		// Might not be necessary, depends on the V dependence
@@ -141,7 +148,7 @@ namespace Hubbard {
 				return (unperturbed_energy(index_to_k_vector(momentum(0)), index_to_k_vector(momentum(1))) - chemical_potential);
 			}
 			if (coeff.name == "\\frac{U}{N}") {
-				return (U / BASIS_SIZE);
+				return U_OVER_N;
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
@@ -184,7 +191,7 @@ namespace Hubbard {
 			std::string getFileName() const;
 		};
 		struct data_set {
-			double_prec delta_cdw_up, delta_cdw_down, delta_sc, delta_eta;
+			double_prec delta_cdw_up, delta_cdw_down, delta_sc, xi_sc_x, xi_sc_y, delta_eta;
 			void print() const;
 		};
 

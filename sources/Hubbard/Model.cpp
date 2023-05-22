@@ -18,6 +18,7 @@ namespace Hubbard {
 	void Model::initializeParameters()
 	{
 		this->BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
+		this->U_OVER_N = U / BASIS_SIZE;
 		if (start_basis_at < 0) {
 			// We investigate the special x-p-basis
 			this->TOTAL_BASIS = this->BASIS_SIZE * 8;
@@ -57,8 +58,8 @@ namespace Hubbard {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		{
-			Matrix_L rho = Matrix_L::Zero(4, 4);
-			Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
+			SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
+			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
 			expecs = std::vector<Matrix_L>(4, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
@@ -72,11 +73,16 @@ namespace Hubbard {
 					{
 						rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
 					}
-					rho = solver.eigenvectors() * rho * (solver.eigenvectors().transpose());
+					rho = solver.eigenvectors() * rho * (solver.eigenvectors().adjoint());
 					for (int idx = 0; idx < 4; idx++)
 					{
-						expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(idx, 0);
-						sum_of_all[idx] += rho(idx, 0);
+						expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(idx, 0).real();
+						sum_of_all[idx] += rho(idx, 0).real();
+
+						if (std::abs(rho(idx, 0).imag()) > SALT) {
+							std::cerr << "Expectation values are complex!  " << rho(idx, 0) << std::endl;
+							throw;
+						}
 					}
 					if (std::abs(rho(3, 0)) > SALT) {
 						std::cerr << "Warning: <eta> does not vanish! " << rho(3, 0) << std::endl;
@@ -219,7 +225,7 @@ namespace Hubbard {
 				k_solver[1].compute(K_minus);
 
 				std::cout << "K_- recon:    "
-					<< (k_solver[1].eigenvectors() * k_solver[1].eigenvalues().asDiagonal() * k_solver[1].eigenvectors().transpose()
+					<< (k_solver[1].eigenvectors() * k_solver[1].eigenvalues().asDiagonal() * k_solver[1].eigenvectors().adjoint()
 						- K_minus).norm() << std::endl;
 
 				double_prec tol = k_solver[1].eigenvalues().norm() * ERROR_MARGIN;
@@ -279,7 +285,7 @@ namespace Hubbard {
 				}
 			}
 			Matrix_L buffer_matrix = L * k_solver[minus_index].eigenvectors();
-			Matrix_L N_new = buffer_matrix * K_EV.asDiagonal() * buffer_matrix.transpose();
+			Matrix_L N_new = buffer_matrix * K_EV.asDiagonal() * buffer_matrix.adjoint();
 
 			std::chrono::time_point end_in = std::chrono::steady_clock::now();
 			std::cout << "Time for computing N_new: "
@@ -372,7 +378,7 @@ namespace Hubbard {
 	void Model::getEnergies(std::vector<std::vector<double>>& reciever, double_prec direction)
 	{
 		reciever.reserve(2 * Constants::K_DISCRETIZATION);
-		Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
+		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 		double_prec k_val = 0;
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 		{
@@ -386,7 +392,7 @@ namespace Hubbard {
 	void Model::getAllEnergies(std::vector<std::vector<double>>& reciever)
 	{
 		reciever.resize(4 * Constants::K_DISCRETIZATION, std::vector<double>(2 * Constants::K_DISCRETIZATION));
-		Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
+		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 		double_prec k_val = 0;
 		double_prec l_val = 0;
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
