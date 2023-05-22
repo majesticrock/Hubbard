@@ -13,11 +13,11 @@ namespace Hubbard {
 		hamilton.fill(0);
 
 		hamilton(0, 1) = delta_cdw_up;
-		hamilton(0, 2) = delta_sc + I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
+		hamilton(0, 2) = delta_sc - I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
 		hamilton(0, 3) = I * delta_eta + 2 * xi_eta_x * cos(k_x) - 2 * xi_eta_y * cos(k_y);
 
 		hamilton(1, 2) = I * delta_eta - 2 * xi_eta_x * cos(k_x) - 2 * xi_eta_y * cos(k_y);
-		hamilton(1, 3) = delta_sc - I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
+		hamilton(1, 3) = delta_sc + I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
 		hamilton(2, 3) = -delta_cdw_down;
 
 		SpinorMatrix buffer = hamilton.adjoint();
@@ -47,8 +47,8 @@ namespace Hubbard {
 		this->delta_occupation_down = V * 0.1;
 		this->delta_occupation_up_y = -V * 0.1;
 		this->delta_occupation_down_y = -V * 0.1;
-		this->xi_sc_x = std::abs(U + V) * 0.5 + 0.1;
-		this->xi_sc_y = -std::abs(U + V) * 0.5 + 0.1;
+		this->xi_sc_x = -V * 0.5 + 0.1;
+		this->xi_sc_y = -V * 0.5 + 0.1;
 		this->xi_eta_x = std::abs(U - V) * 0.2;
 		this->xi_eta_y = -std::abs(U - V) * 0.2;
 
@@ -98,15 +98,15 @@ namespace Hubbard {
 
 					c_cdw_up -= rho(2, 3);
 					c_cdw_down += rho(0, 1);
-					c_sc += rho(0, 2);
-					c_xi_sc_x += cos(k_x) * rho(0, 2);
-					c_xi_sc_y += cos(k_y) * rho(0, 2);
-					c_eta += rho(0, 3);
+					c_sc += rho(2, 0);
+					c_xi_sc_x += cos(k_x) * rho(2, 0);
+					c_xi_sc_y += cos(k_y) * rho(2, 0);
+					c_eta += rho(3, 0);
 					F(6) += cos(k_x) * rho(0, 0).real();
 					F(7) += cos(k_x) * (1 - rho(2, 2).real());
 
-					c_xi_eta_x += cos(k_x) * rho(0, 3);
-					c_xi_eta_y += cos(k_y) * rho(0, 3);
+					c_xi_eta_x += cos(k_x) * rho(3, 0);
+					c_xi_eta_y += cos(k_y) * rho(3, 0);
 					F(10) += cos(k_y) * rho(0, 0).real();
 					F(11) += cos(k_y) * (1 - rho(2, 2).real());
 				}
@@ -151,7 +151,7 @@ namespace Hubbard {
 			F -= x;
 		};
 
-		constexpr int MAX_STEPS = 500;
+		constexpr int MAX_STEPS = 100;
 
 		ParameterVector f0;
 		f0 << delta_cdw_up, delta_cdw_down, delta_sc, xi_sc_x, xi_sc_y, delta_eta, delta_occupation_up, delta_occupation_down,
