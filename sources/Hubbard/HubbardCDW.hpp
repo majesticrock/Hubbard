@@ -5,7 +5,7 @@ namespace Hubbard {
 	class HubbardCDW : public Model
 	{
 	private:
-		typedef Eigen::Vector<double_prec, 12> ParameterVector;
+		typedef Eigen::Vector<double_prec, 16> ParameterVector;
 		inline void printAsRow(ParameterVector& printer) const {
 			for (size_t i = 0; i < printer.size(); i++)
 			{
@@ -20,7 +20,8 @@ namespace Hubbard {
 		double_prec V;
 		double_prec V_OVER_N;
 		double_prec xi_eta_x, xi_eta_y;
-		double_prec chi_sc_x, chi_sc_y, chi_eta_x, chi_eta_y;
+		double_prec xi_cdw_up_x, xi_cdw_up_y;
+		double_prec xi_cdw_down_x, xi_cdw_down_y;
 
 		double_prec delta_occupation_up_y, delta_occupation_down_y;
 
@@ -53,6 +54,10 @@ namespace Hubbard {
 			F(9) *= V_OVER_N; // Xi Eta y
 			F(10) *= V_OVER_N; // Occupation Up y
 			F(11) *= V_OVER_N; // Occupation Down y
+			F(12) *= V_OVER_N; // Xi CDW Up x
+			F(13) *= V_OVER_N; // Xi CDW Up y
+			F(14) *= V_OVER_N; // Xi CDW Down x
+			F(15) *= V_OVER_N; // Xi CDW Down y
 
 			this->delta_cdw_up = 0.5 * (F(0) + this->delta_cdw_up);
 			this->delta_cdw_down = 0.5 * (F(1) + this->delta_cdw_down);
@@ -66,6 +71,10 @@ namespace Hubbard {
 			this->xi_eta_y = 0.5 * (F(9) + this->xi_eta_y);
 			this->delta_occupation_up_y = 0.5 * (F(10) + this->delta_occupation_up_y);
 			this->delta_occupation_down_y = 0.5 * (F(11) + this->delta_occupation_down_y);
+			this->xi_cdw_up_x = 0.5 * (F(12) + this->xi_cdw_up_x);
+			this->xi_cdw_up_y = 0.5 * (F(13) + this->xi_cdw_up_y);
+			this->xi_cdw_down_x = 0.5 * (F(14) + this->xi_cdw_down_x);
+			this->xi_cdw_down_y = 0.5 * (F(15) + this->xi_cdw_down_y);
 		};
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {
 			if (coeff.name == "\\tilde{V}") {

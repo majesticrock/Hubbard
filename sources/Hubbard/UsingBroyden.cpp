@@ -43,13 +43,15 @@ namespace Hubbard {
 		else if (V < 0) {
 			this->delta_cdw_up *= 0.25;
 		}
-		this->delta_cdw_down = ((U - V) >= 0) ? -this->delta_cdw_up : this->delta_cdw_up;
-
+		if(U > 0){
+			this->delta_cdw_down = 0.8 * ((U > 4*V) ? -this->delta_cdw_up : this->delta_cdw_up);
+		}
+		
 		this->delta_eta = std::abs(U + V) * 0.2;
 		this->delta_occupation_up = V * 0.1;
 		this->delta_occupation_down = V * 0.1;
 		this->xi_sc_x = V * 0.5;
-		this->xi_sc_y = V * 0.5;
+		this->xi_sc_y = -V * 0.3;
 
 		this->V_OVER_N = V / BASIS_SIZE;
 
@@ -93,9 +95,9 @@ namespace Hubbard {
 
 					c_cdw_up -= rho(2, 3);
 					c_cdw_down += rho(0, 1);
-					c_sc += rho(2, 0);
-					c_xi_sc_x += cos(k_x) * rho(2, 0);
-					c_xi_sc_y += cos(k_y) * rho(2, 0);
+					c_sc += rho(0, 2);
+					c_xi_sc_x += cos(k_x) * rho(0, 2);
+					c_xi_sc_y += cos(k_y) * rho(0, 2);
 					c_eta += rho(3, 0);
 					F(6) += cos(k_x) * rho(0, 0).real();
 					F(7) += cos(k_x) * (1 - rho(2, 2).real());
@@ -140,18 +142,6 @@ namespace Hubbard {
 		for (size_t i = 0; i < 200 && f0.squaredNorm() > 1e-15; i++)
 		{
 			func(x0, f0);
-			if (std::abs(x0(0) + delta_cdw_up) < 1e-10) {
-				delta_cdw_up = 0;
-			}
-			if (std::abs(x0(1) + delta_cdw_down) < 1e-10) {
-				delta_cdw_down = 0;
-			}
-			if (std::abs(x0(2) + delta_sc) < 1e-10) {
-				delta_sc = 0;
-			}
-			if (std::abs(x0(3) + delta_eta) < 1e-10) {
-				delta_eta = 0;
-			}
 			x0(0) = delta_cdw_up;
 			x0(1) = delta_cdw_down;
 			x0(2) = delta_sc;
