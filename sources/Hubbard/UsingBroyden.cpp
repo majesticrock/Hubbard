@@ -15,11 +15,11 @@ namespace Hubbard {
 		hamilton.fill(0);
 
 		hamilton(0, 1) = delta_cdw_up;
-		hamilton(0, 2) = delta_sc - I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
+		hamilton(0, 2) = delta_sc + I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
 		hamilton(0, 3) = I * delta_eta;
 
 		hamilton(1, 2) = I * delta_eta;
-		hamilton(1, 3) = delta_sc + I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
+		hamilton(1, 3) = delta_sc - I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
 		hamilton(2, 3) = -delta_cdw_down;
 
 		SpinorMatrix buffer = hamilton.adjoint();

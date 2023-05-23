@@ -13,11 +13,11 @@ namespace Hubbard {
 		hamilton.fill(0);
 
 		hamilton(0, 1) = delta_cdw_up;
-		hamilton(0, 2) = delta_sc - I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
+		hamilton(0, 2) = delta_sc + I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
 		hamilton(0, 3) = I * delta_eta + 2 * xi_eta_x * cos(k_x) - 2 * xi_eta_y * cos(k_y);
 
 		hamilton(1, 2) = I * delta_eta - 2 * xi_eta_x * cos(k_x) - 2 * xi_eta_y * cos(k_y);
-		hamilton(1, 3) = delta_sc + I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
+		hamilton(1, 3) = delta_sc - I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
 		hamilton(2, 3) = -delta_cdw_down;
 
 		SpinorMatrix buffer = hamilton.adjoint();
@@ -112,28 +112,29 @@ namespace Hubbard {
 				}
 			}
 
-			if (std::abs(c_cdw_up.imag()) > 1e-8) {
+			const double ERROR_MARGIN = 1e-10 * BASIS_SIZE;
+			if (std::abs(c_cdw_up.imag()) > ERROR_MARGIN) {
 				std::cout << "cdw_up: " << c_cdw_up << std::endl;
 			}
-			if (std::abs(c_cdw_down.imag()) > 1e-8) {
+			if (std::abs(c_cdw_down.imag()) > ERROR_MARGIN) {
 				std::cout << "cdw_down: " << c_cdw_down << std::endl;
 			}
-			if (std::abs(c_sc.imag()) > 1e-8) {
+			if (std::abs(c_sc.imag()) > ERROR_MARGIN) {
 				std::cout << "sc: " << c_sc << std::endl;
 			}
-			if (std::abs(c_eta.real()) > 1e-8) {
+			if (std::abs(c_eta.real()) > ERROR_MARGIN) {
 				std::cout << "eta: " << c_eta << std::endl;
 			}
-			if (std::abs(c_xi_sc_x.real()) > 1e-8) {
+			if (std::abs(c_xi_sc_x.real()) > ERROR_MARGIN) {
 				std::cout << "xi sc x: " << c_xi_sc_x << std::endl;
 			}
-			if (std::abs(c_xi_sc_y.real()) > 1e-8) {
+			if (std::abs(c_xi_sc_y.real()) > ERROR_MARGIN) {
 				std::cout << "xi sc y: " << c_xi_sc_y << std::endl;
 			}
-			if (std::abs(c_xi_eta_x.imag()) > 1e-8) {
+			if (std::abs(c_xi_eta_x.imag()) > ERROR_MARGIN) {
 				std::cout << "xi eta x: " << c_xi_eta_x << std::endl;
 			}
-			if (std::abs(c_xi_eta_y.imag()) > 1e-8) {
+			if (std::abs(c_xi_eta_y.imag()) > ERROR_MARGIN) {
 				std::cout << "xi eta y: " << c_xi_eta_y << std::endl;
 			}
 
