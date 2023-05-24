@@ -40,10 +40,8 @@ namespace Hubbard {
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
 
 		virtual inline void setParameters(ParameterVector& F) {
-			auto buf_up = U_OVER_N * F(0) - 4 * V_OVER_N * (F(0) + F(1));
-			auto buf_down = U_OVER_N * F(1) - 4 * V_OVER_N * (F(0) + F(1));
-			F(0) = buf_up;
-			F(1) = buf_down;
+			F(0) *= 0.5 * (U_OVER_N - 4 * V_OVER_N); // CDW
+			F(1) *= 0.5 * U_OVER_N; // AFM
 			F(2) *= U_OVER_N; // SC
 			F(3) *= V_OVER_N; // Gamma SC
 			F(4) *= V_OVER_N; // Xi SC y
@@ -59,8 +57,8 @@ namespace Hubbard {
 			F(14) *= V_OVER_N; // Xi CDW Down x
 			F(15) *= V_OVER_N; // Xi CDW Down y
 
-			this->delta_cdw_up = 0.5 * (F(0) + this->delta_cdw_up);
-			this->delta_cdw_down = 0.5 * (F(1) + this->delta_cdw_down);
+			this->delta_cdw = 0.5 * (F(0) + this->delta_cdw);
+			this->delta_afm = 0.5 * (F(1) + this->delta_afm);
 			this->delta_sc = 0.5 * (F(2) + this->delta_sc);
 			this->gamma_sc = 0.5 * (F(3) + this->gamma_sc);
 			this->xi_sc = 0.5 * (F(4) + this->xi_sc);

@@ -27,8 +27,8 @@ namespace Hubbard {
 		else {
 			this->TOTAL_BASIS = this->BASIS_SIZE * this->number_of_basis_terms;
 		}
-		this->delta_cdw_up = 0.1;
-		this->delta_cdw_down = (U > 0) ? -this->delta_cdw_up : this->delta_cdw_up;
+		this->delta_cdw = 0.1;
+		this->delta_afm = (U > 0) ? -this->delta_cdw : this->delta_cdw;
 		this->delta_sc = 0.1;
 		this->delta_eta = 0.001;
 		computeChemicalPotential();
@@ -48,7 +48,7 @@ namespace Hubbard {
 
 	std::unique_ptr<std::vector<Resolvent_L>> Model::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
-		std::cout << "Gap values:  " << delta_cdw_up << "  " << delta_cdw_down << "  " << delta_sc << "  "
+		std::cout << "Gap values:  " << delta_cdw << "  " << delta_afm << "  " << delta_sc << "  "
 			<< delta_eta << " " << delta_occupation_up << " " << delta_occupation_down << std::endl;
 		// First off we need to compute every possible expectation value
 		// We use the mean field system's symmetries

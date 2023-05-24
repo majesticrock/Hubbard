@@ -25,7 +25,7 @@ namespace Hubbard {
 	protected:
 		size_t BASIS_SIZE;
 		size_t TOTAL_BASIS;
-		double_prec delta_sc, delta_cdw_up, delta_cdw_down, delta_eta;
+		double_prec delta_sc, delta_cdw, delta_afm, delta_eta;
 		double_prec gamma_sc, xi_sc;
 		double_prec delta_occupation_up, delta_occupation_down;
 
@@ -197,7 +197,7 @@ namespace Hubbard {
 			std::string getFileName() const;
 		};
 		struct data_set {
-			double_prec delta_cdw_up, delta_cdw_down, delta_sc, gamma_sc, xi_sc, delta_eta;
+			double_prec delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta;
 			void print() const;
 		};
 
@@ -214,7 +214,6 @@ namespace Hubbard {
 		std::unique_ptr<std::vector<Resolvent_L>> computeCollectiveModes(std::vector<std::vector<double>>& reciever);
 		// Returns the total gap value sqrt(sc^2 + cdw^2 + eta^2)
 		inline double_prec getTotalGapValue() const {
-			double_prec delta_cdw = 0.5 * (delta_cdw_up + delta_cdw_down);
 			return sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta);
 		};
 		void loadWick(const std::string& filename);

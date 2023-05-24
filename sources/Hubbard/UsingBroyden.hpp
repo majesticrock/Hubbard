@@ -11,7 +11,7 @@ namespace Hubbard {
 			for (size_t i = 0; i < printer.size(); i++)
 			{
 				std::cout << "\t" << printer(i);
-				if ((i + 1) % 7 == 0) {
+				if ((i + 1) % 8 == 0) {
 					std::cout << "\n\t    ";
 				}
 			}
@@ -24,19 +24,17 @@ namespace Hubbard {
 
 		virtual void computeChemicalPotential() override;
 		inline virtual double_prec renormalizedEnergy_up(double_prec k_x, double_prec k_y) const override {
-			return -2 * (1. + delta_occupation_up) * (cos(k_x) + cos(k_y));
+			return -2 * (1. + delta_occupation_up) * gamma(k_x, k_y);
 		};
 		inline virtual double_prec renormalizedEnergy_down(double_prec k_x, double_prec k_y) const override {
-			return -2 * (1. + delta_occupation_down) * (cos(k_x) + cos(k_y));
+			return -2 * (1. + delta_occupation_down) * gamma(k_x, k_y);
 		};
 
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
 
 		virtual inline void setParameters(ParameterVector& F) {
-			auto buf_up = U_OVER_N * F(0) - 4 * V_OVER_N * (F(0) + F(1));
-			auto buf_down = U_OVER_N * F(1) - 4 * V_OVER_N * (F(0) + F(1));
-			F(0) = buf_up;
-			F(1) = buf_down;
+			F(0) *= 0.5 * (U_OVER_N - 4 * V_OVER_N); // CDW
+			F(1) *= 0.5 * U_OVER_N; // AFM
 			F(2) *= U_OVER_N; // SC
 			F(3) *= V_OVER_N; // Gamma SC
 			F(4) *= V_OVER_N; // Xi SC y
@@ -44,8 +42,8 @@ namespace Hubbard {
 			F(6) *= V_OVER_N; // Occupation Up
 			F(7) *= V_OVER_N; // Occupation Down
 
-			this->delta_cdw_up = 0.5 * (F(0) + this->delta_cdw_up);
-			this->delta_cdw_down = 0.5 * (F(1) + this->delta_cdw_down);
+			this->delta_cdw = 0.5 * (F(0) + this->delta_cdw);
+			this->delta_afm = 0.5 * (F(1) + this->delta_afm);
 			this->delta_sc = 0.5 * (F(2) + this->delta_sc);
 			this->gamma_sc = 0.5 * (F(3) + this->gamma_sc);
 			this->xi_sc = 0.5 * (F(4) + this->xi_sc);

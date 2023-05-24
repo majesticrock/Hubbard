@@ -17,15 +17,13 @@ namespace Hubbard {
 	protected:
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
 		virtual inline void setParameters(ParameterVector& F) {
-			auto buf_up = this->U * F(0) / BASIS_SIZE;
-			auto buf_down = this->U * F(1) / BASIS_SIZE;
-			F(0) = buf_up;
-			F(1) = buf_down;
+			F(0) *= 0.5 * this->U / BASIS_SIZE; // CDW
+			F(1) *= 0.5 * this->U / BASIS_SIZE; // AFM
 			F(2) *= this->U / BASIS_SIZE; // SC
 			F(3) *= this->U / BASIS_SIZE; // Eta
 
-			this->delta_cdw_up = 0.5 * (F(0) + this->delta_cdw_up);
-			this->delta_cdw_down = 0.5 * (F(1) + this->delta_cdw_down);
+			this->delta_cdw = 0.5 * (F(0) + this->delta_cdw);
+			this->delta_afm = 0.5 * (F(1) + this->delta_afm);
 			this->delta_sc = 0.5 * (F(2) + this->delta_sc);
 			this->delta_eta = 0.5 * (F(3) + this->delta_eta);
 		};
