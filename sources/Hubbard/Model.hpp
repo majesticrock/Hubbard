@@ -26,7 +26,7 @@ namespace Hubbard {
 		size_t BASIS_SIZE;
 		size_t TOTAL_BASIS;
 		double_prec delta_sc, delta_cdw_up, delta_cdw_down, delta_eta;
-		double_prec xi_sc_x, xi_sc_y;
+		double_prec gamma_sc, xi_sc;
 		double_prec delta_occupation_up, delta_occupation_down;
 
 		typedef std::complex<double_prec> complex_prec;
@@ -39,14 +39,27 @@ namespace Hubbard {
 		double_prec U_OVER_N;
 
 		double_prec chemical_potential;
-		// Might not be necessary, depends on the V dependence
 		virtual void computeChemicalPotential();
+		inline virtual double_prec gamma(double_prec k_x, double_prec k_y) const {
+			return cos(k_x) + cos(k_y);
+		}
+		inline virtual double_prec xi(double_prec k_x, double_prec k_y) const {
+			return cos(k_x) - cos(k_y);
+		}
+
+		inline double_prec unperturbed_energy(double_prec k_x, double_prec k_y) const {
+			return -2 * gamma(k_x, k_y);
+		};
+		inline double_prec unperturbed_energy(size_t k) const {
+			return -2 * (cos(index_to_k_vector(x(k))) + cos(index_to_k_vector(y(k))));
+		};
 		inline virtual double_prec renormalizedEnergy_up(double_prec k_x, double_prec k_y) const {
 			return unperturbed_energy(k_x, k_y);
 		};
 		inline virtual double_prec renormalizedEnergy_down(double_prec k_x, double_prec k_y) const {
 			return unperturbed_energy(k_x, k_y);
 		};
+		
 
 		// maps an index; [0, N_K) -> [-pi, pi)
 		template <typename T>
@@ -82,13 +95,6 @@ namespace Hubbard {
 				}
 				return ((energy > 0) ? 0 : 1);
 			}
-		};
-		template <typename T>
-		inline T unperturbed_energy(T k_x, T k_y) const {
-			return -2 * (cos(k_x) + cos(k_y));
-		};
-		inline double_prec unperturbed_energy(size_t k) const {
-			return -2 * (cos(index_to_k_vector(x(k))) + cos(index_to_k_vector(y(k))));
 		};
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) = 0;
 
@@ -191,7 +197,7 @@ namespace Hubbard {
 			std::string getFileName() const;
 		};
 		struct data_set {
-			double_prec delta_cdw_up, delta_cdw_down, delta_sc, xi_sc_x, xi_sc_y, delta_eta;
+			double_prec delta_cdw_up, delta_cdw_down, delta_sc, gamma_sc, xi_sc, delta_eta;
 			void print() const;
 		};
 

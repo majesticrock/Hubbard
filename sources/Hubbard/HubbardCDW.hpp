@@ -45,7 +45,7 @@ namespace Hubbard {
 			F(0) = buf_up;
 			F(1) = buf_down;
 			F(2) *= U_OVER_N; // SC
-			F(3) *= V_OVER_N; // Xi SC x
+			F(3) *= V_OVER_N; // Gamma SC
 			F(4) *= V_OVER_N; // Xi SC y
 			F(5) *= U_OVER_N; // Eta
 			F(6) *= V_OVER_N; // Occupation Up
@@ -62,8 +62,8 @@ namespace Hubbard {
 			this->delta_cdw_up = 0.5 * (F(0) + this->delta_cdw_up);
 			this->delta_cdw_down = 0.5 * (F(1) + this->delta_cdw_down);
 			this->delta_sc = 0.5 * (F(2) + this->delta_sc);
-			this->xi_sc_x = 0.5 * (F(3) + this->xi_sc_x);
-			this->xi_sc_y = 0.5 * (F(4) + this->xi_sc_y);
+			this->gamma_sc = 0.5 * (F(3) + this->gamma_sc);
+			this->xi_sc = 0.5 * (F(4) + this->xi_sc);
 			this->delta_eta = 0.5 * (F(5) + this->delta_eta);
 			this->delta_occupation_up = 0.5 * (F(6) + this->delta_occupation_up);
 			this->delta_occupation_down = 0.5 * (F(7) + this->delta_occupation_down);

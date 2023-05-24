@@ -10,14 +10,14 @@ namespace Hubbard {
 	}
 	void HubbardCDW::fillHamiltonian(double_prec k_x, double_prec k_y)
 	{
-		hamilton.fill(0);
+		hamilton.fill(0.0);
 
 		hamilton(0, 1) = delta_cdw_up;// + I * (2 * xi_cdw_up_x * cos(k_x) + 2 * xi_cdw_up_y * cos(k_y));
-		hamilton(0, 2) = delta_sc + I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
-		hamilton(0, 3) = 0;//I * delta_eta + (2 * xi_eta_x * cos(k_x) + 2 * xi_eta_y * cos(k_y));
+		hamilton(0, 2) = delta_sc + I * (gamma_sc * gamma(k_x, k_y) + xi_sc * xi(k_x, k_y));
+		hamilton(0, 3) = I * delta_eta;// +(2 * xi_eta_x * cos(k_x) + 2 * xi_eta_y * cos(k_y));
 
-		hamilton(1, 2) = 0;//I * delta_eta - (2 * xi_eta_x * cos(k_x) + 2 * xi_eta_y * cos(k_y));
-		hamilton(1, 3) = delta_sc - I * (2 * xi_sc_x * cos(k_x) + 2 * xi_sc_y * cos(k_y));
+		hamilton(1, 2) = I * delta_eta;// -(2 * xi_eta_x * cos(k_x) + 2 * xi_eta_y * cos(k_y));
+		hamilton(1, 3) = delta_sc - I * (gamma_sc * gamma(k_x, k_y) + xi_sc * xi(k_x, k_y));
 		hamilton(2, 3) = -delta_cdw_down;// + I * (2 * xi_cdw_down_x * cos(k_x) + 2 * xi_cdw_down_y * cos(k_y));
 
 		SpinorMatrix buffer = hamilton.adjoint();
@@ -47,8 +47,8 @@ namespace Hubbard {
 		this->delta_occupation_down = V * 0.2;
 		this->delta_occupation_up_y = V * 0.3;
 		this->delta_occupation_down_y = V * 0.4;
-		this->xi_sc_x       = std::abs(V) * 0.5;
-		this->xi_sc_y       = -std::abs(V) * 0.6;
+		this->gamma_sc = std::abs(V) * 0.3;
+		this->xi_sc = std::abs(V) * 0.5;
 		this->xi_eta_x      = std::abs(V) * 0.2;
 		this->xi_eta_y      = std::abs(V) * 0.3;
 		this->xi_cdw_up_x   = std::abs(V) * 0.4;
@@ -72,8 +72,8 @@ namespace Hubbard {
 			delta_cdw_up = x(0);
 			delta_cdw_down = x(1);
 			delta_sc = x(2);
-			xi_sc_x = x(3);
-			xi_sc_y = x(4);
+			gamma_sc = x(3);
+			xi_sc = x(4);
 			delta_eta = x(5);
 			delta_occupation_up = x(6);
 			delta_occupation_down = x(7);
@@ -87,7 +87,7 @@ namespace Hubbard {
 			xi_cdw_down_y = x(15);
 
 			complex_prec c_cdw_up = { 0, 0 }, c_cdw_down = { 0, 0 }, c_sc = { 0, 0 }, c_eta = { 0, 0 };
-			complex_prec c_xi_sc_x = { 0, 0 }, c_xi_sc_y = { 0, 0 }, c_xi_eta_x = { 0, 0 }, c_xi_eta_y = { 0, 0 };
+			complex_prec c_gamma_sc = { 0, 0 }, c_xi_sc = { 0, 0 }, c_xi_eta_x = { 0, 0 }, c_xi_eta_y = { 0, 0 };
 			complex_prec c_xi_cdw_up_x = { 0, 0 }, c_xi_cdw_up_y = { 0, 0 }, c_xi_cdw_down_x = { 0, 0 }, c_xi_cdw_down_y = { 0, 0 };
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
@@ -108,10 +108,10 @@ namespace Hubbard {
 
 					c_cdw_up -= rho(2, 3);
 					c_cdw_down += rho(0, 1);
-					c_sc += rho(0, 2);
-					c_xi_sc_x += cos(k_x) * rho(2, 0);
-					c_xi_sc_y += cos(k_y) * rho(2, 0);
-					c_eta += rho(0, 3);
+					c_sc += rho(2, 0);
+					c_gamma_sc += gamma(k_x, k_y) * rho(2, 0);
+					c_xi_sc += xi(k_x, k_y) * rho(2, 0);
+					c_eta += rho(3, 0);
 					F(6) += cos(k_x) * rho(0, 0).real();
 					F(7) += cos(k_x) * (1 - rho(2, 2).real());
 
@@ -127,49 +127,51 @@ namespace Hubbard {
 				}
 			}
 
-			const double ERROR_MARGIN = EPSILON * BASIS_SIZE;
-			if (std::abs(c_cdw_up.imag()) > ERROR_MARGIN) {
-				std::cout << "cdw_up: " << c_cdw_up << std::endl;
-			}
-			if (std::abs(c_cdw_down.imag()) > ERROR_MARGIN) {
-				std::cout << "cdw_down: " << c_cdw_down << std::endl;
-			}
-			if (std::abs(c_sc.imag()) > ERROR_MARGIN) {
-				std::cout << "sc: " << c_sc << std::endl;
-			}
-			if (std::abs(c_eta.real()) > ERROR_MARGIN) {
-				std::cout << "eta: " << c_eta << std::endl;
-			}
-			if (std::abs(c_xi_sc_x.real()) > ERROR_MARGIN) {
-				std::cout << "xi sc x: " << c_xi_sc_x << std::endl;
-			}
-			if (std::abs(c_xi_sc_y.real()) > ERROR_MARGIN) {
-				std::cout << "xi sc y: " << c_xi_sc_y << std::endl;
-			}
-			if (std::abs(c_xi_eta_x.imag()) > ERROR_MARGIN) {
-				std::cout << "xi eta x: " << c_xi_eta_x << std::endl;
-			}
-			if (std::abs(c_xi_eta_y.imag()) > ERROR_MARGIN) {
-				std::cout << "xi eta y: " << c_xi_eta_y << std::endl;
-			}
-			if (std::abs(c_xi_cdw_up_x.real()) > ERROR_MARGIN) {
-				std::cout << "xi cdw up x: " << c_xi_eta_x << std::endl;
-			}
-			if (std::abs(c_xi_cdw_up_y.real()) > ERROR_MARGIN) {
-				std::cout << "xi cdw up y: " << c_xi_eta_y << std::endl;
-			}
-			if (std::abs(c_xi_cdw_down_x.real()) > ERROR_MARGIN) {
-				std::cout << "xi cdw down x: " << c_xi_eta_x << std::endl;
-			}
-			if (std::abs(c_xi_cdw_down_y.real()) > ERROR_MARGIN) {
-				std::cout << "xi cdw down y: " << c_xi_eta_y << std::endl;
+			{ // Checks for numerical accurarcy
+				const double ERROR_MARGIN = EPSILON * BASIS_SIZE;
+				if (std::abs(c_cdw_up.imag()) > ERROR_MARGIN) {
+					std::cout << "cdw_up: " << c_cdw_up << std::endl;
+				}
+				if (std::abs(c_cdw_down.imag()) > ERROR_MARGIN) {
+					std::cout << "cdw_down: " << c_cdw_down << std::endl;
+				}
+				if (std::abs(c_sc.imag()) > ERROR_MARGIN) {
+					std::cout << "sc: " << c_sc << std::endl;
+				}
+				if (std::abs(c_eta.real()) > ERROR_MARGIN) {
+					std::cout << "eta: " << c_eta << std::endl;
+				}
+				if (std::abs(c_gamma_sc.real()) > ERROR_MARGIN) {
+					std::cout << "xi sc x: " << c_gamma_sc << std::endl;
+				}
+				if (std::abs(c_xi_sc.real()) > ERROR_MARGIN) {
+					std::cout << "xi sc y: " << c_xi_sc << std::endl;
+				}
+				if (std::abs(c_xi_eta_x.imag()) > ERROR_MARGIN) {
+					std::cout << "xi eta x: " << c_xi_eta_x << std::endl;
+				}
+				if (std::abs(c_xi_eta_y.imag()) > ERROR_MARGIN) {
+					std::cout << "xi eta y: " << c_xi_eta_y << std::endl;
+				}
+				if (std::abs(c_xi_cdw_up_x.real()) > ERROR_MARGIN) {
+					std::cout << "xi cdw up x: " << c_xi_eta_x << std::endl;
+				}
+				if (std::abs(c_xi_cdw_up_y.real()) > ERROR_MARGIN) {
+					std::cout << "xi cdw up y: " << c_xi_eta_y << std::endl;
+				}
+				if (std::abs(c_xi_cdw_down_x.real()) > ERROR_MARGIN) {
+					std::cout << "xi cdw down x: " << c_xi_eta_x << std::endl;
+				}
+				if (std::abs(c_xi_cdw_down_y.real()) > ERROR_MARGIN) {
+					std::cout << "xi cdw down y: " << c_xi_eta_y << std::endl;
+				}
 			}
 
 			F(0) = c_cdw_up.real();
 			F(1) = c_cdw_down.real();
 			F(2) = c_sc.real();
-			F(3) = c_xi_sc_x.imag();
-			F(4) = c_xi_sc_y.imag();
+			F(3) = c_gamma_sc.imag();
+			F(4) = c_xi_sc.imag();
 			F(5) = c_eta.imag();
 
 			F(8) = c_xi_eta_x.real();
@@ -187,12 +189,12 @@ namespace Hubbard {
 		constexpr int MAX_STEPS = 100;
 
 		ParameterVector f0;
-		f0 << delta_cdw_up, delta_cdw_down, delta_sc, xi_sc_x, xi_sc_y, delta_eta, delta_occupation_up, delta_occupation_down,
+		f0 << delta_cdw_up, delta_cdw_down, delta_sc, gamma_sc, xi_sc, delta_eta, delta_occupation_up, delta_occupation_down,
 			xi_eta_x, xi_eta_y, delta_occupation_up_y, delta_occupation_down_y,
 			xi_cdw_up_x, xi_cdw_up_y, xi_cdw_down_x, xi_cdw_down_y;
 
 		ParameterVector x0;
-		x0 << delta_cdw_up, delta_cdw_down, delta_sc, xi_sc_x, xi_sc_y, delta_eta, delta_occupation_up, delta_occupation_down,
+		x0 << delta_cdw_up, delta_cdw_down, delta_sc, gamma_sc, xi_sc, delta_eta, delta_occupation_up, delta_occupation_down,
 			xi_eta_x, xi_eta_y, delta_occupation_up_y, delta_occupation_down_y,
 			xi_cdw_up_x, xi_cdw_up_y, xi_cdw_down_x, xi_cdw_down_y;
 
@@ -204,8 +206,8 @@ namespace Hubbard {
 			x0(0) = delta_cdw_up;
 			x0(1) = delta_cdw_down;
 			x0(2) = delta_sc;
-			x0(3) = xi_sc_x;
-			x0(4) = xi_sc_y;
+			x0(3) = gamma_sc;
+			x0(4) = xi_sc;
 			x0(5) = delta_eta;
 			x0(6) = delta_occupation_up;
 			x0(7) = delta_occupation_down;
@@ -234,8 +236,8 @@ namespace Hubbard {
 		ret.delta_cdw_up = delta_cdw_up;
 		ret.delta_cdw_down = delta_cdw_down;
 		ret.delta_sc = delta_sc;
-		ret.xi_sc_x = xi_sc_x;
-		ret.xi_sc_y = xi_sc_y;
+		ret.gamma_sc = gamma_sc;
+		ret.xi_sc = xi_sc;
 		ret.delta_eta = delta_eta;
 
 		return ret;

@@ -132,8 +132,8 @@ namespace Hubbard {
 		ret.delta_cdw_up = delta_cdw_up;
 		ret.delta_cdw_down = delta_cdw_down;
 		ret.delta_sc = delta_sc;
-		ret.xi_sc_x = xi_sc_x;
-		ret.xi_sc_y = xi_sc_y;
+		ret.gamma_sc = gamma_sc;
+		ret.xi_sc = xi_sc;
 		ret.delta_eta = delta_eta;
 
 		return ret;

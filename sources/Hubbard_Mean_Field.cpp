@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 	std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
 	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 	std::cout << "\n\n" << std::endl;
-
+	return MPI_Finalize();
 	Hubbard::UsingBroyden model2(mP, 0, 0);
 	test_b = std::chrono::steady_clock::now();
 	model2.computePhases(true).print();
@@ -117,8 +117,8 @@ int main(int argc, char** argv)
 		data_vector data_cdw_up(FIRST_IT_STEPS * SECOND_IT_STEPS);
 		data_vector data_cdw_down(FIRST_IT_STEPS * SECOND_IT_STEPS);
 		data_vector data_sc(FIRST_IT_STEPS * SECOND_IT_STEPS);
-		data_vector data_xi_sc_x(FIRST_IT_STEPS * SECOND_IT_STEPS);
-		data_vector data_xi_sc_y(FIRST_IT_STEPS * SECOND_IT_STEPS);
+		data_vector data_gamma_sc(FIRST_IT_STEPS * SECOND_IT_STEPS);
+		data_vector data_xi_sc(FIRST_IT_STEPS * SECOND_IT_STEPS);
 		data_vector data_eta(FIRST_IT_STEPS * SECOND_IT_STEPS);
 
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -143,29 +143,29 @@ int main(int argc, char** argv)
 				data_cdw_up[(T * SECOND_IT_STEPS) + U] = ret.delta_cdw_up;
 				data_cdw_down[(T * SECOND_IT_STEPS) + U] = ret.delta_cdw_down;
 				data_sc[(T * SECOND_IT_STEPS) + U] = ret.delta_sc;
-				data_xi_sc_x[(T * SECOND_IT_STEPS) + U] = ret.xi_sc_x;
-				data_xi_sc_y[(T * SECOND_IT_STEPS) + U] = ret.xi_sc_y;
+				data_gamma_sc[(T * SECOND_IT_STEPS) + U] = ret.gamma_sc;
+				data_xi_sc[(T * SECOND_IT_STEPS) + U] = ret.xi_sc;
 				data_eta[(T * SECOND_IT_STEPS) + U] = ret.delta_eta;
 				//modelParameters.incrementSecondIterator();
 			}
 			modelParameters.incrementGlobalIterator();
 		}
 
-		std::vector<double> recieve_cdw_up, recieve_cdw_down, recieve_sc, recieve_xi_sc_x, recieve_xi_sc_y, recieve_eta;
+		std::vector<double> recieve_cdw_up, recieve_cdw_down, recieve_sc, recieve_gamma_sc, recieve_xi_sc, recieve_eta;
 		if (rank == 0) {
 			recieve_cdw_up.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 			recieve_cdw_down.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 			recieve_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-			recieve_xi_sc_x.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-			recieve_xi_sc_y.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+			recieve_gamma_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+			recieve_xi_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 			recieve_eta.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		}
 #ifndef _NO_MPI
 		MPI_Gather(data_cdw_up.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw_up.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Gather(data_cdw_down.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw_down.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Gather(data_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		MPI_Gather(data_xi_sc_x.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_xi_sc_x.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		MPI_Gather(data_xi_sc_y.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_xi_sc_y.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Gather(data_gamma_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_gamma_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Gather(data_xi_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_xi_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		MPI_Gather(data_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 #endif
 		if (rank == 0) {
@@ -185,8 +185,8 @@ int main(int argc, char** argv)
 			Utility::saveData_boost(recieve_cdw_up, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw_up.dat.gz", comments);
 			Utility::saveData_boost(recieve_cdw_down, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw_down.dat.gz", comments);
 			Utility::saveData_boost(recieve_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "sc.dat.gz", comments);
-			Utility::saveData_boost(recieve_xi_sc_x, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "xi_sc_x.dat.gz", comments);
-			Utility::saveData_boost(recieve_xi_sc_y, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "xi_sc_y.dat.gz", comments);
+			Utility::saveData_boost(recieve_gamma_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "gamma_sc.dat.gz", comments);
+			Utility::saveData_boost(recieve_xi_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "xi_sc.dat.gz", comments);
 			Utility::saveData_boost(recieve_eta, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.dat.gz", comments);
 		}
 	}
