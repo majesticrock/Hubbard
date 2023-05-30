@@ -30,7 +30,7 @@ namespace Hubbard {
 		double_prec delta_occupation_up, delta_occupation_down;
 
 		typedef std::complex<double_prec> complex_prec;
-		typedef Eigen::Matrix<complex_prec, 4, 4> SpinorMatrix;
+		typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> SpinorMatrix;
 		const complex_prec I = { 0, 1 };
 		SpinorMatrix hamilton;
 

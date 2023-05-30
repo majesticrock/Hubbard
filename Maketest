@@ -28,7 +28,7 @@ all: build build/main
 build/main: $(OBJS) | build
 	$(CXX) $(INCLUDEFLAGS) -o build/main $(OBJS) $(CXXFLAGS) $(LDLIBS)
 
-build/%.o: sources/%.cpp# sources/%.hpp
+build/%.o: sources/%.cpp #sources/%.hpp
 	$(CXX) $(INCLUDEFLAGS) $< -o $@ -c $(CXXFLAGS)
 
 build:

@@ -33,7 +33,7 @@ namespace Hubbard {
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
 
 		virtual inline void setParameters(ParameterVector& F) {
-			F(0) *= 0.5 * (U_OVER_N - 4 * V_OVER_N); // CDW
+			F(0) *= 0.5 * U_OVER_N - 4 * V_OVER_N; // CDW
 			F(1) *= 0.5 * U_OVER_N; // AFM
 			F(2) *= U_OVER_N; // SC
 			F(3) *= V_OVER_N; // Gamma SC
@@ -42,14 +42,16 @@ namespace Hubbard {
 			F(6) *= V_OVER_N; // Occupation Up
 			F(7) *= V_OVER_N; // Occupation Down
 
-			this->delta_cdw = 0.5 * (F(0) + this->delta_cdw);
-			this->delta_afm = 0.5 * (F(1) + this->delta_afm);
-			this->delta_sc = 0.5 * (F(2) + this->delta_sc);
-			this->gamma_sc = 0.5 * (F(3) + this->gamma_sc);
-			this->xi_sc = 0.5 * (F(4) + this->xi_sc);
-			this->delta_eta = 0.5 * (F(5) + this->delta_eta);
-			this->delta_occupation_up = 0.5 * (F(6) + this->delta_occupation_up);
-			this->delta_occupation_down = 0.5 * (F(7) + this->delta_occupation_down);
+			constexpr double_prec new_weight = 0.05;
+
+			this->delta_cdw			    = new_weight * F(0) + (1 - new_weight) * this->delta_cdw;
+			this->delta_afm			    = new_weight * F(1) + (1 - new_weight) * this->delta_afm;
+			this->delta_sc			    = new_weight * F(2) + (1 - new_weight) * this->delta_sc;
+			this->gamma_sc			    = new_weight * F(3) + (1 - new_weight) * this->gamma_sc;
+			this->xi_sc				    = new_weight * F(4) + (1 - new_weight) * this->xi_sc;
+			this->delta_eta			    = new_weight * F(5) + (1 - new_weight) * this->delta_eta;
+			this->delta_occupation_up   = new_weight * F(6) + (1 - new_weight) * this->delta_occupation_up;
+			this->delta_occupation_down = new_weight * F(7) + (1 - new_weight) * this->delta_occupation_down;
 		};
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {
 			if (coeff.name == "\\tilde{V}") {

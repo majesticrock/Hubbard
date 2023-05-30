@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	}
 	// First call MPI_Init
 	MPI_Init(&argc, &argv);
-
+	
 	// Get my rank and the number of ranks
 	int rank, numberOfRanks;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 
 	//#define _DO_TEST
 #ifdef _DO_TEST
-	Hubbard::Model::ModelParameters mP(0, 0, -1.25, 0, 0, "", "");
+	Hubbard::Model::ModelParameters mP(0, 0.2, -1.8, 0, 0, "", "");
 	Hubbard::HubbardCDW model(mP, 0, 0);
 
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
