@@ -13,8 +13,8 @@ namespace Hubbard {
 		hamilton.fill(0.0);
 		const double_prec GAMMA = gamma(k_x, k_y);
 		const double_prec XI = xi(k_x, k_y);
-
-		hamilton(0, 1) = delta_cdw - delta_afm;//- ((gamma_cdw - gamma_afm) * GAMMA + (xi_cdw - xi_afm) * XI);
+		
+		hamilton(0, 1) = delta_cdw - delta_afm + ((gamma_cdw - gamma_afm) * GAMMA + (xi_cdw - xi_afm) * XI);
 
 		hamilton(0, 2) = delta_sc + (gamma_sc * GAMMA + xi_sc * XI);
 		hamilton(0, 3) = 0;//delta_eta + (gamma_eta * GAMMA + xi_eta * XI);
@@ -22,7 +22,7 @@ namespace Hubbard {
 		hamilton(1, 2) = 0;//delta_eta - (gamma_eta * GAMMA + xi_eta * XI);
 		hamilton(1, 3) = delta_sc - (gamma_sc * GAMMA + xi_sc * XI);
 
-		hamilton(2, 3) = -delta_cdw - delta_afm;//	- ((gamma_cdw - gamma_afm) * GAMMA + (xi_cdw - xi_afm) * XI);
+		hamilton(2, 3) = -delta_cdw - delta_afm - ((gamma_cdw - gamma_afm) * GAMMA + (xi_cdw - xi_afm) * XI);
 
 		SpinorMatrix buffer = hamilton.adjoint();
 		hamilton += buffer;
@@ -46,19 +46,19 @@ namespace Hubbard {
 		}
 		this->delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
 
-		this->delta_eta = (1. + I) * U * 0.1;
+		this->delta_eta = 0;//I * U * 0.1;
 		this->delta_occupation_up		= V * 0.2;
 		this->delta_occupation_down		= V * 0.2;
 		this->delta_occupation_up_y		= -V * 0.2;
 		this->delta_occupation_down_y	= -V * 0.2;
-		this->gamma_sc		= I * V * 0.05;
-		this->xi_sc			= I * std::abs(V) * 0.1;
-		this->gamma_cdw		= I * V * 0.15;
-		this->xi_cdw		= I * V * 0.2;
-		this->gamma_afm		= I * V * 0.05;
-		this->xi_afm		= I * V * 0.04;
-		this->gamma_eta     = (1. + I) * V * 0.05;
-		this->xi_eta		= (1. + I) * V * 0.04;
+		this->gamma_sc		= 0;//I * V * 0.05;
+		this->xi_sc			= 0;//I * std::abs(V) * 0.1;
+		this->gamma_cdw		= 0;//I * V * 0.15;		-18302.86904129
+		this->xi_cdw		= 0;//I * V * 0.2;
+		this->gamma_afm		= 0;//I * V * 0.05;
+		this->xi_afm		= 0;//I * V * 0.04;
+		this->gamma_eta     = 0;//1. * V * 0.05;
+		this->xi_eta		= 0;//1. * V * 0.04;
 
 		this->V_OVER_N = V / BASIS_SIZE;
 
@@ -68,7 +68,7 @@ namespace Hubbard {
 	{
 		SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
 		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-		constexpr double_prec EPSILON = 1e-6;
+		constexpr double_prec EPSILON = 1e-10;
 		double_prec error = 100;
 
 		auto lambda_func = [&](const ParameterVector& x, ParameterVector& F) {
@@ -103,8 +103,8 @@ namespace Hubbard {
 					{
 						rho(i, i) = 1 - fermi_dirac(solver.eigenvalues()(i));
 					}
-					rho =solver.eigenvectors() * rho * solver.eigenvectors().adjoint();
-
+					rho = solver.eigenvectors() * rho * solver.eigenvectors().adjoint();
+					//std::cout << hamilton << std::endl << std::endl;
 					//if(l == -Constants::K_DISCRETIZATION && k == -Constants::K_DISCRETIZATION){
 					//	std::cout << rho << std::endl << std::endl;
 					//	std::cout << "###################################\n\n";
@@ -118,10 +118,10 @@ namespace Hubbard {
 					F(5) -= (rho(0, 3) + rho(1, 2)); // Eta
 					F(6) -= cos(k_x) * (rho(0, 0) - rho(1, 1)).real(); // Occupation Up
 					F(7) += cos(k_x) * (rho(2, 2) - rho(3, 3)).real(); // Occupation Down
-					F(8)  -= I * gamma(k_x, k_y) * (rho(0, 1) - rho(1, 0) + rho(2, 3) - rho(3, 2)).imag(); // Gamma CDW
-					F(9)  -= I * xi(k_x, k_y)    * (rho(0, 1) - rho(1, 0) + rho(2, 3) - rho(3, 2)).imag(); // Xi CDW
-					F(10) -= I * gamma(k_x, k_y) * (rho(0, 1) - rho(1, 0) - rho(2, 3) + rho(3, 2)).imag(); // Gamma AFM
-					F(11) -= I * xi(k_x, k_y)    * (rho(0, 1) - rho(1, 0) - rho(2, 3) + rho(3, 2)).imag(); // Xi AFM
+					F(8)  += I * gamma(k_x, k_y) * (rho(0, 1) - rho(1, 0) + rho(2, 3) - rho(3, 2)).imag(); // Gamma CDW
+					F(9)  += I * xi(k_x, k_y)    * (rho(0, 1) - rho(1, 0) + rho(2, 3) - rho(3, 2)).imag(); // Xi CDW
+					F(10) += I * gamma(k_x, k_y) * (rho(0, 1) - rho(1, 0) - rho(2, 3) + rho(3, 2)).imag(); // Gamma AFM
+					F(11) += I * xi(k_x, k_y)    * (rho(0, 1) - rho(1, 0) - rho(2, 3) + rho(3, 2)).imag(); // Xi AFM
 					F(12) -= cos(k_y) * (rho(0, 0) - rho(1, 1)).real(); // Occupation Up y
 					F(13) += cos(k_y) * (rho(2, 2) - rho(3, 3)).real(); // Occupation Down y
 					F(14) -= gamma(k_x, k_y) * (rho(0, 3) - rho(1, 2)); // Gamma eta
@@ -147,19 +147,25 @@ namespace Hubbard {
 
 		ParameterVector f0;
 		f0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta, 
-			delta_occupation_up, delta_occupation_down, delta_occupation_up_y, delta_occupation_down_y,
-			gamma_cdw, xi_cdw, gamma_afm, xi_afm, delta_eta, gamma_eta;
+			delta_occupation_up, delta_occupation_down, 
+			gamma_cdw, xi_cdw, gamma_afm, xi_afm, 
+			delta_occupation_up_y, delta_occupation_down_y,
+			delta_eta, gamma_eta;
 
 		ParameterVector x0;
 		x0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta, 
-			delta_occupation_up, delta_occupation_down, delta_occupation_up_y, delta_occupation_down_y,
-			gamma_cdw, xi_cdw, gamma_afm, xi_afm, delta_eta, gamma_eta;
+			delta_occupation_up, delta_occupation_down, 
+			gamma_cdw, xi_cdw, gamma_afm, xi_afm, 
+			delta_occupation_up_y, delta_occupation_down_y,
+			delta_eta, gamma_eta;
 
+		std::cout << "-1:\t" << std::fixed << std::setprecision(8);
+		printAsRow(x0);
 		for (size_t i = 0; i < MAX_STEPS && error > EPSILON; i++)
 		{
+			
 			lambda_func(x0, f0);
 			error = f0.norm();
-
 			x0(0) = delta_cdw;
 			x0(1) = delta_afm;
 			x0(2) = delta_sc;
@@ -191,6 +197,22 @@ namespace Hubbard {
 			}
 		}
 
+		double_prec total_energy = 0;
+		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
+		{
+			double_prec k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+			for (int l = -Constants::K_DISCRETIZATION; l < 0; l++)
+			{
+				double_prec k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
+				fillHamiltonian(k_x, k_y);
+				solver.compute(hamilton);
+				for(int i = 0; i < 4; i++){
+					total_energy += (solver.eigenvalues()(i) < 0) ? solver.eigenvalues()(i) : 0;
+				}
+			}
+		}
+		std::cout << "Total energy:  " << total_energy << std::endl;
+		
 		data_set ret;
 		ret.delta_cdw = delta_cdw.real();
 		ret.delta_afm = delta_afm.real();
