@@ -42,7 +42,7 @@ namespace Hubbard {
 			F(6) *= V_OVER_N; // Occupation Up
 			F(7) *= V_OVER_N; // Occupation Down
 
-			constexpr double_prec new_weight = 0.05;
+			constexpr double_prec new_weight = 0.5;
 
 			this->delta_cdw			    = new_weight * F(0) + (1 - new_weight) * this->delta_cdw;
 			this->delta_afm			    = new_weight * F(1) + (1 - new_weight) * this->delta_afm;

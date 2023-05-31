@@ -13,13 +13,15 @@ namespace Hubbard {
 	void UsingBroyden::fillHamiltonian(double_prec k_x, double_prec k_y)
 	{
 		hamilton.fill(0);
+		const double_prec GAMMA = gamma(k_x, k_y);
+		const double_prec XI = xi(k_x, k_y);
 
 		hamilton(0, 1) = delta_cdw - delta_afm;;
-		hamilton(0, 2) = delta_sc + (gamma_sc * gamma(k_x, k_y) + xi_sc * xi(k_x, k_y));
-		hamilton(0, 3) = 0;// delta_eta;
+		hamilton(0, 2) = delta_sc + I * (gamma_sc * GAMMA + xi_sc * XI);
+		hamilton(0, 3) = 0;//I * delta_eta;
 
-		hamilton(1, 2) = 0;// delta_eta;
-		hamilton(1, 3) = delta_sc - (gamma_sc * gamma(k_x, k_y) + xi_sc * xi(k_x, k_y));
+		hamilton(1, 2) = 0;//I * delta_eta;
+		hamilton(1, 3) = delta_sc - I * (gamma_sc * GAMMA + xi_sc * XI);
 		hamilton(2, 3) = -delta_cdw - delta_afm;
 
 		SpinorMatrix buffer = hamilton.adjoint();
@@ -35,21 +37,21 @@ namespace Hubbard {
 	UsingBroyden::UsingBroyden(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
-		this->delta_cdw = (std::abs(U) + V) * 0.5;
-		this->delta_sc = -(U + std::abs(V)) * 0.5;
+		this->delta_cdw = (std::abs(U) + V) * 0.3;
+		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
 		if (V > 0) {
 			this->delta_sc *= 0.25;
 		}
 		else if (V < 0) {
-			this->delta_cdw *= 0.01;
+			this->delta_cdw *= 0;
 		}
-		this->delta_afm = U * 0.5;
+		this->delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
 
-		this->delta_eta = 0;//std::abs(U + V) * 0.2;
+		this->delta_eta = 0;//U * 0.1;
 		this->delta_occupation_up = V * 0.2;
 		this->delta_occupation_down = V * 0.2;
-		this->gamma_sc = std::abs(V) * 0.05;
-		this->xi_sc = std::abs(V) * 0.1;
+		this->gamma_sc = V * 0.05;
+		this->xi_sc = std::abs(V) * 0.2;
 
 		this->V_OVER_N = V / BASIS_SIZE;
 
@@ -86,20 +88,20 @@ namespace Hubbard {
 					fillHamiltonian(k_x, k_y);
 					solver.compute(hamilton);
 					rho.fill(0);
-					for (int i = 0; i < 4; i++)
+					for (int i = 0; i < rho.rows(); i++)
 					{
-						rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
+						rho(i, i) = 1 - fermi_dirac(solver.eigenvalues()(i));
 					}
-					rho = solver.eigenvectors() * rho * (solver.eigenvectors().adjoint());
+					rho =solver.eigenvectors() * rho * solver.eigenvectors().adjoint();
 
-					F(0)	   += (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real();
-					F(1)	   += (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real();
-					c_sc       += (rho(2, 0) + rho(3, 1));
-					c_gamma_sc += gamma(k_x, k_y) * (rho(2, 0) - rho(3, 1));
-					c_xi_sc    += xi(k_x, k_y)    * (rho(2, 0) - rho(3, 1));
-					c_eta      += (rho(3, 0) + rho(2, 1));
-					F(6)       += cos(k_x) * (rho(0, 0) - rho(1, 1)).real();
-					F(7)       -= cos(k_x) * (rho(2, 2) - rho(3, 3)).real();
+					F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
+					F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
+					c_sc -= (rho(0, 2) + rho(1, 3)); // SC
+					c_gamma_sc -= gamma(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Gamma SC
+					c_xi_sc -= xi(k_x, k_y)    * (rho(0, 2) - rho(1, 3)); // Xi SC
+					c_eta -= (rho(0, 3) + rho(1, 2)); // Eta
+					F(6) -= cos(k_x) * (rho(0, 0) - rho(1, 1)).real(); // Occupation Up
+					F(7) += cos(k_x) * (rho(2, 2) - rho(3, 3)).real(); // Occupation Down
 				}
 			}
 
@@ -108,22 +110,29 @@ namespace Hubbard {
 				if (std::abs(c_sc.imag()) > ERROR_MARGIN) {
 					std::cout << "sc: " << c_sc << std::endl;
 				}
-				if (std::abs(c_eta.imag()) > ERROR_MARGIN) {
+				if (std::abs(c_eta.real()) > ERROR_MARGIN) {
 					std::cout << "eta: " << c_eta << std::endl;
 				}
-				if (std::abs(c_gamma_sc.imag()) > ERROR_MARGIN) {
+				if (std::abs(c_gamma_sc.real()) > ERROR_MARGIN) {
 					std::cout << "xi sc x: " << c_gamma_sc << std::endl;
 				}
-				if (std::abs(c_xi_sc.imag()) > ERROR_MARGIN) {
+				if (std::abs(c_xi_sc.real()) > ERROR_MARGIN) {
 					std::cout << "xi sc y: " << c_xi_sc << std::endl;
 				}
 			}
-
+			
 			F(2) = c_sc.real();
-			F(3) = c_gamma_sc.real();
-			F(4) = c_xi_sc.real();
-			F(5) = c_eta.real();
+			F(3) = c_gamma_sc.imag();
+			F(4) = c_xi_sc.imag();
+			F(5) = c_eta.imag();
 
+			for (size_t i = 0; i < F.size(); i++)
+			{
+				if(std::abs(F(i)) < 1e-12){
+					F(i) = 0;
+				}
+			}
+			
 			setParameters(F);
 			F -= x;
 		};

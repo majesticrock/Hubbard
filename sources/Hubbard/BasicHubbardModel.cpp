@@ -60,13 +60,7 @@ namespace Hubbard {
 					double_prec k_y = (l * M_PI) / Constants::K_DISCRETIZATION;
 					fillHamiltonian(k_x, k_y);
 					solver.compute(hamilton);
-
-					rho.fill(0);
-					for (int i = 0; i < 4; i++)
-					{
-						rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
-					}
-					rho = solver.eigenvectors() * rho * solver.eigenvectors().adjoint();
+					fillRho(rho, solver);
 
 					c_cdw += (rho(0, 1) - rho(2, 3));
 					c_afm += (rho(0, 1) + rho(2, 3));

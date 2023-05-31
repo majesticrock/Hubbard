@@ -60,6 +60,26 @@ namespace Hubbard {
 			return unperturbed_energy(k_x, k_y);
 		};
 		
+		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) = 0;
+		inline double_prec fermi_dirac(double_prec energy) const {
+			if (temperature > 1e-8) {
+				return (1. / (1 + exp(energy / temperature)));
+			}
+			else {
+				if (std::abs(energy) < 1e-12) {
+					return 0.5;
+				}
+				return ((energy > 0) ? 0 : 1);
+			}
+		};
+		inline void fillRho(SpinorMatrix& rho, const Eigen::SelfAdjointEigenSolver<SpinorMatrix>& solvedHamilton) const {
+			rho.fill(0);
+			for (int i = 0; i < rho.rows(); i++)
+			{
+				rho(i, i) = fermi_dirac(solvedHamilton.eigenvalues()(i));
+			}
+			rho =solvedHamilton.eigenvectors() * rho * solvedHamilton.eigenvectors().adjoint();
+		};
 
 		// maps an index; [0, N_K) -> [-pi, pi)
 		template <typename T>
@@ -83,20 +103,6 @@ namespace Hubbard {
 
 		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
 		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M, wicks_N;
-
-		template <typename T>
-		inline T fermi_dirac(T energy) const {
-			if (temperature > 1e-8) {
-				return (1. / (1 + exp(energy / temperature)));
-			}
-			else {
-				if (std::abs(energy) < 1e-12) {
-					return 0.5;
-				}
-				return ((energy > 0) ? 0 : 1);
-			}
-		};
-		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) = 0;
 
 		// Computes the respective x or y component from a given input index
 		inline int x(int idx) const {
