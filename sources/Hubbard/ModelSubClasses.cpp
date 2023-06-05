@@ -8,6 +8,18 @@ namespace Hubbard {
 		: global_iterator_type(_global_iterator_type), second_iterator_type(_second_iterator_type),
 		global_step(_global_step), second_step(_second_step), temperature(_temperature), U(_U), V(_V)
 	{
+		if (global_iterator_type == "T") {
+			global_it_min = temperature;
+		}
+		else if (global_iterator_type == "U") {
+			global_it_min = U;
+		}
+		else if (global_iterator_type == "V") {
+			global_it_min = V;
+		}
+		else {
+			global_it_min = 0;
+		}
 		if (second_iterator_type == "T") {
 			second_it_min = temperature;
 		}
@@ -33,6 +45,18 @@ namespace Hubbard {
 		else if (s == "V") {
 			V += step;
 		}
+	}
+	double_prec Model::ModelParameters::setGlobalIterator(int it_num) {
+		if (global_iterator_type == "T") {
+			temperature = global_it_min + it_num * global_step;
+		}
+		else if (global_iterator_type == "U") {
+			U = global_it_min + it_num * global_step;
+		}
+		else if (global_iterator_type == "V") {
+			V = global_it_min + it_num * global_step;
+		}
+		return getGlobal();
 	}
 	double_prec Model::ModelParameters::setSecondIterator(int it_num)
 	{

@@ -17,8 +17,8 @@ COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp Wic
 HBBRD_SRCS=Model.cpp ModelFiller.cpp ModelSubClasses.cpp BasicHubbardModel.cpp HubbardCDW.cpp UsingBroyden.cpp
 UTIL_SRCS=InputFileReader.cpp
 
-PART_SRCS=
-SRCS=$(addprefix Utility/, $(UTIL_SRCS)) $(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS) Hubbard_Mean_Field.cpp
+PART_SRCS=PhaseHelper.cpp Hubbard_Mean_Field.cpp
+SRCS=$(addprefix Utility/, $(UTIL_SRCS)) $(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS)
 
 OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))
 

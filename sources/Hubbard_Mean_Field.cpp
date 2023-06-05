@@ -17,6 +17,7 @@
 #include <cmath>
 #include <limits>
 
+#include "PhaseHelper.hpp"
 #include "Utility/InputFileReader.hpp"
 #include "Hubbard/BasicHubbardModel.hpp"
 #include "Hubbard/HubbardCDW.hpp"
@@ -99,7 +100,6 @@ int main(int argc, char** argv)
 		}
 	}
 
-	typedef std::vector<double> data_vector;
 	if (input.getString("compute_what") == "phases") {
 		int SECOND_IT_STEPS = input.getInt("second_iterator_steps");
 		double SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
@@ -128,38 +128,13 @@ int main(int argc, char** argv)
 
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-		for (int T = 0; T < FIRST_IT_STEPS; T++)
-		{
-#pragma omp parallel for num_threads(4) schedule(dynamic)
-			for (int U = 0; U < SECOND_IT_STEPS; U++)
-			{
-				Hubbard::Model::ModelParameters local = modelParameters;
-				local.setSecondIterator(U);
-				Hubbard::Model::data_set ret;
-				if (input.getBool("use_broyden")) {
-					Hubbard::UsingBroyden model(local, 0, 0);
-					ret = model.computePhases();
-				}
-				else {
-					Hubbard::HubbardCDW model(local, 0, 0);
-					ret = model.computePhases();
-				}
+		PhaseHelper phaseHelper(input, rank, numberOfRanks);
+		phaseHelper.compute_crude(data_mapper);
 
-				data_cdw[(T * SECOND_IT_STEPS) + U] = ret.delta_cdw;
-				data_afm[(T * SECOND_IT_STEPS) + U] = ret.delta_afm;
-				data_sc[(T * SECOND_IT_STEPS) + U] = ret.delta_sc;
-				data_gamma_sc[(T * SECOND_IT_STEPS) + U] = ret.gamma_sc;
-				data_xi_sc[(T * SECOND_IT_STEPS) + U] = ret.xi_sc;
-				data_eta[(T * SECOND_IT_STEPS) + U] = ret.delta_eta;
-				//modelParameters.incrementSecondIterator();
-			}
-			modelParameters.incrementGlobalIterator();
-		}
 		if (input.getBool("improved_boundaries")) {
 			constexpr int NUMBER_OF_GAP_VALUES = 6;
-
 			modelParameters = Hubbard::Model::ModelParameters(model_params[0], model_params[1], model_params[2],
-				(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, 0,
+				(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, (SECOND_IT_MAX - SECOND_IT_MIN) / SECOND_IT_STEPS,
 				input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
 			data_vector local_data(2 * NUMBER_OF_GAP_VALUES * FIRST_IT_STEPS);
@@ -172,15 +147,12 @@ int main(int argc, char** argv)
 					double upper_boundary = 128;
 					bool found_lower = false, found_upper = false;
 
-					for (size_t j = 1; j < SECOND_IT_STEPS - 1; j++)
+					for (size_t j = 1; j < SECOND_IT_STEPS - 1; ++j)
 					{
 						if (std::abs( (*(data_mapper[i]))[T * SECOND_IT_STEPS + j] ) > 1e-12) {
 							if (std::abs( (*(data_mapper[i]))[T * SECOND_IT_STEPS + j - 1] ) < 1e-12) {
 								// Current element is nonzero and the previous element is 0
 								lower_boundary = modelParameters.setSecondIterator(j);
-								if (i == 0) {
-									std::cout << "cdw:  " << lower_boundary << std::endl;
-								}
 								found_lower = true;
 							}
 							if (std::abs( (*(data_mapper[i]))[T * SECOND_IT_STEPS + j + 1] ) < 1e-12) {
@@ -190,25 +162,26 @@ int main(int argc, char** argv)
 							}
 						}
 					}
+
 					if (!found_lower) {
 						if (std::abs((*data_mapper[i])[T * SECOND_IT_STEPS]) > 1e-12) {
 							// Lowest element is nonzero, thus the lower boundary, if it exists,
 							// is outside the scope of the current simulation
-							local_data[2 * i + FIRST_IT_STEPS * T] = -std::numeric_limits<double>::infinity();
+							local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i] = -std::numeric_limits<double>::infinity();
 						}
 						else {
 							// The lowest element is zero, thereby all higher elements are 0 too
 							// This parameter is never nonzero.
-							local_data[2 * i + FIRST_IT_STEPS * T] = std::numeric_limits<double>::quiet_NaN();
-							local_data[1 + 2 * i + FIRST_IT_STEPS * T] = std::numeric_limits<double>::quiet_NaN();
-							break;
+							local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i] = std::numeric_limits<double>::quiet_NaN();
+							local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i + 1] = std::numeric_limits<double>::quiet_NaN();
+							continue;
 						}
 					}
 					if (!found_upper) {
 						if (std::abs((*data_mapper[i])[(T + 1) * SECOND_IT_STEPS - 1]) > 1e-12) {
 							// Highest element is nonzero, thus the upper boundary, if it exists,
 							// is outside the scope of the current simulation
-							local_data[1 + 2 * i + FIRST_IT_STEPS * T] = std::numeric_limits<double>::infinity();
+							local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i + 1] = std::numeric_limits<double>::infinity();
 						}
 						// The other case would imply that all elements are 0
 						// This is already covered in the previous if-statement
@@ -218,11 +191,12 @@ int main(int argc, char** argv)
 					double current_lower;
 					double current_upper;
 					double current_test;
+					constexpr double CONVERGENCE_LIMIT = 1e-4;
+
 					if (found_lower) {
-						std::cout << lower_boundary << std::endl;
 						current_lower = lower_boundary - modelParameters.getSecondStep();
 						current_upper = lower_boundary;
-						while ((convergence = (current_upper - current_lower)) > 1e-9) {
+						while ((convergence = (current_upper - current_lower)) > CONVERGENCE_LIMIT) {
 							current_test = current_lower + 0.5 * convergence;
 
 							modelParameters.setSecondIteratorExact(current_test);
@@ -235,7 +209,10 @@ int main(int argc, char** argv)
 								Hubbard::HubbardCDW model(modelParameters, 0, 0);
 								ret = model.computePhases();
 							}
-
+							if (!ret.converged) {
+								current_upper = current_test;
+								break;
+							}
 							if (ret.isFinite(i)) {
 								current_upper = current_test;
 							}
@@ -243,14 +220,13 @@ int main(int argc, char** argv)
 								current_lower = current_test;
 							}
 						}
-						local_data[2 * i + FIRST_IT_STEPS * T] = current_upper;
+						local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i] = current_upper;
 					}
 
 					if (found_upper) {
-						std::cout << upper_boundary << std::endl;
 						current_lower = upper_boundary;
 						current_upper = upper_boundary + modelParameters.getSecondStep();
-						while ((convergence = (current_upper - current_lower)) > 1e-8) {
+						while ((convergence = (current_upper - current_lower)) > CONVERGENCE_LIMIT) {
 							current_test = current_lower + 0.5 * convergence;
 
 							modelParameters.setSecondIteratorExact(current_test);
@@ -271,7 +247,7 @@ int main(int argc, char** argv)
 								current_upper = current_test;
 							}
 						}
-						local_data[1 + 2 * i + FIRST_IT_STEPS * T] = current_lower;
+						local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i + 1] = current_lower;
 					}
 				}
 				modelParameters.incrementGlobalIterator();
@@ -295,7 +271,7 @@ int main(int argc, char** argv)
 				std::string output_folder = input.getString("output_folder");
 				std::filesystem::create_directories("../../data/phases/" + output_folder);
 
-				Utility::saveData_boost(recieve_boundaries, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "boundaries.dat.gz", comments);
+				Utility::saveData_boost(recieve_boundaries, 2 * NUMBER_OF_GAP_VALUES, "../../data/phases/" + output_folder + "boundaries.dat.gz", comments);
 			}
 		}
 
@@ -342,8 +318,7 @@ int main(int argc, char** argv)
 		omp_set_num_threads(8);
 
 		Hubbard::Model::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
-			(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, 0,
-			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
+			0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		std::vector<data_vector> reciever;

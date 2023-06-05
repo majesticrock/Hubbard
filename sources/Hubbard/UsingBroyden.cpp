@@ -159,6 +159,7 @@ namespace Hubbard {
 			}
 		}
 
+		data_set ret;
 		Utility::NumericalSolver::Roots::Broyden<double_prec, 8> broyden_solver;
 		if (!broyden_solver.compute(func, x0)) {
 			std::cerr << "No convergence for [T, U, V] = [" << this->temperature << ", " << this->U << ", " << this->V << "]" << std::endl;
@@ -168,6 +169,7 @@ namespace Hubbard {
 			gamma_sc = 0;
 			xi_sc = 0;
 			delta_eta = 0;
+			ret.converged = false;
 		}
 
 		if (print) {
@@ -186,7 +188,6 @@ namespace Hubbard {
 			std::cout << ")\n -> |f0| = " << std::scientific << std::setprecision(8) << f0.norm() << std::endl;
 		}
 
-		data_set ret;
 		ret.delta_cdw = delta_cdw;
 		ret.delta_afm = delta_afm;
 		ret.delta_sc = delta_sc;

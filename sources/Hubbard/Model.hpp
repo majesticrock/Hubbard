@@ -174,6 +174,7 @@ namespace Hubbard {
 			std::string second_iterator_type;
 			double_prec global_step;
 			double_prec second_step;
+			double_prec global_it_min;
 			double_prec second_it_min;
 
 			void incrementer(std::string& s, const double_prec step);
@@ -184,6 +185,11 @@ namespace Hubbard {
 
 			ModelParameters(double_prec _temperature, double_prec _U, double_prec _V, double_prec global_step, double_prec second_step,
 				std::string _global_iterator_type, std::string _second_iterator_type);
+			// This is just a placeholder - a class initialized this way should not be used. Ever.
+			ModelParameters() : global_iterator_type(""), second_iterator_type(""), global_step(-1), second_step(-1),
+				global_it_min(-1), second_it_min(-1), temperature(-1), U(-1), V(-1) { };
+
+			double_prec setGlobalIterator(int it_num);
 			double_prec setSecondIterator(int it_num);
 			double_prec setSecondIteratorExact(double_prec newValue);
 			void incrementGlobalIterator();
@@ -215,10 +221,15 @@ namespace Hubbard {
 				}
 				return -128;
 			};
+			inline void reset() {
+				setSecondIterator(0);
+				setGlobalIterator(0);
+			};
 			void printGlobal() const;
 			std::string getFileName() const;
 		};
 		struct data_set {
+			bool converged = true;
 			double_prec delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta;
 			inline double_prec operator[](int i) const {
 				switch (i) {
