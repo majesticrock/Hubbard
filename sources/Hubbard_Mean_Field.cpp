@@ -14,6 +14,8 @@
 #include <filesystem>
 #include <chrono>
 #include <memory>
+#include <cmath>
+#include <limits>
 
 #include "Utility/InputFileReader.hpp"
 #include "Hubbard/BasicHubbardModel.hpp"
@@ -38,7 +40,7 @@ int main(int argc, char** argv)
 	}
 	// First call MPI_Init
 	MPI_Init(&argc, &argv);
-	
+
 	// Get my rank and the number of ranks
 	int rank, numberOfRanks;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -54,31 +56,30 @@ int main(int argc, char** argv)
 	}
 	Utility::InputFileReader input(argv[1]);
 	Hubbard::Constants::K_DISCRETIZATION = input.getInt("k_discretization");
-
-	//#define _DO_TEST
-#ifdef _DO_TEST
-	Hubbard::Model::ModelParameters mP(0, 2, -2, 0, 0, "", "");
-	Hubbard::HubbardCDW model(mP, 0, 0);
-
-	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
-	model.computePhases(true).print();
-	std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
-	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
-	std::cout << "\n\n" << std::endl;
-return MPI_Finalize();
-	Hubbard::UsingBroyden model2(mP, 0, 0);
-	test_b = std::chrono::steady_clock::now();
-	model2.computePhases(true).print();
-	test_e = std::chrono::steady_clock::now();
-	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
-
-	std::vector<std::vector<double>> energies;
-	model2.getEnergies(energies, 1);
-	Utility::saveData_boost(energies, "../../data/energies.dat.gz");
-	return MPI_Finalize();
-#endif // _DO_TEST
 	// Setup the parameters T, U, V
 	std::vector<double> model_params = input.getDoubleList("model_parameters");
+
+	if (input.getString("compute_what") == "test") {
+		Hubbard::Model::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
+		Hubbard::HubbardCDW model(mP, 0, 0);
+
+		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
+		model.computePhases(true).print();
+		std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
+		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
+		std::cout << "\n\n" << std::endl;
+		return MPI_Finalize();
+		Hubbard::UsingBroyden model2(mP, 0, 0);
+		test_b = std::chrono::steady_clock::now();
+		model2.computePhases(true).print();
+		test_e = std::chrono::steady_clock::now();
+		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
+
+		std::vector<std::vector<double>> energies;
+		model2.getEnergies(energies, 1);
+		Utility::saveData_boost(energies, "../../data/energies.dat.gz");
+		return MPI_Finalize();
+	}
 
 	// Setup the number of steps
 	int GLOBAL_IT_STEPS = input.getInt("global_iterator_steps");
@@ -121,6 +122,10 @@ return MPI_Finalize();
 		data_vector data_xi_sc(FIRST_IT_STEPS * SECOND_IT_STEPS);
 		data_vector data_eta(FIRST_IT_STEPS * SECOND_IT_STEPS);
 
+		std::vector<data_vector*> data_mapper = {
+			&data_cdw, &data_afm, &data_sc, &data_gamma_sc, &data_xi_sc, &data_eta
+		};
+
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
@@ -150,8 +155,151 @@ return MPI_Finalize();
 			}
 			modelParameters.incrementGlobalIterator();
 		}
+		if (input.getBool("improved_boundaries")) {
+			constexpr int NUMBER_OF_GAP_VALUES = 6;
 
-		std::vector<double> recieve_cdw, recieve_afm, recieve_sc, recieve_gamma_sc, recieve_xi_sc, recieve_eta;
+			modelParameters = Hubbard::Model::ModelParameters(model_params[0], model_params[1], model_params[2],
+				(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, 0,
+				input.getString("global_iterator_type"), input.getString("second_iterator_type"));
+
+			data_vector local_data(2 * NUMBER_OF_GAP_VALUES * FIRST_IT_STEPS);
+
+			for (int T = 0; T < FIRST_IT_STEPS; T++)
+			{
+				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+				{
+					double lower_boundary = -128;
+					double upper_boundary = 128;
+					bool found_lower = false, found_upper = false;
+
+					for (size_t j = 1; j < SECOND_IT_STEPS - 1; j++)
+					{
+						if (std::abs( (*(data_mapper[i]))[T * SECOND_IT_STEPS + j] ) > 1e-12) {
+							if (std::abs( (*(data_mapper[i]))[T * SECOND_IT_STEPS + j - 1] ) < 1e-12) {
+								// Current element is nonzero and the previous element is 0
+								lower_boundary = modelParameters.setSecondIterator(j);
+								if (i == 0) {
+									std::cout << "cdw:  " << lower_boundary << std::endl;
+								}
+								found_lower = true;
+							}
+							if (std::abs( (*(data_mapper[i]))[T * SECOND_IT_STEPS + j + 1] ) < 1e-12) {
+								// Current element is nonzero and the next element is 0
+								upper_boundary = modelParameters.setSecondIterator(j);
+								found_upper = true;
+							}
+						}
+					}
+					if (!found_lower) {
+						if (std::abs((*data_mapper[i])[T * SECOND_IT_STEPS]) > 1e-12) {
+							// Lowest element is nonzero, thus the lower boundary, if it exists,
+							// is outside the scope of the current simulation
+							local_data[2 * i + FIRST_IT_STEPS * T] = -std::numeric_limits<double>::infinity();
+						}
+						else {
+							// The lowest element is zero, thereby all higher elements are 0 too
+							// This parameter is never nonzero.
+							local_data[2 * i + FIRST_IT_STEPS * T] = std::numeric_limits<double>::quiet_NaN();
+							local_data[1 + 2 * i + FIRST_IT_STEPS * T] = std::numeric_limits<double>::quiet_NaN();
+							break;
+						}
+					}
+					if (!found_upper) {
+						if (std::abs((*data_mapper[i])[(T + 1) * SECOND_IT_STEPS - 1]) > 1e-12) {
+							// Highest element is nonzero, thus the upper boundary, if it exists,
+							// is outside the scope of the current simulation
+							local_data[1 + 2 * i + FIRST_IT_STEPS * T] = std::numeric_limits<double>::infinity();
+						}
+						// The other case would imply that all elements are 0
+						// This is already covered in the previous if-statement
+					}
+
+					double convergence;
+					double current_lower;
+					double current_upper;
+					double current_test;
+					if (found_lower) {
+						std::cout << lower_boundary << std::endl;
+						current_lower = lower_boundary - modelParameters.getSecondStep();
+						current_upper = lower_boundary;
+						while ((convergence = (current_upper - current_lower)) > 1e-9) {
+							current_test = current_lower + 0.5 * convergence;
+
+							modelParameters.setSecondIteratorExact(current_test);
+							Hubbard::Model::data_set ret;
+							if (input.getBool("use_broyden")) {
+								Hubbard::UsingBroyden model(modelParameters, 0, 0);
+								ret = model.computePhases();
+							}
+							else {
+								Hubbard::HubbardCDW model(modelParameters, 0, 0);
+								ret = model.computePhases();
+							}
+
+							if (ret.isFinite(i)) {
+								current_upper = current_test;
+							}
+							else {
+								current_lower = current_test;
+							}
+						}
+						local_data[2 * i + FIRST_IT_STEPS * T] = current_upper;
+					}
+
+					if (found_upper) {
+						std::cout << upper_boundary << std::endl;
+						current_lower = upper_boundary;
+						current_upper = upper_boundary + modelParameters.getSecondStep();
+						while ((convergence = (current_upper - current_lower)) > 1e-8) {
+							current_test = current_lower + 0.5 * convergence;
+
+							modelParameters.setSecondIteratorExact(current_test);
+							Hubbard::Model::data_set ret;
+							if (input.getBool("use_broyden")) {
+								Hubbard::UsingBroyden model(modelParameters, 0, 0);
+								ret = model.computePhases();
+							}
+							else {
+								Hubbard::HubbardCDW model(modelParameters, 0, 0);
+								ret = model.computePhases();
+							}
+
+							if (ret.isFinite(i)) {
+								current_lower = current_test;
+							}
+							else {
+								current_upper = current_test;
+							}
+						}
+						local_data[1 + 2 * i + FIRST_IT_STEPS * T] = current_lower;
+					}
+				}
+				modelParameters.incrementGlobalIterator();
+			}
+
+			data_vector recieve_boundaries;
+			if (rank == 0) {
+				recieve_boundaries.resize(2 * NUMBER_OF_GAP_VALUES * GLOBAL_IT_STEPS);
+			}
+#ifndef _NO_MPI
+			MPI_Gather(local_data.data(), 2 * NUMBER_OF_GAP_VALUES * FIRST_IT_STEPS, MPI_DOUBLE, recieve_boundaries.data(), 2 * NUMBER_OF_GAP_VALUES * FIRST_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+#endif
+			if (rank == 0) {
+				std::vector<std::string> comments;
+				comments.push_back(input.getString("second_iterator_type") + "_MIN=" + std::to_string(SECOND_IT_MIN)
+					+ "   " + input.getString("second_iterator_type") + "_MAX=" + std::to_string(SECOND_IT_MAX));
+
+				comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
+					+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
+
+				std::string output_folder = input.getString("output_folder");
+				std::filesystem::create_directories("../../data/phases/" + output_folder);
+
+				Utility::saveData_boost(recieve_boundaries, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "boundaries.dat.gz", comments);
+			}
+		}
+
+		data_vector recieve_cdw, recieve_afm, recieve_sc, recieve_gamma_sc, recieve_xi_sc, recieve_eta;
 		if (rank == 0) {
 			recieve_cdw.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 			recieve_afm.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);

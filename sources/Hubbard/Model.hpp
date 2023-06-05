@@ -184,9 +184,13 @@ namespace Hubbard {
 
 			ModelParameters(double_prec _temperature, double_prec _U, double_prec _V, double_prec global_step, double_prec second_step,
 				std::string _global_iterator_type, std::string _second_iterator_type);
-			void setSecondIterator(int it_num);
+			double_prec setSecondIterator(int it_num);
+			double_prec setSecondIteratorExact(double_prec newValue);
 			void incrementGlobalIterator();
 			void incrementSecondIterator();
+			inline double_prec getSecondStep() const {
+				return second_step;
+			};
 			inline double_prec getGlobal() const {
 				if (global_iterator_type == "T") {
 					return temperature;
@@ -199,11 +203,44 @@ namespace Hubbard {
 				}
 				return -128;
 			};
+			inline double_prec getSecond() const {
+				if (second_iterator_type == "T") {
+					return temperature;
+				}
+				else if (second_iterator_type == "U") {
+					return U;
+				}
+				else if (second_iterator_type == "V") {
+					return V;
+				}
+				return -128;
+			};
 			void printGlobal() const;
 			std::string getFileName() const;
 		};
 		struct data_set {
 			double_prec delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta;
+			inline double_prec operator[](int i) const {
+				switch (i) {
+				case 0:
+					return delta_cdw;
+				case 1:
+					return delta_afm;
+				case 2:
+					return delta_sc;
+				case 3:
+					return gamma_sc;
+				case 4:
+					return xi_sc;
+				case 5:
+					return delta_eta;
+				default:
+					throw std::invalid_argument("ModelParameters[]: Index out of range.");
+				}
+			}
+			inline bool isFinite(int i, double_prec epsilon = 1e-12) const {
+				return (std::abs((*this)[i]) > epsilon);
+			}
 			void print() const;
 		};
 

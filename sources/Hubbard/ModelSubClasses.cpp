@@ -34,7 +34,7 @@ namespace Hubbard {
 			V += step;
 		}
 	}
-	void Model::ModelParameters::setSecondIterator(int it_num)
+	double_prec Model::ModelParameters::setSecondIterator(int it_num)
 	{
 		if (second_iterator_type == "T") {
 			temperature = second_it_min + it_num * second_step;
@@ -45,6 +45,20 @@ namespace Hubbard {
 		else if (second_iterator_type == "V") {
 			V = second_it_min + it_num * second_step;
 		}
+		return getSecond();
+	}
+	double_prec Hubbard::Model::ModelParameters::setSecondIteratorExact(double_prec newValue)
+	{
+		if (second_iterator_type == "T") {
+			temperature = newValue;
+		}
+		else if (second_iterator_type == "U") {
+			U = newValue;
+		}
+		else if (second_iterator_type == "V") {
+			V = newValue;
+		}
+		return getSecond();
 	}
 	void Model::ModelParameters::incrementGlobalIterator()
 	{

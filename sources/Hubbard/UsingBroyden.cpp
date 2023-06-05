@@ -18,9 +18,9 @@ namespace Hubbard {
 
 		hamilton(0, 1) = delta_cdw - delta_afm;;
 		hamilton(0, 2) = delta_sc + I * (gamma_sc * GAMMA + xi_sc * XI);
-		hamilton(0, 3) = 0;//I * delta_eta;
+		hamilton(0, 3) = I * delta_eta;
 
-		hamilton(1, 2) = 0;//I * delta_eta;
+		hamilton(1, 2) = I * delta_eta;
 		hamilton(1, 3) = delta_sc - I * (gamma_sc * GAMMA + xi_sc * XI);
 		hamilton(2, 3) = -delta_cdw - delta_afm;
 

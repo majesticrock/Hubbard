@@ -7,7 +7,7 @@ namespace Hubbard {
 	{
 	private:
 		typedef Eigen::Vector<double_prec, 8> ParameterVector;
-		inline void printAsRow(ParameterVector& printer) const {
+		inline void printAsRow(const ParameterVector& printer) const {
 			for (size_t i = 0; i < printer.size(); i++)
 			{
 				std::cout << "\t" << printer(i);

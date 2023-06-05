@@ -2,11 +2,13 @@
 #include "BasicHubbardModel.hpp"
 
 namespace Hubbard {
+	constexpr size_t NUMBER_OF_PARAMETERS = 16;
+
 	class HubbardCDW : public Model
 	{
 	private:
-		typedef Eigen::Vector<complex_prec, 16> ParameterVector;
-		inline void printAsRow(ParameterVector& printer) const {
+		typedef Eigen::Vector<complex_prec, NUMBER_OF_PARAMETERS> ParameterVector;
+		inline void printAsRow(const ParameterVector& printer) const {
 			for (size_t i = 0; i < printer.size(); i++)
 			{
 				std::cout << " \t" << printer(i);
@@ -16,6 +18,9 @@ namespace Hubbard {
 			}
 			std::cout << std::endl;
 		}
+
+		std::vector<complex_prec*> param_mapper;
+		std::vector<double_prec> param_coefficients;
 	protected:
 		double_prec V;
 		double_prec V_OVER_N;
@@ -50,41 +55,16 @@ namespace Hubbard {
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
 
 		virtual inline void setParameters(ParameterVector& F) {
-			F(0)  *= 0.5 * U_OVER_N - 4. * V_OVER_N; // CDW
-			F(1)  *= 0.5 * U_OVER_N; // AFM
-			F(2)  *= U_OVER_N; // SC
-			F(3)  *= V_OVER_N; // Gamma SC
-			F(4)  *= V_OVER_N; // Xi SC
-			F(5)  *= U_OVER_N; // Eta
-			F(6)  *= V_OVER_N; // Occupation Up
-			F(7)  *= V_OVER_N; // Occupation Down
-			F(8)  *= 0.5 * V_OVER_N; // Gamma CDW
-			F(9)  *= 0.5 * V_OVER_N; // Xi CDW
-			F(10) *= 0.5 * V_OVER_N; // Gamma AFM
-			F(11) *= 0.5 * V_OVER_N; // Xi AFM
-			F(12) *= V_OVER_N; // Occupation Up y
-			F(13) *= V_OVER_N; // Occupation Down y
-			F(14) *= V_OVER_N; // Gamma SC
-			F(15) *= V_OVER_N; // Xi SC
+			for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
+			{
+				F(i) *= param_coefficients[i];
+			}
 
 			constexpr double_prec new_weight = 0.5;
-
-			this->delta_cdw				  = new_weight * F(0)  + (1 - new_weight) * this->delta_cdw;
-			this->delta_afm				  = new_weight * F(1)  + (1 - new_weight) * this->delta_afm;
-			this->delta_sc				  = new_weight * F(2)  + (1 - new_weight) * this->delta_sc;
-			this->gamma_sc				  = new_weight * F(3)  + (1 - new_weight) * this->gamma_sc;
-			this->xi_sc					  = new_weight * F(4)  + (1 - new_weight) * this->xi_sc;
-			this->delta_eta				  = new_weight * F(5)  + (1 - new_weight) * this->delta_eta;
-			this->delta_occupation_up	  = new_weight * F(6)  + (1 - new_weight) * this->delta_occupation_up;
-			this->delta_occupation_down	  = new_weight * F(7)  + (1 - new_weight) * this->delta_occupation_down;
-			this->gamma_cdw				  = new_weight * F(8)  + (1 - new_weight) * this->gamma_cdw;
-			this->xi_cdw				  = new_weight * F(9)  + (1 - new_weight) * this->xi_cdw;
-			this->gamma_afm				  = new_weight * F(10) + (1 - new_weight) * this->gamma_afm;
-			this->xi_afm				  = new_weight * F(11) + (1 - new_weight) * this->xi_afm;
-			this->delta_occupation_up_y	  = new_weight * F(12) + (1 - new_weight) * this->delta_occupation_up_y;
-			this->delta_occupation_down_y = new_weight * F(13) + (1 - new_weight) * this->delta_occupation_down_y;
-			this->gamma_eta				  = new_weight * F(14) + (1 - new_weight) * this->gamma_eta;
-			this->xi_eta				  = new_weight * F(15) + (1 - new_weight) * this->xi_eta;
+			for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
+			{
+				*(param_mapper[i]) = new_weight * F(i) + (1 - new_weight) * (*(param_mapper[i]));
+			}
 		};
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {
 			if (coeff.name == "\\tilde{V}") {
