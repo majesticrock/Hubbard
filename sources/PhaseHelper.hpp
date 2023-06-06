@@ -10,13 +10,18 @@ class PhaseHelper
 {
 private:
 	struct Plaquette {
+		PhaseHelper* parent = nullptr;
+
 		double lowerFirst = 0, upperFirst = 0;
 		double lowerSecond = 0, upperSecond = 0;
-
+		/* Layout:
+		*  0 1
+		*  2 3
+		*/ 
 		std::vector<double> values = { 0,0,0,0 };
 
 		inline bool valueIsFinite(int index) const {
-			return std::abs(values[index]) > 1e-12;
+			return std::abs(values[index]) > 1e-10;
 		};
 		inline bool containsPhaseBoundary() const
 		{
@@ -34,10 +39,12 @@ private:
 		inline double getCenterSecond() const {
 			return 0.5 * (lowerSecond + upperSecond);
 		};
+		inline double size() const {
+			return 0.5 * (std::abs(upperFirst - lowerFirst) + std::abs(upperSecond - lowerSecond));
+		}
 		// Devides *this into 4 equally sized plaquettes
-		// and automatically removes those, that do not contain a phase boundary
 		// The result is appended to <appendTo>
-		void devidePlaquette(std::vector<Plaquette>& appendTo);
+		void devidePlaquette(std::vector<Plaquette>& appendTo, int value_index);
 	};
 
 	const std::vector<std::string> option_list = { "T", "U", "V" };
@@ -50,11 +57,10 @@ private:
 
 	bool use_broyden;
 	Hubbard::Model::ModelParameters modelParameters;
-
-	void findSingleBoundary(const data_vector& origin, data_vector& recieve_data);
+	Hubbard::Model::data_set computeDataPoint(const Hubbard::Model::ModelParameters& mp);
 public:
 	PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);
 
 	void compute_crude(std::vector<data_vector*>& data_mapper);
-	void findBoundaries(const std::vector<data_vector*>& data_mapper, data_vector& recieve_data);
+	void findSingleBoundary(const data_vector& origin, data_vector& recieve_data, int value_index, int rank);
 };

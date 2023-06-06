@@ -40,7 +40,7 @@ namespace Hubbard {
 		initializeParameters();
 	}
 
-	Model::Model(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
+	Model::Model(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: temperature(_params.temperature), U(_params.U), number_of_basis_terms(_number_of_basis_terms), start_basis_at(_start_basis_at)
 	{
 		initializeParameters();

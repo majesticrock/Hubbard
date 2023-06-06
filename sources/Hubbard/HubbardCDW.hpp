@@ -77,7 +77,7 @@ namespace Hubbard {
 		};
 
 	public:
-		HubbardCDW(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
+		HubbardCDW(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
 		Model::data_set computePhases(const bool print = false) override;
 	};
 }

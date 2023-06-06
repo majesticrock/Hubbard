@@ -28,7 +28,7 @@ namespace Hubbard {
 			this->delta_eta = 0.5 * (F(3) + this->delta_eta);
 		};
 	public:
-		BasicHubbardModel(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
+		BasicHubbardModel(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
 
 		data_set computePhases(const bool print = false) override;
 	};

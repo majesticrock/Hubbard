@@ -34,7 +34,7 @@ namespace Hubbard {
 		hamilton(3, 3) = eps;
 	}
 
-	UsingBroyden::UsingBroyden(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
 		this->delta_cdw = (std::abs(U) + V) * 0.3;

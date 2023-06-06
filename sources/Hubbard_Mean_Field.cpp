@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 	int rank = 0;
 	int numberOfRanks = 1;
 #endif
-
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	if (rank == 0) {
 		std::cout << "Using parameter file " << argv[1] << std::endl;
 	}
@@ -126,176 +126,27 @@ int main(int argc, char** argv)
 			&data_cdw, &data_afm, &data_sc, &data_gamma_sc, &data_xi_sc, &data_eta
 		};
 
-		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
 		PhaseHelper phaseHelper(input, rank, numberOfRanks);
 		phaseHelper.compute_crude(data_mapper);
 
-		if (input.getBool("improved_boundaries")) {
-			constexpr int NUMBER_OF_GAP_VALUES = 6;
-			modelParameters = Hubbard::Model::ModelParameters(model_params[0], model_params[1], model_params[2],
-				(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, (SECOND_IT_MAX - SECOND_IT_MIN) / SECOND_IT_STEPS,
-				input.getString("global_iterator_type"), input.getString("second_iterator_type"));
-
-			data_vector local_data(2 * NUMBER_OF_GAP_VALUES * FIRST_IT_STEPS);
-
-			for (int T = 0; T < FIRST_IT_STEPS; T++)
-			{
-				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
-				{
-					double lower_boundary = -128;
-					double upper_boundary = 128;
-					bool found_lower = false, found_upper = false;
-
-					for (size_t j = 1; j < SECOND_IT_STEPS - 1; ++j)
-					{
-						if (std::abs( (*(data_mapper[i]))[T * SECOND_IT_STEPS + j] ) > 1e-12) {
-							if (std::abs( (*(data_mapper[i]))[T * SECOND_IT_STEPS + j - 1] ) < 1e-12) {
-								// Current element is nonzero and the previous element is 0
-								lower_boundary = modelParameters.setSecondIterator(j);
-								found_lower = true;
-							}
-							if (std::abs( (*(data_mapper[i]))[T * SECOND_IT_STEPS + j + 1] ) < 1e-12) {
-								// Current element is nonzero and the next element is 0
-								upper_boundary = modelParameters.setSecondIterator(j);
-								found_upper = true;
-							}
-						}
-					}
-
-					if (!found_lower) {
-						if (std::abs((*data_mapper[i])[T * SECOND_IT_STEPS]) > 1e-12) {
-							// Lowest element is nonzero, thus the lower boundary, if it exists,
-							// is outside the scope of the current simulation
-							local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i] = -std::numeric_limits<double>::infinity();
-						}
-						else {
-							// The lowest element is zero, thereby all higher elements are 0 too
-							// This parameter is never nonzero.
-							local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i] = std::numeric_limits<double>::quiet_NaN();
-							local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i + 1] = std::numeric_limits<double>::quiet_NaN();
-							continue;
-						}
-					}
-					if (!found_upper) {
-						if (std::abs((*data_mapper[i])[(T + 1) * SECOND_IT_STEPS - 1]) > 1e-12) {
-							// Highest element is nonzero, thus the upper boundary, if it exists,
-							// is outside the scope of the current simulation
-							local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i + 1] = std::numeric_limits<double>::infinity();
-						}
-						// The other case would imply that all elements are 0
-						// This is already covered in the previous if-statement
-					}
-
-					double convergence;
-					double current_lower;
-					double current_upper;
-					double current_test;
-					constexpr double CONVERGENCE_LIMIT = 1e-4;
-
-					if (found_lower) {
-						current_lower = lower_boundary - modelParameters.getSecondStep();
-						current_upper = lower_boundary;
-						while ((convergence = (current_upper - current_lower)) > CONVERGENCE_LIMIT) {
-							current_test = current_lower + 0.5 * convergence;
-
-							modelParameters.setSecondIteratorExact(current_test);
-							Hubbard::Model::data_set ret;
-							if (input.getBool("use_broyden")) {
-								Hubbard::UsingBroyden model(modelParameters, 0, 0);
-								ret = model.computePhases();
-							}
-							else {
-								Hubbard::HubbardCDW model(modelParameters, 0, 0);
-								ret = model.computePhases();
-							}
-							if (!ret.converged) {
-								current_upper = current_test;
-								break;
-							}
-							if (ret.isFinite(i)) {
-								current_upper = current_test;
-							}
-							else {
-								current_lower = current_test;
-							}
-						}
-						local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i] = current_upper;
-					}
-
-					if (found_upper) {
-						current_lower = upper_boundary;
-						current_upper = upper_boundary + modelParameters.getSecondStep();
-						while ((convergence = (current_upper - current_lower)) > CONVERGENCE_LIMIT) {
-							current_test = current_lower + 0.5 * convergence;
-
-							modelParameters.setSecondIteratorExact(current_test);
-							Hubbard::Model::data_set ret;
-							if (input.getBool("use_broyden")) {
-								Hubbard::UsingBroyden model(modelParameters, 0, 0);
-								ret = model.computePhases();
-							}
-							else {
-								Hubbard::HubbardCDW model(modelParameters, 0, 0);
-								ret = model.computePhases();
-							}
-
-							if (ret.isFinite(i)) {
-								current_lower = current_test;
-							}
-							else {
-								current_upper = current_test;
-							}
-						}
-						local_data[2 * NUMBER_OF_GAP_VALUES * T + 2 * i + 1] = current_lower;
-					}
-				}
-				modelParameters.incrementGlobalIterator();
-			}
-
-			data_vector recieve_boundaries;
-			if (rank == 0) {
-				recieve_boundaries.resize(2 * NUMBER_OF_GAP_VALUES * GLOBAL_IT_STEPS);
-			}
-#ifndef _NO_MPI
-			MPI_Gather(local_data.data(), 2 * NUMBER_OF_GAP_VALUES * FIRST_IT_STEPS, MPI_DOUBLE, recieve_boundaries.data(), 2 * NUMBER_OF_GAP_VALUES * FIRST_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-#endif
-			if (rank == 0) {
-				std::vector<std::string> comments;
-				comments.push_back(input.getString("second_iterator_type") + "_MIN=" + std::to_string(SECOND_IT_MIN)
-					+ "   " + input.getString("second_iterator_type") + "_MAX=" + std::to_string(SECOND_IT_MAX));
-
-				comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
-					+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
-
-				std::string output_folder = input.getString("output_folder");
-				std::filesystem::create_directories("../../data/phases/" + output_folder);
-
-				Utility::saveData_boost(recieve_boundaries, 2 * NUMBER_OF_GAP_VALUES, "../../data/phases/" + output_folder + "boundaries.dat.gz", comments);
-			}
-		}
-
 		data_vector recieve_cdw, recieve_afm, recieve_sc, recieve_gamma_sc, recieve_xi_sc, recieve_eta;
-		if (rank == 0) {
-			recieve_cdw.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-			recieve_afm.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-			recieve_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-			recieve_gamma_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-			recieve_xi_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-			recieve_eta.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-		}
+		
+		recieve_cdw.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+		recieve_afm.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+		recieve_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+		recieve_gamma_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+		recieve_xi_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+		recieve_eta.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
+		
 #ifndef _NO_MPI
-		MPI_Gather(data_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		MPI_Gather(data_afm.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_afm.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		MPI_Gather(data_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		MPI_Gather(data_gamma_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_gamma_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		MPI_Gather(data_xi_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_xi_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		MPI_Gather(data_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+		MPI_Allgather(data_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
+		MPI_Allgather(data_afm.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_afm.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
+		MPI_Allgather(data_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
+		MPI_Allgather(data_gamma_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_gamma_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
+		MPI_Allgather(data_xi_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_xi_sc.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
+		MPI_Allgather(data_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_eta.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
 #endif
 		if (rank == 0) {
-			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-			std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-
 			std::vector<std::string> comments;
 			comments.push_back(input.getString("second_iterator_type") + "_MIN=" + std::to_string(SECOND_IT_MIN)
 				+ "   " + input.getString("second_iterator_type") + "_MAX=" + std::to_string(SECOND_IT_MAX));
@@ -312,6 +163,84 @@ int main(int argc, char** argv)
 			Utility::saveData_boost(recieve_gamma_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "gamma_sc.dat.gz", comments);
 			Utility::saveData_boost(recieve_xi_sc, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "xi_sc.dat.gz", comments);
 			Utility::saveData_boost(recieve_eta, SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.dat.gz", comments);
+		}
+
+		if (input.getBool("improved_boundaries")) {
+			data_mapper = {
+				&recieve_cdw, &recieve_afm, &recieve_sc, &recieve_gamma_sc, &recieve_xi_sc, &recieve_eta
+			};
+			int NUMBER_OF_GAP_VALUES = data_mapper.size();
+
+			data_vector local[NUMBER_OF_GAP_VALUES];
+			int sizes[NUMBER_OF_GAP_VALUES];
+			for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+			{
+				phaseHelper.findSingleBoundary(*(data_mapper[i]), local[i], i, rank);
+				sizes[i] = local[i].size();
+			}
+
+			std::vector<int> all_sizes[NUMBER_OF_GAP_VALUES];
+
+			data_vector recieve_boundaries[NUMBER_OF_GAP_VALUES];
+			if (rank == 0) {
+				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+				{
+					all_sizes[i].resize(numberOfRanks);
+				}
+			}
+			std::vector<int> totalSizes(NUMBER_OF_GAP_VALUES, 0);
+#ifndef _NO_MPI
+			for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+			{
+				MPI_Gather(&(sizes[i]), 1, MPI_INT, all_sizes[i].data(), 1, MPI_INT, 0, MPI_COMM_WORLD);
+				std::vector<int> displacements(numberOfRanks, 0);
+
+				if(rank == 0){
+					for (const auto& s : all_sizes[i])
+					{
+						totalSizes[i] += s;
+					}
+					for (size_t j = 1; j < numberOfRanks; j++)
+					{
+						displacements[j] = displacements[j - 1] + all_sizes[i][j - 1];
+					}
+				}
+
+				recieve_boundaries[i].resize(totalSizes[i]);
+				MPI_Gatherv(local[i].data(), sizes[i], MPI_DOUBLE, recieve_boundaries[i].data(), all_sizes[i].data(), displacements.data(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+			}
+#endif
+			if (rank == 0) {
+				std::vector<std::string> comments;
+				comments.push_back(input.getString("second_iterator_type") + "_MIN=" + std::to_string(SECOND_IT_MIN)
+					+ "   " + input.getString("second_iterator_type") + "_MAX=" + std::to_string(SECOND_IT_MAX));
+
+				comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
+					+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
+
+				std::string output_folder = input.getString("output_folder");
+				std::filesystem::create_directories("../../data/phases/" + output_folder);
+				
+				std::string names[NUMBER_OF_GAP_VALUES] = {"cdw", "afm", "sc", "gamma_sc", "xi_sc", "eta"};
+				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+				{
+					const int n = recieve_boundaries[i].size() / 2;
+					for (size_t j = 1; j < n; j+=2)
+					{
+						std::swap(recieve_boundaries[i][j], recieve_boundaries[i][n + j - 1]);
+					}
+					for (int k = 0; k < n; k++) {
+    				    for (int l = k + 1; l < n; l++) {
+    				        if (recieve_boundaries[i][k] > recieve_boundaries[i][l]) {
+    				            std::swap(recieve_boundaries[i][k], recieve_boundaries[i][l]);
+    				            std::swap(recieve_boundaries[i][n + k], recieve_boundaries[i][n + l]);
+    				        }
+    				    }
+    				}
+
+					Utility::saveData_boost(recieve_boundaries[i], n, "../../data/phases/" + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
+				}
+			}
 		}
 	}
 	else if (input.getString("compute_what") == "modes") {
@@ -368,6 +297,11 @@ int main(int argc, char** argv)
 			comments.pop_back();
 			Utility::saveData_boost(oneParticleEnergies, "../../data/" + output_folder + "one_particle.dat.gz", comments);
 		}
+	}
+
+	if(rank == 0){
+		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 	}
 #ifndef _NO_MPI
 	return MPI_Finalize();

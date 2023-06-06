@@ -190,6 +190,7 @@ namespace Hubbard {
 				global_it_min(-1), second_it_min(-1), temperature(-1), U(-1), V(-1) { };
 
 			double_prec setGlobalIterator(int it_num);
+			double_prec setGlobalIteratorExact(double_prec newValue);
 			double_prec setSecondIterator(int it_num);
 			double_prec setSecondIteratorExact(double_prec newValue);
 			void incrementGlobalIterator();
@@ -256,7 +257,7 @@ namespace Hubbard {
 		};
 
 		Model(double_prec _temperature, double_prec _U, int _number_of_basis_terms, int _start_basis_at);
-		Model(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
+		Model(const  ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
 		// reciever is the vector the resulting data will be stored in
 		// direction gives the angle between the k-path and the k_x axis in multiples of L_PI
 		void getEnergies(std::vector<std::vector<double>>& reciever, double_prec direction);

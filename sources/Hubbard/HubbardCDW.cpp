@@ -33,7 +33,7 @@ namespace Hubbard {
 		hamilton(2, 2) = -eps;
 		hamilton(3, 3) = eps;
 	}
-	HubbardCDW::HubbardCDW(ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
+	HubbardCDW::HubbardCDW(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
 		this->delta_cdw = (std::abs(U) + V) * 0.3;
