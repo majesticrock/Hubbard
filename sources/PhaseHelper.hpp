@@ -34,6 +34,10 @@ private:
 		inline double getCenterSecond() const {
 			return 0.5 * (lowerSecond + upperSecond);
 		};
+		// Devides *this into 4 equally sized plaquettes
+		// and automatically removes those, that do not contain a phase boundary
+		// The result is appended to <appendTo>
+		void devidePlaquette(std::vector<Plaquette>& appendTo);
 	};
 
 	const std::vector<std::string> option_list = { "T", "U", "V" };

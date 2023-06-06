@@ -2,6 +2,55 @@
 #include "Hubbard/UsingBroyden.hpp"
 #include "Hubbard/HubbardCDW.hpp"
 
+void PhaseHelper::Plaquette::devidePlaquette(std::vector<PhaseHelper::Plaquette>& appendTo) {
+	/*
+	*			x---o---x
+	*			|   |   |
+	*			| 0 | 1 |
+	*			|   |   |
+	*			o---o---o
+	*			|   |   |
+	*			| 2 | 3 |
+	*			|   |   |
+	*	  . 	x---o---x
+	*	 /|\
+	*     |
+	*   First / Second ->
+	*/
+
+	// Upper left
+	auto new_plaq = *this;
+	new_plaq.lowerFirst  = this->getCenterFirst();
+	new_plaq.upperSecond = this->getCenterSecond();
+	if (new_plaq.containsPhaseBoundary()) {
+		appendTo.push_back(new_plaq);
+	}
+
+	// Upper right
+	new_plaq = *this;
+	new_plaq.lowerFirst  = this->getCenterFirst();
+	new_plaq.lowerSecond = this->getCenterSecond();
+	if (new_plaq.containsPhaseBoundary()) {
+		appendTo.push_back(new_plaq);
+	}
+
+	// Lower left
+	new_plaq = *this;
+	new_plaq.upperFirst  = this->getCenterFirst();
+	new_plaq.upperSecond = this->getCenterSecond();
+	if (new_plaq.containsPhaseBoundary()) {
+		appendTo.push_back(new_plaq);
+	}
+
+	// Lower right
+	new_plaq = *this;
+	new_plaq.upperFirst  = this->getCenterFirst();
+	new_plaq.lowerSecond = this->getCenterSecond();
+	if (new_plaq.containsPhaseBoundary()) {
+		appendTo.push_back(new_plaq);
+	}
+}
+
 PhaseHelper::PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks)
 	: rank(_rank), numberOfRanks(_nRanks)
 {
@@ -91,7 +140,12 @@ void PhaseHelper::findSingleBoundary(const data_vector& origin, data_vector& rec
 		}
 	}
 
-
+	std::vector<Plaquette> new_plaquettes;
+	const auto N_PLAQUETTES = plaqs.size();
+	for (size_t i = 0; i < N_PLAQUETTES; i++)
+	{
+		plaqs[i].devidePlaquette(new_plaquettes);
+	}
 }
 
 void PhaseHelper::findBoundaries(const std::vector<data_vector*>& data_mapper, data_vector& recieve_data)
