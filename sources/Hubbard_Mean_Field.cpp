@@ -15,7 +15,7 @@
 #include <chrono>
 #include <memory>
 #include <cmath>
-#include <limits>
+#include <algorithm>
 
 #include "PhaseHelper.hpp"
 #include "Utility/InputFileReader.hpp"
@@ -225,20 +225,14 @@ int main(int argc, char** argv)
 				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
 				{
 					const int n = recieve_boundaries[i].size() / 2;
-					for (size_t j = 1; j < n; j+=2)
+					std::vector<std::vector<double>> buffer(2, std::vector<double>(n));
+					for (size_t j = 0; j < recieve_boundaries[i].size(); j+=2)
 					{
-						std::swap(recieve_boundaries[i][j], recieve_boundaries[i][n + j - 1]);
+						buffer[0][j / 2] = recieve_boundaries[i][j];
+						buffer[1][j / 2] = recieve_boundaries[i][j + 1];
 					}
-					for (int k = 0; k < n; k++) {
-    				    for (int l = k + 1; l < n; l++) {
-    				        if (recieve_boundaries[i][k] > recieve_boundaries[i][l]) {
-    				            std::swap(recieve_boundaries[i][k], recieve_boundaries[i][l]);
-    				            std::swap(recieve_boundaries[i][n + k], recieve_boundaries[i][n + l]);
-    				        }
-    				    }
-    				}
 
-					Utility::saveData_boost(recieve_boundaries[i], n, "../../data/phases/" + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
+					Utility::saveData_boost(buffer, "../../data/phases/" + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
 				}
 			}
 		}

@@ -22,46 +22,32 @@ void PhaseHelper::Plaquette::devidePlaquette(std::vector<PhaseHelper::Plaquette>
 	
 	const double centerFirst = this->getCenterFirst();
 	const double centerSecond = this->getCenterSecond();
-
 	double new_values[5];
-#pragma omp parallel sections
-	{
-	#pragma omp section
-		{
-			auto mp = parent->modelParameters;
-			mp.setGlobalIteratorExact(this->upperFirst);
-			mp.setSecondIteratorExact(centerSecond);
-			new_values[0] = parent->computeDataPoint(mp)[value_index];
-		}
-	#pragma omp section
-		{
-			auto mp = parent->modelParameters;
-			mp.setGlobalIteratorExact(centerFirst);
-			mp.setSecondIteratorExact(this->lowerSecond);
-			new_values[1] = parent->computeDataPoint(mp)[value_index];
-		}
-	#pragma omp section
-		{
-			auto mp = parent->modelParameters;
-			mp.setGlobalIteratorExact(centerFirst);
-			mp.setSecondIteratorExact(centerSecond);
-			new_values[2] = parent->computeDataPoint(mp)[value_index];
-		}
-	#pragma omp section
-		{
-			auto mp = parent->modelParameters;
-			mp.setGlobalIteratorExact(centerFirst);
-			mp.setSecondIteratorExact(upperSecond);
-			new_values[3] = parent->computeDataPoint(mp)[value_index];
-		}
-	#pragma omp section
-		{
-			auto mp = parent->modelParameters;
-			mp.setGlobalIteratorExact(this->lowerFirst);
-			mp.setSecondIteratorExact(centerSecond);
-			new_values[4] = parent->computeDataPoint(mp)[value_index];
-		}
-	}
+
+	auto mp = parent->modelParameters;
+	mp.setGlobalIteratorExact(this->upperFirst);
+	mp.setSecondIteratorExact(centerSecond);
+	new_values[0] = parent->computeDataPoint(mp)[value_index];
+
+	mp = parent->modelParameters;
+	mp.setGlobalIteratorExact(centerFirst);
+	mp.setSecondIteratorExact(this->lowerSecond);
+	new_values[1] = parent->computeDataPoint(mp)[value_index];
+
+	mp = parent->modelParameters;
+	mp.setGlobalIteratorExact(centerFirst);
+	mp.setSecondIteratorExact(centerSecond);
+	new_values[2] = parent->computeDataPoint(mp)[value_index];
+
+	mp = parent->modelParameters;
+	mp.setGlobalIteratorExact(centerFirst);
+	mp.setSecondIteratorExact(upperSecond);
+	new_values[3] = parent->computeDataPoint(mp)[value_index];
+
+	mp = parent->modelParameters;
+	mp.setGlobalIteratorExact(this->lowerFirst);
+	mp.setSecondIteratorExact(centerSecond);
+	new_values[4] = parent->computeDataPoint(mp)[value_index];
 
 	// Upper left
 	Plaquette new_plaq = *this;
@@ -172,6 +158,19 @@ void PhaseHelper::compute_crude(std::vector<data_vector*>& data_mapper) {
 	}
 }
 
+template <typename T>
+std::vector<T> joinVectors(const std::vector<std::vector<T>>& vectors)
+{
+    std::vector<T> result;
+    
+    for (const auto& vec : vectors)
+    {
+        result.insert(result.end(), vec.begin(), vec.end());
+    }
+    
+    return result;
+}
+
 void PhaseHelper::findSingleBoundary(const data_vector& origin, data_vector& recieve_data, int value_index, int rank) {
 	modelParameters.reset();
 	std::vector<Plaquette> plaqs;
@@ -197,18 +196,44 @@ void PhaseHelper::findSingleBoundary(const data_vector& origin, data_vector& rec
 		}
 	}
 
-	while(plaqs.size() > 0 && plaqs.begin()->size() > 5e-1){
+	while(plaqs.size() > 0 && plaqs.begin()->size() > 5e-4){
 		std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
-		std::vector<Plaquette> new_plaquettes;
 		const auto N_PLAQUETTES = plaqs.size();
+
+		const int n_omp_threads = 4;
+		std::vector<std::vector<Plaquette>> buffer(n_omp_threads);
+#pragma omp parallel for num_threads(n_omp_threads)
 		for (size_t i = 0; i < N_PLAQUETTES; i++)
 		{
-			plaqs[i].devidePlaquette(new_plaquettes, value_index);
+			plaqs[i].devidePlaquette(buffer[omp_get_thread_num()], value_index);
 		}
-		plaqs = new_plaquettes;
+		int totalSize = 0;
+		for (const auto& vec : buffer)
+    	{
+			totalSize += vec.size();
+		}
+		plaqs.clear();
+		bool removal = false;
+		if(totalSize > 200) {
+			totalSize /= 2;
+			removal = true;
+		}
+		plaqs.reserve(totalSize);
+		for (const auto& vec : buffer)
+    	{
+			if(removal){
+				for (size_t i = 0; i < vec.size(); i+=2)
+				{
+					plaqs.push_back(vec[i]);
+				}
+			} else {
+        		plaqs.insert(plaqs.end(), vec.begin(), vec.end());
+			}
+    	}
+		
 	}
 	
-	recieve_data.reserve(recieve_data.size() + 2 *plaqs.size());
+	recieve_data.reserve(recieve_data.size() + 2 * plaqs.size());
 	for(const auto& p : plaqs){
 		recieve_data.push_back(p.getCenterFirst());
 		recieve_data.push_back(p.getCenterSecond());
