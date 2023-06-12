@@ -104,8 +104,8 @@ namespace Hubbard {
 					c_gamma_sc -= gamma(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Gamma SC
 					c_xi_sc -= xi(k_x, k_y)    * (rho(0, 2) - rho(1, 3)); // Xi SC
 					c_eta -= (rho(0, 3) + rho(1, 2)); // Eta
-					F(6) -= cos(k_x) * (rho(0, 0) - rho(1, 1)).real(); // Occupation Up
-					F(7) += cos(k_x) * (rho(2, 2) - rho(3, 3)).real(); // Occupation Down
+					F(6) -= 0;// cos(k_x) * (rho(0, 0) - rho(1, 1)).real(); // Occupation Up
+					F(7) += 0;// cos(k_x) * (rho(2, 2) - rho(3, 3)).real(); // Occupation Down
 				}
 			}
 
