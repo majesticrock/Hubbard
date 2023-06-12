@@ -65,11 +65,11 @@ int main(int argc, char** argv)
 		Hubbard::HubbardCDW model(mP, 0, 0);
 
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
-		model.computePhases(true).print();
+		//model.computePhases(true).print();
 		std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 		std::cout << "\n\n" << std::endl;
-		return MPI_Finalize();
+		//return MPI_Finalize();
 		Hubbard::UsingBroyden model2(mP, 0, 0);
 		test_b = std::chrono::steady_clock::now();
 		model2.computePhases(true).print();
@@ -171,17 +171,17 @@ int main(int argc, char** argv)
 			};
 			int NUMBER_OF_GAP_VALUES = data_mapper.size();
 
-			data_vector local[NUMBER_OF_GAP_VALUES];
-			int sizes[NUMBER_OF_GAP_VALUES];
+			std::vector<data_vector> local(NUMBER_OF_GAP_VALUES);
+			std::vector<int> sizes(NUMBER_OF_GAP_VALUES);
 			for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
 			{
 				phaseHelper.findSingleBoundary(*(data_mapper[i]), local[i], i, rank);
 				sizes[i] = local[i].size();
 			}
 
-			std::vector<int> all_sizes[NUMBER_OF_GAP_VALUES];
+			std::vector<std::vector<int>> all_sizes(NUMBER_OF_GAP_VALUES);
 
-			data_vector recieve_boundaries[NUMBER_OF_GAP_VALUES];
+			std::vector < data_vector> recieve_boundaries(NUMBER_OF_GAP_VALUES);
 			if (rank == 0) {
 				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
 				{
@@ -221,7 +221,7 @@ int main(int argc, char** argv)
 				std::string output_folder = input.getString("output_folder");
 				std::filesystem::create_directories("../../data/phases/" + output_folder);
 				
-				std::string names[NUMBER_OF_GAP_VALUES] = {"cdw", "afm", "sc", "gamma_sc", "xi_sc", "eta"};
+				std::string names[] = {"cdw", "afm", "sc", "gamma_sc", "xi_sc", "eta"};
 				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
 				{
 					const int n = recieve_boundaries[i].size() / 2;

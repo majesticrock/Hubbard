@@ -33,15 +33,6 @@ namespace Hubbard {
 		virtual void fillHamiltonian(double_prec k_x, double_prec k_y) override;
 
 		virtual inline void setParameters(ParameterVector& F) {
-			F(0) *= 0.5 * U_OVER_N - 4 * V_OVER_N; // CDW
-			F(1) *= 0.5 * U_OVER_N; // AFM
-			F(2) *= U_OVER_N; // SC
-			F(3) *= V_OVER_N; // Gamma SC
-			F(4) *= V_OVER_N; // Xi SC y
-			F(5) *= U_OVER_N; // Eta
-			F(6) *= V_OVER_N; // Occupation Up
-			F(7) *= V_OVER_N; // Occupation Down
-
 			constexpr double_prec new_weight = 0.5;
 
 			this->delta_cdw			    = new_weight * F(0) + (1 - new_weight) * this->delta_cdw;

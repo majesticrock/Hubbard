@@ -26,8 +26,8 @@ namespace Utility {
 					// You may play around with EPS_X and EPS_F to your desire
 					// EPS_X is the minimum distance between x_i and x_i+1
 					// EPS_F is the minimum f(x)
-					constexpr double EPS_F = std::numeric_limits<double>::denorm_min();
-					constexpr double EPS_X = 1e-12;
+					constexpr double EPS_F = std::numeric_limits<double>::epsilon();
+					constexpr double EPS_X = std::numeric_limits<double>::epsilon();
 					double diff_x = 100, diff_F = 100;
 					int iter_num = 0;
 
@@ -39,7 +39,7 @@ namespace Utility {
 						J_new = Eigen::MatrixXd::Identity(DIM, DIM);
 					func(x0, F_new);
 
-					while (diff_x > EPS_X && diff_F > EPS_F && iter_num++ <= MAX_ITER && F_new.squaredNorm() > EPS_F) {
+					while (diff_x > EPS_X && diff_F > EPS_F && iter_num++ <= MAX_ITER && F_new.norm() > EPS_F) {
 						delta_x = -J_new * F_new;
 						x0 += delta_x;
 						diff_x = delta_x.norm();

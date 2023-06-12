@@ -37,7 +37,7 @@ namespace Hubbard {
 	UsingBroyden::UsingBroyden(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
-		this->delta_cdw = (std::abs(U) + V) * 0.3;
+		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
 		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
 		if (V > 0) {
 			this->delta_sc *= 0.25;
@@ -45,8 +45,12 @@ namespace Hubbard {
 		else if (V < 0) {
 			this->delta_cdw *= 0;
 		}
-		this->delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
-
+		if (U > 0) {
+			this->delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
+		}
+		else {
+			this->delta_afm = 0;
+		}
 		this->delta_eta = 0;//U * 0.1;
 		this->delta_occupation_up = V * 0.2;
 		this->delta_occupation_down = V * 0.2;
@@ -125,10 +129,19 @@ namespace Hubbard {
 			F(3) = c_gamma_sc.imag();
 			F(4) = c_xi_sc.imag();
 			F(5) = c_eta.imag();
+			
+			F(0) *= 0.5 * U_OVER_N - 4 * V_OVER_N; // CDW
+			F(1) *= 0.5 * U_OVER_N; // AFM
+			F(2) *= U_OVER_N; // SC
+			F(3) *= V_OVER_N; // Gamma SC
+			F(4) *= V_OVER_N; // Xi SC y
+			F(5) *= U_OVER_N; // Eta
+			F(6) *= V_OVER_N; // Occupation Up
+			F(7) *= V_OVER_N; // Occupation Down
 
 			for (size_t i = 0; i < F.size(); i++)
 			{
-				if(std::abs(F(i)) < 1e-12){
+				if(std::abs(F(i)) < 1e-14){
 					F(i) = 0;
 				}
 			}
@@ -141,7 +154,7 @@ namespace Hubbard {
 		f0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta, delta_occupation_up, delta_occupation_down;
 		ParameterVector x0;
 		x0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta, delta_occupation_up, delta_occupation_down;
-		for (size_t i = 0; i < 200 && f0.squaredNorm() > 1e-15; i++)
+		for (size_t i = 0; i < 300 && f0.squaredNorm() > 1e-15; i++)
 		{
 			func(x0, f0);
 			x0(0) = delta_cdw;
@@ -153,16 +166,24 @@ namespace Hubbard {
 			x0(6) = delta_occupation_up;
 			x0(7) = delta_occupation_down;
 
+			for (size_t i = 0; i < x0.size(); i++)
+			{
+				if (std::abs(x0(i)) < 1e-14) {
+					x0(i) = 0;
+				}
+			}
+
 			if (print) {
-				std::cout << i << ":\t" << std::fixed << std::setprecision(8);
+				std::cout << i << ":  " << std::scientific << std::setprecision(4);
 				printAsRow(x0);
 			}
 		}
 
 		data_set ret;
 		Utility::NumericalSolver::Roots::Broyden<double_prec, 8> broyden_solver;
-		if (!broyden_solver.compute(func, x0)) {
-			std::cerr << "No convergence for [T, U, V] = [" << this->temperature << ", " << this->U << ", " << this->V << "]" << std::endl;
+		if (!broyden_solver.compute(func, x0, 400)) {
+			std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
+				<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
 			delta_cdw = 0;
 			delta_afm = 0;
 			delta_sc = 0;
