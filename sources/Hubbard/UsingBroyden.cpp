@@ -96,16 +96,16 @@ namespace Hubbard {
 					{
 						rho(i, i) = 1 - fermi_dirac(solver.eigenvalues()(i));
 					}
-					rho =solver.eigenvectors() * rho * solver.eigenvectors().adjoint();
+					rho = solver.eigenvectors() * rho * solver.eigenvectors().adjoint();
 
 					F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
 					F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
 					c_sc -= (rho(0, 2) + rho(1, 3)); // SC
 					c_gamma_sc -= gamma(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Gamma SC
-					c_xi_sc -= xi(k_x, k_y)    * (rho(0, 2) - rho(1, 3)); // Xi SC
+					c_xi_sc -= xi(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Xi SC
 					c_eta -= (rho(0, 3) + rho(1, 2)); // Eta
-					F(6) -= 0;// cos(k_x) * (rho(0, 0) - rho(1, 1)).real(); // Occupation Up
-					F(7) += 0;// cos(k_x) * (rho(2, 2) - rho(3, 3)).real(); // Occupation Down
+					F(6) -= cos(k_x) * (rho(0, 0) - rho(1, 1)).real(); // Occupation Up
+					F(7) += cos(k_x) * (rho(2, 2) - rho(3, 3)).real(); // Occupation Down
 				}
 			}
 
@@ -124,12 +124,12 @@ namespace Hubbard {
 					std::cout << "xi sc y: " << c_xi_sc << std::endl;
 				}
 			}
-			
+
 			F(2) = c_sc.real();
 			F(3) = c_gamma_sc.imag();
 			F(4) = c_xi_sc.imag();
 			F(5) = c_eta.imag();
-			
+
 			F(0) *= 0.5 * U_OVER_N - 4 * V_OVER_N; // CDW
 			F(1) *= 0.5 * U_OVER_N; // AFM
 			F(2) *= U_OVER_N; // SC
@@ -141,11 +141,11 @@ namespace Hubbard {
 
 			for (size_t i = 0; i < F.size(); i++)
 			{
-				if(std::abs(F(i)) < 1e-14){
+				if (std::abs(F(i)) < 1e-14) {
 					F(i) = 0;
 				}
 			}
-			
+
 			setParameters(F);
 			F -= x;
 		};
