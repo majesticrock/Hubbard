@@ -40,7 +40,7 @@ namespace Hubbard {
 		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
 		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
 		if (V > 0) {
-			this->delta_sc *= 0.25;
+			this->delta_sc *= 0;
 		}
 		else if (V < 0) {
 			this->delta_cdw *= 0;
@@ -134,7 +134,7 @@ namespace Hubbard {
 			F(1) *= 0.5 * U_OVER_N; // AFM
 			F(2) *= U_OVER_N; // SC
 			F(3) *= V_OVER_N; // Gamma SC
-			F(4) *= V_OVER_N; // Xi SC y
+			F(4) *= V_OVER_N; // Xi SC
 			F(5) *= U_OVER_N; // Eta
 			F(6) *= V_OVER_N; // Occupation Up
 			F(7) *= V_OVER_N; // Occupation Down

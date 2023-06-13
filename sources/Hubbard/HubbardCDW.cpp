@@ -36,15 +36,20 @@ namespace Hubbard {
 	HubbardCDW::HubbardCDW(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
 		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
 	{
-		this->delta_cdw = (std::abs(U) + V) * 0.3;
+		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
 		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
 		if (V > 0) {
-			this->delta_sc *= 0.25;
+			this->delta_sc *= 0;
 		}
 		else if (V < 0) {
 			this->delta_cdw *= 0;
 		}
-		this->delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
+		if (U > 0) {
+			this->delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
+		}
+		else {
+			this->delta_afm = 0;
+		}
 
 		this->delta_eta = 0;//I * U * 0.1;
 		this->delta_occupation_up = V * 0.2;
