@@ -3,11 +3,6 @@
 #include "HubbardCDW.hpp"
 
 namespace Hubbard {
-	void HubbardCDW::computeChemicalPotential()
-	{
-		Model::computeChemicalPotential();
-		chemical_potential += 4 * V;
-	}
 	void HubbardCDW::fillHamiltonian(double_prec k_x, double_prec k_y)
 	{
 		hamilton.fill(0.0);
@@ -34,7 +29,7 @@ namespace Hubbard {
 		hamilton(3, 3) = eps;
 	}
 	HubbardCDW::HubbardCDW(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
-		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
+		: Model(_params, _number_of_basis_terms, _start_basis_at)
 	{
 		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
 		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
@@ -64,8 +59,6 @@ namespace Hubbard {
 		this->xi_afm		= 0;//I * V * 0.04;
 		this->gamma_eta		= 0;//V * 0.01;
 		this->xi_eta		= 0;// V * 0.01;
-
-		this->V_OVER_N = V / BASIS_SIZE;
 
 		this->hamilton = SpinorMatrix::Zero(4, 4);
 

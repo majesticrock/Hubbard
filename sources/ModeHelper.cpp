@@ -1,18 +1,6 @@
-#include "Model.hpp"
-#include <iostream>
-#include <iomanip>
-#include <chrono>
-#include <omp.h>
-#include <fstream>
-#include <algorithm>
+#include "ModeHelper.hpp"
 
-namespace Hubbard {
-	void Model::computeChemicalPotential()
-	{
-		chemical_potential = U / 2 + 4 * V;
-	}
-
-	double_prec Model::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
+double ModeHelper::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
 	{
 		const Eigen::Vector2i l_idx = { x(l), y(l) };
 		const Eigen::Vector2i k_idx = { x(k), y(k) };
@@ -24,10 +12,21 @@ namespace Hubbard {
 		if (term.operators.size() == 0) {
 			if (term.coefficients.size() == 1) {
 				coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
-				return term.multiplicity * computeCoefficient(term.coefficients[0], coeff_momentum);
+				return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 			}
 			return term.multiplicity;
 		}
+
+        auto findOperator = [&](const SymbolicOperators::WickOperator& op) -> int {
+            auto it = wick_map.find(term.operators[i].type);
+            if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[i].type);
+
+            if(op.type != "g") return it->second;
+            if(op.indizes[0] == "\\uparrow") return 0;
+            if(op.indizes[0] == "\\downarrow") return 4;
+            if(op.indizes[0] == "\\sigma") return 5;
+            throw std::runtime_error("Something went wrong in findOperator[&].");
+        };
 
 		auto compute_single_sum = [&]() -> double_prec {
 			double_prec sumBuffer = 0;
@@ -39,14 +38,12 @@ namespace Hubbard {
 				sumBuffer = 1;
 				for (size_t i = 0; i < term.operators.size(); i++)
 				{
-					auto it = wick_map.find(term.operators[i].type);
-					if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[i].type);
 					momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k', 'q' });
-					sumBuffer *= expecs[it->second](momentum_value(0), momentum_value(1));
+					sumBuffer *= expecs[findOperator(term.operators[i])](momentum_value(0), momentum_value(1));
 				}
 				coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k', 'q' });
 				if (term.coefficients.size() == 1) {
-					sumBuffer *= computeCoefficient(term.coefficients[0], coeff_momentum);
+					sumBuffer *= this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 				}
 				returnBuffer += sumBuffer;
 			}
@@ -57,21 +54,18 @@ namespace Hubbard {
 			if (term.sum_momenta.size() > 1) throw std::invalid_argument("Too many sums: " + term.sum_momenta.size());
 			if (term.operators.size() == 1) {
 				// bilinear term
-				auto it = wick_map.find(term.operators[0].type);
-				if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[0].type);
-
 				if (term.sum_momenta.size() > 1) throw std::invalid_argument("Term with more than one momentum summation: " + term.sum_momenta.size());
 				if (term.delta_momenta.size() == 0) throw std::invalid_argument("There is a summation without delta_kl in a bilinear term.");
 				if (term.coefficients.size() == 1) {
 					if (term.coefficients.back().momentum.momentum_list.size() == 0) {
 						coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
-						return term.multiplicity * computeCoefficient(term.coefficients[0], coeff_momentum) * sum_of_all[it->second];
+						return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * sum_of_all[findOperator(term.operators[0])];
 					}
 					else {
 						return compute_single_sum();
 					}
 				}
-				return term.multiplicity * sum_of_all[it->second];
+				return term.multiplicity * sum_of_all[findOperator(term.operators[0])];
 			}
 			if (term.operators.size() == 2) {
 				// quartic term
@@ -83,19 +77,17 @@ namespace Hubbard {
 		double_prec returnBuffer = 1;
 		for (size_t i = 0; i < term.operators.size(); i++)
 		{
-			auto it = wick_map.find(term.operators[i].type);
-			if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + term.operators[i].type);
 			Eigen::Vector2i momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k' });
-			returnBuffer *= expecs[it->second](momentum_value(0), momentum_value(1));
+			returnBuffer *= expecs[findOperator(term.operators[i])](momentum_value(0), momentum_value(1));
 		}
 		if (term.coefficients.size() == 1) {
 			coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
-			return term.multiplicity * computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
+			return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}
 		return term.multiplicity * returnBuffer;
 	}
 
-	void Model::fill_M_N()
+void ModeHelper::fill_M_N()
 	{
 		M = Matrix_L::Zero(TOTAL_BASIS, TOTAL_BASIS);
 		N = Matrix_L::Zero(TOTAL_BASIS, TOTAL_BASIS);
@@ -164,7 +156,7 @@ namespace Hubbard {
 		}
 	}
 
-	void Model::fill_M_N_xp_basis()
+	void ModeHelper::fill_M_N_xp_basis()
 	{
 		const std::vector<int> cdw_basis_positions = { 2,3,8,9 };
 		const size_t hermitian_offsets[6] = {
@@ -299,34 +291,3 @@ namespace Hubbard {
 			}
 		}
 	}
-
-	void Model::loadWick(const std::string& filename)
-	{
-		wicks_M.resize(number_of_basis_terms * number_of_basis_terms);
-		wicks_N.resize(number_of_basis_terms * number_of_basis_terms);
-		const int name_offset = (start_basis_at < 0) ? 0 : start_basis_at;
-
-		for (int i = 0; i < number_of_basis_terms; i++)
-		{
-			for (int j = 0; j < number_of_basis_terms; j++)
-			{
-				{
-					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "M_" + std::to_string(j + name_offset) + "_" + std::to_string(i + name_offset) + ".txt");
-					boost::archive::text_iarchive ia(ifs);
-					wicks_M[j * number_of_basis_terms + i].clear();
-					ia >> wicks_M[j * number_of_basis_terms + i];
-					ifs.close();
-				}
-				{
-					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "N_" + std::to_string(j + name_offset) + "_" + std::to_string(i + name_offset) + ".txt");
-					boost::archive::text_iarchive ia(ifs);
-					wicks_N[j * number_of_basis_terms + i].clear();
-					ia >> wicks_N[j * number_of_basis_terms + i];
-					ifs.close();
-				}
-			}
-		}
-	}
-}

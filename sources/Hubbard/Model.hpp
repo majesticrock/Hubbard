@@ -11,7 +11,7 @@
 
 namespace Hubbard {
 	// Defines the working precision of the entire project
-	// Change to float, double_prec or long double_prec - so far double_prec produces the best results
+	// Change to float, double or long double - so far double produces the best results
 	typedef double double_prec;
 	constexpr double_prec L_PI = 3.141592653589793238462643383279502884L; /* pi */
 	typedef Eigen::Matrix<double_prec, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
@@ -36,7 +36,9 @@ namespace Hubbard {
 
 		double_prec temperature;
 		double_prec U;
+		double_prec V;
 		double_prec U_OVER_N;
+		double_prec V_OVER_N;
 
 		double_prec chemical_potential;
 		virtual void computeChemicalPotential();
@@ -154,6 +156,10 @@ namespace Hubbard {
 			return buffer;
 		};
 
+		double_prec computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
+		void fill_M_N();
+		void fill_M_N_xp_basis();
+	public:
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const {
 			if (coeff.name == "\\epsilon_0") {
 				//if (!(momentum.has_value())) throw std::length_error("Calling epsilon(k) without specifying k!");
@@ -164,10 +170,7 @@ namespace Hubbard {
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
-		double_prec computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
-		void fill_M_N();
-		void fill_M_N_xp_basis();
-	public:
+
 		class ModelParameters {
 		private:
 			std::string global_iterator_type;

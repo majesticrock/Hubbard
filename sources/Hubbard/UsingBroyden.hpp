@@ -19,10 +19,6 @@ namespace Hubbard {
 		}
 
 	protected:
-		double_prec V;
-		double_prec V_OVER_N;
-
-		virtual void computeChemicalPotential() override;
 		inline virtual double_prec renormalizedEnergy_up(double_prec k_x, double_prec k_y) const override {
 			return -2 * (1. + delta_occupation_up) * gamma(k_x, k_y);
 		};

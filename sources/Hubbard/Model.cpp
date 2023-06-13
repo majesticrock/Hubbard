@@ -19,6 +19,7 @@ namespace Hubbard {
 	{
 		this->BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
 		this->U_OVER_N = U / BASIS_SIZE;
+		this->V_OVER_N = V / BASIS_SIZE;
 		if (start_basis_at < 0) {
 			// We investigate the special x-p-basis
 			this->TOTAL_BASIS = this->BASIS_SIZE * 8;
@@ -35,13 +36,13 @@ namespace Hubbard {
 	}
 
 	Model::Model(double_prec _temperature, double_prec _U, int _number_of_basis_terms, int _start_basis_at)
-		: temperature(_temperature), U(_U), number_of_basis_terms(_number_of_basis_terms), start_basis_at(_start_basis_at)
+		: temperature(_temperature), U(_U), V(0), number_of_basis_terms(_number_of_basis_terms), start_basis_at(_start_basis_at)
 	{
 		initializeParameters();
 	}
 
 	Model::Model(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
-		: temperature(_params.temperature), U(_params.U), number_of_basis_terms(_number_of_basis_terms), start_basis_at(_start_basis_at)
+		: temperature(_params.temperature), U(_params.U), V(_params.V), number_of_basis_terms(_number_of_basis_terms), start_basis_at(_start_basis_at)
 	{
 		initializeParameters();
 	}

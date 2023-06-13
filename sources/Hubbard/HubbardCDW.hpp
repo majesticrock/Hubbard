@@ -1,5 +1,5 @@
 #pragma once
-#include "BasicHubbardModel.hpp"
+#include "Model.hpp"
 
 namespace Hubbard {
 	constexpr size_t NUMBER_OF_PARAMETERS = 16;
@@ -22,9 +22,6 @@ namespace Hubbard {
 		std::vector<complex_prec*> param_mapper;
 		std::vector<double_prec> param_coefficients;
 	protected:
-		double_prec V;
-		double_prec V_OVER_N;
-
 		complex_prec delta_sc, delta_cdw, delta_afm, delta_eta;
 		complex_prec gamma_sc, xi_sc;
 		complex_prec gamma_cdw, xi_cdw;
@@ -40,7 +37,6 @@ namespace Hubbard {
 		inline double_prec xi_tilde(double_prec k_x, double_prec k_y) {
 			return sin(k_x) - sin(k_y);
 		};
-		virtual void computeChemicalPotential() override;
 		inline virtual double_prec renormalizedEnergy_up(double_prec k_x, double_prec k_y) const override {
 			return -2. * (
 				(delta_occupation_up + 1.) * cos(k_x) + (delta_occupation_up_y + 1.) * cos(k_y)

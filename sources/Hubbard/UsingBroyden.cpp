@@ -5,11 +5,6 @@
 #include "../Utility/Roots_Broyden.hpp"
 
 namespace Hubbard {
-	void UsingBroyden::computeChemicalPotential()
-	{
-		Model::computeChemicalPotential();
-		chemical_potential += 4 * V;
-	}
 	void UsingBroyden::fillHamiltonian(double_prec k_x, double_prec k_y)
 	{
 		hamilton.fill(0);
@@ -35,7 +30,7 @@ namespace Hubbard {
 	}
 
 	UsingBroyden::UsingBroyden(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
-		: Model(_params, _number_of_basis_terms, _start_basis_at), V(_params.V)
+		: Model(_params, _number_of_basis_terms, _start_basis_at)
 	{
 		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
 		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
@@ -56,8 +51,6 @@ namespace Hubbard {
 		this->delta_occupation_down = V * 0.2;
 		this->gamma_sc = V * 0.05;
 		this->xi_sc = std::abs(V) * 0.2;
-
-		this->V_OVER_N = V / BASIS_SIZE;
 
 		this->hamilton = SpinorMatrix::Zero(4, 4);
 	}
