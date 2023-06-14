@@ -132,10 +132,10 @@ namespace Hubbard::Helper {
 	Model::data_set PhaseHelper::computeDataPoint(const Model::ModelParameters& mp) {
 		Model::data_set ret;
 		if (use_broyden) {
-			UsingBroyden model(mp, 0, 0);
+			UsingBroyden model(mp);
 			return model.computePhases();
 		}
-		HubbardCDW model(mp, 0, 0);
+		HubbardCDW model(mp);
 		return model.computePhases();
 	}
 

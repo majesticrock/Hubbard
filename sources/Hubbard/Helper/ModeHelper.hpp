@@ -5,7 +5,14 @@
 #include "../Constants.hpp"
 #include "../../Utility/InputFileReader.hpp"
 
+// Both methods yield precisely the same data!
+#define _PSEUDO_INVERSE
+
 namespace Hubbard::Helper {
+	constexpr double_prec SQRT_SALT = 1e-5;
+	constexpr double_prec SALT = SQRT_SALT * SQRT_SALT;
+	constexpr double_prec ERROR_MARGIN = 1e-10;
+
 	class ModeHelper {
 	protected:
 		typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
@@ -91,14 +98,16 @@ namespace Hubbard::Helper {
 			clean_factor_2pi(buffer);
 			return buffer;
 		};
-		double computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
+		std::complex<double> computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 		virtual void fillMatrices() = 0;
 
 	public:
 		ModeHelper(Utility::InputFileReader& input);
 
-		const Model& getModel() const {
-			return *(this->model);
+		Model& getModel() const {
+			return *model;
 		}
+
+		virtual std::unique_ptr<std::vector<Resolvent_L>> computeCollectiveModes(std::vector<std::vector<double>>& reciever) = 0;
 	};
 }

@@ -245,34 +245,30 @@ int main(int argc, char** argv)
 	else if (input.getString("compute_what") == "modes") {
 		omp_set_num_threads(8);
 
-		Hubbard::Model::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
-			0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
-
 		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		std::vector<data_vector> reciever;
 		std::vector<data_vector> oneParticleEnergies;
 		double totalGapValue;
 		std::unique_ptr<std::vector<Hubbard::Resolvent_L>> resolvents;
 
-		std::unique_ptr<Hubbard::Model> model;
-		if (input.getBool("use_broyden")) {
-			model = std::make_unique<Hubbard::UsingBroyden>(
-				Hubbard::UsingBroyden(modelParameters));
+		std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;
+		if(input.getInt("start_basis_at") == -1) {
+			modeHelper = std::make_unique<Hubbard::Helper::XPModes>(input);
+		} else {
+			modeHelper = std::make_unique<Hubbard::Helper::GeneralBasis>(input);
 		}
-		else {
-			model = std::make_unique<Hubbard::HubbardCDW>(
-				Hubbard::HubbardCDW(modelParameters));
-		}
-		model->computePhases();
-		totalGapValue = model->getTotalGapValue();
-		resolvents = model->computeCollectiveModes(reciever);
-		model->getAllEnergies(oneParticleEnergies);
+
+		totalGapValue = modeHelper->getModel().getTotalGapValue();
+		modeHelper->getModel().getAllEnergies(oneParticleEnergies);
+		resolvents = modeHelper->computeCollectiveModes(reciever);
 
 		if (rank == 0) {
 			std::vector<std::string> comments;
 			comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
 				+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
+			Hubbard::Model::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
+				0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 			std::string output_folder = input.getString("output_folder") + modelParameters.getFileName();
 			std::filesystem::create_directories("../../data/" + output_folder);
 

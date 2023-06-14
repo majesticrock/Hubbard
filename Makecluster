@@ -14,10 +14,11 @@ OPT = -m64 -march=cascadelake -O3
 
 COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp WickCleaner.cpp
 
-HBBRD_SRCS=Model.cpp ModelFiller.cpp ModelSubClasses.cpp BasicHubbardModel.cpp HubbardCDW.cpp UsingBroyden.cpp
+HELPER_SRCS=PhaseHelper.cpp ModeHelper.cpp XPModes.cpp GeneralBasis.cpp
+HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) Model.cpp ModelSubClasses.cpp HubbardCDW.cpp UsingBroyden.cpp
 UTIL_SRCS=InputFileReader.cpp
 
-PART_SRCS=PhaseHelper.cpp Hubbard_Mean_Field.cpp
+PART_SRCS=Hubbard_Mean_Field.cpp
 SRCS=$(addprefix Utility/, $(UTIL_SRCS)) $(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS)
 
 OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))
@@ -33,6 +34,7 @@ build/%.o: sources/%.cpp# sources/%.hpp
 build:
 	mkdir -p build
 	mkdir -p build/Hubbard
+	mkdir -p build/Hubbard/Helper
 	mkdir -p build/Utility
 	mkdir -p build/SymbolicOperators
 

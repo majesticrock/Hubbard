@@ -27,6 +27,7 @@ namespace Hubbard {
 		double_prec delta_sc, delta_cdw, delta_afm, delta_eta;
 		double_prec gamma_sc, xi_sc;
 		double_prec delta_occupation_up, delta_occupation_down;
+		double_prec chemical_potential;
 
 		typedef std::complex<double_prec> complex_prec;
 		typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> SpinorMatrix;
@@ -39,7 +40,6 @@ namespace Hubbard {
 		double_prec U_OVER_N;
 		double_prec V_OVER_N;
 
-		double_prec chemical_potential;
 		inline virtual void computeChemicalPotential() {
 			this->chemical_potential = 0.5 * U + 4 * V;
 		};
@@ -201,9 +201,6 @@ namespace Hubbard {
 		virtual data_set computePhases(const bool print = false) = 0;
 
 		void computeExpectationValues(std::vector<Matrix_L>& expecs, std::vector<double>& sum_of_all);
-		// version 2 use the non mean field hamilton for the commutation,
-		// but the mean field system to obtain the expectation values
-		std::unique_ptr<std::vector<Resolvent_L>> computeCollectiveModes(std::vector<std::vector<double>>& reciever);
 		// Returns the total gap value sqrt(sc^2 + cdw^2 + eta^2)
 		inline double_prec getTotalGapValue() const {
 			return sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta);
