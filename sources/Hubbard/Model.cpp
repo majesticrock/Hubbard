@@ -17,17 +17,8 @@ namespace Hubbard {
 
 	void Model::initializeParameters()
 	{
-		this->BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
-		this->U_OVER_N = U / BASIS_SIZE;
-		this->V_OVER_N = V / BASIS_SIZE;
-		if (start_basis_at < 0) {
-			// We investigate the special x-p-basis
-			this->TOTAL_BASIS = this->BASIS_SIZE * 8;
-			this->number_of_basis_terms = 10;
-		}
-		else {
-			this->TOTAL_BASIS = this->BASIS_SIZE * this->number_of_basis_terms;
-		}
+		this->U_OVER_N = U / Constants::BASIS_SIZE;
+		this->V_OVER_N = V / Constants::BASIS_SIZE;
 		this->delta_cdw = 0.1;
 		this->delta_afm = (U > 0) ? -this->delta_cdw : this->delta_cdw;
 		this->delta_sc = 0.1;
@@ -35,14 +26,8 @@ namespace Hubbard {
 		computeChemicalPotential();
 	}
 
-	Model::Model(double_prec _temperature, double_prec _U, int _number_of_basis_terms, int _start_basis_at)
-		: temperature(_temperature), U(_U), V(0), number_of_basis_terms(_number_of_basis_terms), start_basis_at(_start_basis_at)
-	{
-		initializeParameters();
-	}
-
-	Model::Model(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
-		: temperature(_params.temperature), U(_params.U), V(_params.V), number_of_basis_terms(_number_of_basis_terms), start_basis_at(_start_basis_at)
+	Model::Model(const ModelParameters& _params)
+		: temperature(_params.temperature), U(_params.U), V(_params.V)
 	{
 		initializeParameters();
 	}
@@ -59,37 +44,7 @@ namespace Hubbard {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		{
-			SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
-			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-
-			expecs = std::vector<Matrix_L>(4, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
-			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
-			{
-				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
-				{
-					fillHamiltonian((k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION);
-					solver.compute(hamilton);
-					rho.fill(0);
-					for (int i = 0; i < 4; i++)
-					{
-						rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
-					}
-					rho = solver.eigenvectors() * rho * (solver.eigenvectors().adjoint());
-					for (int idx = 0; idx < 4; idx++)
-					{
-						expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(idx, 0).real();
-						sum_of_all[idx] += rho(idx, 0).real();
-
-						if (std::abs(rho(idx, 0).imag()) > SALT) {
-							std::cerr << "Expectation values are complex!  " << rho(idx, 0) << std::endl;
-							throw;
-						}
-					}
-					if (std::abs(rho(3, 0)) > SALT) {
-						std::cerr << "Warning: <eta> does not vanish! " << rho(3, 0) << std::endl;
-					}
-				}
-			}
+			
 		}
 		computeChemicalPotential();
 		loadWick("../commutators/wick_");
@@ -164,11 +119,11 @@ namespace Hubbard {
 		Vector_L startingState_AFM[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		for (int j = 0; j < 2; j++)
 		{
-			for (size_t i = 0; i < BASIS_SIZE; i++)
+			for (size_t i = 0; i < Constants::BASIS_SIZE; i++)
 			{
 				startingState_SC[j](i) = 1;
-				startingState_CDW[j](2 * BASIS_SIZE + i) = 1;
-				startingState_AFM[j](2 * BASIS_SIZE + i) = (i < BASIS_SIZE / 2) ? 1 : -1;
+				startingState_CDW[j](2 * Constants::BASIS_SIZE + i) = 1;
+				startingState_AFM[j](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? 1 : -1;
 			}
 			startingState_SC[j].normalize();
 			startingState_CDW[j].normalize();
@@ -412,6 +367,49 @@ namespace Hubbard {
 						reciever[k + 3 * Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(i);
 						break;
 					}
+				}
+			}
+		}
+	}
+
+	void Model::computeExpectationValues(std::vector<Matrix_L>& expecs, std::vector<double>& sum_of_all)
+	{
+		SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
+		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
+
+		expecs = std::vector<Matrix_L>(5, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
+		sum_of_all = std::vector<double>(5, 0.0);
+
+		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
+		{
+			for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
+			{
+				fillHamiltonian((k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION);
+				solver.compute(hamilton);
+				rho.fill(0);
+				for (int i = 0; i < 4; i++)
+				{
+					rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
+				}
+				rho = solver.eigenvectors() * rho * (solver.eigenvectors().adjoint());
+
+				expecs[0](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = 1 - rho(0, 0).real();
+				expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = -rho(1, 0).real();
+				expecs[2](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = -rho(0, 2).real();
+				expecs[3](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = -rho(0, 3).real();
+				expecs[4](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(2, 3).real();
+				for (int idx = 0; idx < 4; idx++)
+				{
+					sum_of_all[idx] += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
+
+					if (std::abs(rho(idx, 0).imag()) > SALT) {
+						std::cerr << "Expectation values are complex!  " << rho(idx, 0) << std::endl;
+						throw;
+					}
+				}
+
+				if (std::abs(rho(3, 0)) > SALT) {
+					std::cerr << "Warning: <eta> does not vanish! " << rho(3, 0) << std::endl;
 				}
 			}
 		}

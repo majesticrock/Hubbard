@@ -29,8 +29,8 @@ namespace Hubbard {
 		hamilton(3, 3) = eps;
 	}
 
-	UsingBroyden::UsingBroyden(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
-		: Model(_params, _number_of_basis_terms, _start_basis_at)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params)
+		: Model(_params)
 	{
 		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
 		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
@@ -103,7 +103,7 @@ namespace Hubbard {
 			}
 
 			{ // Checks for numerical accurarcy
-				const double ERROR_MARGIN = 1e-10 * BASIS_SIZE;
+				const double ERROR_MARGIN = 1e-10 * Constants::BASIS_SIZE;
 				if (std::abs(c_sc.imag()) > ERROR_MARGIN) {
 					std::cout << "sc: " << c_sc << std::endl;
 				}

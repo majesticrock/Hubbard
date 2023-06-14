@@ -31,26 +31,17 @@ namespace Hubbard {
 		virtual inline void setParameters(ParameterVector& F) {
 			constexpr double_prec new_weight = 0.5;
 
-			this->delta_cdw			    = new_weight * F(0) + (1 - new_weight) * this->delta_cdw;
-			this->delta_afm			    = new_weight * F(1) + (1 - new_weight) * this->delta_afm;
-			this->delta_sc			    = new_weight * F(2) + (1 - new_weight) * this->delta_sc;
-			this->gamma_sc			    = new_weight * F(3) + (1 - new_weight) * this->gamma_sc;
-			this->xi_sc				    = new_weight * F(4) + (1 - new_weight) * this->xi_sc;
-			this->delta_eta			    = new_weight * F(5) + (1 - new_weight) * this->delta_eta;
-			this->delta_occupation_up   = new_weight * F(6) + (1 - new_weight) * this->delta_occupation_up;
+			this->delta_cdw = new_weight * F(0) + (1 - new_weight) * this->delta_cdw;
+			this->delta_afm = new_weight * F(1) + (1 - new_weight) * this->delta_afm;
+			this->delta_sc = new_weight * F(2) + (1 - new_weight) * this->delta_sc;
+			this->gamma_sc = new_weight * F(3) + (1 - new_weight) * this->gamma_sc;
+			this->xi_sc = new_weight * F(4) + (1 - new_weight) * this->xi_sc;
+			this->delta_eta = new_weight * F(5) + (1 - new_weight) * this->delta_eta;
+			this->delta_occupation_up = new_weight * F(6) + (1 - new_weight) * this->delta_occupation_up;
 			this->delta_occupation_down = new_weight * F(7) + (1 - new_weight) * this->delta_occupation_down;
 		};
-		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {
-			if (coeff.name == "\\tilde{V}") {
-				//if (!(momentum.has_value())) throw std::invalid_argument("Calling V without specifying a momentum!");
-				// Eventuell ein Faktor 2?
-				return V_OVER_N * (cos(index_to_k_vector(momentum(0))) + cos(index_to_k_vector(momentum(1))));
-			}
-
-			return Model::computeCoefficient(coeff, momentum);
-		};
 	public:
-		UsingBroyden(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
+		UsingBroyden(const ModelParameters& _params);
 
 		data_set computePhases(const bool print = false) override;
 	};

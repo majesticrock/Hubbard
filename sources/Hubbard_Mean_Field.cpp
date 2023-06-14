@@ -17,15 +17,19 @@
 #include <cmath>
 #include <algorithm>
 
-#include "PhaseHelper.hpp"
+#include "Hubbard/Helper/PhaseHelper.hpp"
+#include "Hubbard/Helper/XPModes.hpp"
+#include "Hubbard/Helper/GeneralBasis.hpp"
 #include "Utility/InputFileReader.hpp"
-#include "Hubbard/BasicHubbardModel.hpp"
 #include "Hubbard/HubbardCDW.hpp"
 #include "Hubbard/UsingBroyden.hpp"
 #include "Hubbard/Constants.hpp"
 #include "Utility/OutputConvenience.hpp"
 
+using Hubbard::Helper::data_vector;
+
 int Hubbard::Constants::K_DISCRETIZATION = 100;
+int Hubbard::Constants::BASIS_SIZE = 10000;
 
 std::ostream& operator<<(std::ostream& os, const Hubbard::Model::ModelParameters& mp) {
 	os << mp.temperature << "\t" << mp.U << "\t" << mp.V;
@@ -57,12 +61,13 @@ int main(int argc, char** argv)
 	}
 	Utility::InputFileReader input(argv[1]);
 	Hubbard::Constants::K_DISCRETIZATION = input.getInt("k_discretization");
+	Hubbard::Constants::BASIS_SIZE = Hubbard::Constants::K_DISCRETIZATION * Hubbard::Constants::K_DISCRETIZATION;
 	// Setup the parameters T, U, V
 	std::vector<double> model_params = input.getDoubleList("model_parameters");
 
 	if (input.getString("compute_what") == "test") {
 		Hubbard::Model::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
-		Hubbard::HubbardCDW model(mP, 0, 0);
+		Hubbard::HubbardCDW model(mP);
 
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		//model.computePhases(true).print();
@@ -70,7 +75,7 @@ int main(int argc, char** argv)
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 		std::cout << "\n\n" << std::endl;
 		//return MPI_Finalize();
-		Hubbard::UsingBroyden model2(mP, 0, 0);
+		Hubbard::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
 		model2.computePhases(true).print();
 		test_e = std::chrono::steady_clock::now();
@@ -126,18 +131,18 @@ int main(int argc, char** argv)
 			&data_cdw, &data_afm, &data_sc, &data_gamma_sc, &data_xi_sc, &data_eta
 		};
 
-		PhaseHelper phaseHelper(input, rank, numberOfRanks);
+		Hubbard::Helper::PhaseHelper phaseHelper(input, rank, numberOfRanks);
 		phaseHelper.compute_crude(data_mapper);
 
 		data_vector recieve_cdw, recieve_afm, recieve_sc, recieve_gamma_sc, recieve_xi_sc, recieve_eta;
-		
+
 		recieve_cdw.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		recieve_afm.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		recieve_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		recieve_gamma_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		recieve_xi_sc.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
 		recieve_eta.resize(GLOBAL_IT_STEPS * SECOND_IT_STEPS);
-		
+
 #ifndef _NO_MPI
 		MPI_Allgather(data_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_cdw.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
 		MPI_Allgather(data_afm.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, recieve_afm.data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
@@ -195,7 +200,7 @@ int main(int argc, char** argv)
 				MPI_Gather(&(sizes[i]), 1, MPI_INT, all_sizes[i].data(), 1, MPI_INT, 0, MPI_COMM_WORLD);
 				std::vector<int> displacements(numberOfRanks, 0);
 
-				if(rank == 0){
+				if (rank == 0) {
 					for (const auto& s : all_sizes[i])
 					{
 						totalSizes[i] += s;
@@ -220,13 +225,13 @@ int main(int argc, char** argv)
 
 				std::string output_folder = input.getString("output_folder");
 				std::filesystem::create_directories("../../data/phases/" + output_folder);
-				
-				std::string names[] = {"cdw", "afm", "sc", "gamma_sc", "xi_sc", "eta"};
+
+				std::string names[] = { "cdw", "afm", "sc", "gamma_sc", "xi_sc", "eta" };
 				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
 				{
 					const int n = recieve_boundaries[i].size() / 2;
 					std::vector<std::vector<double>> buffer(2, std::vector<double>(n));
-					for (size_t j = 0; j < recieve_boundaries[i].size(); j+=2)
+					for (size_t j = 0; j < recieve_boundaries[i].size(); j += 2)
 					{
 						buffer[0][j / 2] = recieve_boundaries[i][j];
 						buffer[1][j / 2] = recieve_boundaries[i][j + 1];
@@ -252,11 +257,11 @@ int main(int argc, char** argv)
 		std::unique_ptr<Hubbard::Model> model;
 		if (input.getBool("use_broyden")) {
 			model = std::make_unique<Hubbard::UsingBroyden>(
-				Hubbard::UsingBroyden(modelParameters, input.getInt("number_of_basis_terms"), input.getInt("start_basis_at")));
+				Hubbard::UsingBroyden(modelParameters));
 		}
 		else {
 			model = std::make_unique<Hubbard::HubbardCDW>(
-				Hubbard::HubbardCDW(modelParameters, input.getInt("number_of_basis_terms"), input.getInt("start_basis_at")));
+				Hubbard::HubbardCDW(modelParameters));
 		}
 		model->computePhases();
 		totalGapValue = model->getTotalGapValue();
@@ -293,7 +298,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	if(rank == 0){
+	if (rank == 0) {
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 	}

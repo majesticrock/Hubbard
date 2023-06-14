@@ -28,8 +28,8 @@ namespace Hubbard {
 		hamilton(2, 2) = -eps;
 		hamilton(3, 3) = eps;
 	}
-	HubbardCDW::HubbardCDW(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at)
-		: Model(_params, _number_of_basis_terms, _start_basis_at)
+	HubbardCDW::HubbardCDW(const ModelParameters& _params)
+		: Model(_params)
 	{
 		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
 		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
@@ -53,16 +53,16 @@ namespace Hubbard {
 		this->delta_occupation_down_y = -V * 0.2;
 		this->gamma_sc = I * V * 0.05;
 		this->xi_sc = I * std::abs(V) * 0.1;
-		this->gamma_cdw		= 0;//I * V * 0.15;
-		this->xi_cdw		= 0;//I * V * 0.2;
-		this->gamma_afm		= 0;//I * V * 0.05;
-		this->xi_afm		= 0;//I * V * 0.04;
-		this->gamma_eta		= 0;//V * 0.01;
-		this->xi_eta		= 0;// V * 0.01;
+		this->gamma_cdw = 0;//I * V * 0.15;
+		this->xi_cdw = 0;//I * V * 0.2;
+		this->gamma_afm = 0;//I * V * 0.05;
+		this->xi_afm = 0;//I * V * 0.04;
+		this->gamma_eta = 0;//V * 0.01;
+		this->xi_eta = 0;// V * 0.01;
 
 		this->hamilton = SpinorMatrix::Zero(4, 4);
 
-		param_mapper = { 
+		param_mapper = {
 			&delta_cdw,
 			&delta_afm,
 			&delta_sc,

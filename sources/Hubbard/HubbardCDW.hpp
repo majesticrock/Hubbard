@@ -62,18 +62,9 @@ namespace Hubbard {
 				*(param_mapper[i]) = new_weight * F(i) + (1 - new_weight) * (*(param_mapper[i]));
 			}
 		};
-		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const override {
-			if (coeff.name == "\\tilde{V}") {
-				//if (!(momentum.has_value())) throw std::invalid_argument("Calling V without specifying a momentum!");
-				// Eventuell ein Faktor 2?
-				return V_OVER_N * (cos(index_to_k_vector(momentum(0))) + cos(index_to_k_vector(momentum(1))));
-			}
-
-			return Model::computeCoefficient(coeff, momentum);
-		};
 
 	public:
-		HubbardCDW(const ModelParameters& _params, int _number_of_basis_terms, int _start_basis_at);
+		HubbardCDW(const ModelParameters& _params);
 		Model::data_set computePhases(const bool print = false) override;
 	};
 }

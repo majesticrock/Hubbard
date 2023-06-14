@@ -91,7 +91,7 @@ namespace Utility {
 	void saveData_boost(const std::vector<data_type>& data, int linebreak, const std::string& filename,
 		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
-		if(linebreak == 0){
+		if (linebreak == 0) {
 			linebreak = data.size();
 		}
 		else if (data.size() % linebreak != 0) {
@@ -160,7 +160,7 @@ namespace Utility {
 	void saveData(const std::vector<data_type>& data, int linebreak, const std::string& filename,
 		const std::vector<std::string>& comments)
 	{
-		if(linebreak == 0){
+		if (linebreak == 0) {
 			linebreak = data.size();
 		}
 		else if (data.size() % linebreak != 0) {
