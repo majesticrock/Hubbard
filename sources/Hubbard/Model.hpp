@@ -76,7 +76,7 @@ namespace Hubbard {
 			rho.fill(0);
 			for (int i = 0; i < rho.rows(); i++)
 			{
-				rho(i, i) = fermi_dirac(solvedHamilton.eigenvalues()(i));
+				rho(i, i) = 1 - fermi_dirac(solvedHamilton.eigenvalues()(i));
 			}
 			rho = solvedHamilton.eigenvectors() * rho * solvedHamilton.eigenvectors().adjoint();
 		};

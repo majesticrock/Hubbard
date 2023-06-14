@@ -54,7 +54,7 @@ namespace Hubbard::Helper {
 			if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
 
 			if (op.type != "g") return it->second;
-			if (op.indizes[0] == "\\uparrow") return 0;
+			if (op.indizes[0] == "\\uparrow") return 1;
 			if (op.indizes[0] == "\\downarrow") return 4;
 			if (op.indizes[0] == "\\sigma") return 5;
 			throw std::runtime_error("Something went wrong in findOperator[&].");

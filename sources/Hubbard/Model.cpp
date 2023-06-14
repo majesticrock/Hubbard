@@ -78,8 +78,8 @@ namespace Hubbard {
 		SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
 		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
-		expecs = std::vector<Matrix_L>(5, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
-		sum_of_all = std::vector<double>(5, 0.0);
+		expecs = std::vector<Matrix_L>(6, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
+		sum_of_all = std::vector<double>(6, 0.0);
 
 		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 		{
@@ -87,18 +87,14 @@ namespace Hubbard {
 			{
 				fillHamiltonian((k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION);
 				solver.compute(hamilton);
-				rho.fill(0);
-				for (int i = 0; i < 4; i++)
-				{
-					rho(i, i) = fermi_dirac(solver.eigenvalues()(i));
-				}
-				rho = solver.eigenvectors() * rho * (solver.eigenvectors().adjoint());
+				fillRho(rho, solver);
 
 				expecs[0](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = 1 - rho(0, 0).real();
 				expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = -rho(1, 0).real();
 				expecs[2](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = -rho(0, 2).real();
 				expecs[3](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = -rho(0, 3).real();
 				expecs[4](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(2, 3).real();
+				expecs[5](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(2, 3).real() - rho(1, 0).real();
 				for (int idx = 0; idx < 4; idx++)
 				{
 					sum_of_all[idx] += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);

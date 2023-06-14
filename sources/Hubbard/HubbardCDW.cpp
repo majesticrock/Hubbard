@@ -124,18 +124,7 @@ namespace Hubbard {
 					double_prec k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
 					fillHamiltonian(k_x, k_y);
 					solver.compute(hamilton);
-					rho.fill(0);
-					for (int i = 0; i < rho.rows(); i++)
-					{
-						rho(i, i) = 1 - fermi_dirac(solver.eigenvalues()(i));
-					}
-					rho = solver.eigenvectors() * rho * solver.eigenvectors().adjoint();
-					//std::cout << rho << std::endl << std::endl;
-					//std::cout << hamilton << std::endl << std::endl;
-					//if(l == -Constants::K_DISCRETIZATION && k == -Constants::K_DISCRETIZATION){
-					//	std::cout << rho << std::endl << std::endl;
-					//	std::cout << "###################################\n\n";
-					//}
+					fillRho(rho, solver);
 
 					F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
 					F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM

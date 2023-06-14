@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 	}
 	Utility::InputFileReader input(argv[1]);
 	Hubbard::Constants::K_DISCRETIZATION = input.getInt("k_discretization");
-	Hubbard::Constants::BASIS_SIZE = Hubbard::Constants::K_DISCRETIZATION * Hubbard::Constants::K_DISCRETIZATION;
+	Hubbard::Constants::BASIS_SIZE = 4 * Hubbard::Constants::K_DISCRETIZATION * Hubbard::Constants::K_DISCRETIZATION;
 	// Setup the parameters T, U, V
 	std::vector<double> model_params = input.getDoubleList("model_parameters");
 

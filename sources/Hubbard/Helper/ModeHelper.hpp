@@ -29,7 +29,7 @@ namespace Hubbard::Helper {
 		* 4 - g_down
 		*/
 		std::vector<Matrix_L> expecs;
-		std::vector<double> sum_of_all = { 0, 0, 0, 0, 0 };
+		std::vector<double> sum_of_all = { 0, 0, 0, 0, 0, 0 };
 
 		int number_of_basis_terms;
 		int start_basis_at;
