@@ -62,6 +62,9 @@ namespace Utility {
 		inline void setStartingState(const vector_cT& state) {
 			this->startingState = state;
 		};
+		const vector_cT& getStartingState() const {
+			return this->startingState;
+		}
 		Resolvent(const vector_cT& _StargingState) : startingState(_StargingState), noEigenvalueChangeAt(0) {};
 		Resolvent() : noEigenvalueChangeAt(0) {};
 
@@ -270,7 +273,7 @@ namespace Utility {
 			vector_T first = vector_T::Zero(matrixSize); // corresponds to |q_0>
 			vector_T second = this->startingState.real(); // corresponds to |q_1>
 			resolvent_data res;
-			res.b_i.push_back(second.dot(second));
+			res.b_i.push_back(second.squaredNorm());
 
 			second /= sqrt(res.b_i.back());
 			basisVectors.push_back(first);
@@ -294,8 +297,7 @@ namespace Utility {
 				buffer = toSolve * basisVectors.back();
 				deltas.push_back(basisVectors.back().dot(buffer));
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
-				T norm_squared = currentSolution.dot(currentSolution);
-				assertm(norm_squared >= 0, ("Norm in loop is complex!"));
+				T norm_squared = currentSolution.squaredNorm();
 
 				gammas.push_back(sqrt(norm_squared));
 				basisVectors.push_back(currentSolution / gammas.back());
@@ -435,6 +437,97 @@ namespace Utility {
 			{
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1]);
+			}
+			this->data.push_back(res);
+		};
+
+		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
+		void compute(const matrix_cT& toSolve, int maxIter, T errorMargin = 1e-10)
+		{
+			size_t matrixSize = toSolve.rows();
+			matrix_T identity(matrixSize, matrixSize);
+			identity.setIdentity();
+
+			if (toSolve.rows() != toSolve.cols()) {
+				std::cerr << "Matrix is not square!" << std::endl;
+				throw;
+			}
+
+			vector_cT currentSolution(matrixSize); // corresponds to |q_(i+1)>
+			// First filling
+			std::vector<vector_cT> basisVectors;
+			vector_cT first = vector_cT::Zero(matrixSize); // corresponds to |q_0>
+			vector_cT second = this->startingState; // corresponds to |q_1>
+			resolvent_data res;
+			res.b_i.push_back(second.squaredNorm());
+
+			second /= sqrt(res.b_i.back());
+			basisVectors.push_back(first);
+			basisVectors.push_back(second);
+
+			std::vector<T> deltas, gammas;
+			gammas.push_back(1);
+
+			vector_T eigenDelta(1);
+			vector_T eigenGamma(1);
+
+			Eigen::SelfAdjointEigenSolver<matrix_cT> diagonalize;
+			vector_T diagonal; //stores the diagonal elements in a vector
+			T oldEigenValue = 0, newEigenValue = 0;
+			unsigned int position = 0;
+			long iterNum = 0;
+			bool goOn = true;
+			vector_cT buffer;
+			while (goOn) {
+				// algorithm
+				buffer = toSolve * basisVectors.back();
+				// This has to be real, as <x|H|x> is always real if H=H^+
+				deltas.push_back(basisVectors.back().dot(buffer).real());
+				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
+				T norm_squared = currentSolution.squaredNorm();
+
+				gammas.push_back(sqrt(norm_squared));
+				basisVectors.push_back(currentSolution / gammas.back());
+				iterNum++;
+
+				// construct the tridiagonal matrix, diagonalize it and find the lowest eigenvalue
+				eigenDelta.conservativeResize(iterNum);
+				eigenGamma.conservativeResize(iterNum - 1);
+				eigenDelta(iterNum - 1) = deltas[iterNum - 1];
+				if (iterNum > 1) {
+					eigenGamma(iterNum - 2) = gammas[iterNum - 1];
+				}
+				diagonalize.computeFromTridiagonal(eigenDelta, eigenGamma, 0);
+				diagonal = diagonalize.eigenvalues().real();
+
+				if (diagonalize.eigenvalues().imag().norm() > 1e-8) {
+					std::cerr << "Atleast one eigenvalue is complex!" << std::endl;
+				}
+				position = findSmallestValue(diagonal);
+				newEigenValue = diagonal(position);
+
+				// breaking conditions
+				if (iterNum >= maxIter) {
+					goOn = false;
+				}
+				if (iterNum >= toSolve.rows()) {
+					goOn = false;
+				}
+				if (std::abs(gammas.back()) < 1e-7) {
+					goOn = false;
+				}
+				if (oldEigenValue != 0.0) {
+					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
+						//goOn = false;
+						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+					}
+				}
+				oldEigenValue = newEigenValue;
+			}
+			for (long i = 0; i < deltas.size(); i++)
+			{
+				res.a_i.push_back(deltas[i]);
+				res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
 			}
 			this->data.push_back(res);
 		};

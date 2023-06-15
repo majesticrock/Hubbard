@@ -86,26 +86,25 @@ int main(int argc, char** argv)
 		Utility::saveData_boost(energies, "../../data/energies.dat.gz");
 		return MPI_Finalize();
 	}
-
-	// Setup the number of steps
-	int GLOBAL_IT_STEPS = input.getInt("global_iterator_steps");
-	int FIRST_IT_STEPS = GLOBAL_IT_STEPS / numberOfRanks;
-	double GLOBAL_IT_LIMS[2] = { 0, input.getDouble("global_iterator_upper_limit") };
-	std::vector<std::string> option_list = { "T", "U", "V" };
-	double FIRST_IT_RANGE = 0;
-	double FIRST_IT_MIN = 0, FIRST_IT_MAX = 0;
-	for (int i = 0; i < option_list.size(); i++)
-	{
-		if (input.getString("global_iterator_type") == option_list[i]) {
-			GLOBAL_IT_LIMS[0] = model_params[i];
-			FIRST_IT_RANGE = (GLOBAL_IT_LIMS[1] - GLOBAL_IT_LIMS[0]) / numberOfRanks;
-			FIRST_IT_MIN = GLOBAL_IT_LIMS[0] + rank * FIRST_IT_RANGE;
-			FIRST_IT_MAX = FIRST_IT_MIN + FIRST_IT_RANGE;
-			model_params[i] = FIRST_IT_MIN;
+	else if (input.getString("compute_what") == "phases") {
+		// Setup the number of steps
+		int GLOBAL_IT_STEPS = input.getInt("global_iterator_steps");
+		int FIRST_IT_STEPS = GLOBAL_IT_STEPS / numberOfRanks;
+		double GLOBAL_IT_LIMS[2] = { 0, input.getDouble("global_iterator_upper_limit") };
+		std::vector<std::string> option_list = { "T", "U", "V" };
+		double FIRST_IT_RANGE = 0;
+		double FIRST_IT_MIN = 0, FIRST_IT_MAX = 0;
+		for (int i = 0; i < option_list.size(); i++)
+		{
+			if (input.getString("global_iterator_type") == option_list[i]) {
+				GLOBAL_IT_LIMS[0] = model_params[i];
+				FIRST_IT_RANGE = (GLOBAL_IT_LIMS[1] - GLOBAL_IT_LIMS[0]) / numberOfRanks;
+				FIRST_IT_MIN = GLOBAL_IT_LIMS[0] + rank * FIRST_IT_RANGE;
+				FIRST_IT_MAX = FIRST_IT_MIN + FIRST_IT_RANGE;
+				model_params[i] = FIRST_IT_MIN;
+			}
 		}
-	}
 
-	if (input.getString("compute_what") == "phases") {
 		int SECOND_IT_STEPS = input.getInt("second_iterator_steps");
 		double SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
 
@@ -252,9 +251,10 @@ int main(int argc, char** argv)
 		std::unique_ptr<std::vector<Hubbard::Resolvent_L>> resolvents;
 
 		std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;
-		if(input.getInt("start_basis_at") == -1) {
+		if (input.getInt("start_basis_at") == -1) {
 			modeHelper = std::make_unique<Hubbard::Helper::XPModes>(input);
-		} else {
+		}
+		else {
 			modeHelper = std::make_unique<Hubbard::Helper::GeneralBasis>(input);
 		}
 
@@ -263,21 +263,28 @@ int main(int argc, char** argv)
 		resolvents = modeHelper->computeCollectiveModes(reciever);
 
 		if (rank == 0) {
-			std::vector<std::string> comments;
-			comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
-				+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
-
 			Hubbard::Model::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 				0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 			std::string output_folder = input.getString("output_folder") + modelParameters.getFileName();
 			std::filesystem::create_directories("../../data/" + output_folder);
 
+			std::vector<std::string> comments;
 			comments.push_back("Total Gap=" + std::to_string(totalGapValue));
 			if (!(reciever.empty())) {
 				Utility::saveData_boost(reciever, "../../data/" + output_folder + ".dat.gz", comments);
 			}
 			if (resolvents) {
-				std::string names[6] = { "phase_SC", "phase_CDW", "phase_AFM", "higgs_SC", "higgs_CDW", "higgs_AFM" };
+				std::vector<std::string> names;
+				if (input.getInt("start_basis_at") == -1) {
+					names = { "phase_SC", "phase_CDW", "phase_AFM", "higgs_SC", "higgs_CDW", "higgs_AFM" };
+				}
+				else {
+					names = { "higgs_sc_a", "higgs_sc_a+b", "higgs_sc_a+ib",
+						"phase_sc_a", "phase_sc_a+b", "phase_sc_a+ib",
+						"cdw_a", "cdw_a+b", "cdw_a+ib",
+						"afm_a", "afm_a+b", "afm_a+ib" };
+				}
+
 				for (size_t i = 0; i < resolvents->size(); i++)
 				{
 					(*resolvents)[i].writeDataToFile("../../data/" + output_folder + "resolvent_" + names[i]);
@@ -286,9 +293,6 @@ int main(int argc, char** argv)
 			else {
 				std::cout << "Resolvent returned a null pointer." << std::endl;
 			}
-			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-			std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-
 			comments.pop_back();
 			Utility::saveData_boost(oneParticleEnergies, "../../data/" + output_folder + "one_particle.dat.gz", comments);
 		}

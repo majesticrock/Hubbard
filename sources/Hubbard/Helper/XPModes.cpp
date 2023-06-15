@@ -140,11 +140,11 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	std::unique_ptr<std::vector<Resolvent_L>> XPModes::computeCollectiveModes(std::vector<std::vector<double>>& reciever) 
+	std::unique_ptr<std::vector<Resolvent_L>> XPModes::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
-		
+
 		fillMatrices();
 
 		{
@@ -233,20 +233,7 @@ namespace Hubbard::Helper {
 				// Do the most scary thing I've ever seen in c++
 				// And remove the const from the reference returned by eigenvalues()
 				Vector_L& evs = const_cast<Vector_L&>(k_solver[0].eigenvalues());
-				for (size_t i = 0; i < evs.size(); i++)
-				{
-					if (evs(i) < -SALT) {
-						std::cerr << "K_+:   " << evs(i) << std::endl;
-						//throw std::invalid_argument("K_+ is not positive!  " + std::to_string(evs(i)));
-					}
-					if (evs(i) < SALT) {
-#ifdef _PSEUDO_INVERSE
-						evs(i) = 0;
-#else
-						evs(i) = SALT;
-#endif
-					}
-				}
+				applyMatrixOperation<OPERATION_NONE>(evs);
 
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_+: "
@@ -272,20 +259,7 @@ namespace Hubbard::Helper {
 				// Do the most scary thing I've ever seen in c++
 				// And remove the const from the reference returned by eigenvalues()
 				Vector_L& evs = const_cast<Vector_L&>(k_solver[1].eigenvalues());
-				for (size_t i = 0; i < evs.size(); i++)
-				{
-					if (evs(i) < -SALT) {
-						std::cerr << "K_-:   " << evs(i) << std::endl;
-						//throw std::invalid_argument("K_- is not positive!  " + std::to_string(evs(i)));
-					}
-					if (evs(i) < SALT) {
-#ifdef _PSEUDO_INVERSE
-						evs(i) = 0;
-#else
-						evs(i) = SALT;
-#endif
-					}
-				}
+				applyMatrixOperation<OPERATION_NONE>(evs);
 
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_-: "
@@ -304,19 +278,7 @@ namespace Hubbard::Helper {
 			solver_matrix.resize(k_solver[plus_index].eigenvalues().rows(), k_solver[plus_index].eigenvalues().rows());
 
 			Vector_L K_EV = k_solver[minus_index].eigenvalues();
-			for (size_t i = 0; i < k_solver[minus_index].eigenvalues().size(); i++)
-			{
-				if (K_EV(i) > SALT) {
-					K_EV(i) = 1. / (k_solver[minus_index].eigenvalues()(i));
-				}
-				else {
-#ifdef _PSEUDO_INVERSE
-					K_EV(i) = 0;
-#else
-					K_EV(i) = SALT;
-#endif
-				}
-			}
+			applyMatrixOperation<OPERATION_INVERSE>(K_EV);
 			Matrix_L buffer_matrix = L * k_solver[minus_index].eigenvectors();
 			Matrix_L N_new = buffer_matrix * K_EV.asDiagonal() * buffer_matrix.adjoint();
 
@@ -336,23 +298,8 @@ namespace Hubbard::Helper {
 			}
 
 			Vector_L& n_ev = const_cast<Vector_L&>(solver.eigenvalues());
-			for (size_t i = 0; i < n_ev.size(); i++)
-			{
-				if (solver.eigenvalues()(i) < -ERROR_MARGIN) {
-					std::cerr << solver.eigenvalues()(i) << std::endl;
-					throw std::invalid_argument("N_new is not positive!  " + std::to_string(solver.eigenvalues()(i)));
-				}
-				else if (n_ev(i) < SALT) {
-#ifdef _PSEUDO_INVERSE
-					n_ev(i) = 0;
-#else
-					n_ev(i) = SQRT_SALT;
-#endif
-				}
-				else {
-					n_ev(i) = 1. / sqrt(n_ev(i));
-				}
-			}
+			applyMatrixOperation<OPERATION_INVERSE_SQRT>(n_ev);
+
 			// Starting here, N_new = 1/sqrt(N_new)
 			// I forego another matrix to save some memory
 			N_new = solver.eigenvectors() * n_ev.asDiagonal() * solver.eigenvectors().adjoint();

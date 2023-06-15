@@ -13,6 +13,11 @@ namespace Hubbard::Helper {
 	constexpr double_prec SALT = SQRT_SALT * SQRT_SALT;
 	constexpr double_prec ERROR_MARGIN = 1e-10;
 
+	constexpr int OPERATION_NONE = 0;
+	constexpr int OPERATION_INVERSE = 1;
+	constexpr int OPERATION_SQRT = 2;
+	constexpr int OPERATION_INVERSE_SQRT = 3;
+
 	class ModeHelper {
 	protected:
 		typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
@@ -100,6 +105,55 @@ namespace Hubbard::Helper {
 		};
 		std::complex<double> computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 		virtual void fillMatrices() = 0;
+		/* Takes a positive semidefinite vector (the idea is that this contains eigenvalues) and applies an operation on it
+		* 0: Correct for negative eigenvalues
+		* 1: Compute the pseudoinverse
+		* 2: Compute the square root
+		* 3: Compute the pseudoinverse square root
+		*/
+		template<const int option>
+		void applyMatrixOperation(Vector_L& evs) const {
+			for (size_t i = 0; i < evs.size(); i++)
+			{
+				if (evs(i) < -SALT) {
+					std::cerr << "M:   " << evs(i) << std::endl;
+					throw std::invalid_argument("Matrix is not positive!  " + std::to_string(evs(i)));
+				}
+				if (evs(i) < SALT) {
+#ifdef _PSEUDO_INVERSE
+					evs(i) = 0;
+#else
+					switch (option) {
+					default:
+						break;
+					case 1:
+						evs(i) = 1 / SALT;
+						break;
+
+					case 2:
+						evs(i) = SQRT_SALT;
+						break;
+					case 3:
+						evs(i) = 1. / SQRT_SALT;
+					}
+#endif
+				}
+				else {
+					switch (option) {
+					default:
+						break;
+					case 1:
+						evs(i) = 1. / evs(i);
+						break;
+					case 2:
+						evs(i) = sqrt(evs(i));
+						break;
+					case 3:
+						evs(i) = 1. / sqrt(evs(i));
+					}
+				}
+			}
+		};
 
 	public:
 		ModeHelper(Utility::InputFileReader& input);
