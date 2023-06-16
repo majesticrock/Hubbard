@@ -32,26 +32,6 @@ namespace Hubbard {
 	UsingBroyden::UsingBroyden(const ModelParameters& _params)
 		: Model(_params)
 	{
-		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
-		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
-		if (V > 0) {
-			this->delta_sc *= 0;
-		}
-		else if (V < 0) {
-			this->delta_cdw *= 0;
-		}
-		if (U > 0) {
-			this->delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
-		}
-		else {
-			this->delta_afm = 0;
-		}
-		this->delta_eta = 0;//U * 0.1;
-		this->delta_occupation_up = V * 0.2;
-		this->delta_occupation_down = V * 0.2;
-		this->gamma_sc = V * 0.05;
-		this->xi_sc = std::abs(V) * 0.2;
-
 		this->hamilton = SpinorMatrix::Zero(4, 4);
 	}
 

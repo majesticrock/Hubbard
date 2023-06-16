@@ -32,6 +32,39 @@ namespace Hubbard::Helper {
 			}
 		}
 	}
+
+	const std::complex<double> ModeHelper::getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const
+	{
+		auto it = wick_map.find(op.type);
+		if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
+
+		int index = it->second;
+		if (op.type == "g" || op.type == "n") {
+			auto jt = wick_spin_offset.find(op.indizes[0]);
+			if (jt == wick_map.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
+			index += jt->second;
+		}
+		
+		if(op.isDaggered) return std::conj(expecs[index](momentum_value(0), momentum_value(1)));
+		return expecs[index](momentum_value(0), momentum_value(1));
+	}
+
+	const std::complex<double> ModeHelper::getSumOfAll(const SymbolicOperators::WickOperator& op) const
+	{
+		auto it = wick_map.find(op.type);
+		if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
+
+		int index = it->second;
+		if (op.type == "g" || op.type == "n") {
+			auto jt = wick_spin_offset.find(op.indizes[0]);
+			if (jt == wick_map.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
+			index += jt->second;
+		}
+
+		if (op.isDaggered) return std::conj(sum_of_all[index]);
+		return sum_of_all[index];
+	}
+
 	std::complex<double> ModeHelper::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
 	{
 		const Eigen::Vector2i l_idx = { x(l), y(l) };
@@ -49,17 +82,6 @@ namespace Hubbard::Helper {
 			return ((double)term.multiplicity);
 		}
 
-		auto findOperator = [&](const SymbolicOperators::WickOperator& op) -> int {
-			auto it = wick_map.find(op.type);
-			if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
-
-			if (op.type != "g") return it->second;
-			if (op.indizes[0] == "\\uparrow") return 1;
-			if (op.indizes[0] == "\\downarrow") return 4;
-			if (op.indizes[0] == "\\sigma") return 5;
-			throw std::runtime_error("Something went wrong in findOperator[&].");
-		};
-
 		auto compute_single_sum = [&]() -> std::complex<double> {
 			std::complex<double> sumBuffer = 0;
 			std::complex<double> returnBuffer = 0;
@@ -71,7 +93,7 @@ namespace Hubbard::Helper {
 				for (size_t i = 0; i < term.operators.size(); i++)
 				{
 					momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k', 'q' });
-					sumBuffer *= expecs[findOperator(term.operators[i])](momentum_value(0), momentum_value(1));
+					sumBuffer *= getExpectationValue(term.operators[i], momentum_value);
 				}
 				coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k', 'q' });
 				if (term.coefficients.size() == 1) {
@@ -91,13 +113,14 @@ namespace Hubbard::Helper {
 				if (term.coefficients.size() == 1) {
 					if (term.coefficients.back().momentum.momentum_list.size() == 0) {
 						coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
-						return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * sum_of_all[findOperator(term.operators[0])];
+						return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) 
+							* getSumOfAll(term.operators[0]);
 					}
 					else {
 						return compute_single_sum();
 					}
 				}
-				return ((double)term.multiplicity) * sum_of_all[findOperator(term.operators[0])];
+				return ((double)term.multiplicity) * getSumOfAll(term.operators[0]);
 			}
 			if (term.operators.size() == 2) {
 				// quartic term
@@ -110,7 +133,7 @@ namespace Hubbard::Helper {
 		for (size_t i = 0; i < term.operators.size(); i++)
 		{
 			Eigen::Vector2i momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k' });
-			returnBuffer *= expecs[findOperator(term.operators[i])](momentum_value(0), momentum_value(1));
+			returnBuffer *= getExpectationValue(term.operators[i], momentum_value);
 		}
 		if (term.coefficients.size() == 1) {
 			coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
@@ -145,7 +168,7 @@ namespace Hubbard::Helper {
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * this->number_of_basis_terms;
 		}
 
-		model->computePhases();
+		model->computePhases().print();
 		model->computeExpectationValues(expecs, sum_of_all);
 
 		loadWick("../commutators/wick_");

@@ -36,7 +36,8 @@ build:
 	mkdir -p build/Hubbard
 	mkdir -p build/Hubbard/Helper
 	mkdir -p build/Utility
-	mkdir -p build/SymbolicOperators
+	mkdir -p ../FermionCommute/build
+	ln -s ../../FermionCommute/build build/SymbolicOperators
 
 clean:
 	rm -f $(OBJS)

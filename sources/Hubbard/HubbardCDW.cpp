@@ -49,8 +49,8 @@ namespace Hubbard {
 		this->delta_eta = 0;//I * U * 0.1;
 		this->delta_occupation_up = V * 0.2;
 		this->delta_occupation_down = V * 0.2;
-		this->delta_occupation_up_y = -V * 0.2;
-		this->delta_occupation_down_y = -V * 0.2;
+		this->delta_occupation_up_y = V * 0.2;
+		this->delta_occupation_down_y = V * 0.2;
 		this->gamma_sc = I * V * 0.05;
 		this->xi_sc = I * std::abs(V) * 0.1;
 		this->gamma_cdw = 0;//I * V * 0.15;
@@ -242,22 +242,6 @@ namespace Hubbard {
 		if (std::abs(xi_eta) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
-		}
-
-		for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
-		{
-			double_prec k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
-			for (int l = -Constants::K_DISCRETIZATION; l < 0; l++)
-			{
-				double_prec k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
-				fillHamiltonian(k_x, k_y);
-				solver.compute(hamilton);
-				for (size_t i = 0; i < 4; i++)
-				{
-					std::cout << solver.eigenvalues()(i) << "\t";
-				}
-				std::cout << std::endl;
-			}
 		}
 
 		data_set ret;

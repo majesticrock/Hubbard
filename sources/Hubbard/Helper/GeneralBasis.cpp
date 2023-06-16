@@ -150,9 +150,9 @@ namespace Hubbard::Helper {
 			VectorCL a = N * psis[i];
 			VectorCL b = n_hacek * psis[i];
 
-			(*resolvents)[4 * i].setStartingState(a);
-			(*resolvents)[4 * i + 2].setStartingState(0.5 * (a + b));
-			(*resolvents)[4 * i + 3].setStartingState(0.5 * (a + std::complex<double>(0, 1.) * b));
+			(*resolvents)[3 * i].setStartingState(a);
+			(*resolvents)[3 * i + 1].setStartingState(0.5 * (a + b));
+			(*resolvents)[3 * i + 2].setStartingState(0.5 * (a + std::complex<double>(0, 1.) * b));
 		}
 #pragma omp parallel for
 		for (int i = 0; i < 3 * NUMBER_OF_GREENSFUNCTIONS; i++)

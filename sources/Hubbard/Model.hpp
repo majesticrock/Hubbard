@@ -16,12 +16,12 @@ namespace Hubbard {
 	constexpr double_prec L_PI = 3.141592653589793238462643383279502884L; /* pi */
 	typedef Eigen::Matrix<double_prec, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
 	typedef Eigen::Vector<double_prec, Eigen::Dynamic> Vector_L;
-	typedef Utility::Resolvent<double_prec> Resolvent_L;
+	typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> MatrixCL;
+	typedef Eigen::Vector<std::complex<double>, Eigen::Dynamic> VectorCL;
+	typedef Utility::Resolvent<double> Resolvent_L;
 
 	class Model
 	{
-	private:
-		void initializeParameters();
 	protected:
 		size_t TOTAL_BASIS;
 		double_prec delta_sc, delta_cdw, delta_afm, delta_eta;
@@ -200,7 +200,7 @@ namespace Hubbard {
 		void getAllEnergies(std::vector<std::vector<double>>& reciever);
 		virtual data_set computePhases(const bool print = false) = 0;
 
-		void computeExpectationValues(std::vector<Matrix_L>& expecs, std::vector<double>& sum_of_all);
+		void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all);
 		// Returns the total gap value sqrt(sc^2 + cdw^2 + eta^2)
 		inline double_prec getTotalGapValue() const {
 			return sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta);

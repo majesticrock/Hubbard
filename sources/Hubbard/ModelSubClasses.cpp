@@ -138,7 +138,7 @@ namespace Hubbard {
 		return ret;
 	}
 	void Model::data_set::print() const {
-		std::cout << delta_cdw << "\t" << delta_afm << "\t" << delta_sc << "\t" << delta_eta
+		std::cout << delta_cdw << "\t" << delta_afm << "\t" << delta_sc << "\t" << delta_eta << "\t" << xi_sc
 			<< "\n    Delta_tot = " << sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta) << std::endl;
 	}
 }

@@ -20,10 +20,6 @@ namespace Hubbard::Helper {
 
 	class ModeHelper {
 	protected:
-		typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
-		typedef Eigen::Vector<double, Eigen::Dynamic> Vector_L;
-		typedef Utility::Resolvent<double> Resolvent_L;
-
 		std::unique_ptr<Model> model;
 		size_t TOTAL_BASIS;
 		/*
@@ -31,15 +27,19 @@ namespace Hubbard::Helper {
 		* 1 - g_up
 		* 2 - sc
 		* 3 - eta
-		* 4 - g_down
+		* 4 - n_down
+		* 5 - g_down
+		* 6 - n_up + n_down
+		* 7 - g_up + g_down
 		*/
-		std::vector<Matrix_L> expecs;
-		std::vector<double> sum_of_all = { 0, 0, 0, 0, 0, 0 };
+		std::vector<MatrixCL> expecs;
+		std::vector<std::complex<double>> sum_of_all;
 
 		int number_of_basis_terms;
 		int start_basis_at;
 
 		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
+		const std::map<std::string, int> wick_spin_offset = { {"\\uparrow", 0}, {"\\downarrow", 4}, {"\\sigma", 6} };
 		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M, wicks_N;
 
 		///////////////////////
@@ -103,6 +103,8 @@ namespace Hubbard::Helper {
 			clean_factor_2pi(buffer);
 			return buffer;
 		};
+		const std::complex<double> getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const;
+		const std::complex<double> getSumOfAll(const SymbolicOperators::WickOperator& op) const;
 		std::complex<double> computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 		virtual void fillMatrices() = 0;
 		/* Takes a positive semidefinite vector (the idea is that this contains eigenvalues) and applies an operation on it

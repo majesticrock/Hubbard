@@ -2,9 +2,6 @@
 #include "ModeHelper.hpp"
 
 namespace Hubbard::Helper {
-	typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> MatrixCL;
-	typedef Eigen::Vector<std::complex<double>, Eigen::Dynamic> VectorCL;
-
 	class GeneralBasis : public ModeHelper
 	{
 	private:

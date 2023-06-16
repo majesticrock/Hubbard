@@ -244,7 +244,6 @@ int main(int argc, char** argv)
 	else if (input.getString("compute_what") == "modes") {
 		omp_set_num_threads(8);
 
-		std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 		std::vector<data_vector> reciever;
 		std::vector<data_vector> oneParticleEnergies;
 		double totalGapValue;
