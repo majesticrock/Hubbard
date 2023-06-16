@@ -149,12 +149,10 @@ namespace Hubbard::Helper {
 			0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
 		if (input.getBool("use_broyden")) {
-			model = std::make_unique<UsingBroyden>(
-				UsingBroyden(modelParameters));
+			model = std::make_unique<UsingBroyden>(modelParameters);
 		}
 		else {
-			model = std::make_unique<HubbardCDW>(
-				HubbardCDW(modelParameters));
+			model = std::make_unique<HubbardCDW>(modelParameters);
 		}
 
 		start_basis_at = input.getInt("start_basis_at");
@@ -168,7 +166,7 @@ namespace Hubbard::Helper {
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * this->number_of_basis_terms;
 		}
 
-		model->computePhases().print();
+		model->computePhases(true).print();
 		model->computeExpectationValues(expecs, sum_of_all);
 
 		loadWick("../commutators/wick_");

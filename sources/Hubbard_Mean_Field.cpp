@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 		Hubbard::HubbardCDW model(mP);
 
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
-		//model.computePhases(true).print();
+		model.computePhases(true).print();
 		std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 		std::cout << "\n\n" << std::endl;

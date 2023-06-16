@@ -9,15 +9,15 @@ namespace Hubbard {
 		const double_prec GAMMA = gamma(k_x, k_y);
 		const double_prec XI = xi(k_x, k_y);
 
-		hamilton(0, 1) = delta_cdw - delta_afm;// +((gamma_cdw - gamma_afm) * GAMMA + (xi_cdw - xi_afm) * XI);
+		hamilton(0, 1) = this->c_delta_cdw - this->c_delta_afm;// +((gamma_cdw - this->gamma_afm) * GAMMA + (xi_cdw - this->xi_afm) * XI);
 
-		hamilton(0, 2) = delta_sc + (gamma_sc * GAMMA + xi_sc * XI);
-		hamilton(0, 3) = delta_eta + (gamma_eta * GAMMA + xi_eta * XI);
+		hamilton(0, 2) = this->c_delta_sc + (this->c_gamma_sc * GAMMA + this->c_xi_sc * XI);
+		hamilton(0, 3) = this->c_delta_eta + (this->c_gamma_eta * GAMMA + this->c_xi_eta * XI);
 
-		hamilton(1, 2) = delta_eta - (gamma_eta * GAMMA + xi_eta * XI);
-		hamilton(1, 3) = delta_sc - (gamma_sc * GAMMA + xi_sc * XI);
+		hamilton(1, 2) = this->c_delta_eta - (this->c_gamma_eta * GAMMA + this->c_xi_eta * XI);
+		hamilton(1, 3) = this->c_delta_sc - (this->c_gamma_sc * GAMMA + this->c_xi_sc * XI);
 
-		hamilton(2, 3) = -delta_cdw - delta_afm;// - ((gamma_cdw + gamma_afm) * GAMMA + (xi_cdw + xi_afm) * XI);
+		hamilton(2, 3) = -this->c_delta_cdw - this->c_delta_afm;// - ((gamma_cdw + this->gamma_afm) * GAMMA + (xi_cdw + this->xi_afm) * XI);
 
 		SpinorMatrix buffer = hamilton.adjoint();
 		hamilton += buffer;
@@ -31,54 +31,53 @@ namespace Hubbard {
 	HubbardCDW::HubbardCDW(const ModelParameters& _params)
 		: Model(_params)
 	{
-		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
-		this->delta_sc = std::abs(U + std::abs(V)) * 0.3 + 0.05;
+		this->c_delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
+		this->c_delta_sc =  (std::abs(U + std::abs(V)) * 0.3 + 0.05);
 		if (V > 0) {
-			this->delta_sc *= 0;
+			this->c_delta_sc *= 0;
 		}
 		else if (V < 0) {
-			this->delta_cdw *= 0;
+			this->c_delta_cdw *= 0;
 		}
 		if (U > 0) {
-			this->delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
+			this->c_delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
 		}
 		else {
-			this->delta_afm = 0;
+			this->c_delta_afm = 0;
 		}
-
-		this->delta_eta = 0;//I * U * 0.1;
-		this->delta_occupation_up = V * 0.2;
-		this->delta_occupation_down = V * 0.2;
-		this->delta_occupation_up_y = V * 0.2;
-		this->delta_occupation_down_y = V * 0.2;
-		this->gamma_sc = I * V * 0.05;
-		this->xi_sc = I * std::abs(V) * 0.1;
-		this->gamma_cdw = 0;//I * V * 0.15;
-		this->xi_cdw = 0;//I * V * 0.2;
-		this->gamma_afm = 0;//I * V * 0.05;
-		this->xi_afm = 0;//I * V * 0.04;
-		this->gamma_eta = 0;//V * 0.01;
-		this->xi_eta = 0;// V * 0.01;
+		this->c_delta_eta = 0;//U * 0.1;
+		this->c_delta_occupation_up = V * 0.2;
+		this->c_delta_occupation_down = V * 0.2;
+		this->c_delta_occupation_up_y = V * 0.2;
+		this->c_delta_occupation_down_y = V * 0.2;
+		this->c_gamma_sc = I * V * 0.05;
+		this->c_xi_sc = I * std::abs(V) * 0.1;
+		this->c_gamma_cdw = 0;//I * V * 0.15;
+		this->c_xi_cdw = 0;//I * V * 0.2;
+		this->c_gamma_afm = 0;//I * V * 0.05;
+		this->c_xi_afm = 0;//I * V * 0.04;
+		this->c_gamma_eta = 0;//V * 0.01;
+		this->c_xi_eta = 0;// V * 0.01;
 
 		this->hamilton = SpinorMatrix::Zero(4, 4);
 
 		param_mapper = {
-			&delta_cdw,
-			&delta_afm,
-			&delta_sc,
-			&gamma_sc,
-			&xi_sc,
-			&delta_eta,
-			&delta_occupation_up,
-			&delta_occupation_down,
-			&gamma_cdw,
-			&xi_cdw,
-			&gamma_afm,
-			&xi_afm,
-			&delta_occupation_up_y,
-			&delta_occupation_down_y,
-			&gamma_eta,
-			&xi_eta
+			&(this->c_delta_cdw),
+			&(this->c_delta_afm),
+			&(this->c_delta_sc),
+			&(this->c_gamma_sc),
+			&(this->c_xi_sc),
+			&(this->c_delta_eta),
+			&(this->c_delta_occupation_up),
+			&(this->c_delta_occupation_down),
+			&(this->c_gamma_cdw),
+			&(this->c_xi_cdw),
+			&(this->c_gamma_afm),
+			&(this->c_xi_afm),
+			&(this->c_delta_occupation_up_y),
+			&(this->c_delta_occupation_down_y),
+			&(this->c_gamma_eta),
+			&(this->c_xi_eta)
 		};
 
 		param_coefficients = {
@@ -106,7 +105,7 @@ namespace Hubbard {
 
 		SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
 		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-		constexpr double_prec EPSILON = 1e-10;
+		constexpr double_prec EPSILON = 1e-12;
 		double_prec error = 100;
 
 		auto lambda_func = [&](const ParameterVector& x, ParameterVector& F) {
@@ -162,18 +161,18 @@ namespace Hubbard {
 		constexpr int MAX_STEPS = 2500;
 
 		ParameterVector f0;
-		f0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta,
-			delta_occupation_up, delta_occupation_down,
-			gamma_cdw, xi_cdw, gamma_afm, xi_afm,
-			delta_occupation_up_y, delta_occupation_down_y,
-			delta_eta, gamma_eta;
+		f0 << this->c_delta_cdw, this->c_delta_afm, this->c_delta_sc, this->c_gamma_sc, this->c_xi_sc, this->c_delta_eta,
+			this->c_delta_occupation_up, this->c_delta_occupation_down,
+			this->c_gamma_cdw, this->c_xi_cdw, this->c_gamma_afm, this->c_xi_afm,
+			this->c_delta_occupation_up_y, this->c_delta_occupation_down_y,
+			this->c_delta_eta, this->c_gamma_eta;
 
 		ParameterVector x0;
-		x0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta,
-			delta_occupation_up, delta_occupation_down,
-			gamma_cdw, xi_cdw, gamma_afm, xi_afm,
-			delta_occupation_up_y, delta_occupation_down_y,
-			delta_eta, gamma_eta;
+		x0 << this->c_delta_cdw, this->c_delta_afm, this->c_delta_sc, this->c_gamma_sc, this->c_xi_sc, this->c_delta_eta,
+			this->c_delta_occupation_up, this->c_delta_occupation_down,
+			this->c_gamma_cdw, this->c_xi_cdw, this->c_gamma_afm, this->c_xi_afm,
+			this->c_delta_occupation_up_y, this->c_delta_occupation_down_y,
+			this->c_delta_eta, this->c_gamma_eta;
 
 		if (print) {
 			std::cout << "-1:\t" << std::fixed << std::setprecision(8);
@@ -194,10 +193,10 @@ namespace Hubbard {
 			if (i == MAX_STEPS - 1) {
 				std::cerr << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 					<< "]\tConvergence at " << error << std::endl;
-				delta_cdw = 0;
-				delta_afm = 0;
-				delta_sc = 0;
-				delta_eta = 0;
+				c_delta_cdw = 0;
+				c_delta_afm = 0;
+				c_delta_sc = 0;
+				c_delta_eta = 0;
 			}
 		}
 
@@ -219,38 +218,38 @@ namespace Hubbard {
 			std::cout << "Total energy:  " << internal_energy << std::endl;
 		}
 
-		if (std::abs(delta_sc.imag()) > 1e-8) {
+		if (std::abs(c_delta_sc.imag()) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
 		}
-		if (std::abs(gamma_sc.real()) > 1e-8) {
+		if (std::abs(c_gamma_sc.real()) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
 		}
-		if (std::abs(xi_sc.real()) > 1e-8) {
+		if (std::abs(c_xi_sc.real()) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
 		}
-		if (std::abs(delta_eta) > 1e-8) {
+		if (std::abs(c_delta_eta) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
 		}
-		if (std::abs(gamma_eta) > 1e-8) {
+		if (std::abs(c_gamma_eta) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
 		}
-		if (std::abs(xi_eta) > 1e-8) {
+		if (std::abs(c_xi_eta) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
 		}
 
 		data_set ret;
-		ret.delta_cdw = delta_cdw.real();
-		ret.delta_afm = delta_afm.real();
-		ret.delta_sc = delta_sc.real();
-		ret.gamma_sc = gamma_sc.imag();
-		ret.xi_sc = xi_sc.imag();
-		ret.delta_eta = delta_eta.imag();
+		ret.delta_cdw = this->c_delta_cdw.real();
+		ret.delta_afm = this->c_delta_afm.real();
+		ret.delta_sc = this->c_delta_sc.real();
+		ret.gamma_sc = this->c_gamma_sc.imag();
+		ret.xi_sc = this->c_xi_sc.imag();
+		ret.delta_eta = this->c_delta_eta.imag();
 
 		return ret;
 	}
