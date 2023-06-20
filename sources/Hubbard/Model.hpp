@@ -16,21 +16,47 @@ namespace Hubbard {
 	constexpr double_prec L_PI = 3.141592653589793238462643383279502884L; /* pi */
 	typedef Eigen::Matrix<double_prec, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
 	typedef Eigen::Vector<double_prec, Eigen::Dynamic> Vector_L;
-	typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> MatrixCL;
-	typedef Eigen::Vector<std::complex<double>, Eigen::Dynamic> VectorCL;
-	typedef Utility::Resolvent<double> Resolvent_L;
+
+	typedef std::complex<double_prec> complex_prec;
+	typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> MatrixCL;
+	typedef Eigen::Vector<complex_prec, Eigen::Dynamic> VectorCL;
+	typedef Utility::Resolvent<double_prec> Resolvent_L;
+
+	template <const int vector_size>
+	void printAsRow(Eigen::Vector<double_prec, vector_size>& printer) {
+		for (size_t i = 0; i < printer.size(); i++)
+		{
+			std::cout << "\t" << printer(i);
+			if ((i + 1) % 8 == 0) {
+				std::cout << "\n\t    ";
+			}
+		}
+		std::cout << std::endl;
+	}
+
+	template <const int vector_size>
+	void printAsRow(Eigen::Vector<complex_prec, vector_size>& printer) {
+		for (size_t i = 0; i < printer.size(); i++)
+		{
+			std::cout << " \t" << printer(i);
+			if ((i + 1) % 4 == 0) {
+				std::cout << "\n\t    ";
+			}
+		}
+		std::cout << std::endl;
+	}
 
 	class Model
 	{
 	protected:
+		typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> SpinorMatrix;
+
 		size_t TOTAL_BASIS;
 		double_prec delta_sc, delta_cdw, delta_afm, delta_eta;
 		double_prec gamma_sc, xi_sc;
 		double_prec delta_occupation_up, delta_occupation_down;
 		double_prec chemical_potential;
 
-		typedef std::complex<double_prec> complex_prec;
-		typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> SpinorMatrix;
 		const complex_prec I = { 0, 1 };
 		SpinorMatrix hamilton;
 

@@ -7,17 +7,6 @@ namespace Hubbard {
 	{
 	private:
 		typedef Eigen::Vector<double_prec, 8> ParameterVector;
-		inline void printAsRow(const ParameterVector& printer) const {
-			for (size_t i = 0; i < printer.size(); i++)
-			{
-				std::cout << "\t" << printer(i);
-				if ((i + 1) % 8 == 0) {
-					std::cout << "\n\t    ";
-				}
-			}
-			std::cout << std::endl;
-		}
-
 	protected:
 		inline virtual double_prec renormalizedEnergy_up(double_prec k_x, double_prec k_y) const override {
 			return -2 * (1. + delta_occupation_up) * gamma(k_x, k_y);

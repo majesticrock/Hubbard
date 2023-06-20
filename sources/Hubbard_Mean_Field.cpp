@@ -21,7 +21,7 @@
 #include "Hubbard/Helper/XPModes.hpp"
 #include "Hubbard/Helper/GeneralBasis.hpp"
 #include "Utility/InputFileReader.hpp"
-#include "Hubbard/HubbardCDW.hpp"
+#include "Hubbard/TripletPairingIterative.hpp"
 #include "Hubbard/UsingBroyden.hpp"
 #include "Hubbard/Constants.hpp"
 #include "Utility/OutputConvenience.hpp"
@@ -67,14 +67,15 @@ int main(int argc, char** argv)
 
 	if (input.getString("compute_what") == "test") {
 		Hubbard::Model::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
-		Hubbard::HubbardCDW model(mP);
+		//Hubbard::HubbardCDW model(mP);
+		Hubbard::TripletPairingIterative model(mP);
 
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		model.computePhases(true).print();
 		std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 		std::cout << "\n\n" << std::endl;
-		//return MPI_Finalize();
+		return MPI_Finalize();
 		Hubbard::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
 		model2.computePhases(true).print();

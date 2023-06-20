@@ -1,109 +1,71 @@
-#include "HubbardCDW.hpp"
+#include "TripletPairingIterative.hpp"
 
-constexpr size_t NUMBER_OF_PARAMETERS = 16;
+constexpr size_t NUMBER_OF_PARAMETERS = 18;
 
 namespace Hubbard {
-	void HubbardCDW::fillHamiltonian(double_prec k_x, double_prec k_y)
+	void TripletPairingIterative::fillHamiltonian(double_prec k_x, double_prec k_y)
 	{
 		hamilton.fill(0.0);
 		const double_prec GAMMA = gamma(k_x, k_y);
 		const double_prec XI = xi(k_x, k_y);
 
-		hamilton(0, 1) = this->c_delta_cdw - this->c_delta_afm;// +((gamma_cdw - this->gamma_afm) * GAMMA + (xi_cdw - this->xi_afm) * XI);
+		SpinorMatrix diagonalBlock = SpinorMatrix::Zero(4, 4);
+		diagonalBlock(0, 1) = this->c_delta_cdw - this->c_delta_afm;// +((gamma_cdw - this->gamma_afm) * GAMMA + (xi_cdw - this->xi_afm) * XI);
 
-		hamilton(0, 2) = this->c_delta_sc + (this->c_gamma_sc * GAMMA + this->c_xi_sc * XI);
-		hamilton(0, 3) = this->c_delta_eta + (this->c_gamma_eta * GAMMA + this->c_xi_eta * XI);
+		diagonalBlock(0, 2) = this->c_delta_sc + (this->c_gamma_sc * GAMMA + this->c_xi_sc * XI);
+		diagonalBlock(0, 3) = this->c_delta_eta + (this->c_gamma_eta * GAMMA + this->c_xi_eta * XI);
 
-		hamilton(1, 2) = this->c_delta_eta - (this->c_gamma_eta * GAMMA + this->c_xi_eta * XI);
-		hamilton(1, 3) = this->c_delta_sc - (this->c_gamma_sc * GAMMA + this->c_xi_sc * XI);
+		diagonalBlock(1, 2) = this->c_delta_eta - (this->c_gamma_eta * GAMMA + this->c_xi_eta * XI);
+		diagonalBlock(1, 3) = this->c_delta_sc - (this->c_gamma_sc * GAMMA + this->c_xi_sc * XI);
 
-		hamilton(2, 3) = -this->c_delta_cdw - this->c_delta_afm;// - ((gamma_cdw + this->gamma_afm) * GAMMA + (xi_cdw + this->xi_afm) * XI);
+		diagonalBlock(2, 3) = -this->c_delta_cdw - this->c_delta_afm;// - ((gamma_cdw + this->gamma_afm) * GAMMA + (xi_cdw + this->xi_afm) * XI);
 
-		SpinorMatrix buffer = hamilton.adjoint();
-		hamilton += buffer;
+		SpinorMatrix buffer = diagonalBlock.adjoint();
+		diagonalBlock += buffer;
 		double_prec eps = renormalizedEnergy_up(k_x, k_y);
-		hamilton(0, 0) = eps;
-		hamilton(1, 1) = -eps;
+		diagonalBlock(0, 0) = eps;
+		diagonalBlock(1, 1) = -eps;
 		eps = renormalizedEnergy_down(k_x, k_y);
-		hamilton(2, 2) = -eps;
-		hamilton(3, 3) = eps;
+		diagonalBlock(2, 2) = -eps;
+		diagonalBlock(3, 3) = eps;
+
+		hamilton.block<4, 4>(0, 0) = diagonalBlock;
+		hamilton.block<4, 4>(4, 4) = -diagonalBlock.adjoint();
+
+		const double_prec TAU = tau(k_x, k_y);
+		const double_prec THETA = theta(k_x, k_y);
+		diagonalBlock = SpinorMatrix::Zero(4, 4);
+		diagonalBlock(0, 0) = tau_sc * TAU * theta_sc * THETA;
+		diagonalBlock(1, 1) = -tau_sc * TAU * theta_sc * THETA;
+		diagonalBlock(2, 2) = std::conj(tau_sc * TAU * theta_sc * THETA);
+		diagonalBlock(3, 3) = -std::conj(tau_sc * TAU * theta_sc * THETA);
+		
+		hamilton.block<4, 4>(0, 4) = diagonalBlock;
+		hamilton.block<4, 4>(4, 0) = diagonalBlock.adjoint();
 	}
-	HubbardCDW::HubbardCDW(const ModelParameters& _params)
-		: Model(_params)
+
+	TripletPairingIterative::TripletPairingIterative(const ModelParameters& _params)
+		: HubbardCDW(_params)
 	{
-		this->c_delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
-		this->c_delta_sc =  (std::abs(U + std::abs(V)) * 0.3 + 0.05);
-		if (V > 0) {
-			this->c_delta_sc *= 0;
-		}
-		else if (V < 0) {
-			this->c_delta_cdw *= 0;
-		}
-		if (U > 0) {
-			this->c_delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
-		}
-		else {
-			this->c_delta_afm = 0;
-		}
-		this->c_delta_eta = 0;//U * 0.1;
-		this->c_delta_occupation_up = V * 0.2;
-		this->c_delta_occupation_down = V * 0.2;
-		this->c_delta_occupation_up_y = V * 0.2;
-		this->c_delta_occupation_down_y = V * 0.2;
-		this->c_gamma_sc = I * V * 0.05;
-		this->c_xi_sc = I * std::abs(V) * 0.1;
-		this->c_gamma_cdw = 0;//I * V * 0.15;
-		this->c_xi_cdw = 0;//I * V * 0.2;
-		this->c_gamma_afm = 0;//I * V * 0.05;
-		this->c_xi_afm = 0;//I * V * 0.04;
-		this->c_gamma_eta = 0;//V * 0.01;
-		this->c_xi_eta = 0;// V * 0.01;
+		hamilton = SpinorMatrix::Zero(8, 8);
 
-		this->hamilton = SpinorMatrix::Zero(4, 4);
+		param_mapper.push_back(&(this->tau_sc));
+		param_mapper.push_back(&(this->theta_sc));
 
-		param_mapper = {
-			&(this->c_delta_cdw),
-			&(this->c_delta_afm),
-			&(this->c_delta_sc),
-			&(this->c_gamma_sc),
-			&(this->c_xi_sc),
-			&(this->c_delta_eta),
-			&(this->c_delta_occupation_up),
-			&(this->c_delta_occupation_down),
-			&(this->c_gamma_cdw),
-			&(this->c_xi_cdw),
-			&(this->c_gamma_afm),
-			&(this->c_xi_afm),
-			&(this->c_delta_occupation_up_y),
-			&(this->c_delta_occupation_down_y),
-			&(this->c_gamma_eta),
-			&(this->c_xi_eta)
-		};
+		param_coefficients.push_back(V_OVER_N); // Tau_sc
+		param_coefficients.push_back(V_OVER_N); // Theta_sc
 
-		param_coefficients = {
-			0.5 * U_OVER_N - 4. * V_OVER_N, // CDW
-			0.5 * U_OVER_N, // AFM
-			U_OVER_N, // SC
-			V_OVER_N, // Gamma SC
-			V_OVER_N, // Xi SC
-			U_OVER_N, // Eta
-			V_OVER_N, // Occupation Up
-			V_OVER_N, // Occupation Down
-			0.5 * V_OVER_N, // Gamma CDW
-			0.5 * V_OVER_N, // Xi CDW
-			0.5 * V_OVER_N, // Gamma AFM
-			0.5 * V_OVER_N, // Xi AFM
-			V_OVER_N, // Occupation Up y
-			V_OVER_N, // Occupation Down y
-			V_OVER_N, // Gamma SC
-			V_OVER_N // Xi SC
-		};
+		for (size_t i = 0; i < 16; i++)
+		{
+			*(param_mapper[i]) = 0;
+		}
+		*(param_mapper[16]) = (I + 0.5) * V;
+		*(param_mapper[17]) = (I + 0.5) * V;
 	}
-	Model::data_set HubbardCDW::computePhases(const bool print)
-	{
-		computeChemicalPotential();
 
-		SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
+	Model::data_set TripletPairingIterative::computePhases(const bool print)
+	{
+		SpinorMatrix rho = SpinorMatrix::Zero(8, 8);
 		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 		constexpr double_prec EPSILON = 1e-12;
 		double_prec error = 100;
@@ -125,7 +87,7 @@ namespace Hubbard {
 					solver.compute(hamilton);
 					fillRho(rho, solver);
 
-					addToParameterSet(rho, F, k_x, k_y);
+					TripletPairingIterative::addToParameterSet(rho, F, k_x, k_y);
 				}
 			}
 
