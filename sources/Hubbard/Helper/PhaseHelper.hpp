@@ -57,8 +57,8 @@ namespace Hubbard::Helper {
 		int rank, numberOfRanks;
 
 		bool use_broyden;
-		Model::ModelParameters modelParameters;
-		Model::data_set computeDataPoint(const Model::ModelParameters& mp);
+		ModelParameters modelParameters;
+		Model::data_set computeDataPoint(const ModelParameters& mp);
 	public:
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);
 

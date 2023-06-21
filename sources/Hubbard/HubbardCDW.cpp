@@ -50,7 +50,7 @@ namespace Hubbard {
 		this->c_delta_occupation_down = V * 0.2;
 		this->c_delta_occupation_up_y = V * 0.2;
 		this->c_delta_occupation_down_y = V * 0.2;
-		this->c_gamma_sc = I * V * 0.05;
+		this->c_gamma_sc = V * 0.05;
 		this->c_xi_sc = I * std::abs(V) * 0.1;
 		this->c_gamma_cdw = 0;//I * V * 0.15;
 		this->c_xi_cdw = 0;//I * V * 0.2;

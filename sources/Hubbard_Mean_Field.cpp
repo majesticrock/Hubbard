@@ -31,7 +31,7 @@ using Hubbard::Helper::data_vector;
 int Hubbard::Constants::K_DISCRETIZATION = 100;
 int Hubbard::Constants::BASIS_SIZE = 10000;
 
-std::ostream& operator<<(std::ostream& os, const Hubbard::Model::ModelParameters& mp) {
+std::ostream& operator<<(std::ostream& os, const Hubbard::ModelParameters& mp) {
 	os << mp.temperature << "\t" << mp.U << "\t" << mp.V;
 	return os;
 }
@@ -66,9 +66,9 @@ int main(int argc, char** argv)
 	std::vector<double> model_params = input.getDoubleList("model_parameters");
 
 	if (input.getString("compute_what") == "test") {
-		Hubbard::Model::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
-		//Hubbard::HubbardCDW model(mP);
-		Hubbard::TripletPairingIterative model(mP);
+		Hubbard::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
+		Hubbard::HubbardCDW model(mP);
+		//Hubbard::TripletPairingIterative model(mP);
 
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		model.computePhases(true).print();
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
 			}
 		}
 
-		Hubbard::Model::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
+		Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 			(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, (SECOND_IT_MAX - SECOND_IT_MIN) / SECOND_IT_STEPS,
 			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
@@ -263,7 +263,7 @@ int main(int argc, char** argv)
 		resolvents = modeHelper->computeCollectiveModes(reciever);
 
 		if (rank == 0) {
-			Hubbard::Model::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
+			Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 				0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 			std::string output_folder = input.getString("output_folder") + modelParameters.getFileName();
 			std::filesystem::create_directories("../../data/" + output_folder);

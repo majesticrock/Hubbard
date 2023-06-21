@@ -16,7 +16,7 @@ namespace Hubbard {
 	constexpr double_prec ERROR_MARGIN = 1e-10;
 
 	Model::Model(const ModelParameters& _params)
-		: temperature(_params.temperature), U(_params.U), V(_params.V)
+		: BaseModel(_params)
 	{
 		this->U_OVER_N = U / Constants::BASIS_SIZE;
 		this->V_OVER_N = V / Constants::BASIS_SIZE;

@@ -145,7 +145,7 @@ namespace Hubbard::Helper {
 	ModeHelper::ModeHelper(Utility::InputFileReader& input)
 	{
 		std::vector<double> model_params = input.getDoubleList("model_parameters");
-		Hubbard::Model::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
+		Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 			0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
 		if (input.getBool("use_broyden")) {

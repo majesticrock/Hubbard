@@ -1,9 +1,10 @@
-#include "Model.hpp"
-#include <string>
+#include "ModelParameters.hpp"
+#include <iostream>
 #include <sstream>
+#include <cmath>
 
 namespace Hubbard {
-	Model::ModelParameters::ModelParameters(double_prec _temperature, double_prec _U, double_prec _V, double_prec _global_step, double_prec _second_step,
+    ModelParameters::ModelParameters(double _temperature, double _U, double _V, double _global_step, double _second_step,
 		std::string _global_iterator_type, std::string _second_iterator_type)
 		: global_iterator_type(_global_iterator_type), second_iterator_type(_second_iterator_type),
 		global_step(_global_step), second_step(_second_step), temperature(_temperature), U(_U), V(_V)
@@ -34,7 +35,7 @@ namespace Hubbard {
 		}
 	}
 
-	void Model::ModelParameters::incrementer(std::string& s, const double_prec step)
+	void ModelParameters::incrementer(std::string& s, const double step)
 	{
 		if (s == "T") {
 			temperature += step;
@@ -46,7 +47,7 @@ namespace Hubbard {
 			V += step;
 		}
 	}
-	double_prec Model::ModelParameters::setGlobalIterator(int it_num)
+	double ModelParameters::setGlobalIterator(int it_num)
 	{
 		if (global_iterator_type == "T") {
 			temperature = global_it_min + it_num * global_step;
@@ -59,7 +60,7 @@ namespace Hubbard {
 		}
 		return getGlobal();
 	}
-	double_prec Model::ModelParameters::setGlobalIteratorExact(double_prec newValue)
+	double ModelParameters::setGlobalIteratorExact(double newValue)
 	{
 		if (global_iterator_type == "T") {
 			temperature = newValue;
@@ -72,7 +73,7 @@ namespace Hubbard {
 		}
 		return getGlobal();
 	}
-	double_prec Model::ModelParameters::setSecondIterator(int it_num)
+	double ModelParameters::setSecondIterator(int it_num)
 	{
 		if (second_iterator_type == "T") {
 			temperature = second_it_min + it_num * second_step;
@@ -85,7 +86,7 @@ namespace Hubbard {
 		}
 		return getSecond();
 	}
-	double_prec Hubbard::Model::ModelParameters::setSecondIteratorExact(double_prec newValue)
+	double Hubbard::ModelParameters::setSecondIteratorExact(double newValue)
 	{
 		if (second_iterator_type == "T") {
 			temperature = newValue;
@@ -98,20 +99,20 @@ namespace Hubbard {
 		}
 		return getSecond();
 	}
-	void Model::ModelParameters::incrementGlobalIterator()
+	void ModelParameters::incrementGlobalIterator()
 	{
 		incrementer(global_iterator_type, global_step);
 		setSecondIterator(0);
 	}
-	void Model::ModelParameters::incrementSecondIterator()
+	void ModelParameters::incrementSecondIterator()
 	{
 		incrementer(second_iterator_type, second_step);
 	}
-	void Model::ModelParameters::printGlobal() const
+	void ModelParameters::printGlobal() const
 	{
 		std::cout << global_iterator_type << " = " << getGlobal();
 	}
-	std::string Model::ModelParameters::getFileName() const
+	std::string ModelParameters::getFileName() const
 	{
 		auto improved_string = [](double number) -> std::string {
 			if (std::floor(number) == number) {
@@ -136,9 +137,5 @@ namespace Hubbard {
 
 		ret += "/";
 		return ret;
-	}
-	void Model::data_set::print() const {
-		std::cout << delta_cdw << "\t" << delta_afm << "\t" << delta_sc << "\t" << delta_eta << "\t" << xi_sc
-			<< "\n    Delta_tot = " << sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta) << std::endl;
 	}
 }

@@ -124,12 +124,12 @@ namespace Hubbard::Helper {
 				SECOND_IT_MIN = model_params[i];
 			}
 		}
-		modelParameters = Model::ModelParameters(model_params[0], model_params[1], model_params[2],
+		modelParameters = ModelParameters(model_params[0], model_params[1], model_params[2],
 			(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, (SECOND_IT_MAX - SECOND_IT_MIN) / SECOND_IT_STEPS,
 			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 	}
 
-	Model::data_set PhaseHelper::computeDataPoint(const Model::ModelParameters& mp) {
+	Model::data_set PhaseHelper::computeDataPoint(const ModelParameters& mp) {
 		Model::data_set ret;
 		if (use_broyden) {
 			UsingBroyden model(mp);
@@ -146,7 +146,7 @@ namespace Hubbard::Helper {
 #pragma omp parallel for num_threads(4) schedule(dynamic)
 			for (int U = 0; U < SECOND_IT_STEPS; U++)
 			{
-				Model::ModelParameters local = modelParameters;
+				ModelParameters local = modelParameters;
 				local.setSecondIterator(U);
 				Model::data_set ret = computeDataPoint(local);
 
