@@ -44,8 +44,8 @@ namespace Hubbard::Helper {
 			if (jt == wick_map.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
 			index += jt->second;
 		}
-		
-		if(op.isDaggered) return std::conj(expecs[index](momentum_value(0), momentum_value(1)));
+
+		if (op.isDaggered) return std::conj(expecs[index](momentum_value(0), momentum_value(1)));
 		return expecs[index](momentum_value(0), momentum_value(1));
 	}
 
@@ -113,7 +113,7 @@ namespace Hubbard::Helper {
 				if (term.coefficients.size() == 1) {
 					if (term.coefficients.back().momentum.momentum_list.size() == 0) {
 						coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
-						return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) 
+						return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum)
 							* getSumOfAll(term.operators[0]);
 					}
 					else {

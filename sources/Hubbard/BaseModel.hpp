@@ -4,7 +4,7 @@
 #include "ModelParameters.hpp"
 
 namespace Hubbard {
-    // Defines the working precision of the entire project
+	// Defines the working precision of the entire project
 	// Change to float, double or long double - so far double produces the best results
 	typedef double double_prec;
 	constexpr double_prec L_PI = 3.141592653589793238462643383279502884L; /* pi */
@@ -39,36 +39,36 @@ namespace Hubbard {
 		std::cout << std::endl;
 	}
 
-    class BaseModel {
-    protected:
-        typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> SpinorMatrix;
-        const complex_prec I = { 0, 1 };
+	class BaseModel {
+	protected:
+		typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> SpinorMatrix;
+		const complex_prec I = { 0, 1 };
 		SpinorMatrix hamilton;
 
-        double_prec temperature;
+		double_prec temperature;
 		double_prec U;
 		double_prec V;
 		double_prec U_OVER_N;
 		double_prec V_OVER_N;
 
-        size_t TOTAL_BASIS;
+		size_t TOTAL_BASIS;
 		double_prec delta_sc, delta_cdw, delta_afm, delta_eta;
-        double_prec chemical_potential;
+		double_prec chemical_potential;
 
 		inline virtual void computeChemicalPotential() {
 			this->chemical_potential = 0.5 * U + 4 * V;
 		};
 
-        template<typename... Args>
+		template<typename... Args>
 		inline double_prec gamma(Args... ks) const {
 			return (cos(ks) + ...);
 		}
-        template<typename... Args>
+		template<typename... Args>
 		inline double_prec unperturbed_energy(Args... ks) const {
 			return -2 * gamma(ks...);
 		};
 
-        inline double_prec fermi_dirac(double_prec energy) const {
+		inline double_prec fermi_dirac(double_prec energy) const {
 			if (temperature > 1e-8) {
 				return (1. / (1 + exp(energy / temperature)));
 			}
@@ -90,5 +90,5 @@ namespace Hubbard {
 
 	public:
 		BaseModel(const ModelParameters& _params);
-    };
+	};
 }

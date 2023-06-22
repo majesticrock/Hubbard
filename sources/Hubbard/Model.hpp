@@ -17,7 +17,7 @@ namespace Hubbard {
 	protected:
 		double_prec gamma_sc, xi_sc;
 		double_prec delta_occupation_up, delta_occupation_down;
-		
+
 		inline virtual double_prec xi(double_prec k_x, double_prec k_y) const {
 			return cos(k_x) - cos(k_y);
 		}
@@ -78,7 +78,7 @@ namespace Hubbard {
 			inline bool isFinite(int i, double_prec epsilon = 1e-12) const {
 				return (std::abs((*this)[i]) > epsilon);
 			}
-			inline void print() const{
+			inline void print() const {
 				std::cout << delta_cdw << "\t" << delta_afm << "\t" << delta_sc << "\t" << delta_eta << "\t" << xi_sc
 					<< "\n    Delta_tot = " << sqrt(delta_cdw * delta_cdw + delta_sc * delta_sc + delta_eta * delta_eta) << std::endl;
 			};

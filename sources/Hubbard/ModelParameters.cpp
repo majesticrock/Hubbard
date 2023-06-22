@@ -4,7 +4,7 @@
 #include <cmath>
 
 namespace Hubbard {
-    ModelParameters::ModelParameters(double _temperature, double _U, double _V, double _global_step, double _second_step,
+	ModelParameters::ModelParameters(double _temperature, double _U, double _V, double _global_step, double _second_step,
 		std::string _global_iterator_type, std::string _second_iterator_type)
 		: global_iterator_type(_global_iterator_type), second_iterator_type(_second_iterator_type),
 		global_step(_global_step), second_step(_second_step), temperature(_temperature), U(_U), V(_V)

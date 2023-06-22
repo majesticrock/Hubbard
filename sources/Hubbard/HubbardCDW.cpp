@@ -32,7 +32,7 @@ namespace Hubbard {
 		: Model(_params)
 	{
 		this->c_delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
-		this->c_delta_sc =  (std::abs(U + std::abs(V)) * 0.3 + 0.05);
+		this->c_delta_sc = (std::abs(U + std::abs(V)) * 0.3 + 0.05);
 		if (V > 0) {
 			this->c_delta_sc *= 0;
 		}

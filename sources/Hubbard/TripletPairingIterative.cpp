@@ -39,7 +39,7 @@ namespace Hubbard {
 		diagonalBlock(1, 1) = -tau_sc * TAU * theta_sc * THETA;
 		diagonalBlock(2, 2) = std::conj(tau_sc * TAU * theta_sc * THETA);
 		diagonalBlock(3, 3) = -std::conj(tau_sc * TAU * theta_sc * THETA);
-		
+
 		hamilton.block<4, 4>(0, 4) = diagonalBlock;
 		hamilton.block<4, 4>(4, 0) = diagonalBlock.adjoint();
 	}

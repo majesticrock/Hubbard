@@ -10,8 +10,8 @@ namespace Hubbard {
 		std::vector<complex_prec*> param_mapper;
 		std::vector<double_prec> param_coefficients;
 
-		complex_prec c_delta_sc,  c_delta_cdw, c_delta_afm, c_delta_eta;
-		complex_prec c_gamma_sc,  c_xi_sc;
+		complex_prec c_delta_sc, c_delta_cdw, c_delta_afm, c_delta_eta;
+		complex_prec c_gamma_sc, c_xi_sc;
 		complex_prec c_gamma_cdw, c_xi_cdw;
 		complex_prec c_gamma_afm, c_xi_afm;
 		complex_prec c_gamma_eta, c_xi_eta;
