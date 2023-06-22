@@ -1,9 +1,11 @@
 #pragma once
 #include <memory>
 
-#include "../Model.hpp"
+#include <map>
+#include "../SquareLattice/UsingBroyden.hpp"
 #include "../Constants.hpp"
 #include "../../Utility/InputFileReader.hpp"
+#include "../../../../FermionCommute/sources/WickTerm.hpp"
 
 // Both methods yield precisely the same data!
 #define _PSEUDO_INVERSE
@@ -20,7 +22,7 @@ namespace Hubbard::Helper {
 
 	class ModeHelper {
 	protected:
-		std::unique_ptr<Model> model;
+		std::unique_ptr<SquareLattice::UsingBroyden> model;
 		size_t TOTAL_BASIS;
 		/*
 		* 0 - n
@@ -160,7 +162,7 @@ namespace Hubbard::Helper {
 	public:
 		ModeHelper(Utility::InputFileReader& input);
 
-		Model& getModel() const {
+		SquareLattice::UsingBroyden& getModel() const {
 			return *model;
 		}
 

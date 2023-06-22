@@ -3,7 +3,7 @@
 #include <string>
 
 #include "../../Utility/InputFileReader.hpp"
-#include "../Model.hpp"
+#include "../SquareLattice/Model.hpp"
 
 namespace Hubbard::Helper {
 	typedef std::vector<double> data_vector;
@@ -58,7 +58,7 @@ namespace Hubbard::Helper {
 
 		bool use_broyden;
 		ModelParameters modelParameters;
-		Model::data_set computeDataPoint(const ModelParameters& mp);
+		PhaseDataSet computeDataPoint(const ModelParameters& mp);
 	public:
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);
 

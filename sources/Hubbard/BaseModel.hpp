@@ -1,7 +1,12 @@
 #pragma once
 #include <Eigen/Dense>
 #include <iostream>
+#include <cmath>
+#include <cstdarg>
+#include "Constants.hpp"
 #include "ModelParameters.hpp"
+#include "PhaseDataSet.hpp"
+#include "../Utility/Resolvent.hpp"
 
 namespace Hubbard {
 	// Defines the working precision of the entire project
@@ -14,6 +19,20 @@ namespace Hubbard {
 	typedef std::complex<double_prec> complex_prec;
 	typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> MatrixCL;
 	typedef Eigen::Vector<complex_prec, Eigen::Dynamic> VectorCL;
+	using SpinorMatrix = MatrixCL;
+	typedef Utility::Resolvent<double_prec> Resolvent_L;
+
+	template<typename... Args>
+	inline double_prec gamma(Args... ks) {
+		return (cos(ks) + ...);
+	}
+	inline double_prec xi(double_prec k_x, double_prec k_y) {
+		return cos(k_x) - cos(k_y);
+	}
+	template<typename... Args>
+	inline double_prec unperturbed_energy(Args... ks) {
+		return -2. * (cos(ks) + ...);
+	};
 
 	template <const int vector_size>
 	void printAsRow(Eigen::Vector<double_prec, vector_size>& printer) {
@@ -39,9 +58,11 @@ namespace Hubbard {
 		std::cout << std::endl;
 	}
 
+	template <typename DataType>
 	class BaseModel {
 	protected:
-		typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> SpinorMatrix;
+		typedef Eigen::Vector<DataType, Eigen::Dynamic> ParameterVector;
+
 		const complex_prec I = { 0, 1 };
 		SpinorMatrix hamilton;
 
@@ -50,22 +71,18 @@ namespace Hubbard {
 		double_prec V;
 		double_prec U_OVER_N;
 		double_prec V_OVER_N;
+		double_prec chemical_potential;
 
 		size_t TOTAL_BASIS;
-		double_prec delta_sc, delta_cdw, delta_afm, delta_eta;
-		double_prec chemical_potential;
+		size_t SPINOR_SIZE;
+
+		// Maps the parameters (delta_sc etc) to an index
+		std::vector<DataType*> parameterMapper;
+		// Stores the coefficients for the parameters (e.g. V/N) with the appropriate index
+		std::vector<double_prec> parameterCoefficients;
 
 		inline virtual void computeChemicalPotential() {
 			this->chemical_potential = 0.5 * U + 4 * V;
-		};
-
-		template<typename... Args>
-		inline double_prec gamma(Args... ks) const {
-			return (cos(ks) + ...);
-		}
-		template<typename... Args>
-		inline double_prec unperturbed_energy(Args... ks) const {
-			return -2 * gamma(ks...);
 		};
 
 		inline double_prec fermi_dirac(double_prec energy) const {
@@ -87,8 +104,46 @@ namespace Hubbard {
 			}
 			rho = solvedHamilton.eigenvectors() * rho * solvedHamilton.eigenvectors().adjoint();
 		};
+		void setParameters(ParameterVector& F) {
+			for (size_t i = 0; i < F.size(); i++)
+			{
+				F(i) *= parameterCoefficients[i];
+			}
+
+			constexpr double_prec new_weight = 0.5;
+			for (size_t i = 0; i < F.size(); i++)
+			{
+				*(parameterMapper[i]) = new_weight * F(i) + (1 - new_weight) * (*(parameterMapper[i]));
+			}
+		};
+
+		virtual void fillHamiltonianHelper(va_list args) = 0;
+		void fillHamiltonian(int variadic_count, ...) {
+			va_list args;
+			va_start(args, variadic_count);
+			fillHamiltonianHelper(args);
+			va_end(args);
+		};
+
+		virtual void addToParameterSetHelper(const SpinorMatrix& rho, ParameterVector& F, va_list args) = 0;
+		void addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, int variadic_count, ...) {
+			va_list args;
+			va_start(args, variadic_count);
+			addToParameterSetHelper(rho, F, args);
+			va_end(args);
+		};
 
 	public:
-		BaseModel(const ModelParameters& _params);
+		BaseModel(const ModelParameters& _params)
+			: temperature(_params.temperature), U(_params.U), V(_params.V)
+		{
+			this->U_OVER_N = U / Constants::BASIS_SIZE;
+			this->V_OVER_N = V / Constants::BASIS_SIZE;
+
+			this->SPINOR_SIZE = 4;
+			computeChemicalPotential();
+		};
+
+		virtual PhaseDataSet computePhases(const bool print = false) = 0;
 	};
 }

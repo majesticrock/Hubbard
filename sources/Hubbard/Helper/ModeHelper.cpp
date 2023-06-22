@@ -1,6 +1,4 @@
 #include "ModeHelper.hpp"
-#include "../UsingBroyden.hpp"
-#include "../HubbardCDW.hpp"
 
 namespace Hubbard::Helper {
 	void ModeHelper::loadWick(const std::string& filename)
@@ -148,12 +146,7 @@ namespace Hubbard::Helper {
 		Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 			0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
-		if (input.getBool("use_broyden")) {
-			model = std::make_unique<UsingBroyden>(modelParameters);
-		}
-		else {
-			model = std::make_unique<HubbardCDW>(modelParameters);
-		}
+		model = std::make_unique<SquareLattice::UsingBroyden>(modelParameters);
 
 		start_basis_at = input.getInt("start_basis_at");
 		this->number_of_basis_terms = input.getInt("number_of_basis_terms");

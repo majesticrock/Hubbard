@@ -21,8 +21,8 @@
 #include "Hubbard/Helper/XPModes.hpp"
 #include "Hubbard/Helper/GeneralBasis.hpp"
 #include "Utility/InputFileReader.hpp"
-#include "Hubbard/TripletPairingIterative.hpp"
-#include "Hubbard/UsingBroyden.hpp"
+#include "Hubbard/SquareLattice/TripletPairingIterative.hpp"
+#include "Hubbard/SquareLattice/UsingBroyden.hpp"
 #include "Hubbard/Constants.hpp"
 #include "Utility/OutputConvenience.hpp"
 
@@ -67,24 +67,21 @@ int main(int argc, char** argv)
 
 	if (input.getString("compute_what") == "test") {
 		Hubbard::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
-		Hubbard::HubbardCDW model(mP);
-		//Hubbard::TripletPairingIterative model(mP);
+		Hubbard::SquareLattice::HubbardCDW model(mP);
+		//Hubbard::SquareLattice::TripletPairingIterative model(mP);
 
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		model.computePhases(true).print();
 		std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 		std::cout << "\n\n" << std::endl;
-		return MPI_Finalize();
-		Hubbard::UsingBroyden model2(mP);
+		//return MPI_Finalize();
+		Hubbard::SquareLattice::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
 		model2.computePhases(true).print();
 		test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 
-		std::vector<std::vector<double>> energies;
-		model2.getEnergies(energies, 1);
-		Utility::saveData_boost(energies, "../../data/energies.dat.gz");
 		return MPI_Finalize();
 	}
 	else if (input.getString("compute_what") == "phases") {

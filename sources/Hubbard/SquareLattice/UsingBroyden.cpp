@@ -2,11 +2,14 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
-#include "../Utility/Roots_Broyden.hpp"
+#include "../../Utility/Roots_Broyden.hpp"
 
-namespace Hubbard {
-	void UsingBroyden::fillHamiltonian(double_prec k_x, double_prec k_y)
+constexpr int NUMBER_OF_PARAMETERS = 8;
+
+namespace Hubbard::SquareLattice {
+	void UsingBroyden::fillHamiltonianHelper(va_list args)
 	{
+		UNPACK_2D;
 		hamilton.fill(0);
 		const double_prec GAMMA = gamma(k_x, k_y);
 		const double_prec XI = xi(k_x, k_y);
@@ -30,12 +33,34 @@ namespace Hubbard {
 	}
 
 	UsingBroyden::UsingBroyden(const ModelParameters& _params)
-		: Model(_params)
+		: Model(_params), BaseModelRealAttributes(_params)
 	{
 		this->hamilton = SpinorMatrix::Zero(4, 4);
+
+		parameterMapper = {
+			&(this->delta_cdw),
+			&(this->delta_afm),
+			&(this->delta_sc),
+			&(this->gamma_sc),
+			&(this->xi_sc),
+			&(this->delta_eta),
+			&(this->delta_occupation_up),
+			&(this->delta_occupation_down),
+		};
+
+		parameterCoefficients = {
+			0.5 * U_OVER_N - 4. * V_OVER_N, // CDW
+			0.5 * U_OVER_N, // AFM
+			U_OVER_N, // SC
+			V_OVER_N, // Gamma SC
+			V_OVER_N, // Xi SC
+			U_OVER_N, // Eta
+			V_OVER_N, // Occupation Up
+			V_OVER_N, // Occupation Down
+		};
 	}
 
-	Model::data_set UsingBroyden::computePhases(const bool print/*=false*/)
+	PhaseDataSet UsingBroyden::computePhases(const bool print/*=false*/)
 	{
 		SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
 		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
@@ -54,7 +79,6 @@ namespace Hubbard {
 			complex_prec c_sc = { 0, 0 }, c_eta = { 0, 0 };
 			complex_prec c_gamma_sc = { 0, 0 }, c_xi_sc = { 0, 0 };
 
-			F = ParameterVector::Zero();
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				double_prec k_x = (k * L_PI) / (Constants::K_DISCRETIZATION);
@@ -97,16 +121,7 @@ namespace Hubbard {
 			F(4) = c_xi_sc.imag();
 			F(5) = c_eta.imag();
 
-			F(0) *= 0.5 * U_OVER_N - 4 * V_OVER_N; // CDW
-			F(1) *= 0.5 * U_OVER_N; // AFM
-			F(2) *= U_OVER_N; // SC
-			F(3) *= V_OVER_N; // Gamma SC
-			F(4) *= V_OVER_N; // Xi SC
-			F(5) *= U_OVER_N; // Eta
-			F(6) *= V_OVER_N; // Occupation Up
-			F(7) *= V_OVER_N; // Occupation Down
-
-			for (size_t i = 0; i < F.size(); i++)
+			for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
 			{
 				if (std::abs(F(i)) < 1e-14) {
 					F(i) = 0;
@@ -117,10 +132,10 @@ namespace Hubbard {
 			F -= x;
 		};
 		std::function<void(const ParameterVector&, ParameterVector&)> func = lambda_func;
-		ParameterVector f0;
+		ParameterVector f0 = ParameterVector::Zero(NUMBER_OF_PARAMETERS);
 		f0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta, delta_occupation_up, delta_occupation_down;
 		ParameterVector x0;
-		x0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta, delta_occupation_up, delta_occupation_down;
+		x0 = f0;
 		for (size_t i = 0; i < 300 && f0.squaredNorm() > 1e-15; i++)
 		{
 			func(x0, f0);
@@ -146,8 +161,8 @@ namespace Hubbard {
 			}
 		}
 
-		data_set ret;
-		Utility::NumericalSolver::Roots::Broyden<double_prec, 8> broyden_solver;
+		PhaseDataSet ret;
+		Utility::NumericalSolver::Roots::Broyden<double_prec, -1> broyden_solver;
 		if (!broyden_solver.compute(func, x0, 400)) {
 			std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
 				<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;

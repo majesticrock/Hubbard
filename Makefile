@@ -15,7 +15,8 @@ OPT = -march=native -O3
 COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp WickCleaner.cpp
 
 HELPER_SRCS=PhaseHelper.cpp ModeHelper.cpp XPModes.cpp GeneralBasis.cpp
-HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) BaseModel.cpp Model.cpp ModelParameters.cpp HubbardCDW.cpp UsingBroyden.cpp TripletPairingIterative.cpp
+SQUARE_SRCS=HubbardCDW.cpp UsingBroyden.cpp TripletPairingIterative.cpp
+HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(addprefix SquareLattice/, $(SQUARE_SRCS)) PhaseDataSet.cpp ModelParameters.cpp
 UTIL_SRCS=InputFileReader.cpp
 
 PART_SRCS=Hubbard_Mean_Field.cpp
@@ -35,6 +36,7 @@ build:
 	mkdir -p build
 	mkdir -p build/Hubbard
 	mkdir -p build/Hubbard/Helper
+	mkdir -p build/Hubbard/SquareLattice
 	mkdir -p build/Utility
 	mkdir -p ../FermionCommute/build
 	ln -s ../../FermionCommute/build build/SymbolicOperators

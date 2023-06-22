@@ -1,6 +1,6 @@
 #include "PhaseHelper.hpp"
-#include "../UsingBroyden.hpp"
-#include "../HubbardCDW.hpp"
+#include "../SquareLattice/UsingBroyden.hpp"
+#include "../SquareLattice/HubbardCDW.hpp"
 
 namespace Hubbard::Helper {
 	void PhaseHelper::Plaquette::devidePlaquette(std::vector<PhaseHelper::Plaquette>& appendTo, int value_index) {
@@ -129,13 +129,13 @@ namespace Hubbard::Helper {
 			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 	}
 
-	Model::data_set PhaseHelper::computeDataPoint(const ModelParameters& mp) {
-		Model::data_set ret;
+	PhaseDataSet PhaseHelper::computeDataPoint(const ModelParameters& mp) {
+		PhaseDataSet ret;
 		if (use_broyden) {
-			UsingBroyden model(mp);
+			SquareLattice::UsingBroyden model(mp);
 			return model.computePhases();
 		}
-		HubbardCDW model(mp);
+		SquareLattice::HubbardCDW model(mp);
 		return model.computePhases();
 	}
 
@@ -148,7 +148,7 @@ namespace Hubbard::Helper {
 			{
 				ModelParameters local = modelParameters;
 				local.setSecondIterator(U);
-				Model::data_set ret = computeDataPoint(local);
+				PhaseDataSet ret = computeDataPoint(local);
 
 				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
 				{
