@@ -72,10 +72,11 @@ int main(int argc, char** argv)
 
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		model.computePhases(true).print();
+		std::cout << "Internal energy = " << model.internalEnergyPerSite() << std::endl;
 		std::chrono::steady_clock::time_point test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 		std::cout << "\n\n" << std::endl;
-		//return MPI_Finalize();
+		return MPI_Finalize();
 		Hubbard::SquareLattice::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
 		model2.computePhases(true).print();

@@ -13,12 +13,12 @@ namespace Hubbard::SquareLattice {
 		hamilton(0, 1) = this->delta_cdw - this->delta_afm;// +((gamma_cdw - this->gamma_afm) * GAMMA + (xi_cdw - this->xi_afm) * XI);
 
 		hamilton(0, 2) = this->delta_sc + (this->gamma_sc * GAMMA + this->xi_sc * XI);
-		hamilton(0, 3) = this->delta_eta + (this->gamma_eta * GAMMA + this->xi_eta * XI);
+		hamilton(0, 3) = this->delta_eta;// + (this->gamma_eta * GAMMA + this->xi_eta * XI);
 
-		hamilton(1, 2) = this->delta_eta - (this->gamma_eta * GAMMA + this->xi_eta * XI);
+		hamilton(1, 2) = this->delta_eta;// - (this->gamma_eta * GAMMA + this->xi_eta * XI);
 		hamilton(1, 3) = this->delta_sc - (this->gamma_sc * GAMMA + this->xi_sc * XI);
 
-		hamilton(2, 3) = -this->delta_cdw - this->delta_afm;// - ((gamma_cdw + this->gamma_afm) * GAMMA + (xi_cdw + this->xi_afm) * XI);
+		hamilton(2, 3) = -this->delta_cdw - this->delta_afm;// -((gamma_cdw + this->gamma_afm) * GAMMA + (xi_cdw + this->xi_afm) * XI);
 
 		SpinorMatrix buffer = hamilton.adjoint();
 		hamilton += buffer;
@@ -34,31 +34,31 @@ namespace Hubbard::SquareLattice {
 	{
 		this->delta_cdw = (std::abs(U) + V) * 0.5 + 0.1;
 		this->delta_sc = (std::abs(U + std::abs(V)) * 0.3 + 0.05);
+		if (U > 0) {
+			this->delta_afm = -this->delta_cdw;
+		}
+		else {
+			this->delta_afm = 0;
+		}
 		if (V > 0) {
 			this->delta_sc *= 0;
 		}
 		else if (V < 0) {
 			this->delta_cdw *= 0;
 		}
-		if (U > 0) {
-			this->delta_afm = std::abs(U - std::abs(V)) * 0.5 + 0.1;
-		}
-		else {
-			this->delta_afm = 0;
-		}
-		this->delta_eta = 0;//U * 0.1;
-		this->delta_occupation_up = -V * 0.2;
-		this->delta_occupation_down = -V * 0.2;
+		this->delta_eta = 0;// I* U * 0.1;
+		this->delta_occupation_up = V * 0.2;
+		this->delta_occupation_down = V * 0.2;
 		this->delta_occupation_up_y = V * 0.2;
 		this->delta_occupation_down_y = V * 0.2;
 		this->gamma_sc = V * 0.05;
 		this->xi_sc = I * std::abs(V) * 0.1;
-		this->gamma_cdw = 0;//I * V * 0.15;
-		this->xi_cdw = 0;//I * V * 0.2;
-		this->gamma_afm = 0;//I * V * 0.05;
-		this->xi_afm = 0;//I * V * 0.04;
-		this->gamma_eta = 0;//V * 0.01;
-		this->xi_eta = 0;// V * 0.01;
+		this->gamma_cdw = I * V * 0.15;
+		this->xi_cdw = I * V * 0.2;
+		this->gamma_afm = I * V * 0.05;
+		this->xi_afm = I * V * 0.04;
+		this->gamma_eta = I * V * 0.01;
+		this->xi_eta = V * 0.01;
 
 		this->hamilton = SpinorMatrix::Zero(4, 4);
 
@@ -106,7 +106,7 @@ namespace Hubbard::SquareLattice {
 
 		constexpr double_prec EPSILON = 1e-12;
 		double_prec error = 100;
-		constexpr int MAX_STEPS = 2500;
+		constexpr int MAX_STEPS = 500;
 
 		ParameterVector f0 = ParameterVector(NUMBER_OF_PARAMETERS);
 		for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)

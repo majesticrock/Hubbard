@@ -1,5 +1,6 @@
 #pragma once
 #include "../MomentumBasedModel.hpp"
+#include <type_traits>
 
 namespace Hubbard::SquareLattice {
 	template <typename DataType>
@@ -7,9 +8,15 @@ namespace Hubbard::SquareLattice {
 	{
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
+		virtual inline void complexParametersToReal(const ComplexParameterVector& c, ParameterVector& r) const {
+			// Does nothing, unless the derived class states otherwise
+		};
 
-		inline void iterationStep(const ParameterVector& x, ParameterVector F) {
+		inline void iterationStep(const ParameterVector& x, ParameterVector& F) {
 			F.fill(0);
+			std::conditional_t<std::is_same_v<DataType, std::complex<double>>,
+				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
+
 			SpinorMatrix rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
@@ -24,14 +31,15 @@ namespace Hubbard::SquareLattice {
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; l++)
 				{
 					double_prec k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
-					this->fillHamiltonian(k_x, k_y);
+					this->fillHamiltonian(2, k_x, k_y);
 					solver.compute(this->hamilton);
 					this->fillRho(rho, solver);
 
-					this->addToParameterSet(rho, F, k_x, k_y);
+					this->addToParameterSet(rho, complex_F, 2, k_x, k_y);
 				}
 			}
 
+			complexParametersToReal(complex_F, F);
 			this->setParameters(F);
 			F -= x;
 		};
@@ -51,7 +59,7 @@ namespace Hubbard::SquareLattice {
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
 					l_val = l * L_PI / Constants::K_DISCRETIZATION;
-					this->fillHamiltonian(k_val, l_val);
+					this->fillHamiltonian(2, k_val, l_val);
 					solver.compute(this->hamilton, false);
 					reciever[k + Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(0);
 
@@ -66,6 +74,27 @@ namespace Hubbard::SquareLattice {
 			}
 		};
 
+		inline double_prec internalEnergyPerSite() {
+			double_prec energy = 0;
+			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
+			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
+			{
+				double_prec k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				for (int l = -Constants::K_DISCRETIZATION; l < 0; l++)
+				{
+					double_prec k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
+					this->fillHamiltonian(2, k_x, k_y);
+					solver.compute(this->hamilton, false);
+
+					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+					{
+						energy += BaseModel<DataType>::fermi_dirac(solver.eigenvalues()(i)) * solver.eigenvalues()(i);
+					}
+				}
+			}
+			return energy / Constants::BASIS_SIZE;
+		};
+
 		inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) {
 			SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
@@ -77,7 +106,7 @@ namespace Hubbard::SquareLattice {
 			{
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					this->fillHamiltonian((k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION);
+					this->fillHamiltonian(2, (k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION);
 					solver.compute(this->hamilton);
 					this->fillRho(rho, solver);
 

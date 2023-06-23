@@ -22,15 +22,12 @@ namespace Hubbard {
 
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {
-				//if (!(momentum.has_value())) throw std::length_error("Calling epsilon(k) without specifying k!");
 				return (unperturbed_energy(index_to_k_vector(momentum(0)), index_to_k_vector(momentum(1))) - this->chemical_potential);
 			}
 			if (coeff.name == "\\frac{U}{N}") {
 				return this->U_OVER_N;
 			}
 			if (coeff.name == "\\tilde{V}") {
-				//if (!(momentum.has_value())) throw std::invalid_argument("Calling V without specifying a momentum!");
-				// Eventuell ein Faktor 2?
 				return this->V_OVER_N * (cos(index_to_k_vector(momentum(0))) + cos(index_to_k_vector(momentum(1))));
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));

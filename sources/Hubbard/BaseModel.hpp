@@ -58,6 +58,8 @@ namespace Hubbard {
 		std::cout << std::endl;
 	}
 
+	typedef Eigen::Vector<complex_prec, Eigen::Dynamic> ComplexParameterVector;
+
 	template <typename DataType>
 	class BaseModel {
 	protected:
@@ -125,8 +127,8 @@ namespace Hubbard {
 			va_end(args);
 		};
 
-		virtual void addToParameterSetHelper(const SpinorMatrix& rho, ParameterVector& F, va_list args) = 0;
-		void addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, int variadic_count, ...) {
+		virtual void addToParameterSetHelper(const SpinorMatrix& rho, ComplexParameterVector& F, va_list args) = 0;
+		void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, int variadic_count, ...) {
 			va_list args;
 			va_start(args, variadic_count);
 			addToParameterSetHelper(rho, F, args);

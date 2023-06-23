@@ -15,11 +15,11 @@ namespace Hubbard::SquareLattice {
 		const double_prec XI = xi(k_x, k_y);
 
 		hamilton(0, 1) = delta_cdw - delta_afm;;
-		hamilton(0, 2) = delta_sc + I * (gamma_sc * GAMMA + xi_sc * XI);
+		hamilton(0, 2) = delta_sc + (gamma_sc * GAMMA + I * xi_sc * XI);
 		hamilton(0, 3) = I * delta_eta;
 
 		hamilton(1, 2) = I * delta_eta;
-		hamilton(1, 3) = delta_sc - I * (gamma_sc * GAMMA + xi_sc * XI);
+		hamilton(1, 3) = delta_sc - (gamma_sc * GAMMA + I * xi_sc * XI);
 		hamilton(2, 3) = -delta_cdw - delta_afm;
 
 		SpinorMatrix buffer = hamilton.adjoint();
@@ -65,73 +65,9 @@ namespace Hubbard::SquareLattice {
 		SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
 		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
-		auto lambda_func = [&](const ParameterVector& x, ParameterVector& F) {
-			F.fill(0);
-			delta_cdw = x(0);
-			delta_afm = x(1);
-			delta_sc = x(2);
-			gamma_sc = x(3);
-			xi_sc = x(4);
-			delta_eta = x(5);
-			delta_occupation_up = x(6);
-			delta_occupation_down = x(7);
-
-			complex_prec c_sc = { 0, 0 }, c_eta = { 0, 0 };
-			complex_prec c_gamma_sc = { 0, 0 }, c_xi_sc = { 0, 0 };
-
-			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
-			{
-				double_prec k_x = (k * L_PI) / (Constants::K_DISCRETIZATION);
-				for (int l = -Constants::K_DISCRETIZATION; l < 0; l++)
-				{
-					double_prec k_y = (l * L_PI) / (Constants::K_DISCRETIZATION);
-					fillHamiltonian(k_x, k_y);
-					solver.compute(hamilton);
-					fillRho(rho, solver);
-
-					F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
-					F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
-					c_sc -= (rho(0, 2) + rho(1, 3)); // SC
-					c_gamma_sc -= gamma(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Gamma SC
-					c_xi_sc -= xi(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Xi SC
-					c_eta -= (rho(0, 3) + rho(1, 2)); // Eta
-					F(6) -= cos(k_x) * (rho(0, 0) - rho(1, 1)).real(); // Occupation Up
-					F(7) += cos(k_x) * (rho(2, 2) - rho(3, 3)).real(); // Occupation Down
-				}
-			}
-
-			{ // Checks for numerical accurarcy
-				const double ERROR_MARGIN = 1e-10 * Constants::BASIS_SIZE;
-				if (std::abs(c_sc.imag()) > ERROR_MARGIN) {
-					std::cout << "sc: " << c_sc << std::endl;
-				}
-				if (std::abs(c_eta.real()) > ERROR_MARGIN) {
-					std::cout << "eta: " << c_eta << std::endl;
-				}
-				if (std::abs(c_gamma_sc.real()) > ERROR_MARGIN) {
-					std::cout << "xi sc x: " << c_gamma_sc << std::endl;
-				}
-				if (std::abs(c_xi_sc.real()) > ERROR_MARGIN) {
-					std::cout << "xi sc y: " << c_xi_sc << std::endl;
-				}
-			}
-
-			F(2) = c_sc.real();
-			F(3) = c_gamma_sc.imag();
-			F(4) = c_xi_sc.imag();
-			F(5) = c_eta.imag();
-
-			for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
-			{
-				if (std::abs(F(i)) < 1e-14) {
-					F(i) = 0;
-				}
-			}
-
-			setParameters(F);
-			F -= x;
+		std::function<void(const ParameterVector&, ParameterVector&)> func = [&](const ParameterVector& x, ParameterVector& F) {
+			iterationStep(x, F);
 		};
-		std::function<void(const ParameterVector&, ParameterVector&)> func = lambda_func;
 		ParameterVector f0 = ParameterVector::Zero(NUMBER_OF_PARAMETERS);
 		f0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta, delta_occupation_up, delta_occupation_down;
 		ParameterVector x0;
