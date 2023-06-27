@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <optional>
 
 #include "../../Utility/InputFileReader.hpp"
 #include "../SquareLattice/Model.hpp"
@@ -20,6 +21,7 @@ namespace Hubbard::Helper {
 			*  2 3
 			*/
 			std::vector<double> values = { 0,0,0,0 };
+			BaseModelRealAttributes averageParameters;
 
 			inline bool valueIsFinite(int index) const {
 				return std::abs(values[index]) > 1e-10;
@@ -58,11 +60,11 @@ namespace Hubbard::Helper {
 
 		bool use_broyden;
 		ModelParameters modelParameters;
-		PhaseDataSet computeDataPoint(const ModelParameters& mp);
+		BaseModelRealAttributes computeDataPoint(const ModelParameters& mp, std::optional<BaseModelRealAttributes> startingValues = std::nullopt);
 	public:
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);
 
-		void compute_crude(std::vector<data_vector*>& data_mapper);
-		void findSingleBoundary(const data_vector& origin, data_vector& recieve_data, int value_index, int rank);
+		void compute_crude(std::vector<data_vector>& data_mapper);
+		void findSingleBoundary(const std::vector<data_vector>& origin, data_vector& recieve_data, int value_index, int rank);
 	};
 }

@@ -3,10 +3,11 @@
 #include <iostream>
 #include <cmath>
 #include <cstdarg>
+#include <type_traits>
 #include "Constants.hpp"
 #include "ModelParameters.hpp"
-#include "PhaseDataSet.hpp"
 #include "../Utility/Resolvent.hpp"
+#include "BaseModelAttributes.hpp"
 
 namespace Hubbard {
 	// Defines the working precision of the entire project
@@ -61,8 +62,11 @@ namespace Hubbard {
 	typedef Eigen::Vector<complex_prec, Eigen::Dynamic> ComplexParameterVector;
 
 	template <typename DataType>
-	class BaseModel {
+	class BaseModel : 
+		public std::conditional_t<std::is_same_v<DataType, double_prec>, BaseModelRealAttributes, BaseModelComplexAttributes>
+	{
 	protected:
+		using BaseAttributes = std::conditional_t<std::is_same_v<DataType, double_prec>, BaseModelRealAttributes, BaseModelComplexAttributes>;
 		typedef Eigen::Vector<DataType, Eigen::Dynamic> ParameterVector;
 
 		const complex_prec I = { 0, 1 };
@@ -78,8 +82,6 @@ namespace Hubbard {
 		size_t TOTAL_BASIS;
 		size_t SPINOR_SIZE;
 
-		// Maps the parameters (delta_sc etc) to an index
-		std::vector<DataType*> parameterMapper;
 		// Stores the coefficients for the parameters (e.g. V/N) with the appropriate index
 		std::vector<double_prec> parameterCoefficients;
 
@@ -89,7 +91,7 @@ namespace Hubbard {
 
 		inline double_prec fermi_dirac(double_prec energy) const {
 			if (temperature > 1e-8) {
-				return (1. / (1 + exp(energy / temperature)));
+				return (1. / (1. + exp(energy / temperature)));
 			}
 			else {
 				if (std::abs(energy) < 1e-12) {
@@ -115,7 +117,7 @@ namespace Hubbard {
 			constexpr double_prec new_weight = 0.5;
 			for (size_t i = 0; i < F.size(); i++)
 			{
-				*(parameterMapper[i]) = new_weight * F(i) + (1 - new_weight) * (*(parameterMapper[i]));
+				*(this->parameterMapper[i]) = new_weight * F(i) + (1 - new_weight) * (*(this->parameterMapper[i]));
 			}
 		};
 
@@ -137,7 +139,7 @@ namespace Hubbard {
 
 	public:
 		BaseModel(const ModelParameters& _params)
-			: temperature(_params.temperature), U(_params.U), V(_params.V)
+			: BaseAttributes(_params), temperature(_params.temperature), U(_params.U), V(_params.V)
 		{
 			this->U_OVER_N = U / Constants::BASIS_SIZE;
 			this->V_OVER_N = V / Constants::BASIS_SIZE;
@@ -146,6 +148,16 @@ namespace Hubbard {
 			computeChemicalPotential();
 		};
 
-		virtual PhaseDataSet computePhases(const bool print = false) = 0;
+		BaseModel(const ModelParameters& _params, const BaseAttributes& startingValues)
+			: BaseAttributes(startingValues), temperature(_params.temperature), U(_params.U), V(_params.V)
+		{ 
+			this->U_OVER_N = U / Constants::BASIS_SIZE;
+			this->V_OVER_N = V / Constants::BASIS_SIZE;
+
+			this->SPINOR_SIZE = 4;
+			computeChemicalPotential();
+		};
+
+		virtual BaseModelRealAttributes computePhases(const bool print = false) = 0;
 	};
 }

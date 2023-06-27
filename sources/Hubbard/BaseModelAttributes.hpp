@@ -1,9 +1,12 @@
 #pragma once
-#include "BaseModel.hpp"
+#include <vector>
+#include <complex>
+#include <iostream>
+#include "ModelParameters.hpp"
 
 namespace Hubbard {
 	template <typename DataType>
-	class BaseModelAttributes {
+	struct BaseModelAttributes {
 	private:
 		void initializeParamters(const ModelParameters& _params) {
 			this->delta_cdw = (std::abs(_params.U) + _params.V) * 0.5 + 0.1;
@@ -22,52 +25,92 @@ namespace Hubbard {
 			}
 
 			this->delta_eta = 0;//_params.U * 0.1;
-			this->delta_occupation_up = _params.V * 0.2;
-			this->delta_occupation_down = _params.V * 0.2;
+			this->gamma_occupation_up = _params.V * 0.2;
+			this->gamma_occupation_down = _params.V * 0.2;
 
 			this->gamma_sc = _params.V * 0.05;
 			this->xi_sc = std::abs(_params.V) * 0.2;
 		}
+		void initializeMapper() {
+			parameterMapper = {
+				&(this->delta_cdw),
+				&(this->delta_afm),
+				&(this->delta_sc),
+				&(this->gamma_sc),
+				&(this->xi_sc),
+				&(this->delta_eta),
+				&(this->gamma_occupation_up),
+				&(this->gamma_occupation_down),
+			};
+		};
 	protected:
-		DataType delta_sc, delta_eta, gamma_sc, xi_sc;
-		DataType delta_occupation_up, delta_occupation_down, delta_cdw, delta_afm;
-
-		inline virtual double_prec renormalizedEnergy_up(double_prec k_x, double_prec k_y) const = 0;
-		inline virtual double_prec renormalizedEnergy_down(double_prec k_x, double_prec k_y) const = 0;
+		std::vector<DataType*> parameterMapper;
 	public:
+		DataType delta_sc = 0., delta_eta = 0., gamma_sc = 0., xi_sc = 0.;
+		DataType gamma_occupation_up = 0., gamma_occupation_down = 0., delta_cdw = 0., delta_afm = 0.;
+		// Maps the parameters (delta_sc etc) to an index
+
+		inline DataType& operator[](int i) {
+			return *(parameterMapper[i]);
+		};
+		inline const DataType& operator[](int i) const {
+			return *(parameterMapper[i]);
+		};
+		inline size_t size() const {
+			return parameterMapper.size();
+		}
+
+		inline virtual double renormalizedEnergy_up(const double GAMMA) const = 0;
+		inline virtual double renormalizedEnergy_down(const double GAMMA) const = 0;
+
 		BaseModelAttributes(const ModelParameters& _params) {
 			initializeParamters(_params);
+			initializeMapper();
+		};
+		BaseModelAttributes() {
+			initializeMapper();
 		};
 		// Returns the total gap value sqrt(sc^2 + cdw^2 + eta^2)
-		inline double_prec getTotalGapValue() const {
+		inline double getTotalGapValue() const {
 			return sqrt(std::abs(delta_cdw) * std::abs(delta_cdw) + std::abs(delta_sc) * std::abs(delta_sc)
 				+ std::abs(delta_eta) * std::abs(delta_eta));
 		};
+
+		inline bool isFinite(int i, double epsilon = 1e-12) const {
+			return (std::abs((*this)[i]) > epsilon);
+		}
+		inline void print() const {
+			std::cout << delta_cdw << "\t" << delta_afm << "\t" << delta_sc << "\t" << delta_eta << "\t" << xi_sc
+				<< "\n    Delta_tot = " << getTotalGapValue() << std::endl;
+		};
 	};
 
-	class BaseModelRealAttributes : public BaseModelAttributes<double_prec> {
-	protected:
-		inline virtual double_prec renormalizedEnergy_up(double_prec k_x, double_prec k_y) const override {
-			return -2. * (1. + this->delta_occupation_up) * gamma(k_x, k_y);
-		};
-		inline virtual double_prec renormalizedEnergy_down(double_prec k_x, double_prec k_y) const override {
-			return -2. * (1. + this->delta_occupation_down) * gamma(k_x, k_y);
-		};
+	struct BaseModelRealAttributes;
 
-	public:
-		BaseModelRealAttributes(const ModelParameters& _params) : BaseModelAttributes(_params) {};
+	struct BaseModelComplexAttributes : public BaseModelAttributes<std::complex<double>> {
+		inline virtual double renormalizedEnergy_up(const double GAMMA) const override {
+			return -(2. + this->gamma_occupation_up.real()) * GAMMA;
+		};
+		inline virtual double renormalizedEnergy_down(const double GAMMA) const override {
+			return -(2. + this->gamma_occupation_down.real()) * GAMMA;
+		};
+		BaseModelComplexAttributes();
+		BaseModelComplexAttributes(const ModelParameters& _params);
+		BaseModelComplexAttributes(const BaseModelRealAttributes& realValues);
 	};
 
-	class BaseModelComplexAttributes : public BaseModelAttributes<complex_prec> {
-	protected:
-		inline virtual double_prec renormalizedEnergy_up(double_prec k_x, double_prec k_y) const override {
-			return -2. * (1. + this->delta_occupation_up.real()) * gamma(k_x, k_y);
+	struct BaseModelRealAttributes : public BaseModelAttributes<double> {
+		inline virtual double renormalizedEnergy_up(const double GAMMA) const override {
+			return -(2. + this->gamma_occupation_up) * GAMMA;
 		};
-		inline virtual double_prec renormalizedEnergy_down(double_prec k_x, double_prec k_y) const override {
-			return -2. * (1. + this->delta_occupation_down.real()) * gamma(k_x, k_y);
+		inline virtual double renormalizedEnergy_down(const double GAMMA) const override {
+			return -(2. + this->gamma_occupation_down) * GAMMA;
 		};
+		BaseModelRealAttributes();
+		BaseModelRealAttributes(const ModelParameters& _params);
 
-	public:
-		BaseModelComplexAttributes(const ModelParameters& _params) : BaseModelAttributes(_params) {};
+		// This constructor is used for data output in the complex case.
+		// We assume previous analytical knowledge about the the real and imaginary parts
+		BaseModelRealAttributes(const BaseModelComplexAttributes& complexValues);
 	};
 }

@@ -23,10 +23,10 @@ namespace Hubbard::SquareLattice {
 
 		SpinorMatrix buffer = diagonalBlock.adjoint();
 		diagonalBlock += buffer;
-		double_prec eps = renormalizedEnergy_up(k_x, k_y);
+		double_prec eps = renormalizedEnergy_up(GAMMA) - 2. * this->xi_occupation_up.real() * XI;
 		diagonalBlock(0, 0) = eps;
 		diagonalBlock(1, 1) = -eps;
-		eps = renormalizedEnergy_down(k_x, k_y);
+		eps = renormalizedEnergy_down(GAMMA) - 2. * this->xi_occupation_down.real() * XI;
 		diagonalBlock(2, 2) = -eps;
 		diagonalBlock(3, 3) = eps;
 
@@ -65,7 +65,7 @@ namespace Hubbard::SquareLattice {
 		*(parameterMapper[17]) = (I + 0.5) * V;
 	}
 
-	PhaseDataSet TripletPairingIterative::computePhases(const bool print)
+	BaseModelRealAttributes TripletPairingIterative::computePhases(const bool print)
 	{
 		constexpr double_prec EPSILON = 1e-12;
 		double_prec error = 100;
@@ -130,14 +130,6 @@ namespace Hubbard::SquareLattice {
 				<< "]" << std::endl;
 		}
 
-		PhaseDataSet ret;
-		ret.delta_cdw = this->delta_cdw.real();
-		ret.delta_afm = this->delta_afm.real();
-		ret.delta_sc = this->delta_sc.real();
-		ret.gamma_sc = this->gamma_sc.imag();
-		ret.xi_sc = this->xi_sc.imag();
-		ret.delta_eta = this->delta_eta.imag();
-
-		return ret;
+		return BaseModelRealAttributes(*this);
 	}
 }

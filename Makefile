@@ -16,7 +16,7 @@ COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp Wic
 
 HELPER_SRCS=PhaseHelper.cpp ModeHelper.cpp XPModes.cpp GeneralBasis.cpp
 SQUARE_SRCS=HubbardCDW.cpp UsingBroyden.cpp TripletPairingIterative.cpp
-HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(addprefix SquareLattice/, $(SQUARE_SRCS)) PhaseDataSet.cpp ModelParameters.cpp
+HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(addprefix SquareLattice/, $(SQUARE_SRCS)) BaseModelAttributes.cpp ModelParameters.cpp
 UTIL_SRCS=InputFileReader.cpp
 
 PART_SRCS=Hubbard_Mean_Field.cpp

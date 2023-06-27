@@ -1,6 +1,7 @@
 #pragma once
 #include "BaseModel.hpp"
 #include "../../../FermionCommute/sources/Coefficient.hpp"
+#include "BaseModelAttributes.hpp"
 
 #define UNPACK_MOMENTUM(name) double_prec name = va_arg(args, double_prec);
 #define UNPACK_1D UNPACK_MOMENTUM(k_x)
@@ -9,7 +10,8 @@
 
 namespace Hubbard {
 	template <typename DataType, int Dimension>
-	class MomentumBasedModel : public BaseModel<DataType> {
+	class MomentumBasedModel : public BaseModel<DataType>
+	{
 	protected:
 		// maps an index; [0, N_K) -> [-pi, pi)
 		template <typename T>
@@ -17,8 +19,7 @@ namespace Hubbard {
 			return (((index * L_PI) / Constants::K_DISCRETIZATION) - L_PI);
 		};
 	public:
-		MomentumBasedModel(const ModelParameters& _params)
-			: BaseModel<DataType>(_params) { };
+		using BaseModel<DataType>::BaseModel;
 
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {

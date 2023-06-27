@@ -7,6 +7,21 @@
 constexpr int NUMBER_OF_PARAMETERS = 8;
 
 namespace Hubbard::SquareLattice {
+	void UsingBroyden::init()
+	{
+		this->hamilton = SpinorMatrix::Zero(4, 4);
+
+		parameterCoefficients = {
+			0.5 * U_OVER_N - 4. * V_OVER_N, // CDW
+			0.5 * U_OVER_N, // AFM
+			U_OVER_N, // SC
+			V_OVER_N, // Gamma SC
+			V_OVER_N, // Xi SC
+			U_OVER_N, // Eta
+			V_OVER_N, // Occupation Up
+			V_OVER_N, // Occupation Down
+		};
+	}
 	void UsingBroyden::fillHamiltonianHelper(va_list args)
 	{
 		UNPACK_2D;
@@ -24,65 +39,45 @@ namespace Hubbard::SquareLattice {
 
 		SpinorMatrix buffer = hamilton.adjoint();
 		hamilton += buffer;
-		double_prec eps = renormalizedEnergy_up(k_x, k_y);
+		double_prec eps = renormalizedEnergy_up(GAMMA);
 		hamilton(0, 0) = eps;
 		hamilton(1, 1) = -eps;
-		eps = renormalizedEnergy_down(k_x, k_y);
+		eps = renormalizedEnergy_down(GAMMA);
 		hamilton(2, 2) = -eps;
 		hamilton(3, 3) = eps;
 	}
 
 	UsingBroyden::UsingBroyden(const ModelParameters& _params)
-		: Model(_params), BaseModelRealAttributes(_params)
+		: Model(_params)
 	{
-		this->hamilton = SpinorMatrix::Zero(4, 4);
-
-		parameterMapper = {
-			&(this->delta_cdw),
-			&(this->delta_afm),
-			&(this->delta_sc),
-			&(this->gamma_sc),
-			&(this->xi_sc),
-			&(this->delta_eta),
-			&(this->delta_occupation_up),
-			&(this->delta_occupation_down),
-		};
-
-		parameterCoefficients = {
-			0.5 * U_OVER_N - 4. * V_OVER_N, // CDW
-			0.5 * U_OVER_N, // AFM
-			U_OVER_N, // SC
-			V_OVER_N, // Gamma SC
-			V_OVER_N, // Xi SC
-			U_OVER_N, // Eta
-			V_OVER_N, // Occupation Up
-			V_OVER_N, // Occupation Down
-		};
+		init();
 	}
 
-	PhaseDataSet UsingBroyden::computePhases(const bool print/*=false*/)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues)
+		: Model(_params, startingValues)
 	{
-		SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
-		Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
+		init();
+	}
 
+	BaseModelRealAttributes UsingBroyden::computePhases(const bool print/*=false*/)
+	{
 		std::function<void(const ParameterVector&, ParameterVector&)> func = [&](const ParameterVector& x, ParameterVector& F) {
 			iterationStep(x, F);
 		};
 		ParameterVector f0 = ParameterVector::Zero(NUMBER_OF_PARAMETERS);
-		f0 << delta_cdw, delta_afm, delta_sc, gamma_sc, xi_sc, delta_eta, delta_occupation_up, delta_occupation_down;
-		ParameterVector x0;
-		x0 = f0;
+		for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
+		{
+			f0(i) = *(parameterMapper[i]);
+		}
+		ParameterVector x0 = f0;
+
 		for (size_t i = 0; i < 300 && f0.squaredNorm() > 1e-15; i++)
 		{
 			func(x0, f0);
-			x0(0) = delta_cdw;
-			x0(1) = delta_afm;
-			x0(2) = delta_sc;
-			x0(3) = gamma_sc;
-			x0(4) = xi_sc;
-			x0(5) = delta_eta;
-			x0(6) = delta_occupation_up;
-			x0(7) = delta_occupation_down;
+			for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
+			{
+				x0(i) = *(parameterMapper[i]);
+			}
 
 			for (size_t i = 0; i < x0.size(); i++)
 			{
@@ -97,7 +92,6 @@ namespace Hubbard::SquareLattice {
 			}
 		}
 
-		PhaseDataSet ret;
 		Utility::NumericalSolver::Roots::Broyden<double_prec, -1> broyden_solver;
 		if (!broyden_solver.compute(func, x0, 400)) {
 			std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
@@ -108,7 +102,6 @@ namespace Hubbard::SquareLattice {
 			gamma_sc = 0;
 			xi_sc = 0;
 			delta_eta = 0;
-			ret.converged = false;
 		}
 
 		if (print) {
@@ -127,13 +120,6 @@ namespace Hubbard::SquareLattice {
 			std::cout << ")\n -> |f0| = " << std::scientific << std::setprecision(8) << f0.norm() << std::endl;
 		}
 
-		ret.delta_cdw = delta_cdw;
-		ret.delta_afm = delta_afm;
-		ret.delta_sc = delta_sc;
-		ret.gamma_sc = gamma_sc;
-		ret.xi_sc = xi_sc;
-		ret.delta_eta = delta_eta;
-
-		return ret;
+		return BaseModelRealAttributes(*this);
 	}
 }

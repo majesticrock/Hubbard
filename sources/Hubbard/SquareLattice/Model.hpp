@@ -14,7 +14,7 @@ namespace Hubbard::SquareLattice {
 
 		inline void iterationStep(const ParameterVector& x, ParameterVector& F) {
 			F.fill(0);
-			std::conditional_t<std::is_same_v<DataType, std::complex<double>>,
+			std::conditional_t<std::is_same_v<DataType, complex_prec>,
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			SpinorMatrix rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
@@ -39,12 +39,14 @@ namespace Hubbard::SquareLattice {
 				}
 			}
 
-			complexParametersToReal(complex_F, F);
+			if constexpr (!std::is_same<DataType, complex_prec>::value) {
+				complexParametersToReal(complex_F, F);
+			}
 			this->setParameters(F);
 			F -= x;
 		};
 	public:
-		Model(const ModelParameters& _params) : MomentumBasedModel<DataType, 2>(_params) { };
+		using MomentumBasedModel<DataType, 2>::MomentumBasedModel;
 
 		// saves all one particle energies to reciever
 		inline void getAllEnergies(std::vector<std::vector<double>>& reciever)

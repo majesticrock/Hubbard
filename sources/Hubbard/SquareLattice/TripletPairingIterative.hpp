@@ -26,6 +26,6 @@ namespace Hubbard::SquareLattice {
 		};
 	public:
 		TripletPairingIterative(const ModelParameters& _params);
-		virtual PhaseDataSet computePhases(const bool print = false) override;
+		virtual BaseModelRealAttributes computePhases(const bool print = false) override;
 	};
 }
