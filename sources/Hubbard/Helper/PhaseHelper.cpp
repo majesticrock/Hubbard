@@ -29,7 +29,6 @@ namespace Hubbard::Helper {
 			averageParameters += this->attributes[i];
 		}
 		averageParameters *= 0.25;
-
 		BaseModelRealAttributes new_attributes[5];
 
 		auto mp = parent->modelParameters;
@@ -57,9 +56,14 @@ namespace Hubbard::Helper {
 		mp.setSecondIteratorExact(centerSecond);
 		new_attributes[4] = parent->computeDataPoint(mp, averageParameters);
 
+		for	(int i = 0; i < 5; ++i){
+			new_attributes[i].print();
+		}
+		std::cout << "\n++++++++++++++++++++++++++++\n" << std::endl;
+
 		// Upper left
 		Plaquette new_plaq = *this;
-		new_plaq.attributes = { this->attributes[0],new_attributes[0], new_attributes[1], new_attributes[2] };
+		new_plaq.attributes = { this->attributes[0], new_attributes[0], new_attributes[1], new_attributes[2] };
 		if (new_plaq.containsPhaseBoundary()) {
 			new_plaq.lowerFirst = centerFirst;
 			new_plaq.upperSecond = centerSecond;
@@ -133,14 +137,14 @@ namespace Hubbard::Helper {
 	}
 
 	BaseModelRealAttributes PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<BaseModelRealAttributes> startingValues /*= std::nullopt*/) {
-		//if (startingValues.has_value()) {
-		//	if (use_broyden) {
-		//		SquareLattice::UsingBroyden model(mp, startingValues.value());
-		//		return model.computePhases();
-		//	}
-		//	SquareLattice::HubbardCDW model(mp, startingValues.value());
-		//	return model.computePhases();
-		//}
+		if (startingValues.has_value()) {
+			if (use_broyden) {
+				SquareLattice::UsingBroyden model(mp, startingValues.value());
+				return model.computePhases();
+			}
+			SquareLattice::HubbardCDW model(mp, startingValues.value());
+			return model.computePhases();
+		}
 		if (use_broyden) {
 			SquareLattice::UsingBroyden model(mp);
 			return model.computePhases();
@@ -213,13 +217,13 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		while (plaqs.size() > 0 && plaqs.begin()->size() > 1e-2) {
+		while (plaqs.size() > 0 && plaqs.begin()->size() > 2e-2) {
 			std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
 			const auto N_PLAQUETTES = plaqs.size();
 
 			constexpr int n_omp_threads = 8;
 			std::vector<std::vector<Plaquette>> buffer(n_omp_threads);
-#pragma omp parallel for num_threads(n_omp_threads)
+//#pragma omp parallel for num_threads(n_omp_threads)
 			for (size_t i = 0; i < N_PLAQUETTES; i++)
 			{
 				plaqs[i].devidePlaquette(buffer[omp_get_thread_num()]);

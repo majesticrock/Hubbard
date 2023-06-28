@@ -3,6 +3,14 @@
 namespace Hubbard {
 	BaseModelComplexAttributes::BaseModelComplexAttributes()
 		: BaseModelAttributes() {}
+	BaseModelComplexAttributes::BaseModelComplexAttributes(const BaseModelComplexAttributes& copy)
+		: BaseModelAttributes() 
+	{
+		for (size_t i = 0; i < parameterMapper.size(); i++)
+		{
+			*(this->parameterMapper[i]) = *(copy.parameterMapper[i]);
+		}
+	}
 	BaseModelComplexAttributes::BaseModelComplexAttributes(const ModelParameters& _params)
 		: BaseModelAttributes(_params) {}
 	BaseModelComplexAttributes::BaseModelComplexAttributes(const BaseModelRealAttributes& realValues)
@@ -20,6 +28,14 @@ namespace Hubbard {
 
 	BaseModelRealAttributes::BaseModelRealAttributes()
 		: BaseModelAttributes() {}
+	BaseModelRealAttributes::BaseModelRealAttributes(const BaseModelRealAttributes& copy)
+		: BaseModelAttributes() 
+	{
+		for (size_t i = 0; i < parameterMapper.size(); i++)
+		{
+			*(this->parameterMapper[i]) = *(copy.parameterMapper[i]);
+		}
+	}
 	BaseModelRealAttributes::BaseModelRealAttributes(const ModelParameters& _params)
 		: BaseModelAttributes(_params) {}
 	BaseModelRealAttributes::BaseModelRealAttributes(const BaseModelComplexAttributes& complexValues)

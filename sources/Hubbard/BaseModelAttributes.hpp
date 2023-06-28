@@ -32,7 +32,7 @@ namespace Hubbard {
 			this->xi_sc = std::abs(_params.V) * 0.2;
 		}
 		void initializeMapper() {
-			parameterMapper = {
+			this->parameterMapper = {
 				&(this->delta_cdw),
 				&(this->delta_afm),
 				&(this->delta_sc),
@@ -64,11 +64,18 @@ namespace Hubbard {
 		inline virtual double renormalizedEnergy_down(const double GAMMA) const = 0;
 
 		BaseModelAttributes(const ModelParameters& _params) {
-			initializeParamters(_params);
-			initializeMapper();
+			this->initializeMapper();
+			this->initializeParamters(_params);
 		};
 		BaseModelAttributes() {
-			initializeMapper();
+			this->initializeMapper();
+		};
+		BaseModelAttributes(const BaseModelAttributes& copy){
+			this->initializeMapper();
+			for (size_t i = 0; i < parameterMapper.size(); i++)
+			{
+				*(this->parameterMapper[i]) = *(copy.parameterMapper[i]);
+			}
 		};
 		// Returns the total gap value sqrt(sc^2 + cdw^2 + eta^2)
 		inline double getTotalGapValue() const {
@@ -80,8 +87,12 @@ namespace Hubbard {
 			return (std::abs((*this)[i]) > epsilon);
 		}
 		inline void print() const {
-			std::cout << delta_cdw << "\t" << delta_afm << "\t" << delta_sc << "\t" << delta_eta << "\t" << xi_sc
-				<< "\n    Delta_tot = " << getTotalGapValue() << std::endl;
+			for (const auto p : parameterMapper)
+			{
+				std::cout << *p << "\t";
+			}
+			
+			std::cout << "\n    Delta_tot = " << getTotalGapValue() << std::endl;
 		};
 	};
 
@@ -95,6 +106,7 @@ namespace Hubbard {
 			return -(2. + this->gamma_occupation_down.real()) * GAMMA;
 		};
 		BaseModelComplexAttributes();
+		BaseModelComplexAttributes(const BaseModelComplexAttributes& copy);
 		BaseModelComplexAttributes(const ModelParameters& _params);
 		BaseModelComplexAttributes(const BaseModelRealAttributes& realValues);
 	};
@@ -121,7 +133,9 @@ namespace Hubbard {
 		inline virtual double renormalizedEnergy_down(const double GAMMA) const override {
 			return -(2. + this->gamma_occupation_down) * GAMMA;
 		};
+
 		BaseModelRealAttributes();
+		BaseModelRealAttributes(const BaseModelRealAttributes& copy);
 		BaseModelRealAttributes(const ModelParameters& _params);
 
 		// This constructor is used for data output in the complex case.

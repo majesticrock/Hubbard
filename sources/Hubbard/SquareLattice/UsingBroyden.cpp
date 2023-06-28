@@ -4,8 +4,6 @@
 #include <iomanip>
 #include "../../Utility/Roots_Broyden.hpp"
 
-constexpr int NUMBER_OF_PARAMETERS = 8;
-
 namespace Hubbard::SquareLattice {
 	void UsingBroyden::init()
 	{
@@ -64,6 +62,7 @@ namespace Hubbard::SquareLattice {
 		std::function<void(const ParameterVector&, ParameterVector&)> func = [&](const ParameterVector& x, ParameterVector& F) {
 			iterationStep(x, F);
 		};
+		const int NUMBER_OF_PARAMETERS = parameterMapper.size();
 		ParameterVector f0 = ParameterVector::Zero(NUMBER_OF_PARAMETERS);
 		for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
 		{
@@ -119,7 +118,6 @@ namespace Hubbard::SquareLattice {
 			}
 			std::cout << ")\n -> |f0| = " << std::scientific << std::setprecision(8) << f0.norm() << std::endl;
 		}
-
 		return BaseModelRealAttributes(*this);
 	}
 }
