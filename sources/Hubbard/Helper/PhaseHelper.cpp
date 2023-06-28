@@ -3,7 +3,7 @@
 #include "../SquareLattice/HubbardCDW.hpp"
 
 namespace Hubbard::Helper {
-	void PhaseHelper::Plaquette::devidePlaquette(std::vector<PhaseHelper::Plaquette>& appendTo, int value_index) {
+	void PhaseHelper::Plaquette::devidePlaquette(std::vector<PhaseHelper::Plaquette>& appendTo) {
 		/*
 		*			x---A---x
 		*			|   |   |
@@ -23,42 +23,43 @@ namespace Hubbard::Helper {
 
 		const double centerFirst = this->getCenterFirst();
 		const double centerSecond = this->getCenterSecond();
-		double new_values[5];
-		BaseModelRealAttributes attr[5];
+		BaseModelRealAttributes averageParameters = this->attributes[0];
+		for (size_t i = 1; i < this->attributes.size(); i++)
+		{
+			averageParameters += this->attributes[i];
+		}
+		averageParameters *= 0.25;
+
+		BaseModelRealAttributes new_attributes[5];
 
 		auto mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(this->upperFirst);
 		mp.setSecondIteratorExact(centerSecond);
-		attr[0] = parent->computeDataPoint(mp, averageParameters);
-		new_values[0] = attr[0][value_index];
+		new_attributes[0] = parent->computeDataPoint(mp, averageParameters);
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
 		mp.setSecondIteratorExact(this->lowerSecond);
-		attr[1] = parent->computeDataPoint(mp, averageParameters);
-		new_values[1] = attr[1][value_index];
+		new_attributes[1] = parent->computeDataPoint(mp, averageParameters);
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
 		mp.setSecondIteratorExact(centerSecond);
-		attr[2] = parent->computeDataPoint(mp, averageParameters);
-		new_values[2] = attr[2][value_index];
+		new_attributes[2] = parent->computeDataPoint(mp, averageParameters);
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
 		mp.setSecondIteratorExact(upperSecond);
-		attr[3] = parent->computeDataPoint(mp, averageParameters);
-		new_values[3] = attr[3][value_index];
+		new_attributes[3] = parent->computeDataPoint(mp, averageParameters);
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(this->lowerFirst);
 		mp.setSecondIteratorExact(centerSecond);
-		attr[4] = parent->computeDataPoint(mp, averageParameters);
-		new_values[4] = attr[4][value_index];
+		new_attributes[4] = parent->computeDataPoint(mp, averageParameters);
 
 		// Upper left
 		Plaquette new_plaq = *this;
-		new_plaq.values = { this->values[0], new_values[0], new_values[1], new_values[2] };
+		new_plaq.attributes = { this->attributes[0],new_attributes[0], new_attributes[1], new_attributes[2] };
 		if (new_plaq.containsPhaseBoundary()) {
 			new_plaq.lowerFirst = centerFirst;
 			new_plaq.upperSecond = centerSecond;
@@ -67,7 +68,7 @@ namespace Hubbard::Helper {
 
 		// Upper right
 		new_plaq = *this;
-		new_plaq.values = { new_values[0], this->values[1], new_values[2], new_values[3] };
+		new_plaq.attributes = { new_attributes[0], this->attributes[1], new_attributes[2], new_attributes[3] };
 		if (new_plaq.containsPhaseBoundary()) {
 			new_plaq.lowerFirst = centerFirst;
 			new_plaq.lowerSecond = centerSecond;
@@ -76,7 +77,7 @@ namespace Hubbard::Helper {
 
 		// Lower left
 		new_plaq = *this;
-		new_plaq.values = { new_values[1], new_values[2], this->values[2], new_values[4] };
+		new_plaq.attributes = { new_attributes[1], new_attributes[2], this->attributes[2], new_attributes[4] };
 		if (new_plaq.containsPhaseBoundary()) {
 			new_plaq.upperFirst = centerFirst;
 			new_plaq.upperSecond = centerSecond;
@@ -85,7 +86,7 @@ namespace Hubbard::Helper {
 
 		// Lower right
 		new_plaq = *this;
-		new_plaq.values = { new_values[2], new_values[3], new_values[4], this->values[3] };
+		new_plaq.attributes = { new_attributes[2], new_attributes[3], new_attributes[4], this->attributes[3] };
 		if (new_plaq.containsPhaseBoundary()) {
 			new_plaq.upperFirst = centerFirst;
 			new_plaq.lowerSecond = centerSecond;
@@ -132,14 +133,14 @@ namespace Hubbard::Helper {
 	}
 
 	BaseModelRealAttributes PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<BaseModelRealAttributes> startingValues /*= std::nullopt*/) {
-		if (startingValues.has_value()) {
-			if (use_broyden) {
-				SquareLattice::UsingBroyden model(mp, startingValues.value());
-				return model.computePhases();
-			}
-			SquareLattice::HubbardCDW model(mp, startingValues.value());
-			return model.computePhases();
-		}
+		//if (startingValues.has_value()) {
+		//	if (use_broyden) {
+		//		SquareLattice::UsingBroyden model(mp, startingValues.value());
+		//		return model.computePhases();
+		//	}
+		//	SquareLattice::HubbardCDW model(mp, startingValues.value());
+		//	return model.computePhases();
+		//}
 		if (use_broyden) {
 			SquareLattice::UsingBroyden model(mp);
 			return model.computePhases();
@@ -191,19 +192,16 @@ namespace Hubbard::Helper {
 			for (size_t j = 1; j < SECOND_IT_STEPS; j++)
 			{
 				Plaquette plaq;
-				plaq.values = {
-					origin[value_index][rank_offset + i * SECOND_IT_STEPS + j - 1], origin[value_index][rank_offset + i * SECOND_IT_STEPS + j],
-					origin[value_index][rank_offset + (i - 1) * SECOND_IT_STEPS + j - 1], origin[value_index][rank_offset + (i - 1) * SECOND_IT_STEPS + j]
-				};
-				if (!plaq.containsPhaseBoundary()) continue;
-
-				for (size_t l = 0; l < plaq.averageParameters.size(); l++)
+				plaq.value_index = value_index;
+				for (size_t l = 0; l < origin.size(); l++)
 				{
-					plaq.averageParameters[l] = 0.25 * (std::abs(origin[l][rank_offset + i * SECOND_IT_STEPS + j - 1]) 
-						+ std::abs(origin[l][rank_offset + i * SECOND_IT_STEPS + j])
-						+ std::abs(origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j - 1])
-						+ std::abs(origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j]));
+					plaq(0, l) = origin[l][rank_offset + i * SECOND_IT_STEPS + j - 1];
+					plaq(1, l) = origin[l][rank_offset + i * SECOND_IT_STEPS + j];
+					plaq(2, l) = origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j - 1];
+					plaq(3, l) = origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j];
 				}
+				
+				if (!plaq.containsPhaseBoundary()) continue;
 
 				plaq.parent = this;
 				plaq.lowerFirst = modelParameters.setGlobalIterator(i - 1);
@@ -215,7 +213,7 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		while (plaqs.size() > 0 && plaqs.begin()->size() > 2e-2) {
+		while (plaqs.size() > 0 && plaqs.begin()->size() > 1e-2) {
 			std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
 			const auto N_PLAQUETTES = plaqs.size();
 
@@ -224,7 +222,7 @@ namespace Hubbard::Helper {
 #pragma omp parallel for num_threads(n_omp_threads)
 			for (size_t i = 0; i < N_PLAQUETTES; i++)
 			{
-				plaqs[i].devidePlaquette(buffer[omp_get_thread_num()], value_index);
+				plaqs[i].devidePlaquette(buffer[omp_get_thread_num()]);
 			}
 			int totalSize = 0;
 			for (const auto& vec : buffer)

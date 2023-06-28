@@ -27,13 +27,13 @@ namespace Hubbard::SquareLattice {
 			{ // Checks for numerical accurarcy
 				const double ERROR_MARGIN = 1e-10 * Constants::BASIS_SIZE;
 				if (std::abs(c(2).imag()) > ERROR_MARGIN) {
-					std::cout << "sc: " << c(2) << std::endl;
+					std::cout << "sc: " << c(2) << "\t Params: " << temperature << ", " << U << ", " << V << std::endl;
 				}
 				if (std::abs(c(3).imag()) > ERROR_MARGIN) {
-					std::cout << "gamma sc: " << c(3) << std::endl;
+					std::cout << "gamma sc: " << c(3) << "\t Params: " << temperature << ", " << U << ", " << V << std::endl;
 				}
 				if (std::abs(c(4).real()) > ERROR_MARGIN) {
-					std::cout << "xi sc: " << c(4) << std::endl;
+					std::cout << "xi sc: " << c(4) << "\t Params: " << temperature << ", " << U << ", " << V << std::endl;
 				}
 				//if (std::abs(c(5).real()) > ERROR_MARGIN) {
 				//	std::cout << "eta: " << c(5) << "\t Params: " << temperature << ", " << U << ", " << V << std::endl;

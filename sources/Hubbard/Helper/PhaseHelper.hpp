@@ -13,18 +13,20 @@ namespace Hubbard::Helper {
 	private:
 		struct Plaquette {
 			PhaseHelper* parent = nullptr;
-
+			int value_index = 0;
 			double lowerFirst = 0, upperFirst = 0;
 			double lowerSecond = 0, upperSecond = 0;
 			/* Layout:
 			*  0 1
 			*  2 3
 			*/
-			std::vector<double> values = { 0,0,0,0 };
-			BaseModelRealAttributes averageParameters;
+			std::vector<BaseModelRealAttributes> attributes;
+			inline double& operator()(int i, int j) {
+				return attributes[i][j];
+			};
 
 			inline bool valueIsFinite(int index) const {
-				return std::abs(values[index]) > 1e-10;
+				return std::abs(attributes[index][value_index]) > 1e-10;
 			};
 			inline bool containsPhaseBoundary() const
 			{
@@ -47,7 +49,9 @@ namespace Hubbard::Helper {
 			}
 			// Devides *this into 4 equally sized plaquettes
 			// The result is appended to <appendTo>
-			void devidePlaquette(std::vector<Plaquette>& appendTo, int value_index);
+			void devidePlaquette(std::vector<Plaquette>& appendTo);
+
+			Plaquette() : attributes(4) {};
 		};
 
 		const std::vector<std::string> option_list = { "T", "U", "V" };

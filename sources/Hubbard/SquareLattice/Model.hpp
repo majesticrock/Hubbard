@@ -46,7 +46,9 @@ namespace Hubbard::SquareLattice {
 			F -= x;
 		};
 	public:
-		using MomentumBasedModel<DataType, 2>::MomentumBasedModel;
+		Model(const ModelParameters& _params) : MomentumBasedModel<DataType, 2>(_params) {};
+		Model(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
+			: MomentumBasedModel<DataType, 2>(_params, startingValues) {};
 
 		// saves all one particle energies to reciever
 		inline void getAllEnergies(std::vector<std::vector<double>>& reciever)

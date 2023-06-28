@@ -19,7 +19,9 @@ namespace Hubbard {
 			return (((index * L_PI) / Constants::K_DISCRETIZATION) - L_PI);
 		};
 	public:
-		using BaseModel<DataType>::BaseModel;
+		MomentumBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params) {};
+		MomentumBasedModel(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
+			: BaseModel<DataType>(_params, startingValues) {};
 
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {

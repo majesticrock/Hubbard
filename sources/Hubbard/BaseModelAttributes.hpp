@@ -56,7 +56,7 @@ namespace Hubbard {
 		inline const DataType& operator[](int i) const {
 			return *(parameterMapper[i]);
 		};
-		inline size_t size() const {
+		inline size_t size() const noexcept {
 			return parameterMapper.size();
 		}
 
@@ -100,6 +100,21 @@ namespace Hubbard {
 	};
 
 	struct BaseModelRealAttributes : public BaseModelAttributes<double> {
+		inline BaseModelRealAttributes& operator+=(const BaseModelRealAttributes& rhs) {
+			for (size_t i = 0; i < this->parameterMapper.size(); i++)
+			{
+				*(this->parameterMapper[i]) += *(rhs.parameterMapper[i]);
+			}
+			return *this;
+		};
+		inline BaseModelRealAttributes& operator*=(const double rhs) {
+			for (size_t i = 0; i < this->parameterMapper.size(); i++)
+			{
+				*(this->parameterMapper[i]) *= rhs;
+			}
+			return *this;
+		};
+
 		inline virtual double renormalizedEnergy_up(const double GAMMA) const override {
 			return -(2. + this->gamma_occupation_up) * GAMMA;
 		};
@@ -112,5 +127,15 @@ namespace Hubbard {
 		// This constructor is used for data output in the complex case.
 		// We assume previous analytical knowledge about the the real and imaginary parts
 		BaseModelRealAttributes(const BaseModelComplexAttributes& complexValues);
+	};
+
+	inline BaseModelRealAttributes operator+(BaseModelRealAttributes lhs, const BaseModelRealAttributes& rhs) {
+		return lhs += rhs;
+	};
+	inline BaseModelRealAttributes operator*(BaseModelRealAttributes lhs, double rhs) {
+		return lhs *= rhs;
+	};
+	inline BaseModelRealAttributes operator*(double lhs, BaseModelRealAttributes rhs) {
+		return rhs *= lhs;
 	};
 }

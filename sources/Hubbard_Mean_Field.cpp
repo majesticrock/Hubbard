@@ -152,6 +152,9 @@ int main(int argc, char** argv)
 			Utility::saveData_boost(recieve_data[3], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "gamma_sc.dat.gz", comments);
 			Utility::saveData_boost(recieve_data[4], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "xi_sc.dat.gz", comments);
 			Utility::saveData_boost(recieve_data[5], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.dat.gz", comments);
+
+			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+			std::cout << "Crude computation time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		}
 
 		if (input.getBool("improved_boundaries")) {
