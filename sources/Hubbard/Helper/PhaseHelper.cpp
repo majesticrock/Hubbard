@@ -150,15 +150,36 @@ namespace Hubbard::Helper {
 	BaseModelRealAttributes PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<BaseModelRealAttributes> startingValues /*= std::nullopt*/) {
 		if (startingValues.has_value()) {
 			if (use_broyden) {
-				SquareLattice::UsingBroyden model(mp, startingValues.value(), 0);
+				SquareLattice::UsingBroyden model(mp, startingValues.value(), 10);
 				return model.computePhases();
 			}
 			SquareLattice::HubbardCDW model(mp, startingValues.value());
 			return model.computePhases();
 		}
 		if (use_broyden) {
-			SquareLattice::UsingBroyden model(mp, 100);
-			return model.computePhases();
+			SquareLattice::UsingBroyden model(mp);
+			auto result = model.computePhases();
+
+			if(std::abs(result.delta_cdw) > 1e-12 || std::abs(result.delta_afm) > 1e-12){
+				auto copy = result;
+				if(std::abs(result.delta_cdw) > 1e-12){
+					copy.delta_afm = result.delta_cdw;
+					copy.delta_cdw = 0;
+				} else {
+					copy.delta_cdw = result.delta_afm;
+					copy.delta_afm = 0;
+				}
+					
+				SquareLattice::UsingBroyden model_copy(mp, copy);
+				copy = model_copy.computePhases();
+				if(copy.converged){
+					if(model_copy.freeEnergyPerSite() < model.freeEnergyPerSite()){
+						result = copy;
+					}
+				}
+			}
+
+			return result;
 		}
 		SquareLattice::HubbardCDW model(mp);
 		return model.computePhases();
@@ -246,7 +267,7 @@ namespace Hubbard::Helper {
 			}
 			plaqs.clear();
 			bool removal = false;
-			if (totalSize > 50) {
+			if (totalSize > 100) {
 				totalSize /= 2;
 				removal = true;
 			}

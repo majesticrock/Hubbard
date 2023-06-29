@@ -20,8 +20,6 @@ namespace Hubbard::SquareLattice {
 
 			F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
 			F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
-
-			//std::cout << hamilton(0, 1) << "\t" << hamilton(1, 0) << "\t" << hamilton(2, 3) << "\t" << hamilton(3, 2) << std::endl;
 			F(2) -= (rho(0, 2) + rho(1, 3)); // SC
 			F(3) -= gamma(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Gamma SC
 			F(4) -= xi(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Xi SC

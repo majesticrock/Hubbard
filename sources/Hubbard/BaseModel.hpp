@@ -65,6 +65,16 @@ namespace Hubbard {
 	class BaseModel : 
 		public std::conditional_t<std::is_same_v<DataType, double_prec>, BaseModelRealAttributes, BaseModelComplexAttributes>
 	{
+	private:
+		inline void init()
+		{
+			this->U_OVER_N = U / Constants::BASIS_SIZE;
+			this->V_OVER_N = V / Constants::BASIS_SIZE;
+
+			this->SPINOR_SIZE = 4;
+			computeChemicalPotential();
+		};
+
 	protected:
 		using BaseAttributes = std::conditional_t<std::is_same_v<DataType, double_prec>, BaseModelRealAttributes, BaseModelComplexAttributes>;
 		typedef Eigen::Vector<DataType, Eigen::Dynamic> ParameterVector;
@@ -141,23 +151,21 @@ namespace Hubbard {
 		BaseModel(const ModelParameters& _params)
 			: BaseAttributes(_params), temperature(_params.temperature), U(_params.U), V(_params.V)
 		{
-			this->U_OVER_N = U / Constants::BASIS_SIZE;
-			this->V_OVER_N = V / Constants::BASIS_SIZE;
-
-			this->SPINOR_SIZE = 4;
-			computeChemicalPotential();
+			init();
 		};
 
 		BaseModel(const ModelParameters& _params, const BaseAttributes& startingValues)
 			: BaseAttributes(startingValues), temperature(_params.temperature), U(_params.U), V(_params.V)
 		{ 
-			this->U_OVER_N = U / Constants::BASIS_SIZE;
-			this->V_OVER_N = V / Constants::BASIS_SIZE;
-
-			this->SPINOR_SIZE = 4;
-			computeChemicalPotential();
+			init();
 		};
 
 		virtual BaseModelRealAttributes computePhases(const bool print = false) = 0;
+
+		inline virtual double_prec entropyPerSite() = 0;
+		inline virtual double_prec internalEnergyPerSite() = 0;
+		inline virtual double_prec freeEnergyPerSite() {
+			return this->internalEnergyPerSite() - temperature * this->entropyPerSite();
+		};
 	};
 }

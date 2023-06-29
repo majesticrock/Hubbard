@@ -78,7 +78,31 @@ namespace Hubbard::SquareLattice {
 			}
 		};
 
-		inline double_prec internalEnergyPerSite() {
+		inline virtual double_prec entropyPerSite() override {
+			double_prec entropy = 0;
+			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
+			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
+			{
+				double_prec k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				for (int l = -Constants::K_DISCRETIZATION; l < 0; l++)
+				{
+					double_prec k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
+					this->fillHamiltonian(2, k_x, k_y);
+					solver.compute(this->hamilton, false);
+
+					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
+					{
+						auto occ = BaseModel<DataType>::fermi_dirac(solver.eigenvalues()(i));
+						if(occ > 1e-12){ // Let's just not take the ln of 0. Negative numbers cannot be reached (by definition)
+							entropy -= occ * std::log(occ);
+						}
+					}
+				}
+			}
+			return entropy / Constants::BASIS_SIZE;
+		};
+
+		inline virtual double_prec internalEnergyPerSite() override {
 			double_prec energy = 0;
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
@@ -100,7 +124,7 @@ namespace Hubbard::SquareLattice {
 		};
 
 		inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) {
-			SpinorMatrix rho = SpinorMatrix::Zero(4, 4);
+			SpinorMatrix rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
 			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
