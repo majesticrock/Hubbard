@@ -47,6 +47,7 @@ namespace Hubbard {
 	protected:
 		std::vector<DataType*> parameterMapper;
 	public:
+		bool converged = false;
 		DataType delta_sc = 0., delta_eta = 0., gamma_sc = 0., xi_sc = 0.;
 		DataType gamma_occupation_up = 0., gamma_occupation_down = 0., delta_cdw = 0., delta_afm = 0.;
 		// Maps the parameters (delta_sc etc) to an index
@@ -87,6 +88,7 @@ namespace Hubbard {
 			{
 				*(this->parameterMapper[i]) = *(copy.parameterMapper[i]);
 			}
+			this->converged = copy.converged;
 		};
 		// Returns the total gap value sqrt(sc^2 + cdw^2 + eta^2)
 		inline double getTotalGapValue() const {

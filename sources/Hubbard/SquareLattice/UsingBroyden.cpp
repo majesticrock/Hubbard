@@ -45,14 +45,22 @@ namespace Hubbard::SquareLattice {
 		hamilton(3, 3) = eps;
 	}
 
-	UsingBroyden::UsingBroyden(const ModelParameters& _params)
-		: Model(_params)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, int _MaxPreBroydenIterations/* = 300*/)
+		: Model(_params), MaxPreBroydenIterations(_MaxPreBroydenIterations)
 	{
 		init();
+		//*(parameterMapper[0]) = 0.000915429;
+		//*(parameterMapper[1]) = 0.000739837;
+		//*(parameterMapper[2]) = 0;
+		//*(parameterMapper[3]) = 0;
+		//*(parameterMapper[4]) = 0;
+		//*(parameterMapper[5]) = 0;
+		//*(parameterMapper[6]) = 0.00949777;
+		//*(parameterMapper[7]) = 0.00949777;
 	}
 
-	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues)
-		: Model(_params, startingValues)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, int _MaxPreBroydenIterations/* = 300*/)
+		: Model(_params, startingValues), MaxPreBroydenIterations(_MaxPreBroydenIterations)
 	{
 		init();
 	}
@@ -70,7 +78,7 @@ namespace Hubbard::SquareLattice {
 		}
 		ParameterVector x0 = f0;
 
-		for (size_t i = 0; i < 300 && f0.squaredNorm() > 1e-15; i++)
+		for (size_t i = 0; i < MaxPreBroydenIterations && f0.squaredNorm() > 1e-15; i++)
 		{
 			func(x0, f0);
 			for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
@@ -101,6 +109,9 @@ namespace Hubbard::SquareLattice {
 			gamma_sc = 0;
 			xi_sc = 0;
 			delta_eta = 0;
+		}
+		else {
+			converged = true;
 		}
 
 		if (print) {

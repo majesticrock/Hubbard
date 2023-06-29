@@ -126,6 +126,7 @@ namespace Hubbard::SquareLattice {
 			std::cout << "-1:\t" << std::fixed << std::setprecision(8);
 			printAsRow(x0);
 		}
+		converged = true;
 		for (size_t i = 0; i < MAX_STEPS && error > EPSILON; i++)
 		{
 			iterationStep(x0, f0);
@@ -145,6 +146,7 @@ namespace Hubbard::SquareLattice {
 				delta_afm = 0;
 				delta_sc = 0;
 				delta_eta = 0;
+				converged = false;
 			}
 		}
 

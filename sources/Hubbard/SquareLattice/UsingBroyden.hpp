@@ -6,6 +6,7 @@ namespace Hubbard::SquareLattice {
 	class UsingBroyden : public Model<double_prec>
 	{
 	private:
+		const int MaxPreBroydenIterations;
 		void init();
 	protected:
 		virtual void fillHamiltonianHelper(va_list args) override;
@@ -50,8 +51,8 @@ namespace Hubbard::SquareLattice {
 			r(7) = c(7).real(); // Gamma Occupation Down
 		};
 	public:
-		UsingBroyden(const ModelParameters& _params);
-		UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues);
+		UsingBroyden(const ModelParameters& _params, int _MaxPreBroydenIterations = 300);
+		UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, int _MaxPreBroydenIterations = 300);
 
 		BaseModelRealAttributes computePhases(const bool print = false) override;
 	};

@@ -10,6 +10,7 @@ namespace Hubbard {
 		{
 			*(this->parameterMapper[i]) = *(copy.parameterMapper[i]);
 		}
+		this->converged = copy.converged;
 	}
 	BaseModelComplexAttributes::BaseModelComplexAttributes(const ModelParameters& _params)
 		: BaseModelAttributes(_params) {}
@@ -24,6 +25,7 @@ namespace Hubbard {
 		this->delta_eta = std::complex<double>(0., realValues.delta_eta);
 		this->gamma_occupation_up = realValues.gamma_occupation_up;
 		this->gamma_occupation_down = realValues.gamma_occupation_down;
+		this->converged = realValues.converged;
 	}
 
 	BaseModelRealAttributes::BaseModelRealAttributes()
@@ -35,6 +37,7 @@ namespace Hubbard {
 		{
 			*(this->parameterMapper[i]) = *(copy.parameterMapper[i]);
 		}
+		this->converged = copy.converged;
 	}
 	BaseModelRealAttributes::BaseModelRealAttributes(const ModelParameters& _params)
 		: BaseModelAttributes(_params) {}
@@ -49,5 +52,6 @@ namespace Hubbard {
 		this->delta_eta = complexValues.delta_eta.imag();
 		this->gamma_occupation_up = complexValues.gamma_occupation_up.real();
 		this->gamma_occupation_down = complexValues.gamma_occupation_down.real();
+		this->converged = complexValues.converged;
 	}
 }

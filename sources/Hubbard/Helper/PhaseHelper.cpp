@@ -65,6 +65,13 @@ namespace Hubbard::Helper {
 		mp.setSecondIteratorExact(centerSecond);
 		new_attributes[4] = parent->computeDataPoint(mp, averageParameters);
 
+		for (size_t i = 0; i < 5; i++)
+		{
+			if (!new_attributes[i].converged) {
+				averageParameters.print();
+			}
+		}
+
 		// Upper left
 		Plaquette new_plaq = *this;
 		new_plaq.attributes = { this->attributes[0], new_attributes[0], new_attributes[1], new_attributes[2] };
@@ -143,14 +150,14 @@ namespace Hubbard::Helper {
 	BaseModelRealAttributes PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<BaseModelRealAttributes> startingValues /*= std::nullopt*/) {
 		if (startingValues.has_value()) {
 			if (use_broyden) {
-				SquareLattice::UsingBroyden model(mp, startingValues.value());
+				SquareLattice::UsingBroyden model(mp, startingValues.value(), 0);
 				return model.computePhases();
 			}
 			SquareLattice::HubbardCDW model(mp, startingValues.value());
 			return model.computePhases();
 		}
 		if (use_broyden) {
-			SquareLattice::UsingBroyden model(mp);
+			SquareLattice::UsingBroyden model(mp, 100);
 			return model.computePhases();
 		}
 		SquareLattice::HubbardCDW model(mp);
