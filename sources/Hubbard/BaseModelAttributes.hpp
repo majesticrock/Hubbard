@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <complex>
+#include <cmath>
 #include <iostream>
 #include "ModelParameters.hpp"
 
@@ -59,6 +60,16 @@ namespace Hubbard {
 		inline size_t size() const noexcept {
 			return parameterMapper.size();
 		}
+
+		bool isOrdered() const {
+			for (const auto p : parameterMapper)
+			{
+				if (std::abs(*p) > 1e-12) {
+					return true;
+				}
+			}
+			return false;
+		};
 
 		inline virtual double renormalizedEnergy_up(const double GAMMA) const = 0;
 		inline virtual double renormalizedEnergy_down(const double GAMMA) const = 0;
@@ -126,6 +137,13 @@ namespace Hubbard {
 			}
 			return *this;
 		};
+		inline BaseModelRealAttributes& operator/=(const double rhs) {
+			for (size_t i = 0; i < this->parameterMapper.size(); i++)
+			{
+				*(this->parameterMapper[i]) /= rhs;
+			}
+			return *this;
+		};
 
 		inline virtual double renormalizedEnergy_up(const double GAMMA) const override {
 			return -(2. + this->gamma_occupation_up) * GAMMA;
@@ -151,5 +169,11 @@ namespace Hubbard {
 	};
 	inline BaseModelRealAttributes operator*(double lhs, BaseModelRealAttributes rhs) {
 		return rhs *= lhs;
+	};
+	inline BaseModelRealAttributes operator/(BaseModelRealAttributes lhs, double rhs) {
+		return lhs /= rhs;
+	};
+	inline BaseModelRealAttributes operator/(double lhs, BaseModelRealAttributes rhs) {
+		return rhs /= lhs;
 	};
 }

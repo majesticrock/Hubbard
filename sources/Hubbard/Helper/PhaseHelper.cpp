@@ -21,17 +21,26 @@ namespace Hubbard::Helper {
 		*	New values are at the position ABCDE (01234 as indizes)
 		*/
 
+		auto mp = parent->modelParameters;
 		const double centerFirst = this->getCenterFirst();
 		const double centerSecond = this->getCenterSecond();
-		BaseModelRealAttributes averageParameters = this->attributes[0];
-		for (size_t i = 1; i < this->attributes.size(); i++)
+		BaseModelRealAttributes averageParameters;
+		int finiteCount = 0;
+		for (size_t i = 0; i < this->attributes.size(); i++)
 		{
-			averageParameters += this->attributes[i];
+			if (this->attributes[i].isOrdered()) {
+				++finiteCount;
+				averageParameters += this->attributes[i];
+			}
 		}
-		averageParameters *= 0.25;
+		if (finiteCount != 0) {
+			averageParameters /= finiteCount;
+		}
+		else {
+			averageParameters = BaseModelRealAttributes(mp);
+		}
 		BaseModelRealAttributes new_attributes[5];
 
-		auto mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(this->upperFirst);
 		mp.setSecondIteratorExact(centerSecond);
 		new_attributes[0] = parent->computeDataPoint(mp, averageParameters);
@@ -55,11 +64,6 @@ namespace Hubbard::Helper {
 		mp.setGlobalIteratorExact(this->lowerFirst);
 		mp.setSecondIteratorExact(centerSecond);
 		new_attributes[4] = parent->computeDataPoint(mp, averageParameters);
-
-		for	(int i = 0; i < 5; ++i){
-			new_attributes[i].print();
-		}
-		std::cout << "\n++++++++++++++++++++++++++++\n" << std::endl;
 
 		// Upper left
 		Plaquette new_plaq = *this;
@@ -204,7 +208,7 @@ namespace Hubbard::Helper {
 					plaq(2, l) = origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j - 1];
 					plaq(3, l) = origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j];
 				}
-				
+
 				if (!plaq.containsPhaseBoundary()) continue;
 
 				plaq.parent = this;
@@ -217,13 +221,13 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		while (plaqs.size() > 0 && plaqs.begin()->size() > 2e-2) {
+		while (plaqs.size() > 0 && plaqs.begin()->size() > 5e-4) {
 			std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
 			const auto N_PLAQUETTES = plaqs.size();
 
 			constexpr int n_omp_threads = 8;
 			std::vector<std::vector<Plaquette>> buffer(n_omp_threads);
-//#pragma omp parallel for num_threads(n_omp_threads)
+#pragma omp parallel for num_threads(n_omp_threads)
 			for (size_t i = 0; i < N_PLAQUETTES; i++)
 			{
 				plaqs[i].devidePlaquette(buffer[omp_get_thread_num()]);
@@ -235,7 +239,7 @@ namespace Hubbard::Helper {
 			}
 			plaqs.clear();
 			bool removal = false;
-			if (totalSize > 200) {
+			if (totalSize > 50) {
 				totalSize /= 2;
 				removal = true;
 			}
