@@ -82,7 +82,7 @@ namespace Hubbard {
 		BaseModelAttributes() {
 			this->initializeMapper();
 		};
-		BaseModelAttributes(const BaseModelAttributes& copy){
+		BaseModelAttributes(const BaseModelAttributes& copy) {
 			this->initializeMapper();
 			for (size_t i = 0; i < parameterMapper.size(); i++)
 			{
@@ -104,7 +104,7 @@ namespace Hubbard {
 			{
 				std::cout << *p << "\t";
 			}
-			
+
 			std::cout << "\n    Delta_tot = " << getTotalGapValue() << std::endl;
 		};
 	};

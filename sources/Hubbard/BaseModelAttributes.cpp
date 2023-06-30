@@ -4,7 +4,7 @@ namespace Hubbard {
 	BaseModelComplexAttributes::BaseModelComplexAttributes()
 		: BaseModelAttributes() {}
 	BaseModelComplexAttributes::BaseModelComplexAttributes(const BaseModelComplexAttributes& copy)
-		: BaseModelAttributes() 
+		: BaseModelAttributes()
 	{
 		for (size_t i = 0; i < parameterMapper.size(); i++)
 		{
@@ -31,7 +31,7 @@ namespace Hubbard {
 	BaseModelRealAttributes::BaseModelRealAttributes()
 		: BaseModelAttributes() {}
 	BaseModelRealAttributes::BaseModelRealAttributes(const BaseModelRealAttributes& copy)
-		: BaseModelAttributes() 
+		: BaseModelAttributes()
 	{
 		for (size_t i = 0; i < parameterMapper.size(); i++)
 		{

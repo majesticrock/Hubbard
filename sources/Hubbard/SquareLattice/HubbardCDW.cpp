@@ -97,12 +97,12 @@ namespace Hubbard::SquareLattice {
 		hamilton(3, 3) = eps;
 	}
 	HubbardCDW::HubbardCDW(const ModelParameters& _params)
-		: Model(_params)
+		: Model2D(_params)
 	{
 		init();
 	}
 	HubbardCDW::HubbardCDW(const ModelParameters& _params, const BaseAttributes& startingValues)
-		: Model(_params, startingValues)
+		: Model2D(_params, startingValues)
 	{
 		init();
 	}

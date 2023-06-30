@@ -1,9 +1,9 @@
 #pragma once
-#include "Model.hpp"
+#include "Model2D.hpp"
 #include "../BaseModelAttributes.hpp"
 
 namespace Hubbard::SquareLattice {
-	class UsingBroyden : public Model<double_prec>
+	class UsingBroyden : public Model2D<double_prec>
 	{
 	private:
 		const int MaxPreBroydenIterations;

@@ -5,10 +5,10 @@
 
 namespace Hubbard {
 	template <typename DataType>
-	class GammaBasedModel : public BaseModel<DataType>
+	class DOSBasedModel : public BaseModel<DataType>
 	{
-    protected:
-        using ParameterVector = typename BaseModel<DataType>::ParameterVector;
+	protected:
+		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 		virtual inline void complexParametersToReal(const ComplexParameterVector& c, ParameterVector& r) const {
 			// Does nothing, unless the derived class states otherwise
 		};
@@ -43,8 +43,8 @@ namespace Hubbard {
 			F -= x;
 		};
 	public:
-		MomentumBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params) {};
-		MomentumBasedModel(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
+		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params) {};
+		DOSBasedModel(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
 			: BaseModel<DataType>(_params, startingValues) {};
 
 		virtual inline double_prec computeCoefficient(const SymbolicOperators::Coefficient& coeff, const double_prec gamma) const {

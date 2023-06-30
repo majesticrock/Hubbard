@@ -4,7 +4,7 @@
 
 namespace Hubbard::ChainLattice {
 	template <typename DataType>
-	class Model : public MomentumBasedModel<DataType, 1>
+	class Model1D : public MomentumBasedModel<DataType, 1>
 	{
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
@@ -32,7 +32,7 @@ namespace Hubbard::ChainLattice {
 				solver.compute(this->hamilton);
 
 				this->fillRho(rho, solver);
-				this->addToParameterSet(rho, complex_F, 1, k_x);			
+				this->addToParameterSet(rho, complex_F, 1, k_x);
 			}
 
 			if constexpr (!std::is_same<DataType, complex_prec>::value) {
@@ -42,8 +42,8 @@ namespace Hubbard::ChainLattice {
 			F -= x;
 		};
 	public:
-		Model(const ModelParameters& _params) : MomentumBasedModel<DataType, 1>(_params) {};
-		Model(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
+		Model1D(const ModelParameters& _params) : MomentumBasedModel<DataType, 1>(_params) {};
+		Model1D(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
 			: MomentumBasedModel<DataType, 1>(_params, startingValues) {};
 
 		inline virtual double_prec entropyPerSite() override {
@@ -52,14 +52,14 @@ namespace Hubbard::ChainLattice {
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				double_prec k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
-				
+
 				this->fillHamiltonian(1, k_x);
 				solver.compute(this->hamilton, false);
 
 				for (size_t i = 0; i < solver.eigenvalues().size(); i++)
 				{
 					auto occ = BaseModel<DataType>::fermi_dirac(solver.eigenvalues()(i));
-					if(occ > 1e-12){ // Let's just not take the ln of 0. Negative numbers cannot be reached (by definition)
+					if (occ > 1e-12) { // Let's just not take the ln of 0. Negative numbers cannot be reached (by definition)
 						entropy -= occ * std::log(occ);
 					}
 				}
@@ -81,7 +81,6 @@ namespace Hubbard::ChainLattice {
 				{
 					energy += BaseModel<DataType>::fermi_dirac(solver.eigenvalues()(i)) * solver.eigenvalues()(i);
 				}
-				
 			}
 			return energy / Constants::BASIS_SIZE;
 		};
@@ -90,7 +89,7 @@ namespace Hubbard::ChainLattice {
 			SpinorMatrix rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
-			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
+			expecs = std::vector<VectorCL>(8, VectorCL::Zero(2 * Constants::K_DISCRETIZATION));
 			sum_of_all = std::vector<std::complex<double>>(8, 0.0);
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
@@ -122,7 +121,7 @@ namespace Hubbard::ChainLattice {
 
 				if (std::abs(rho(3, 0)) > 1e-10) {
 					std::cerr << "Warning: <eta> does not vanish! " << rho(3, 0) << std::endl;
-				}	
+				}
 			}
 		};
 	};

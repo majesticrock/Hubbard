@@ -62,7 +62,7 @@ namespace Hubbard {
 	typedef Eigen::Vector<complex_prec, Eigen::Dynamic> ComplexParameterVector;
 
 	template <typename DataType>
-	class BaseModel : 
+	class BaseModel :
 		public std::conditional_t<std::is_same_v<DataType, double_prec>, BaseModelRealAttributes, BaseModelComplexAttributes>
 	{
 	private:
@@ -156,7 +156,7 @@ namespace Hubbard {
 
 		BaseModel(const ModelParameters& _params, const BaseAttributes& startingValues)
 			: BaseAttributes(startingValues), temperature(_params.temperature), U(_params.U), V(_params.V)
-		{ 
+		{
 			init();
 		};
 

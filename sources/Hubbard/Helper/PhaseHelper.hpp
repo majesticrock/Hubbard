@@ -4,7 +4,7 @@
 #include <optional>
 
 #include "../../Utility/InputFileReader.hpp"
-#include "../SquareLattice/Model.hpp"
+#include "../SquareLattice/Model2D.hpp"
 
 namespace Hubbard::Helper {
 	typedef std::vector<double> data_vector;

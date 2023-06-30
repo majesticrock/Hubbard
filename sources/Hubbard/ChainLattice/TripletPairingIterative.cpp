@@ -12,11 +12,11 @@ namespace Hubbard::ChainLattice {
 		SpinorMatrix diagonalBlock = SpinorMatrix::Zero(4, 4);
 		diagonalBlock(0, 1) = this->delta_cdw - this->delta_afm;
 
-		diagonalBlock(0, 2) = this->delta_sc + this->gamma_sc * GAMMA ;
+		diagonalBlock(0, 2) = this->delta_sc + this->gamma_sc * GAMMA;
 		diagonalBlock(0, 3) = this->delta_eta;
 
 		diagonalBlock(1, 2) = this->delta_eta;
-		diagonalBlock(1, 3) = this->delta_sc - this->gamma_sc * GAMMA ;
+		diagonalBlock(1, 3) = this->delta_sc - this->gamma_sc * GAMMA;
 
 		diagonalBlock(2, 3) = -this->delta_cdw - this->delta_afm;
 
@@ -44,7 +44,7 @@ namespace Hubbard::ChainLattice {
 	}
 
 	TripletPairingIterative::TripletPairingIterative(const ModelParameters& _params)
-		: Model(_params)
+		: Model1D(_params)
 	{
 		SPINOR_SIZE = 8;
 		hamilton = SpinorMatrix::Zero(8, 8);
@@ -73,7 +73,7 @@ namespace Hubbard::ChainLattice {
 		double_prec error = 100;
 		constexpr int MAX_STEPS = 2000;
 		const int NUMBER_OF_PARAMETERS = parameterMapper.size();
-		
+
 		ParameterVector f0 = ParameterVector(NUMBER_OF_PARAMETERS);
 		for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
 		{

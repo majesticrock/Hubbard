@@ -4,7 +4,7 @@
 
 namespace Hubbard::SquareLattice {
 	template <typename DataType>
-	class Model : public MomentumBasedModel<DataType, 2>
+	class Model2D : public MomentumBasedModel<DataType, 2>
 	{
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
@@ -46,8 +46,8 @@ namespace Hubbard::SquareLattice {
 			F -= x;
 		};
 	public:
-		Model(const ModelParameters& _params) : MomentumBasedModel<DataType, 2>(_params) {};
-		Model(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
+		Model2D(const ModelParameters& _params) : MomentumBasedModel<DataType, 2>(_params) {};
+		Model2D(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
 			: MomentumBasedModel<DataType, 2>(_params, startingValues) {};
 
 		// saves all one particle energies to reciever
@@ -93,7 +93,7 @@ namespace Hubbard::SquareLattice {
 					for (size_t i = 0; i < solver.eigenvalues().size(); i++)
 					{
 						auto occ = BaseModel<DataType>::fermi_dirac(solver.eigenvalues()(i));
-						if(occ > 1e-12){ // Let's just not take the ln of 0. Negative numbers cannot be reached (by definition)
+						if (occ > 1e-12) { // Let's just not take the ln of 0. Negative numbers cannot be reached (by definition)
 							entropy -= occ * std::log(occ);
 						}
 					}

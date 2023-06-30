@@ -46,7 +46,7 @@ namespace Hubbard::SquareLattice {
 	}
 
 	UsingBroyden::UsingBroyden(const ModelParameters& _params, int _MaxPreBroydenIterations/* = 300*/)
-		: Model(_params), MaxPreBroydenIterations(_MaxPreBroydenIterations)
+		: Model2D(_params), MaxPreBroydenIterations(_MaxPreBroydenIterations)
 	{
 		init();
 		//*(parameterMapper[0]) = 0.000915429;
@@ -60,7 +60,7 @@ namespace Hubbard::SquareLattice {
 	}
 
 	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, int _MaxPreBroydenIterations/* = 300*/)
-		: Model(_params, startingValues), MaxPreBroydenIterations(_MaxPreBroydenIterations)
+		: Model2D(_params, startingValues), MaxPreBroydenIterations(_MaxPreBroydenIterations)
 	{
 		init();
 	}

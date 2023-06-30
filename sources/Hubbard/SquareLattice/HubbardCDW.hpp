@@ -1,9 +1,9 @@
 #pragma once
-#include "Model.hpp"
+#include "Model2D.hpp"
 #include "../BaseModelAttributes.hpp"
 
 namespace Hubbard::SquareLattice {
-	class HubbardCDW : public Model<complex_prec>
+	class HubbardCDW : public Model2D<complex_prec>
 	{
 	private:
 		void init();

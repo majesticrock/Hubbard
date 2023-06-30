@@ -17,7 +17,8 @@ COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp Wic
 HELPER_SRCS=PhaseHelper.cpp ModeHelper.cpp XPModes.cpp GeneralBasis.cpp
 SQUARE_SRCS=HubbardCDW.cpp UsingBroyden.cpp TripletPairingIterative.cpp
 CHAIN_SRCS=TripletPairingIterative.cpp
-HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) BaseModelAttributes.cpp ModelParameters.cpp
+DOS_SRCS=Square.cpp
+HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) BaseModelAttributes.cpp ModelParameters.cpp
 UTIL_SRCS=InputFileReader.cpp
 
 PART_SRCS=Hubbard_Mean_Field.cpp
@@ -39,6 +40,7 @@ build:
 	mkdir -p build/Hubbard/Helper
 	mkdir -p build/Hubbard/SquareLattice
 	mkdir -p build/Hubbard/ChainLattice
+	mkdir -p build/Hubbard/DensityOfStates
 	mkdir -p build/Utility
 	mkdir -p ../FermionCommute/build
 	ln -s ../../FermionCommute/build build/SymbolicOperators

@@ -160,20 +160,21 @@ namespace Hubbard::Helper {
 			SquareLattice::UsingBroyden model(mp);
 			auto result = model.computePhases();
 
-			if(std::abs(result.delta_cdw) > 1e-12 || std::abs(result.delta_afm) > 1e-12){
+			if (std::abs(result.delta_cdw) > 1e-12 || std::abs(result.delta_afm) > 1e-12) {
 				auto copy = result;
-				if(std::abs(result.delta_cdw) > 1e-12){
+				if (std::abs(result.delta_cdw) > 1e-12) {
 					copy.delta_afm = result.delta_cdw;
 					copy.delta_cdw = 0;
-				} else {
+				}
+				else {
 					copy.delta_cdw = result.delta_afm;
 					copy.delta_afm = 0;
 				}
-					
+
 				SquareLattice::UsingBroyden model_copy(mp, copy);
 				copy = model_copy.computePhases();
-				if(copy.converged){
-					if(model_copy.freeEnergyPerSite() < model.freeEnergyPerSite()){
+				if (copy.converged) {
+					if (model_copy.freeEnergyPerSite() < model.freeEnergyPerSite()) {
 						result = copy;
 					}
 				}
