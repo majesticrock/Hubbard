@@ -70,16 +70,6 @@ int main(int argc, char** argv)
 	std::vector<double> model_params = input.getDoubleList("model_parameters");
 
 	if (input.getString("compute_what") == "test") {
-		Hubbard::DensityOfStates::Square::computeValues();
-		double val = 0;
-		val += Hubbard::DensityOfStates::Square::step * Hubbard::DensityOfStates::Square::values[0];
-		for (int gamma = 1; gamma < Hubbard::Constants::K_DISCRETIZATION; gamma++)
-		{
-			val += 2 * Hubbard::DensityOfStates::Square::values[gamma];
-		}
-		std::cout << Hubbard::DensityOfStates::Square::step * val << std::endl;
-		return MPI_Finalize();
-
 		Hubbard::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
 		//Hubbard::SquareLattice::HubbardCDW model(mP);
 		Hubbard::Constants::BASIS_SIZE = 2 * Hubbard::Constants::K_DISCRETIZATION;

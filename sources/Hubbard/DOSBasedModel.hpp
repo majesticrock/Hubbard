@@ -2,12 +2,14 @@
 #include "BaseModel.hpp"
 #include "../../../FermionCommute/sources/Coefficient.hpp"
 #include "BaseModelAttributes.hpp"
+#include "DensityOfStates/BaseDOS.hpp"
 
 namespace Hubbard {
 	template <typename DataType>
 	class DOSBasedModel : public BaseModel<DataType>
 	{
 	protected:
+		std::shared_ptr<DensityOfStates::BaseDOS> dos;
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 		virtual inline void complexParametersToReal(const ComplexParameterVector& c, ParameterVector& r) const {
 			// Does nothing, unless the derived class states otherwise
@@ -43,7 +45,7 @@ namespace Hubbard {
 			F -= x;
 		};
 	public:
-		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params) {};
+		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params) { };
 		DOSBasedModel(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
 			: BaseModel<DataType>(_params, startingValues) {};
 

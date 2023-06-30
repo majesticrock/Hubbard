@@ -23,18 +23,6 @@ namespace Hubbard {
 	using SpinorMatrix = MatrixCL;
 	typedef Utility::Resolvent<double_prec> Resolvent_L;
 
-	template<typename... Args>
-	inline double_prec gamma(Args... ks) {
-		return (cos(ks) + ...);
-	}
-	inline double_prec xi(double_prec k_x, double_prec k_y) {
-		return cos(k_x) - cos(k_y);
-	}
-	template<typename... Args>
-	inline double_prec unperturbed_energy(Args... ks) {
-		return -2. * (cos(ks) + ...);
-	};
-
 	template <const int vector_size>
 	void printAsRow(Eigen::Vector<double_prec, vector_size>& printer) {
 		for (size_t i = 0; i < printer.size(); i++)

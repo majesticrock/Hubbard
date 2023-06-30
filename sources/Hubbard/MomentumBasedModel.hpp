@@ -9,6 +9,18 @@
 #define UNPACK_3D UNPACK_2D UNPACK_MOMENTUM(k_z)
 
 namespace Hubbard {
+	template<typename... Args>
+	inline double_prec gamma(Args... ks) {
+		return (cos(ks) + ...);
+	}
+	inline double_prec xi(double_prec k_x, double_prec k_y) {
+		return cos(k_x) - cos(k_y);
+	}
+	template<typename... Args>
+	inline double_prec unperturbed_energy(Args... ks) {
+		return -2. * (cos(ks) + ...);
+	};
+
 	template <typename DataType, int Dimension>
 	class MomentumBasedModel : public BaseModel<DataType>
 	{

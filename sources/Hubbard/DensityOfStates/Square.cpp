@@ -6,20 +6,16 @@
 #include "../Constants.hpp"
 
 namespace Hubbard::DensityOfStates {
-	std::vector<double> Square::values;
-	bool Square::computed = false;
-	double Square::step = 0;
-
 	void Square::computeValues()
 	{
-		Square::step = 2. / Constants::K_DISCRETIZATION;
-		Square::values.resize(Constants::K_DISCRETIZATION);
+		step = 2. / Constants::K_DISCRETIZATION;
+		values.resize(Constants::K_DISCRETIZATION);
 		for (int g = -Constants::K_DISCRETIZATION; g < 0; g++)
 		{
-			const double gamma = (0.5 + g) * Square::step;
-			Square::values[g + Constants::K_DISCRETIZATION] = (M_1_PI * M_1_PI)
+			const double gamma = (0.5 + g) * step;
+			values[g + Constants::K_DISCRETIZATION] = (M_1_PI * M_1_PI)
 				* boost::math::ellint_1(sqrt(1. - (gamma * gamma / 4.)));
 		}
-		Square::computed = true;
+		computed = true;
 	}
 }
