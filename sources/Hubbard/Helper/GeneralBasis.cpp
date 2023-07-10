@@ -75,7 +75,7 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	std::unique_ptr<std::vector<Resolvent_L>> GeneralBasis::computeCollectiveModes(std::vector<std::vector<double>>& reciever) {
+	std::vector<Resolvent_L> GeneralBasis::computeCollectiveModes(std::vector<std::vector<double>>& reciever) {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
@@ -141,8 +141,7 @@ namespace Hubbard::Helper {
 			psi.normalize();
 		}
 
-		std::unique_ptr<std::vector<Resolvent_L>> resolvents = std::make_unique< std::vector<Resolvent_L>>(std::vector<Resolvent_L>());
-		resolvents->resize(3 * NUMBER_OF_GREENSFUNCTIONS);
+		std::vector<Resolvent_L> resolvents { 3 * NUMBER_OF_GREENSFUNCTIONS };
 
 #pragma omp parallel for
 		for (int i = 0; i < NUMBER_OF_GREENSFUNCTIONS; i++)
@@ -150,14 +149,14 @@ namespace Hubbard::Helper {
 			VectorCL a = N * psis[i];
 			VectorCL b = n_hacek * psis[i];
 
-			(*resolvents)[3 * i].setStartingState(a);
-			(*resolvents)[3 * i + 1].setStartingState(0.5 * (a + b));
-			(*resolvents)[3 * i + 2].setStartingState(0.5 * (a + std::complex<double>(0, 1.) * b));
+			resolvents[3 * i].setStartingState(a);
+			resolvents[3 * i + 1].setStartingState(0.5 * (a + b));
+			resolvents[3 * i + 2].setStartingState(0.5 * (a + std::complex<double>(0, 1.) * b));
 		}
 #pragma omp parallel for
 		for (int i = 0; i < 3 * NUMBER_OF_GREENSFUNCTIONS; i++)
 		{
-			(*resolvents)[i].compute(M, 2 * Constants::K_DISCRETIZATION);
+			resolvents[i].compute(M, 2 * Constants::K_DISCRETIZATION);
 		}
 
 		end = std::chrono::steady_clock::now();

@@ -1,8 +1,5 @@
 #pragma once
-#include <vector>
-#include <string>
 #include <optional>
-
 #include "../../Utility/InputFileReader.hpp"
 #include "../SquareLattice/Model2D.hpp"
 
@@ -20,19 +17,22 @@ namespace Hubbard::Helper {
 			*  0 1
 			*  2 3
 			*/
-			std::vector<BaseModelRealAttributes> attributes;
-			inline double& operator()(int i, int j) {
+			std::vector<ModelAttributes<double>> attributes;
+			inline double& operator()(const size_t i, const size_t j) {
+				return attributes[i][j];
+			};
+			inline const double& operator()(const size_t i, const size_t j) const {
 				return attributes[i][j];
 			};
 
-			inline bool valueIsFinite(int index) const {
+			inline bool valueIsFinite(const size_t index) const {
 				return std::abs(attributes[index][value_index]) > 1e-10;
 			};
 			inline bool containsPhaseBoundary() const
 			{
-				for (size_t i = 1; i < 4; i++)
+				for (size_t i = 1U; i < 4; ++i)
 				{
-					if (valueIsFinite(0) != valueIsFinite(i)) {
+					if (valueIsFinite(0U) != valueIsFinite(i)) {
 						return true;
 					}
 				}
@@ -64,7 +64,7 @@ namespace Hubbard::Helper {
 
 		bool use_broyden;
 		ModelParameters modelParameters;
-		BaseModelRealAttributes computeDataPoint(const ModelParameters& mp, std::optional<BaseModelRealAttributes> startingValues = std::nullopt);
+		ModelAttributes<double> computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues = std::nullopt);
 	public:
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);
 

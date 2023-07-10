@@ -1,6 +1,6 @@
 #include "PhaseHelper.hpp"
-#include "../SquareLattice/UsingBroyden.hpp"
 #include "../SquareLattice/HubbardCDW.hpp"
+#include "../SquareLattice/UsingBroyden.hpp"
 
 namespace Hubbard::Helper {
 	void PhaseHelper::Plaquette::devidePlaquette(std::vector<PhaseHelper::Plaquette>& appendTo) {
@@ -24,7 +24,7 @@ namespace Hubbard::Helper {
 		auto mp = parent->modelParameters;
 		const double centerFirst = this->getCenterFirst();
 		const double centerSecond = this->getCenterSecond();
-		BaseModelRealAttributes averageParameters;
+		ModelAttributes<double> averageParameters;
 		int finiteCount = 0;
 		for (size_t i = 0; i < this->attributes.size(); i++)
 		{
@@ -37,9 +37,9 @@ namespace Hubbard::Helper {
 			averageParameters /= finiteCount;
 		}
 		else {
-			averageParameters = BaseModelRealAttributes(mp);
+			averageParameters = ModelAttributes<double>(mp);
 		}
-		BaseModelRealAttributes new_attributes[5];
+		ModelAttributes<double> new_attributes[5];
 
 		mp.setGlobalIteratorExact(this->upperFirst);
 		mp.setSecondIteratorExact(centerSecond);
@@ -147,7 +147,7 @@ namespace Hubbard::Helper {
 			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 	}
 
-	BaseModelRealAttributes PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<BaseModelRealAttributes> startingValues /*= std::nullopt*/) {
+	ModelAttributes<double> PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues /*= std::nullopt*/) {
 		if (startingValues.has_value()) {
 			if (use_broyden) {
 				SquareLattice::UsingBroyden model(mp, startingValues.value(), 10);
@@ -160,15 +160,16 @@ namespace Hubbard::Helper {
 			SquareLattice::UsingBroyden model(mp);
 			auto result = model.computePhases();
 
-			if (std::abs(result.delta_cdw) > 1e-12 || std::abs(result.delta_afm) > 1e-12) {
+			// Remember: [0] returns the cdw and [1] the afm gap
+			if (std::abs(result[0]) > 1e-12 || std::abs(result[1]) > 1e-12) {
 				auto copy = result;
-				if (std::abs(result.delta_cdw) > 1e-12) {
-					copy.delta_afm = result.delta_cdw;
-					copy.delta_cdw = 0;
+				if (std::abs(result[0]) > 1e-12) {
+					copy[1] = result[0];
+					copy[0] = 0;
 				}
 				else {
-					copy.delta_cdw = result.delta_afm;
-					copy.delta_afm = 0;
+					copy[0] = result[1];
+					copy[1] = 0;
 				}
 
 				SquareLattice::UsingBroyden model_copy(mp, copy);
@@ -187,7 +188,7 @@ namespace Hubbard::Helper {
 	}
 
 	void PhaseHelper::compute_crude(std::vector<data_vector>& data_mapper) {
-		int NUMBER_OF_GAP_VALUES = data_mapper.size();
+		size_t NUMBER_OF_GAP_VALUES = data_mapper.size();
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
 		{
 #pragma omp parallel for num_threads(4) schedule(dynamic)
@@ -195,7 +196,7 @@ namespace Hubbard::Helper {
 			{
 				ModelParameters local = modelParameters;
 				local.setSecondIterator(U);
-				BaseModelRealAttributes ret = computeDataPoint(local);
+				ModelAttributes<double> ret = computeDataPoint(local);
 
 				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
 				{
@@ -224,13 +225,13 @@ namespace Hubbard::Helper {
 		std::vector<Plaquette> plaqs;
 		const int rank_offset = FIRST_IT_STEPS * SECOND_IT_STEPS * rank;
 
-		for (size_t i = (rank > 0) ? 0 : 1; i < FIRST_IT_STEPS; i++)
+		for (size_t i = (rank > 0) ? 0U : 1U; i < FIRST_IT_STEPS; ++i)
 		{
-			for (size_t j = 1; j < SECOND_IT_STEPS; j++)
+			for (size_t j = 1U; j < SECOND_IT_STEPS; ++j)
 			{
 				Plaquette plaq;
 				plaq.value_index = value_index;
-				for (size_t l = 0; l < origin.size(); l++)
+				for (size_t l = 0U; l < origin.size(); ++l)
 				{
 					plaq(0, l) = origin[l][rank_offset + i * SECOND_IT_STEPS + j - 1];
 					plaq(1, l) = origin[l][rank_offset + i * SECOND_IT_STEPS + j];
@@ -256,19 +257,20 @@ namespace Hubbard::Helper {
 
 			constexpr int n_omp_threads = 8;
 			std::vector<std::vector<Plaquette>> buffer(n_omp_threads);
+			// omp wants a signed type, so it shall get one
 #pragma omp parallel for num_threads(n_omp_threads)
-			for (size_t i = 0; i < N_PLAQUETTES; i++)
+			for (int i = 0; i < N_PLAQUETTES; i++)
 			{
 				plaqs[i].devidePlaquette(buffer[omp_get_thread_num()]);
 			}
-			int totalSize = 0;
+			size_t totalSize = 0;
 			for (const auto& vec : buffer)
 			{
 				totalSize += vec.size();
 			}
 			plaqs.clear();
 			bool removal = false;
-			if (totalSize > 100) {
+			if (totalSize > 100U) {
 				totalSize /= 2;
 				removal = true;
 			}

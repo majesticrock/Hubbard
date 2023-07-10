@@ -1,9 +1,8 @@
 #define _USE_MATH_DEFINES
 
 #include "Square.hpp"
-#include <boost/math/special_functions/ellint_1.hpp>
-#include <cmath>
 #include "../Constants.hpp"
+#include <boost/math/special_functions/ellint_1.hpp>
 
 namespace Hubbard::DensityOfStates {
 	void Square::computeValues()

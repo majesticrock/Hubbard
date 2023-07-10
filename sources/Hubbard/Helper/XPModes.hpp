@@ -19,6 +19,6 @@ namespace Hubbard::Helper {
 	public:
 		XPModes(Utility::InputFileReader& input) : ModeHelper(input) { };
 
-		virtual std::unique_ptr<std::vector<Resolvent_L>> computeCollectiveModes(std::vector<std::vector<double>>& reciever) override;
+		virtual std::vector<Resolvent_L> computeCollectiveModes(std::vector<std::vector<double>>& reciever) override;
 	};
 }

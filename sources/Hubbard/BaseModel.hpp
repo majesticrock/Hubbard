@@ -1,30 +1,22 @@
 #pragma once
-#include <Eigen/Dense>
-#include <iostream>
-#include <cmath>
-#include <cstdarg>
-#include <type_traits>
-#include "Constants.hpp"
-#include "ModelParameters.hpp"
 #include "../Utility/Resolvent.hpp"
-#include "BaseModelAttributes.hpp"
+#include "Constants.hpp"
+#include "ModelAttributes.hpp"
+#include <cstdarg>
 
 namespace Hubbard {
-	// Defines the working precision of the entire project
-	// Change to float, double or long double - so far double produces the best results
-	typedef double double_prec;
-	constexpr double_prec L_PI = 3.141592653589793238462643383279502884L; /* pi */
-	typedef Eigen::Matrix<double_prec, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
-	typedef Eigen::Vector<double_prec, Eigen::Dynamic> Vector_L;
+	constexpr double L_PI = 3.141592653589793238462643383279502884L; /* pi */
+	typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
+	typedef Eigen::Vector<double, Eigen::Dynamic> Vector_L;
 
-	typedef std::complex<double_prec> complex_prec;
+	typedef std::complex<double> complex_prec;
 	typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> MatrixCL;
 	typedef Eigen::Vector<complex_prec, Eigen::Dynamic> VectorCL;
 	using SpinorMatrix = MatrixCL;
-	typedef Utility::Resolvent<double_prec> Resolvent_L;
+	typedef Utility::Resolvent<double> Resolvent_L;
 
-	template <const int vector_size>
-	void printAsRow(Eigen::Vector<double_prec, vector_size>& printer) {
+	template <const int vector_size = Eigen::Dynamic>
+	void printAsRow(Eigen::Vector<double, vector_size>& printer) {
 		for (size_t i = 0; i < printer.size(); i++)
 		{
 			std::cout << "\t" << printer(i);
@@ -35,7 +27,7 @@ namespace Hubbard {
 		std::cout << std::endl;
 	}
 
-	template <const int vector_size>
+	template <const int vector_size = Eigen::Dynamic>
 	void printAsRow(Eigen::Vector<complex_prec, vector_size>& printer) {
 		for (size_t i = 0; i < printer.size(); i++)
 		{
@@ -46,48 +38,44 @@ namespace Hubbard {
 		}
 		std::cout << std::endl;
 	}
+	const complex_prec I = { 0, 1 };
 
-	typedef Eigen::Vector<complex_prec, Eigen::Dynamic> ComplexParameterVector;
+	using ComplexParameterVector = Eigen::Vector<complex_prec, Eigen::Dynamic>;
 
 	template <typename DataType>
-	class BaseModel :
-		public std::conditional_t<std::is_same_v<DataType, double_prec>, BaseModelRealAttributes, BaseModelComplexAttributes>
+	class BaseModel
 	{
 	private:
 		inline void init()
 		{
-			this->U_OVER_N = U / Constants::BASIS_SIZE;
-			this->V_OVER_N = V / Constants::BASIS_SIZE;
-
-			this->SPINOR_SIZE = 4;
 			computeChemicalPotential();
 		};
 
 	protected:
-		using BaseAttributes = std::conditional_t<std::is_same_v<DataType, double_prec>, BaseModelRealAttributes, BaseModelComplexAttributes>;
-		typedef Eigen::Vector<DataType, Eigen::Dynamic> ParameterVector;
+		using ParameterVector = Eigen::Vector<DataType, Eigen::Dynamic>;
+		using BaseAttributes = ModelAttributes<DataType>;
 
-		const complex_prec I = { 0, 1 };
+		ModelAttributes<DataType> model_attributes{};
+		// Stores the coefficients for the parameters (e.g. V/N) with the appropriate index
+		std::vector<double> parameterCoefficients;
+
 		SpinorMatrix hamilton;
 
-		double_prec temperature;
-		double_prec U;
-		double_prec V;
-		double_prec U_OVER_N;
-		double_prec V_OVER_N;
-		double_prec chemical_potential;
+		double temperature{};
+		double U{};
+		double V{};
+		double U_OVER_N{ U / Constants::BASIS_SIZE };
+		double V_OVER_N{ V / Constants::BASIS_SIZE };
+		double chemical_potential{};
 
-		size_t TOTAL_BASIS;
-		size_t SPINOR_SIZE;
-
-		// Stores the coefficients for the parameters (e.g. V/N) with the appropriate index
-		std::vector<double_prec> parameterCoefficients;
+		size_t TOTAL_BASIS{};
+		size_t SPINOR_SIZE{ 4 };
 
 		inline virtual void computeChemicalPotential() {
 			this->chemical_potential = 0.5 * U + 4 * V;
 		};
 
-		inline double_prec fermi_dirac(double_prec energy) const {
+		inline double fermi_dirac(double energy) const {
 			if (temperature > 1e-8) {
 				return (1. / (1. + exp(energy / temperature)));
 			}
@@ -106,16 +94,17 @@ namespace Hubbard {
 			}
 			rho = solvedHamilton.eigenvectors() * rho * solvedHamilton.eigenvectors().adjoint();
 		};
-		void setParameters(ParameterVector& F) {
-			for (size_t i = 0; i < F.size(); i++)
+		inline void multiplyParametersByCoefficients(ParameterVector& F) const {
+			for (size_t i = 0U; i < F.size(); ++i)
 			{
 				F(i) *= parameterCoefficients[i];
 			}
-
-			constexpr double_prec new_weight = 0.5;
-			for (size_t i = 0; i < F.size(); i++)
+		};
+		inline void setParameters(ParameterVector& F) {
+			constexpr double new_weight = 0.5;
+			for (size_t i = 0U; i < F.size(); ++i)
 			{
-				*(this->parameterMapper[i]) = new_weight * F(i) + (1 - new_weight) * (*(this->parameterMapper[i]));
+				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
 			}
 		};
 
@@ -136,23 +125,28 @@ namespace Hubbard {
 		};
 
 	public:
-		BaseModel(const ModelParameters& _params)
-			: BaseAttributes(_params), temperature(_params.temperature), U(_params.U), V(_params.V)
+		explicit BaseModel(const ModelParameters& _params)
+			: temperature(_params.temperature), U(_params.U), V(_params.V)
 		{
 			init();
 		};
 
-		BaseModel(const ModelParameters& _params, const BaseAttributes& startingValues)
-			: BaseAttributes(startingValues), temperature(_params.temperature), U(_params.U), V(_params.V)
+		template<typename StartingValuesDataType>
+		BaseModel(const ModelParameters& _params, const ModelAttributes< StartingValuesDataType >& startingValues)
+			: model_attributes(startingValues), temperature(_params.temperature), U(_params.U), V(_params.V)
 		{
 			init();
 		};
+		virtual ~BaseModel() = default;
 
-		virtual BaseModelRealAttributes computePhases(const bool print = false) = 0;
+		virtual ModelAttributes<double> computePhases(const bool print = false) = 0;
 
-		inline virtual double_prec entropyPerSite() = 0;
-		inline virtual double_prec internalEnergyPerSite() = 0;
-		inline virtual double_prec freeEnergyPerSite() {
+		inline double getTotalGapValue() {
+			return this->model_attributes.getTotalGapValue();
+		}
+		inline virtual double entropyPerSite() = 0;
+		inline virtual double internalEnergyPerSite() = 0;
+		inline virtual double freeEnergyPerSite() {
 			return this->internalEnergyPerSite() - temperature * this->entropyPerSite();
 		};
 	};

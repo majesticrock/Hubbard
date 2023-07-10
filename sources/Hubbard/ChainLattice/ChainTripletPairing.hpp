@@ -2,12 +2,12 @@
 #include "Model1D.hpp"
 
 namespace Hubbard::ChainLattice {
-	class TripletPairingIterative :
+	class ChainTripletPairing :
 		public Model1D<complex_prec>
 	{
 	private:
 	protected:
-		inline double_prec tau(double_prec k_x) {
+		inline double tau(double k_x) {
 			return sin(k_x);
 		};
 		virtual void fillHamiltonianHelper(va_list args) override;
@@ -25,7 +25,7 @@ namespace Hubbard::ChainLattice {
 			F(7) += gamma(k_x) * (rho(2, 2) - rho(3, 3)).real(); // Gamma Occupation Down
 		};
 	public:
-		TripletPairingIterative(const ModelParameters& _params);
-		virtual BaseModelRealAttributes computePhases(const bool print = false) override;
+		explicit ChainTripletPairing(const ModelParameters& _params);
+		virtual ModelAttributes<double> computePhases(const bool print = false) override;
 	};
 }

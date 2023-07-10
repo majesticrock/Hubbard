@@ -1,10 +1,8 @@
 #pragma once
 
-#include <iostream>
-#include <vector>
-#include <cmath>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <iostream>
 
 namespace Utility {
 	namespace NumericalSolver {

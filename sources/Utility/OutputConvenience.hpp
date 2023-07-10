@@ -1,11 +1,12 @@
 #pragma once
 #include "OutputWriter.hpp"
+#include <iostream>
 
 #define _USE_BOOST // Disable if boost ist not desired
 #ifdef _USE_BOOST
-#include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
 #include <sstream>
 #endif
 
@@ -88,7 +89,7 @@ namespace Utility {
 
 	// This function assumes that the number of elements of <data> is divisible by linebreak
 	template <typename data_type>
-	void saveData_boost(const std::vector<data_type>& data, int linebreak, const std::string& filename,
+	void saveData_boost(const std::vector<data_type>& data, size_t linebreak, const std::string& filename,
 		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
 		if (linebreak == 0) {

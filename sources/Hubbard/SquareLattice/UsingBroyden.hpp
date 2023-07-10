@@ -1,9 +1,8 @@
 #pragma once
 #include "Model2D.hpp"
-#include "../BaseModelAttributes.hpp"
 
 namespace Hubbard::SquareLattice {
-	class UsingBroyden : public Model2D<double_prec>
+	class UsingBroyden : public Model2D<double>
 	{
 	private:
 		const int MaxPreBroydenIterations;
@@ -51,9 +50,9 @@ namespace Hubbard::SquareLattice {
 			r(7) = c(7).real(); // Gamma Occupation Down
 		};
 	public:
-		UsingBroyden(const ModelParameters& _params, int _MaxPreBroydenIterations = 300);
+		explicit UsingBroyden(const ModelParameters& _params, int _MaxPreBroydenIterations = 300);
 		UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, int _MaxPreBroydenIterations = 300);
 
-		BaseModelRealAttributes computePhases(const bool print = false) override;
+		ModelAttributes<double> computePhases(const bool print = false) override;
 	};
 }

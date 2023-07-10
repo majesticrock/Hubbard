@@ -140,7 +140,7 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	std::unique_ptr<std::vector<Resolvent_L>> XPModes::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
+	std::vector<Resolvent_L> XPModes::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
 	{
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
@@ -222,7 +222,7 @@ namespace Hubbard::Helper {
 				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
 				k_solver[0].compute(K_plus);
 
-				double_prec tol = k_solver[0].eigenvalues().norm() * ERROR_MARGIN;
+				double tol = k_solver[0].eigenvalues().norm() * ERROR_MARGIN;
 				if (k_solver[0].info() == Eigen::Success && (k_solver[0].eigenvalues().array() >= -tol).all()) {
 					std::cout << "K_+: eigenvalues are real and accurate up to tolerance" << std::endl;
 				}
@@ -248,7 +248,7 @@ namespace Hubbard::Helper {
 					<< (k_solver[1].eigenvectors() * k_solver[1].eigenvalues().asDiagonal() * k_solver[1].eigenvectors().adjoint()
 						- K_minus).norm() << std::endl;
 
-				double_prec tol = k_solver[1].eigenvalues().norm() * ERROR_MARGIN;
+				double tol = k_solver[1].eigenvalues().norm() * ERROR_MARGIN;
 				if (k_solver[1].info() == Eigen::Success && (k_solver[1].eigenvalues().array() >= -tol).all()) {
 					std::cout << "K_-: eigenvalues are real and accurate up to tolerance" << std::endl;
 				}
@@ -289,7 +289,7 @@ namespace Hubbard::Helper {
 
 			Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
 			solver.compute(N_new);
-			double_prec tol = solver.eigenvalues().norm() * ERROR_MARGIN;
+			double tol = solver.eigenvalues().norm() * ERROR_MARGIN;
 			if (solver.info() == Eigen::Success && (solver.eigenvalues().array() >= -tol).all()) {
 				std::cout << "N_new: eigenvalues are real and accurate up to tolerance" << std::endl;
 			}
@@ -321,29 +321,29 @@ namespace Hubbard::Helper {
 
 		begin = std::chrono::steady_clock::now();
 
-		std::unique_ptr<std::vector<Resolvent_L>> resolvents = std::make_unique< std::vector<Resolvent_L>>(std::vector<Resolvent_L>());
-		resolvents->reserve(6);
+		std::vector<Resolvent_L> resolvents{};
+		resolvents.reserve(6);
 
 		for (size_t i = 0; i < 2; i++)
 		{
 			// It is going to compute the anti-Hermitian first
 			compute_solver_matrix(i, 1 - i);
-			resolvents->push_back(Resolvent_L(startingState_SC[i]));
-			resolvents->push_back(Resolvent_L(startingState_CDW[i]));
-			resolvents->push_back(Resolvent_L(startingState_AFM[i]));
+			resolvents.push_back(Resolvent_L(startingState_SC[i]));
+			resolvents.push_back(Resolvent_L(startingState_CDW[i]));
+			resolvents.push_back(Resolvent_L(startingState_AFM[i]));
 #pragma omp parallel sections
 			{
 #pragma omp section
 				{
-					(*resolvents)[3 * i].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
+					resolvents[3 * i].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
 				}
 #pragma omp section
 				{
-					(*resolvents)[3 * i + 1].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
+					resolvents[3 * i + 1].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
 				}
 #pragma omp section
 				{
-					(*resolvents)[3 * i + 2].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
+					resolvents[3 * i + 2].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
 				}
 			}
 		}

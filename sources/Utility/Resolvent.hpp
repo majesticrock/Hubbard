@@ -1,14 +1,9 @@
 #pragma once
-#define _USE_MATH_DEFINES
 // Use (void) to silence unused warnings.
 #define assertm(exp, msg) assert(((void)msg, exp))
 
-#include <Eigen/Dense>
-#include <vector>
-#include <iostream>
-#include <iomanip>
-#include <fstream>
 #include "OutputConvenience.hpp"
+#include <Eigen/Dense>
 
 namespace Utility {
 	template <typename T>
@@ -31,6 +26,16 @@ namespace Utility {
 
 		return os;
 	}
+	inline size_t findSmallestValue(const Eigen::VectorXd& diagonal) {
+		size_t position = 0;
+		for (size_t i = 1U; i < diagonal.size(); ++i)
+		{
+			if (diagonal(position) > diagonal(i)) {
+				position = i;
+			}
+		}
+		return position;
+	};
 
 	// choose the floating point precision, i.e. float, double or long double
 	template <typename T>
@@ -45,17 +50,6 @@ namespace Utility {
 		vector_cT startingState;
 		typedef ResolventData<T> resolvent_data;
 		std::vector<resolvent_data> data;
-
-		constexpr unsigned int findSmallestValue(const vector_T& diagonal) const {
-			int position = 0;
-			for (int i = 1; i < diagonal.size(); i++)
-			{
-				if (diagonal(position) > diagonal(i)) {
-					position = i;
-				}
-			}
-			return position;
-		};
 		size_t noEigenvalueChangeAt;
 	public:
 		// Sets the starting state
@@ -101,8 +95,8 @@ namespace Utility {
 			Eigen::SelfAdjointEigenSolver<matrix_T> diagonalize;
 			vector_T diagonal; //stores the diagonal elements in a vector
 			T oldEigenValue = 0, newEigenValue = 0;
-			unsigned int position = 0;
-			long iterNum = 0;
+			size_t position = 0U;
+			size_t iterNum = 0U;
 			bool goOn = true;
 			vector_T buffer;
 			while (goOn) {
@@ -156,7 +150,7 @@ namespace Utility {
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
 			}
-			this->data.push_back(res);
+			data.push_back(res);
 		};
 
 		// Same as compute, but for complex matrices
@@ -193,9 +187,9 @@ namespace Utility {
 
 			Eigen::SelfAdjointEigenSolver<matrix_cT> diagonalize;
 			vector_T diagonal; //stores the diagonal elements in a vector
-			T oldEigenValue = 0, newEigenValue = 0;
-			unsigned int position = 0;
-			long iterNum = 0;
+			T oldEigenValue = 0., newEigenValue = 0.;
+			size_t position = 0U;
+			size_t iterNum = 0U;
 			bool goOn = true;
 			vector_cT buffer;
 			while (goOn) {
@@ -252,7 +246,7 @@ namespace Utility {
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1]);
 			}
-			this->data.push_back(res);
+			data.push_back(res);
 		};
 
 		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
@@ -288,8 +282,8 @@ namespace Utility {
 			Eigen::SelfAdjointEigenSolver<matrix_T> diagonalize;
 			vector_T diagonal; //stores the diagonal elements in a vector
 			T oldEigenValue = 0, newEigenValue = 0;
-			unsigned int position = 0;
-			long iterNum = 0;
+			size_t position = 0U;
+			size_t iterNum = 0U;
 			bool goOn = true;
 			vector_T buffer;
 			while (goOn) {
@@ -342,7 +336,7 @@ namespace Utility {
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
 			}
-			this->data.push_back(res);
+			data.push_back(res);
 		};
 
 		// Computes the resolvent directly from M and N. This might be more stable for complex matrices
@@ -380,8 +374,8 @@ namespace Utility {
 			Eigen::SelfAdjointEigenSolver<matrix_cT> diagonalize;
 			vector_T diagonal; //stores the diagonal elements in a vector
 			T oldEigenValue = 0, newEigenValue = 0;
-			unsigned int position = 0;
-			long iterNum = 0;
+			size_t position = 0U;
+			size_t iterNum = 0U;
 			bool goOn = true;
 			vector_cT buffer;
 			while (goOn) {
@@ -438,7 +432,7 @@ namespace Utility {
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1]);
 			}
-			this->data.push_back(res);
+			data.push_back(res);
 		};
 
 		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
@@ -474,8 +468,8 @@ namespace Utility {
 			Eigen::SelfAdjointEigenSolver<matrix_cT> diagonalize;
 			vector_T diagonal; //stores the diagonal elements in a vector
 			T oldEigenValue = 0, newEigenValue = 0;
-			unsigned int position = 0;
-			long iterNum = 0;
+			size_t position = 0U;
+			size_t iterNum = 0U;
 			bool goOn = true;
 			vector_cT buffer;
 			while (goOn) {
@@ -529,15 +523,15 @@ namespace Utility {
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
 			}
-			this->data.push_back(res);
+			data.push_back(res);
 		};
 
 		// Prints the computed data to <filename>
 		// Asummes that the data has been computed before...
 		void writeDataToFile(const std::string& filename) const
 		{
-			std::cout << "Total Lanczos iterations: " << this->data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
-			saveData_boost(this->data, filename + ".dat.gz");
+			std::cout << "Total Lanczos iterations: " << data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
+			saveData_boost(data, filename + ".dat.gz");
 		};
 	};
 }

@@ -15,10 +15,10 @@ OPT = -march=native -O3
 COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp WickCleaner.cpp
 
 HELPER_SRCS=PhaseHelper.cpp ModeHelper.cpp XPModes.cpp GeneralBasis.cpp
-SQUARE_SRCS=HubbardCDW.cpp UsingBroyden.cpp TripletPairingIterative.cpp
-CHAIN_SRCS=TripletPairingIterative.cpp
+SQUARE_SRCS=HubbardCDW.cpp UsingBroyden.cpp SquareTripletPairing.cpp
+CHAIN_SRCS=ChainTripletPairing.cpp
 DOS_SRCS=BaseDOS.cpp Square.cpp
-HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) BaseModelAttributes.cpp ModelParameters.cpp
+HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) ModelParameters.cpp
 UTIL_SRCS=InputFileReader.cpp
 
 PART_SRCS=Hubbard_Mean_Field.cpp

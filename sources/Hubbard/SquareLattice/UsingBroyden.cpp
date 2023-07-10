@@ -1,7 +1,4 @@
 #include "UsingBroyden.hpp"
-#include <cmath>
-#include <iostream>
-#include <iomanip>
 #include "../../Utility/Roots_Broyden.hpp"
 
 namespace Hubbard::SquareLattice {
@@ -24,23 +21,23 @@ namespace Hubbard::SquareLattice {
 	{
 		UNPACK_2D;
 		hamilton.fill(0);
-		const double_prec GAMMA = gamma(k_x, k_y);
-		const double_prec XI = xi(k_x, k_y);
+		const double GAMMA = gamma(k_x, k_y);
+		const double XI = xi(k_x, k_y);
 
-		hamilton(0, 1) = delta_cdw - delta_afm;;
-		hamilton(0, 2) = delta_sc + (gamma_sc * GAMMA + I * xi_sc * XI);
-		hamilton(0, 3) = I * delta_eta;
+		hamilton(0, 1) = DELTA_CDW - DELTA_AFM;;
+		hamilton(0, 2) = DELTA_SC + (GAMMA_SC * GAMMA + I * XI_SC * XI);
+		hamilton(0, 3) = I * DELTA_ETA;
 
-		hamilton(1, 2) = I * delta_eta;
-		hamilton(1, 3) = delta_sc - (gamma_sc * GAMMA + I * xi_sc * XI);
-		hamilton(2, 3) = -delta_cdw - delta_afm;
+		hamilton(1, 2) = I * DELTA_ETA;
+		hamilton(1, 3) = DELTA_SC - (GAMMA_SC * GAMMA + I * XI_SC * XI);
+		hamilton(2, 3) = -DELTA_CDW - DELTA_AFM;
 
 		SpinorMatrix buffer = hamilton.adjoint();
 		hamilton += buffer;
-		double_prec eps = renormalizedEnergy_up(GAMMA);
+		double eps = model_attributes.renormalizedEnergy_up(GAMMA);
 		hamilton(0, 0) = eps;
 		hamilton(1, 1) = -eps;
-		eps = renormalizedEnergy_down(GAMMA);
+		eps = model_attributes.renormalizedEnergy_down(GAMMA);
 		hamilton(2, 2) = -eps;
 		hamilton(3, 3) = eps;
 	}
@@ -49,14 +46,6 @@ namespace Hubbard::SquareLattice {
 		: Model2D(_params), MaxPreBroydenIterations(_MaxPreBroydenIterations)
 	{
 		init();
-		//*(parameterMapper[0]) = 0.000915429;
-		//*(parameterMapper[1]) = 0.000739837;
-		//*(parameterMapper[2]) = 0;
-		//*(parameterMapper[3]) = 0;
-		//*(parameterMapper[4]) = 0;
-		//*(parameterMapper[5]) = 0;
-		//*(parameterMapper[6]) = 0.00949777;
-		//*(parameterMapper[7]) = 0.00949777;
 	}
 
 	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, int _MaxPreBroydenIterations/* = 300*/)
@@ -65,25 +54,25 @@ namespace Hubbard::SquareLattice {
 		init();
 	}
 
-	BaseModelRealAttributes UsingBroyden::computePhases(const bool print/*=false*/)
+	ModelAttributes<double> UsingBroyden::computePhases(const bool print/*=false*/)
 	{
 		std::function<void(const ParameterVector&, ParameterVector&)> func = [&](const ParameterVector& x, ParameterVector& F) {
 			iterationStep(x, F);
 		};
-		const int NUMBER_OF_PARAMETERS = parameterMapper.size();
+		const size_t NUMBER_OF_PARAMETERS = model_attributes.size();
 		ParameterVector f0 = ParameterVector::Zero(NUMBER_OF_PARAMETERS);
-		for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
+		for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
 		{
-			f0(i) = *(parameterMapper[i]);
+			f0(i) = model_attributes[i];
 		}
 		ParameterVector x0 = f0;
 
-		for (size_t i = 0; i < MaxPreBroydenIterations && f0.squaredNorm() > 1e-15; i++)
+		for (size_t i = 0U; i < MaxPreBroydenIterations && f0.squaredNorm() > 1e-15; ++i)
 		{
 			func(x0, f0);
-			for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
+			for (size_t j = 0U; j < NUMBER_OF_PARAMETERS; ++j)
 			{
-				x0(i) = *(parameterMapper[i]);
+				x0(j) = model_attributes[j];
 			}
 
 			for (size_t i = 0; i < x0.size(); i++)
@@ -95,23 +84,21 @@ namespace Hubbard::SquareLattice {
 
 			if (print) {
 				std::cout << i << ":  " << std::scientific << std::setprecision(4);
-				printAsRow(x0);
+				printAsRow<-1>(x0);
 			}
 		}
 
-		Utility::NumericalSolver::Roots::Broyden<double_prec, -1> broyden_solver;
+		Utility::NumericalSolver::Roots::Broyden<double, -1> broyden_solver;
 		if (!broyden_solver.compute(func, x0, 400)) {
 			std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
 				<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
-			delta_cdw = 0;
-			delta_afm = 0;
-			delta_sc = 0;
-			gamma_sc = 0;
-			xi_sc = 0;
-			delta_eta = 0;
+			for (auto& value : model_attributes.selfconsistency_values) {
+				value = 0.;
+			}
+			model_attributes.converged = false;
 		}
 		else {
-			converged = true;
+			model_attributes.converged = true;
 		}
 
 		if (print) {
@@ -129,6 +116,6 @@ namespace Hubbard::SquareLattice {
 			}
 			std::cout << ")\n -> |f0| = " << std::scientific << std::setprecision(8) << f0.norm() << std::endl;
 		}
-		return BaseModelRealAttributes(*this);
+		return ModelAttributes<double>(this->model_attributes);
 	}
 }

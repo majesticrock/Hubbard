@@ -1,5 +1,3 @@
-#define _USE_MATH_DEFINES
-
 #ifdef _DEBUG
 #define _NO_MPI
 #endif
@@ -9,24 +7,11 @@
 #include <mpi.h>
 #endif
 
-#include <string>
-#include <iostream>
 #include <filesystem>
-#include <chrono>
-#include <memory>
-#include <cmath>
-#include <algorithm>
-
+#include "Hubbard/Helper/GeneralBasis.hpp"
 #include "Hubbard/Helper/PhaseHelper.hpp"
 #include "Hubbard/Helper/XPModes.hpp"
-#include "Hubbard/Helper/GeneralBasis.hpp"
-#include "Utility/InputFileReader.hpp"
-#include "Hubbard/ChainLattice/TripletPairingIterative.hpp"
-#include "Hubbard/SquareLattice/TripletPairingIterative.hpp"
-#include "Hubbard/SquareLattice/UsingBroyden.hpp"
-#include "Hubbard/Constants.hpp"
-#include "Utility/OutputConvenience.hpp"
-#include "Hubbard/DensityOfStates/Square.hpp"
+#include "Hubbard/SquareLattice/SquareTripletPairing.hpp"
 
 using Hubbard::Helper::data_vector;
 
@@ -71,25 +56,31 @@ int main(int argc, char** argv)
 
 	if (input.getString("compute_what") == "test") {
 		Hubbard::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
-		//Hubbard::SquareLattice::HubbardCDW model(mP);
-		Hubbard::Constants::BASIS_SIZE = 2 * Hubbard::Constants::K_DISCRETIZATION;
-		Hubbard::ChainLattice::TripletPairingIterative model(mP);
+		Hubbard::SquareLattice::HubbardCDW model(mP);
+		//Hubbard::Constants::BASIS_SIZE = 2 * Hubbard::Constants::K_DISCRETIZATION;
+		//Hubbard::ChainLattice::TripletPairingIterative model(mP);
 
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point test_e;
+
 		model.computePhases(true).print();
 		std::cout << "Internal energy = " << model.internalEnergyPerSite() << std::endl;
+
 		test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 		std::cout << "\n\n" << std::endl;
+
+#ifndef _NO_MPI
 		return MPI_Finalize();
+#else
+		return 0;
+#endif // !_NO_MPI
+
 		Hubbard::SquareLattice::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
 		model2.computePhases(true).print();
 		test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
-
-		return MPI_Finalize();
 	}
 	else if (input.getString("compute_what") == "phases") {
 		// Setup the number of steps
@@ -162,23 +153,23 @@ int main(int argc, char** argv)
 
 		if (input.getBool("improved_boundaries")) {
 			std::vector<data_vector> local(NUMBER_OF_GAP_VALUES);
+			// We stick to int (and ignore size_t vs. int mismatch) due to MPI restrictions
 			std::vector<int> sizes(NUMBER_OF_GAP_VALUES);
-			for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+			std::vector<std::vector<int>> all_sizes(NUMBER_OF_GAP_VALUES);
+			std::vector<int> totalSizes(NUMBER_OF_GAP_VALUES, 0);
+
+			for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 			{
 				phaseHelper.findSingleBoundary(recieve_data, local[i], i, rank);
 				sizes[i] = local[i].size();
 			}
-
-			std::vector<std::vector<int>> all_sizes(NUMBER_OF_GAP_VALUES);
-
 			std::vector < data_vector> recieve_boundaries(NUMBER_OF_GAP_VALUES);
 			if (rank == 0) {
-				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+				for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 				{
 					all_sizes[i].resize(numberOfRanks);
 				}
 			}
-			std::vector<int> totalSizes(NUMBER_OF_GAP_VALUES, 0);
 #ifndef _NO_MPI
 			for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
 			{
@@ -212,11 +203,11 @@ int main(int argc, char** argv)
 				std::filesystem::create_directories("../../data/phases/" + output_folder);
 
 				std::string names[] = { "cdw", "afm", "sc", "gamma_sc", "xi_sc", "eta" };
-				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+				for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 				{
-					const int n = recieve_boundaries[i].size() / 2;
+					const size_t n = recieve_boundaries[i].size() / 2;
 					std::vector<std::vector<double>> buffer(2, std::vector<double>(n));
-					for (size_t j = 0; j < recieve_boundaries[i].size(); j += 2)
+					for (size_t j = 0U; j < recieve_boundaries[i].size(); j += 2)
 					{
 						buffer[0][j / 2] = recieve_boundaries[i][j];
 						buffer[1][j / 2] = recieve_boundaries[i][j + 1];
@@ -233,7 +224,7 @@ int main(int argc, char** argv)
 		std::vector<data_vector> reciever;
 		std::vector<data_vector> oneParticleEnergies;
 		double totalGapValue;
-		std::unique_ptr<std::vector<Hubbard::Resolvent_L>> resolvents;
+		std::vector<Hubbard::Resolvent_L> resolvents;
 
 		std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;
 		if (input.getInt("start_basis_at") == -1) {
@@ -258,7 +249,7 @@ int main(int argc, char** argv)
 			if (!(reciever.empty())) {
 				Utility::saveData_boost(reciever, "../../data/" + output_folder + ".dat.gz", comments);
 			}
-			if (resolvents) {
+			if (resolvents.size() > 0) {
 				std::vector<std::string> names;
 				if (input.getInt("start_basis_at") == -1) {
 					names = { "phase_SC", "phase_CDW", "phase_AFM", "higgs_SC", "higgs_CDW", "higgs_AFM" };
@@ -270,13 +261,13 @@ int main(int argc, char** argv)
 						"afm_a", "afm_a+b", "afm_a+ib" };
 				}
 
-				for (size_t i = 0; i < resolvents->size(); i++)
+				for (size_t i = 0; i < resolvents.size(); i++)
 				{
-					(*resolvents)[i].writeDataToFile("../../data/" + output_folder + "resolvent_" + names[i]);
+					resolvents[i].writeDataToFile("../../data/" + output_folder + "resolvent_" + names[i]);
 				}
 			}
 			else {
-				std::cout << "Resolvent returned a null pointer." << std::endl;
+				std::cout << "Resolvent returned an empty vector." << std::endl;
 			}
 			comments.pop_back();
 			Utility::saveData_boost(oneParticleEnergies, "../../data/" + output_folder + "one_particle.dat.gz", comments);

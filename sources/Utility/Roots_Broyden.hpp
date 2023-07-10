@@ -1,7 +1,5 @@
 #pragma once
 #include <Eigen/Dense>
-#include <iostream>
-#include <limits>
 
 namespace Utility {
 	namespace NumericalSolver {

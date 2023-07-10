@@ -47,7 +47,7 @@ namespace Hubbard {
 			V += step;
 		}
 	}
-	double ModelParameters::setGlobalIterator(int it_num)
+	double ModelParameters::setGlobalIterator(size_t it_num)
 	{
 		if (global_iterator_type == "T") {
 			temperature = global_it_min + it_num * global_step;
@@ -73,7 +73,7 @@ namespace Hubbard {
 		}
 		return getGlobal();
 	}
-	double ModelParameters::setSecondIterator(int it_num)
+	double ModelParameters::setSecondIterator(size_t it_num)
 	{
 		if (second_iterator_type == "T") {
 			temperature = second_it_min + it_num * second_step;

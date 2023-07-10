@@ -23,9 +23,9 @@ namespace Hubbard {
 		ModelParameters() : global_iterator_type(""), second_iterator_type(""), global_step(-1), second_step(-1),
 			global_it_min(-1), second_it_min(-1), temperature(-1), U(-1), V(-1) { };
 
-		double setGlobalIterator(int it_num);
+		double setGlobalIterator(size_t it_num);
 		double setGlobalIteratorExact(double newValue);
-		double setSecondIterator(int it_num);
+		double setSecondIterator(size_t it_num);
 		double setSecondIteratorExact(double newValue);
 		void incrementGlobalIterator();
 		void incrementSecondIterator();

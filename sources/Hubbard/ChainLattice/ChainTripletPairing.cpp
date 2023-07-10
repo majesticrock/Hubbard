@@ -1,49 +1,47 @@
-#include "TripletPairingIterative.hpp"
-
-#define tau_sc xi_sc
+#include "ChainTripletPairing.hpp"
 
 namespace Hubbard::ChainLattice {
-	void TripletPairingIterative::fillHamiltonianHelper(va_list args)
+	void ChainTripletPairing::fillHamiltonianHelper(va_list args)
 	{
 		UNPACK_1D;
 		hamilton.fill(0.0);
-		const double_prec GAMMA = gamma(k_x);
+		const double GAMMA = gamma(k_x);
 
 		SpinorMatrix diagonalBlock = SpinorMatrix::Zero(4, 4);
-		diagonalBlock(0, 1) = this->delta_cdw - this->delta_afm;
+		diagonalBlock(0, 1) = DELTA_CDW - DELTA_AFM;
 
-		diagonalBlock(0, 2) = this->delta_sc + this->gamma_sc * GAMMA;
-		diagonalBlock(0, 3) = this->delta_eta;
+		diagonalBlock(0, 2) = DELTA_SC + GAMMA_SC * GAMMA;
+		diagonalBlock(0, 3) = DELTA_ETA;
 
-		diagonalBlock(1, 2) = this->delta_eta;
-		diagonalBlock(1, 3) = this->delta_sc - this->gamma_sc * GAMMA;
+		diagonalBlock(1, 2) = DELTA_ETA;
+		diagonalBlock(1, 3) = DELTA_SC - GAMMA_SC * GAMMA;
 
-		diagonalBlock(2, 3) = -this->delta_cdw - this->delta_afm;
+		diagonalBlock(2, 3) = -DELTA_CDW - DELTA_AFM;
 
 		SpinorMatrix buffer = diagonalBlock.adjoint();
 		diagonalBlock += buffer;
-		double_prec eps = renormalizedEnergy_up(GAMMA);
+		double eps = model_attributes.renormalizedEnergy_up(GAMMA);
 		diagonalBlock(0, 0) = eps;
 		diagonalBlock(1, 1) = -eps;
-		eps = renormalizedEnergy_down(GAMMA);
+		eps = model_attributes.renormalizedEnergy_down(GAMMA);
 		diagonalBlock(2, 2) = -eps;
 		diagonalBlock(3, 3) = eps;
 
 		hamilton.block<4, 4>(0, 0) = diagonalBlock;
 		hamilton.block<4, 4>(4, 4) = -diagonalBlock.adjoint();
 
-		const double_prec TAU = tau(k_x);
+		const double TAU = tau(k_x);
 		diagonalBlock = SpinorMatrix::Zero(4, 4);
-		diagonalBlock(0, 0) = tau_sc * TAU;
-		diagonalBlock(1, 1) = -tau_sc * TAU;
-		diagonalBlock(2, 2) = std::conj(tau_sc * TAU);
-		diagonalBlock(3, 3) = -std::conj(tau_sc * TAU);
+		diagonalBlock(0, 0) = TAU_SC * TAU;
+		diagonalBlock(1, 1) = -TAU_SC * TAU;
+		diagonalBlock(2, 2) = std::conj(TAU_SC * TAU);
+		diagonalBlock(3, 3) = -std::conj(TAU_SC * TAU);
 
 		hamilton.block<4, 4>(0, 4) = diagonalBlock;
 		hamilton.block<4, 4>(4, 0) = diagonalBlock.adjoint();
 	}
 
-	TripletPairingIterative::TripletPairingIterative(const ModelParameters& _params)
+	ChainTripletPairing::ChainTripletPairing(const ModelParameters& _params)
 		: Model1D(_params)
 	{
 		SPINOR_SIZE = 8;
@@ -67,60 +65,60 @@ namespace Hubbard::ChainLattice {
 		};
 	}
 
-	BaseModelRealAttributes TripletPairingIterative::computePhases(const bool print)
+	ModelAttributes<double> ChainTripletPairing::computePhases(const bool print)
 	{
-		constexpr double_prec EPSILON = 1e-12;
-		double_prec error = 100;
-		constexpr int MAX_STEPS = 2000;
-		const int NUMBER_OF_PARAMETERS = parameterMapper.size();
+		constexpr double EPSILON = 1e-12;
+		double error = 100;
+		constexpr size_t MAX_STEPS = 2000;
+		const size_t NUMBER_OF_PARAMETERS = model_attributes.size();
 
 		ParameterVector f0 = ParameterVector(NUMBER_OF_PARAMETERS);
-		for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
+		for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
 		{
-			f0(i) = *(parameterMapper[i]);
+			f0(i) = model_attributes[i];
 		}
 
 		ParameterVector x0 = f0;
 
 		if (print) {
 			std::cout << "-1:\t" << std::fixed << std::setprecision(8);
-			printAsRow(x0);
+			printAsRow<-1>(x0);
 		}
-		for (size_t i = 0; i < MAX_STEPS && error > EPSILON; i++)
+		for (size_t i = 0U; i < MAX_STEPS && error > EPSILON; ++i)
 		{
 			iterationStep(x0, f0);
 			error = f0.norm();
-			for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
+			for (size_t j = 0U; j < NUMBER_OF_PARAMETERS; ++j)
 			{
-				x0(i) = *(parameterMapper[i]);
+				x0(j) = model_attributes[j];
 			}
 			if (print) {
 				std::cout << i << ":\t" << std::fixed << std::setprecision(8);
-				printAsRow(x0);
+				printAsRow<-1>(x0);
 			}
 			if (i == MAX_STEPS - 1) {
 				std::cerr << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 					<< "]\tConvergence at " << error << std::endl;
-				delta_cdw = 0;
-				delta_afm = 0;
-				delta_sc = 0;
-				delta_eta = 0;
+				for (auto& value : this->model_attributes.selfconsistency_values)
+				{
+					value = 0;
+				}
 			}
 		}
 
-		if (std::abs(delta_sc.imag()) > 1e-8) {
+		if (std::abs(DELTA_SC.imag()) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
 		}
-		if (std::abs(gamma_sc.real()) > 1e-8) {
+		if (std::abs(GAMMA_SC.real()) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
 		}
-		if (std::abs(delta_eta) > 1e-8) {
+		if (std::abs(DELTA_ETA) > 1e-8) {
 			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
 				<< "]" << std::endl;
 		}
 
-		return BaseModelRealAttributes(*this);
+		return ModelAttributes<double>(this->model_attributes);
 	}
 }

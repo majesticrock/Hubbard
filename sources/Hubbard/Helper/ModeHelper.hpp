@@ -1,19 +1,16 @@
 #pragma once
-#include <memory>
-
-#include <map>
-#include "../SquareLattice/UsingBroyden.hpp"
-#include "../Constants.hpp"
-#include "../../Utility/InputFileReader.hpp"
 #include "../../../../FermionCommute/sources/WickTerm.hpp"
+#include "../../Utility/InputFileReader.hpp"
+#include "../SquareLattice/UsingBroyden.hpp"
+#include <map>
 
 // Both methods yield precisely the same data!
 #define _PSEUDO_INVERSE
 
 namespace Hubbard::Helper {
-	constexpr double_prec SQRT_SALT = 1e-5;
-	constexpr double_prec SALT = SQRT_SALT * SQRT_SALT;
-	constexpr double_prec ERROR_MARGIN = 1e-10;
+	constexpr double SQRT_SALT = 1e-5;
+	constexpr double SALT = SQRT_SALT * SQRT_SALT;
+	constexpr double ERROR_MARGIN = 1e-10;
 
 	constexpr int OPERATION_NONE = 0;
 	constexpr int OPERATION_INVERSE = 1;
@@ -22,8 +19,15 @@ namespace Hubbard::Helper {
 
 	class ModeHelper {
 	protected:
-		std::unique_ptr<SquareLattice::UsingBroyden> model;
-		size_t TOTAL_BASIS;
+		std::vector<MatrixCL> expecs{};
+		std::vector<std::complex<double>> sum_of_all{};
+
+		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M{}, wicks_N{};
+		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
+		const std::map<std::string, int> wick_spin_offset = { {"\\uparrow", 0}, {"\\downarrow", 4}, {"\\sigma", 6} };
+
+		std::unique_ptr<SquareLattice::UsingBroyden> model{};
+		size_t TOTAL_BASIS{};
 		/*
 		* 0 - n
 		* 1 - g_up
@@ -34,22 +38,16 @@ namespace Hubbard::Helper {
 		* 6 - n_up + n_down
 		* 7 - g_up + g_down
 		*/
-		std::vector<MatrixCL> expecs;
-		std::vector<std::complex<double>> sum_of_all;
 
-		int number_of_basis_terms;
-		int start_basis_at;
-
-		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
-		const std::map<std::string, int> wick_spin_offset = { {"\\uparrow", 0}, {"\\downarrow", 4}, {"\\sigma", 6} };
-		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M, wicks_N;
+		int number_of_basis_terms{};
+		int start_basis_at{};
 
 		///////////////////////
 		// Utility functions //
 		///////////////////////
 		// maps an index; [0, N_K) -> [-pi, pi)
 		template <typename T>
-		inline double_prec index_to_k_vector(const T index) const {
+		inline double index_to_k_vector(const T index) const {
 			return (((index * L_PI) / Constants::K_DISCRETIZATION) - L_PI);
 		};
 		// Computes the respective x or y component from a given input index
@@ -105,10 +103,15 @@ namespace Hubbard::Helper {
 			clean_factor_2pi(buffer);
 			return buffer;
 		};
+
 		const std::complex<double> getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const;
+
 		const std::complex<double> getSumOfAll(const SymbolicOperators::WickOperator& op) const;
+
 		std::complex<double> computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
+
 		virtual void fillMatrices() = 0;
+
 		/* Takes a positive semidefinite vector (the idea is that this contains eigenvalues) and applies an operation on it
 		* 0: Correct for negative eigenvalues
 		* 1: Compute the pseudoinverse
@@ -161,11 +164,12 @@ namespace Hubbard::Helper {
 
 	public:
 		ModeHelper(Utility::InputFileReader& input);
+		virtual ~ModeHelper() = default;
 
 		SquareLattice::UsingBroyden& getModel() const {
 			return *model;
 		}
 
-		virtual std::unique_ptr<std::vector<Resolvent_L>> computeCollectiveModes(std::vector<std::vector<double>>& reciever) = 0;
+		virtual std::vector<Resolvent_L> computeCollectiveModes(std::vector<std::vector<double>>& reciever) = 0;
 	};
 }

@@ -1,6 +1,14 @@
 #pragma once
 #include "../MomentumBasedModel.hpp"
-#include <type_traits>
+
+#define DELTA_CDW this->model_attributes[0]
+#define DELTA_AFM this->model_attributes[1]
+#define DELTA_SC this->model_attributes[2]
+#define GAMMA_SC this->model_attributes[3]
+#define TAU_SC this->model_attributes[4]
+#define GAMMA_OCCUPATION_UP this->model_attributes[5]
+#define GAMMA_OCCUPATION_DOWN this->model_attributes[6]
+#define DELTA_ETA this->model_attributes[7]
 
 namespace Hubbard::ChainLattice {
 	template <typename DataType>
@@ -20,14 +28,14 @@ namespace Hubbard::ChainLattice {
 			SpinorMatrix rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
-			for (size_t i = 0; i < this->parameterMapper.size(); i++)
+			for (size_t i = 0; i < this->model_attributes.size(); i++)
 			{
-				*(this->parameterMapper[i]) = x(i);
+				this->model_attributes[i] = x(i);
 			}
 
 			for (int k = -Constants::K_DISCRETIZATION; k < 0; k++)
 			{
-				double_prec k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
 				this->fillHamiltonian(1, k_x);
 				solver.compute(this->hamilton);
 
@@ -43,15 +51,17 @@ namespace Hubbard::ChainLattice {
 		};
 	public:
 		Model1D(const ModelParameters& _params) : MomentumBasedModel<DataType, 1>(_params) {};
-		Model1D(const ModelParameters& _params, const typename BaseModel<DataType>::BaseAttributes& startingValues)
+
+		template<typename StartingValuesDataType>
+		Model1D(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
 			: MomentumBasedModel<DataType, 1>(_params, startingValues) {};
 
-		inline virtual double_prec entropyPerSite() override {
-			double_prec entropy = 0;
+		inline virtual double entropyPerSite() override {
+			double entropy = 0;
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				double_prec k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
 
 				this->fillHamiltonian(1, k_x);
 				solver.compute(this->hamilton, false);
@@ -67,12 +77,12 @@ namespace Hubbard::ChainLattice {
 			return entropy / Constants::BASIS_SIZE;
 		};
 
-		inline virtual double_prec internalEnergyPerSite() override {
-			double_prec energy = 0;
+		inline virtual double internalEnergyPerSite() override {
+			double energy = 0;
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				double_prec k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
 
 				this->fillHamiltonian(1, k_x);
 				solver.compute(this->hamilton, false);

@@ -1,6 +1,5 @@
 #pragma once
 #include "Model2D.hpp"
-#include "../BaseModelAttributes.hpp"
 
 namespace Hubbard::SquareLattice {
 	class HubbardCDW : public Model2D<complex_prec>
@@ -8,11 +7,6 @@ namespace Hubbard::SquareLattice {
 	private:
 		void init();
 	protected:
-		complex_prec gamma_cdw, xi_cdw;
-		complex_prec gamma_afm, xi_afm;
-		complex_prec gamma_eta, xi_eta;
-		complex_prec xi_occupation_up, xi_occupation_down;
-
 		virtual void fillHamiltonianHelper(va_list args) override;
 
 		inline void addToParameterSetHelper(const SpinorMatrix& rho, ParameterVector& F, va_list args) override {
@@ -37,7 +31,10 @@ namespace Hubbard::SquareLattice {
 		};
 	public:
 		HubbardCDW(const ModelParameters& _params);
-		HubbardCDW(const ModelParameters& _params, const BaseAttributes& startingValues);
-		virtual BaseModelRealAttributes computePhases(const bool print = false) override;
+
+		template<typename StartingValuesDataType>
+		HubbardCDW(const ModelParameters& _params, const ModelAttributes< StartingValuesDataType >& startingValues)
+			: Model2D(_params, startingValues) {};
+		virtual ModelAttributes<double> computePhases(const bool print = false) override;
 	};
 }
