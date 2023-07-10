@@ -1,6 +1,7 @@
 #include "PhaseHelper.hpp"
 #include "../SquareLattice/HubbardCDW.hpp"
 #include "../SquareLattice/UsingBroyden.hpp"
+#include <omp.h>
 
 namespace Hubbard::Helper {
 	void PhaseHelper::Plaquette::devidePlaquette(std::vector<PhaseHelper::Plaquette>& appendTo) {

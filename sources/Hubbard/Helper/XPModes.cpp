@@ -1,5 +1,6 @@
 #include "XPModes.hpp"
 #include <chrono>
+#include <omp.h>
 
 namespace Hubbard::Helper {
 	void XPModes::fillBlock(int i, int j) {

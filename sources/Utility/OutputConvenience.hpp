@@ -2,7 +2,7 @@
 #include "OutputWriter.hpp"
 #include <iostream>
 
-#define _USE_BOOST // Disable if boost ist not desired
+//#define _USE_BOOST // Disable if boost ist not desired
 #ifdef _USE_BOOST
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
