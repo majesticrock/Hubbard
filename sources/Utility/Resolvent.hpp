@@ -531,7 +531,7 @@ namespace Utility {
 		void writeDataToFile(const std::string& filename) const
 		{
 			std::cout << "Total Lanczos iterations: " << data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
-			saveData_boost(data, filename + ".dat.gz");
+			saveData(data, filename + ".dat.gz");
 		};
 	};
 }

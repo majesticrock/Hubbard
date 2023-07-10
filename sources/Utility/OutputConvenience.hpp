@@ -13,7 +13,7 @@
 namespace Utility {
 #ifdef _USE_BOOST
 	template <typename data_type>
-	void saveData_boost(const data_type& data, const std::string& filename,
+	void saveData(const data_type& data, const std::string& filename,
 		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
 		// create file
@@ -38,7 +38,7 @@ namespace Utility {
 	}
 
 	template <typename data_type>
-	void saveData_boost(const std::vector<data_type>& data, const std::string& filename,
+	void saveData(const std::vector<data_type>& data, const std::string& filename,
 		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
 		// create file
@@ -63,7 +63,7 @@ namespace Utility {
 	}
 
 	template <typename data_type>
-	void saveData_boost(const std::vector<std::vector<data_type>>& data, const std::string& filename,
+	void saveData(const std::vector<std::vector<data_type>>& data, const std::string& filename,
 		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
 		// create file
@@ -89,7 +89,7 @@ namespace Utility {
 
 	// This function assumes that the number of elements of <data> is divisible by linebreak
 	template <typename data_type>
-	void saveData_boost(const std::vector<data_type>& data, size_t linebreak, const std::string& filename,
+	void saveData(const std::vector<data_type>& data, size_t linebreak, const std::string& filename,
 		const std::vector<std::string>& comments = std::vector<std::string>())
 	{
 		if (linebreak == 0) {
@@ -124,8 +124,7 @@ namespace Utility {
 			std::cerr << "Could not open output filestream for file: " << filename << std::endl;
 		}
 	};
-#endif
-
+#else // End using boost
 	// Provides an easy-to-use method that uses std::ofstream to write <data> to <filename> in plain text
 	template <typename data_type>
 	void saveData(const std::vector<data_type>& data, const std::string& filename,
@@ -183,4 +182,5 @@ namespace Utility {
 			std::cerr << "Could not open output filestream for file: " << filename << std::endl;
 		}
 	};
+#endif // End not using boost
 }

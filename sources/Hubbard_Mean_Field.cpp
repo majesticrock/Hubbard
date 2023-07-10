@@ -140,12 +140,12 @@ int main(int argc, char** argv)
 			std::string output_folder = input.getString("output_folder");
 			std::filesystem::create_directories("../../data/phases/" + output_folder);
 
-			Utility::saveData_boost(recieve_data[0], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw.dat.gz", comments);
-			Utility::saveData_boost(recieve_data[1], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "afm.dat.gz", comments);
-			Utility::saveData_boost(recieve_data[2], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "sc.dat.gz", comments);
-			Utility::saveData_boost(recieve_data[3], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "gamma_sc.dat.gz", comments);
-			Utility::saveData_boost(recieve_data[4], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "xi_sc.dat.gz", comments);
-			Utility::saveData_boost(recieve_data[5], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.dat.gz", comments);
+			Utility::saveData(recieve_data[0], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw.dat.gz", comments);
+			Utility::saveData(recieve_data[1], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "afm.dat.gz", comments);
+			Utility::saveData(recieve_data[2], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "sc.dat.gz", comments);
+			Utility::saveData(recieve_data[3], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "gamma_sc.dat.gz", comments);
+			Utility::saveData(recieve_data[4], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "xi_sc.dat.gz", comments);
+			Utility::saveData(recieve_data[5], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.dat.gz", comments);
 
 			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 			std::cout << "Crude computation time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
@@ -213,7 +213,7 @@ int main(int argc, char** argv)
 						buffer[1][j / 2] = recieve_boundaries[i][j + 1];
 					}
 
-					Utility::saveData_boost(buffer, "../../data/phases/" + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
+					Utility::saveData(buffer, "../../data/phases/" + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
 				}
 			}
 		}
@@ -247,7 +247,7 @@ int main(int argc, char** argv)
 			std::vector<std::string> comments;
 			comments.push_back("Total Gap=" + std::to_string(totalGapValue));
 			if (!(reciever.empty())) {
-				Utility::saveData_boost(reciever, "../../data/" + output_folder + ".dat.gz", comments);
+				Utility::saveData(reciever, "../../data/" + output_folder + ".dat.gz", comments);
 			}
 			if (resolvents.size() > 0) {
 				std::vector<std::string> names;
@@ -270,7 +270,7 @@ int main(int argc, char** argv)
 				std::cout << "Resolvent returned an empty vector." << std::endl;
 			}
 			comments.pop_back();
-			Utility::saveData_boost(oneParticleEnergies, "../../data/" + output_folder + "one_particle.dat.gz", comments);
+			Utility::saveData(oneParticleEnergies, "../../data/" + output_folder + "one_particle.dat.gz", comments);
 		}
 	}
 
