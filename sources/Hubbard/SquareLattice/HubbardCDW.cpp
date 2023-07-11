@@ -5,9 +5,9 @@ constexpr size_t NUMBER_OF_PARAMETERS = 16;
 namespace Hubbard::SquareLattice {
 	void HubbardCDW::init()
 	{
-		DELTA_CDW = -0. * (0.5 * U - 4. * V);
+		DELTA_CDW = -0.5 * (0.5 * U - 4. * V);
 		DELTA_AFM = 0.1 * 0.5 * U;
-		DELTA_SC = -0.3 * U;
+		DELTA_SC = -0.5 * 0.5 * U;
 
 		if (V > 0) {
 			DELTA_SC *= 0;
@@ -22,7 +22,6 @@ namespace Hubbard::SquareLattice {
 		XI_SC = I * std::abs(V) * 0.15;
 
 		model_attributes.selfconsistency_values.reserve(16);
-		model_attributes.push_back(V * 0.1);
 
 		model_attributes.push_back(I * V * 0.);
 		model_attributes.push_back(I * V * 0.);

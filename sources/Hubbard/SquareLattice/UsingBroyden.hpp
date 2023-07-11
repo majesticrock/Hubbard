@@ -13,14 +13,17 @@ namespace Hubbard::SquareLattice {
 		inline void addToParameterSetHelper(const SpinorMatrix& rho, ComplexParameterVector& F, va_list args) override {
 			UNPACK_2D;
 
+			const double GAMMA = gamma(k_x, k_y);
+			const double XI = xi(k_x, k_y);
+
 			F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
 			F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
 			F(2) -= (rho(0, 2) + rho(1, 3)); // SC
-			F(3) -= gamma(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Gamma SC
-			F(4) -= xi(k_x, k_y) * (rho(0, 2) - rho(1, 3)); // Xi SC
+			F(3) -= GAMMA * (rho(0, 2) - rho(1, 3)); // Gamma SC
+			F(4) -= XI * (rho(0, 2) - rho(1, 3)); // Xi SC
 			F(5) -= (rho(0, 3) + rho(1, 2)); // Eta
-			F(6) -= gamma(k_x, k_y) * (rho(0, 0) - rho(1, 1)).real(); // Gamma Occupation Up
-			F(7) += gamma(k_x, k_y) * (rho(2, 2) - rho(3, 3)).real(); // Gamma Occupation Down
+			F(6) -= GAMMA * (rho(0, 0) - rho(1, 1)).real(); // Gamma Occupation Up
+			F(7) += GAMMA * (rho(2, 2) - rho(3, 3)).real(); // Gamma Occupation Down
 		};
 
 		virtual inline void complexParametersToReal(const ComplexParameterVector& c, ParameterVector& r) const override {

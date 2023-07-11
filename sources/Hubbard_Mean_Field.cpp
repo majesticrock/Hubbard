@@ -71,7 +71,7 @@ int main(int argc, char** argv)
 		std::cout << "\n\n" << std::endl;
 
 #ifndef _NO_MPI
-		return MPI_Finalize();
+		//return MPI_Finalize();
 #else
 		return 0;
 #endif // !_NO_MPI

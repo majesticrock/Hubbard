@@ -16,7 +16,7 @@ namespace Hubbard {
 			else {
 				this->selfconsistency_values[1] = 0.;
 			}
-			this->selfconsistency_values[2] = std::abs(_params.U + std::abs(_params.V)) * 0.3 + 0.05;
+			this->selfconsistency_values[2] = std::abs(_params.U) * 0.5 + 0.1;
 			if (_params.V > 0) {
 				this->selfconsistency_values[2] *= 0.;
 			}
@@ -42,7 +42,7 @@ namespace Hubbard {
 		* 6 - Gamma_n_down
 		* 7 - Delta_eta
 		*/
-		std::vector<DataType> selfconsistency_values{ 8 };
+		std::vector<DataType> selfconsistency_values = std::vector<DataType>(8);
 		bool converged{};
 
 		~ModelAttributes() = default;
@@ -58,13 +58,21 @@ namespace Hubbard {
 		ModelAttributes(const ModelAttributes<std::complex<double>>& other)
 			: selfconsistency_values(other.selfconsistency_values.size()), converged{ other.converged }
 		{
-			for (size_t i = 0U; i < selfconsistency_values.size(); ++i)
-			{
-				if (i == 4 || i == 7) {
-					selfconsistency_values[i] = other.selfconsistency_values[i].imag();
+			if constexpr (std::is_floating_point_v<DataType>) {
+				for (size_t i = 0U; i < selfconsistency_values.size(); ++i)
+				{
+					if (i == 4 || i == 7) {
+						selfconsistency_values[i] = other.selfconsistency_values[i].imag();
+					}
+					else {
+						selfconsistency_values[i] = other.selfconsistency_values[i].real();
+					}
 				}
-				else {
-					selfconsistency_values[i] = other.selfconsistency_values[i].real();
+			}
+			else {
+				for (size_t i = 0U; i < selfconsistency_values.size(); ++i)
+				{
+					selfconsistency_values[i] = other.selfconsistency_values[i];
 				}
 			}
 		};
@@ -94,7 +102,7 @@ namespace Hubbard {
 			selfconsistency_values.push_back(value);
 		};
 		inline void push_back(DataType&& value) {
-			selfconsistency_values.push_back(value);
+			selfconsistency_values.push_back(std::move(value));
 		};
 
 		inline bool isOrdered() const {
@@ -109,18 +117,18 @@ namespace Hubbard {
 
 		inline double renormalizedEnergy_up(const double GAMMA) const {
 			if constexpr (std::is_same_v<DataType, std::complex<double>>) {
-				return -(2. + this->selfconsistency_values[5].real()) * GAMMA;
+				return -(1. + this->selfconsistency_values[5].real()) * GAMMA;
 			}
 			else {
-				return -(2. + this->selfconsistency_values[5]) * GAMMA;
+				return -(1. + this->selfconsistency_values[5]) * GAMMA;
 			}
 		};
 		inline double renormalizedEnergy_down(const double GAMMA) const {
 			if constexpr (std::is_same_v<DataType, std::complex<double>>) {
-				return -(2. + this->selfconsistency_values[6].real()) * GAMMA;
+				return -(1. + this->selfconsistency_values[6].real()) * GAMMA;
 			}
 			else {
-				return -(2. + this->selfconsistency_values[6]) * GAMMA;
+				return -(1. + this->selfconsistency_values[6]) * GAMMA;
 			}
 		};
 

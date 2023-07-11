@@ -42,7 +42,7 @@ namespace Hubbard::SquareLattice {
 			SpinorMatrix rho{ SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE) };
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
-			for (size_t i = 0; i < this->model_attributes.size(); i++)
+			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
 			{
 				this->model_attributes[i] = x(i);
 			}
@@ -65,15 +65,16 @@ namespace Hubbard::SquareLattice {
 				complexParametersToReal(complex_F, F);
 			}
 			this->multiplyParametersByCoefficients(F);
-			for (auto& value : F) {
-				if (std::abs(value) < 1e-12) value = 0.;
-			}
+			//for (auto& value : F) {
+			//	if (std::abs(value) < 1e-12) value = 0.;
+			//}
 			this->setParameters(F);
 
 			F -= x;
 		};
 	public:
-		Model2D(const ModelParameters& _params) : MomentumBasedModel<DataType, 2>(_params)
+		Model2D(const ModelParameters& _params) 
+			: MomentumBasedModel<DataType, 2>(_params)
 		{
 			this->init();
 		};

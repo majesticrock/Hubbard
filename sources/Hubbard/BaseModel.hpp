@@ -55,7 +55,7 @@ namespace Hubbard {
 		using ParameterVector = Eigen::Vector<DataType, Eigen::Dynamic>;
 		using BaseAttributes = ModelAttributes<DataType>;
 
-		ModelAttributes<DataType> model_attributes{};
+		ModelAttributes<DataType> model_attributes;
 		// Stores the coefficients for the parameters (e.g. V/N) with the appropriate index
 		std::vector<double> parameterCoefficients;
 
@@ -126,7 +126,7 @@ namespace Hubbard {
 
 	public:
 		explicit BaseModel(const ModelParameters& _params)
-			: temperature(_params.temperature), U(_params.U), V(_params.V)
+			: model_attributes(_params), temperature(_params.temperature), U(_params.U), V(_params.V)
 		{
 			init();
 		};
@@ -146,7 +146,7 @@ namespace Hubbard {
 		}
 		inline virtual double entropyPerSite() = 0;
 		inline virtual double internalEnergyPerSite() = 0;
-		inline virtual double freeEnergyPerSite() {
+		inline double freeEnergyPerSite() {
 			return this->internalEnergyPerSite() - temperature * this->entropyPerSite();
 		};
 	};

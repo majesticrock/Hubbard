@@ -19,18 +19,18 @@ namespace Hubbard {
 	inline double unperturbed_energy(Args... ks) {
 		return -2. * (cos(ks) + ...);
 	};
+	// maps an index; [0, N_K) -> [-pi, pi)
+	template <typename T>
+	inline double index_to_k_vector(const T index) {
+		return (((index * L_PI) / Constants::K_DISCRETIZATION) - L_PI);
+	};
 
 	template <typename DataType, int Dimension>
 	class MomentumBasedModel : public BaseModel<DataType>
 	{
-	protected:
-		// maps an index; [0, N_K) -> [-pi, pi)
-		template <typename T>
-		inline double index_to_k_vector(const T index) const {
-			return (((index * L_PI) / Constants::K_DISCRETIZATION) - L_PI);
-		};
 	public:
-		MomentumBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params) {};
+		MomentumBasedModel(const ModelParameters& _params) 
+			: BaseModel<DataType>(_params) {};
 
 		template<typename StartingValuesDataType>
 		MomentumBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
