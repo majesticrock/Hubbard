@@ -26,6 +26,6 @@ namespace Hubbard::ChainLattice {
 		};
 	public:
 		explicit ChainTripletPairing(const ModelParameters& _params);
-		virtual ModelAttributes<double> computePhases(const bool print = false) override;
+		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy=PhaseDebuggingPolicy{}) override;
 	};
 }

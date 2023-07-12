@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point test_e;
 
-		model.computePhases(false).print();
+		model.computePhases({true, true}).print();
 		std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 
 		test_e = std::chrono::steady_clock::now();

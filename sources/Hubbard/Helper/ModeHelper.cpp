@@ -159,7 +159,7 @@ namespace Hubbard::Helper {
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * this->number_of_basis_terms;
 		}
 
-		model->computePhases(true).print();
+		model->computePhases().print();
 		model->computeExpectationValues(expecs, sum_of_all);
 
 		loadWick("../commutators/wick_");

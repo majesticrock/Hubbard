@@ -39,6 +39,6 @@ namespace Hubbard::SquareLattice {
 		HubbardCDW(const ModelParameters& _params, const ModelAttributes< StartingValuesDataType >& startingValues)
 			: Model2D(_params, startingValues) {};
 
-		virtual ModelAttributes<double> computePhases(const bool print = false) override;
+		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy=PhaseDebuggingPolicy{}) override;
 	};
 }

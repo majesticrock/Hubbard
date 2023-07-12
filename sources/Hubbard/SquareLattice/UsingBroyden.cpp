@@ -54,7 +54,7 @@ namespace Hubbard::SquareLattice {
 		init();
 	}
 
-	ModelAttributes<double> UsingBroyden::computePhases(const bool print/*=false*/)
+	ModelAttributes<double> UsingBroyden::computePhases(const PhaseDebuggingPolicy debugPolicy/*=PhaseDebuggingPolicy{}*/)
 	{
 		std::function<void(const ParameterVector&, ParameterVector&)> func = [&](const ParameterVector& x, ParameterVector& F) {
 			iterationStep(x, F);
@@ -65,7 +65,7 @@ namespace Hubbard::SquareLattice {
 		std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), f0.begin());
 		ParameterVector x0 = f0;
 
-		if (print) {
+		if (debugPolicy.printAll) {
 			std::cout << "-1:\t" << std::fixed << std::setprecision(8);
 			printAsRow<-1>(x0);
 		}
@@ -81,7 +81,7 @@ namespace Hubbard::SquareLattice {
 				}
 			}
 
-			if (print) {
+			if (debugPolicy.printAll) {
 				std::cout << i << ":  " << std::scientific << std::setprecision(4);
 				printAsRow<-1>(x0);
 			}
@@ -89,18 +89,19 @@ namespace Hubbard::SquareLattice {
 
 		Utility::NumericalSolver::Roots::Broyden<double, -1> broyden_solver;
 		if (!broyden_solver.compute(func, x0, 400)) {
-			std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
+			if (debugPolicy.convergenceWarning){
+				std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
 				<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
-			for (auto& value : model_attributes.selfconsistency_values) {
-				value = 0.;
 			}
+
+			std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
 			model_attributes.converged = false;
 		}
 		else {
 			model_attributes.converged = true;
 		}
 
-		if (print) {
+		if (debugPolicy.printAll) {
 			func(x0, f0);
 			std::cout << "T=" << temperature << "   U=" << U << "   V=" << V << "\n";
 			std::cout << "x0 = (";

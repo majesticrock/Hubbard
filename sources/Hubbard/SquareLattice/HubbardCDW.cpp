@@ -81,7 +81,7 @@ namespace Hubbard::SquareLattice {
 	{
 		init();
 	}
-	ModelAttributes<double> HubbardCDW::computePhases(const bool print)
+	ModelAttributes<double> HubbardCDW::computePhases(const PhaseDebuggingPolicy debugPolicy/*=PhaseDebuggingPolicy{}*/)
 	{
 		computeChemicalPotential();
 
@@ -94,7 +94,7 @@ namespace Hubbard::SquareLattice {
 
 		ParameterVector x0 = f0;
 
-		if (print) {
+		if (debugPolicy.printAll) {
 			std::cout << "-1:\t" << std::fixed << std::setprecision(8);
 			printAsRow<-1>(x0);
 		}
@@ -105,16 +105,17 @@ namespace Hubbard::SquareLattice {
 			error = f0.norm();
 			std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), x0.begin());
 
-			if (print) {
+			if (debugPolicy.printAll) {
 				std::cout << i << ":\t" << std::fixed << std::setprecision(8);
 				printAsRow<-1>(x0);
 			}
 			if (i == MAX_STEPS - 1) {
-				std::cerr << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
-					<< "]\tConvergence at " << error << std::endl;
-				for (auto& value : model_attributes.selfconsistency_values) {
-					value = 0.;
+				if (debugPolicy.convergenceWarning){
+					std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
+					<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
 				}
+
+				std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
 				model_attributes.converged = false;
 			}
 		}

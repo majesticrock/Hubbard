@@ -160,11 +160,12 @@ namespace Hubbard::Helper {
 		else {
 			if (use_broyden) {
 				SquareLattice::UsingBroyden model(mp);
-				ModelAttributes<double> result(model.computePhases());
+				ModelAttributes<double> result{model.computePhases()};
 
+				if(mp.U < 0 || mp.V < 0) return result;
 				// Remember: [0] returns the cdw and [1] the afm gap
 				if (std::abs(result[0]) > 1e-12 || std::abs(result[1]) > 1e-12) {
-					ModelAttributes<double> copy( result );
+					ModelAttributes<double> copy{ result };
 					if (std::abs(result[0]) > 1e-12) {
 						copy[1] = result[0];
 						copy[0] = 0;
@@ -175,7 +176,7 @@ namespace Hubbard::Helper {
 					}
 
 					SquareLattice::UsingBroyden model_copy(mp, copy);
-					copy = model_copy.computePhases();
+					copy = model_copy.computePhases({false, false});
 					if (copy.converged) {
 						if (model_copy.freeEnergyPerSite() < model.freeEnergyPerSite()) {
 							return copy;
@@ -194,10 +195,9 @@ namespace Hubbard::Helper {
 		size_t NUMBER_OF_GAP_VALUES = data_mapper.size();
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
 		{
-//#pragma omp parallel for num_threads(4) schedule(dynamic)
+#pragma omp parallel for num_threads(4) schedule(dynamic)
 			for (int U = 0; U < SECOND_IT_STEPS; U++)
 			{
-				modelParameters.printParameters();
 				ModelParameters local{ modelParameters };
 				local.setSecondIterator(U);
 				ModelAttributes<double> ret{ computeDataPoint(local) };

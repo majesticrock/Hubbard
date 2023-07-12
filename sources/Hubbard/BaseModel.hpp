@@ -5,6 +5,15 @@
 #include <cstdarg>
 
 namespace Hubbard {
+	struct PhaseDebuggingPolicy{
+		bool printAll{false};
+		bool convergenceWarning{true};
+
+		PhaseDebuggingPolicy() = default;
+		PhaseDebuggingPolicy(bool _printAll, bool _convergenceWarning) 
+			: printAll{_printAll}, convergenceWarning(_convergenceWarning) {} ;
+	};
+
 	constexpr double L_PI = 3.141592653589793238462643383279502884L; /* pi */
 	typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
 	typedef Eigen::Vector<double, Eigen::Dynamic> Vector_L;
@@ -139,7 +148,7 @@ namespace Hubbard {
 		};
 		virtual ~BaseModel() = default;
 
-		virtual ModelAttributes<double> computePhases(const bool print = false) = 0;
+		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy=PhaseDebuggingPolicy{}) = 0;
 
 		inline double getTotalGapValue() {
 			return this->model_attributes.getTotalGapValue();
