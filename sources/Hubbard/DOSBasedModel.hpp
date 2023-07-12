@@ -8,6 +8,13 @@ namespace Hubbard {
 	class DOSBasedModel : public BaseModel<DataType>
 	{
 	protected:
+		void fillHamiltonian(const double gamma){
+			// TODO
+		};
+		void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, const double gamma){
+			// TODO
+		};
+
 		std::shared_ptr<DensityOfStates::BaseDOS> dos;
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 		virtual inline void complexParametersToReal(const ComplexParameterVector& c, ParameterVector& r) const {

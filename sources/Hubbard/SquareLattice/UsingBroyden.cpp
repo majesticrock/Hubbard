@@ -17,12 +17,11 @@ namespace Hubbard::SquareLattice {
 			V_OVER_N, // Occupation Down
 		};
 	}
-	void UsingBroyden::fillHamiltonianHelper(va_list args)
+	void UsingBroyden::fillHamiltonian(const std::array<double, 2>& k_values)
 	{
-		UNPACK_2D;
 		hamilton.fill(0.);
-		const double GAMMA = gamma(k_x, k_y);
-		const double XI = xi(k_x, k_y);
+		const double GAMMA = gamma(k_values);
+		const double XI = xi(k_values);
 
 		hamilton(0, 1) = DELTA_CDW - DELTA_AFM;;
 		hamilton(0, 2) = DELTA_SC + (GAMMA_SC * GAMMA + I * XI_SC * XI);
@@ -40,6 +39,21 @@ namespace Hubbard::SquareLattice {
 		eps = model_attributes.renormalizedEnergy_down(GAMMA);
 		hamilton(2, 2) = -eps;
 		hamilton(3, 3) = eps;
+	}
+
+	void UsingBroyden::addToParameterSetHelper(const SpinorMatrix& rho, ComplexParameterVector& F, const std::array<double, 2>& k_values)
+	{
+		const double GAMMA = gamma(k_values);
+		const double XI = xi(k_values);
+
+		F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
+		F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
+		F(2) -= (rho(0, 2) + rho(1, 3)); // SC
+		F(3) -= GAMMA * (rho(0, 2) - rho(1, 3)); // Gamma SC
+		F(4) -= XI * (rho(0, 2) - rho(1, 3)); // Xi SC
+		F(5) -= (rho(0, 3) + rho(1, 2)); // Eta
+		F(6) -= GAMMA * (rho(0, 0) - rho(1, 1)).real(); // Gamma Occupation Up
+		F(7) += GAMMA * (rho(2, 2) - rho(3, 3)).real(); // Gamma Occupation Down
 	}
 
 	UsingBroyden::UsingBroyden(const ModelParameters& _params, size_t _MaxPreBroydenIterations/* = 300U*/)
@@ -72,6 +86,22 @@ namespace Hubbard::SquareLattice {
 		for (size_t i = 0U; i < MaxPreBroydenIterations && f0.squaredNorm() > 1e-15; ++i)
 		{
 			func(x0, f0);
+			for (size_t j = 0U; j < count; ++j)
+			{
+				if(std::abs(x0[j] + model_attributes[j]) < 1e-12){
+					// Sign flipping behaviour
+					if (debugPolicy.convergenceWarning){
+						std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
+						<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
+					}
+
+					//std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
+					//model_attributes.converged = false;
+					//return ModelAttributes<double>(this->model_attributes);
+				}
+			}
+			
+			
 			std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), x0.begin());
 
 			for (auto& x : x0)

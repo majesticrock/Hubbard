@@ -2,7 +2,6 @@
 #include "../Utility/Resolvent.hpp"
 #include "Constants.hpp"
 #include "ModelAttributes.hpp"
-#include <cstdarg>
 
 namespace Hubbard {
 	struct PhaseDebuggingPolicy{
@@ -115,22 +114,6 @@ namespace Hubbard {
 			{
 				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
 			}
-		};
-
-		virtual void fillHamiltonianHelper(va_list args) = 0;
-		inline void fillHamiltonian(int variadic_count, ...) {
-			va_list args;
-			va_start(args, variadic_count);
-			fillHamiltonianHelper(args);
-			va_end(args);
-		};
-
-		virtual void addToParameterSetHelper(const SpinorMatrix& rho, ComplexParameterVector& F, va_list args) = 0;
-		inline void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, int variadic_count, ...) {
-			va_list args;
-			va_start(args, variadic_count);
-			addToParameterSetHelper(rho, F, args);
-			va_end(args);
 		};
 
 	public:

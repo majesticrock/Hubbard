@@ -1,6 +1,5 @@
 #pragma once
 #include "../MomentumBasedModel.hpp"
-#include <numeric>
 
 #define DELTA_CDW this->model_attributes[0]
 #define DELTA_AFM this->model_attributes[1]
@@ -59,11 +58,13 @@ namespace Hubbard::SquareLattice
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
 					double k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
-					this->fillHamiltonian(2, k_x, k_y);
+					const std::array<double, 2> ks{k_x, k_y};
+
+					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton);
 					this->fillRho(rho, solver);
 
-					this->addToParameterSet(rho, complex_F, 2, k_x, k_y);
+					this->addToParameterSet(rho, complex_F, ks);
 				}
 			}
 
@@ -121,7 +122,8 @@ namespace Hubbard::SquareLattice
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
 					l_val = l * L_PI / Constants::K_DISCRETIZATION;
-					this->fillHamiltonian(2, k_val, l_val);
+					const std::array<double, 2> ks{k_val, k_val};
+					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton, false);
 					reciever[k + Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(0);
 
@@ -145,7 +147,9 @@ namespace Hubbard::SquareLattice
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
 					double k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
-					this->fillHamiltonian(2, k_x, k_y);
+					const std::array<double, 2> ks{k_x, k_y};
+
+					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton, false);
 
 					entropy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
@@ -168,7 +172,8 @@ namespace Hubbard::SquareLattice
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
 					double k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
-					this->fillHamiltonian(2, k_x, k_y);
+					const std::array<double, 2> ks{k_x, k_y};
+					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton, false);
 
 					energy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
@@ -191,7 +196,8 @@ namespace Hubbard::SquareLattice
 			{
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					this->fillHamiltonian(2, (k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION);
+					const std::array<double, 2> ks{(k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION)};
+					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton);
 					this->fillRho(rho, solver);
 

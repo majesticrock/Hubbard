@@ -35,7 +35,7 @@ namespace Hubbard::ChainLattice
 			std::conditional_t<std::is_same_v<DataType, complex_prec>,
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
-			SpinorMatrix rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+			SpinorMatrix rho {SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE) };
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.selfconsistency_values.begin());
@@ -43,11 +43,11 @@ namespace Hubbard::ChainLattice
 			for (int k = -Constants::K_DISCRETIZATION; k < 0; ++k)
 			{
 				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
-				this->fillHamiltonian(1, k_x);
+				this->fillHamiltonian(k_x);
 				solver.compute(this->hamilton);
 
 				this->fillRho(rho, solver);
-				this->addToParameterSet(rho, complex_F, 1, k_x);
+				this->addToParameterSet(rho, complex_F, k_x);
 			}
 
 			if constexpr (!std::is_same<DataType, complex_prec>::value) {
