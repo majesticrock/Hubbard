@@ -6,22 +6,21 @@ namespace Hubbard {
 	private:
 		std::string global_iterator_type;
 		std::string second_iterator_type;
-		double global_step;
-		double second_step;
-		double global_it_min;
-		double second_it_min;
+		double global_step{-1};
+		double second_step{-1};
+		double global_it_min{-1};
+		double second_it_min{-1};
 
 		void incrementer(std::string& s, const double step);
 	public:
-		double temperature;
-		double U;
-		double V;
+		double temperature{-1};
+		double U{-1};
+		double V{-1};
 
 		ModelParameters(double _temperature, double _U, double _V, double global_step, double second_step,
 			std::string _global_iterator_type, std::string _second_iterator_type);
-		// This is just a placeholder - a class initialized this way should not be used. Ever.
-		ModelParameters() : global_iterator_type(""), second_iterator_type(""), global_step(-1), second_step(-1),
-			global_it_min(-1), second_it_min(-1), temperature(-1), U(-1), V(-1) { };
+		// This is offered as a simpler way of initializing the class.
+		ModelParameters() = default;
 
 		double setGlobalIterator(size_t it_num);
 		double setGlobalIteratorExact(double newValue);
@@ -29,7 +28,7 @@ namespace Hubbard {
 		double setSecondIteratorExact(double newValue);
 		void incrementGlobalIterator();
 		void incrementSecondIterator();
-		inline double getSecondStep() const {
+		inline double getSecondStep() const noexcept {
 			return second_step;
 		};
 		inline double getGlobal() const {
@@ -61,6 +60,7 @@ namespace Hubbard {
 			setGlobalIterator(0);
 		};
 		void printGlobal() const;
+		void printParameters() const;
 		std::string getFileName() const;
 	};
 }

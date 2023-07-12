@@ -22,16 +22,16 @@ namespace Hubbard::Helper {
 		*	New values are at the position ABCDE (01234 as indizes)
 		*/
 
-		auto mp = parent->modelParameters;
-		const double centerFirst = this->getCenterFirst();
-		const double centerSecond = this->getCenterSecond();
-		ModelAttributes<double> averageParameters;
-		int finiteCount = 0;
-		for (size_t i = 0; i < this->attributes.size(); i++)
+		ModelParameters mp{ parent->modelParameters };
+		const double centerFirst{ this->getCenterFirst() };
+		const double centerSecond{ this->getCenterSecond() };
+		ModelAttributes<double> averageParameters{ this->attributes[0] };
+		int finiteCount = averageParameters.isOrdered() ? 1 : 0;
+		for (const auto& attr : this->attributes)
 		{
-			if (this->attributes[i].isOrdered()) {
+			if (attr.isOrdered()) {
 				++finiteCount;
-				averageParameters += this->attributes[i];
+				averageParameters += attr;
 			}
 		}
 		if (finiteCount != 0) {
@@ -40,7 +40,7 @@ namespace Hubbard::Helper {
 		else {
 			averageParameters = ModelAttributes<double>(mp);
 		}
-		ModelAttributes<double> new_attributes[5];
+		std::array<ModelAttributes<double>, 5> new_attributes;
 
 		mp.setGlobalIteratorExact(this->upperFirst);
 		mp.setSecondIteratorExact(centerSecond);
@@ -58,7 +58,7 @@ namespace Hubbard::Helper {
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
-		mp.setSecondIteratorExact(upperSecond);
+		mp.setSecondIteratorExact(this->upperSecond);
 		new_attributes[3] = parent->computeDataPoint(mp, averageParameters);
 
 		mp = parent->modelParameters;
@@ -66,9 +66,9 @@ namespace Hubbard::Helper {
 		mp.setSecondIteratorExact(centerSecond);
 		new_attributes[4] = parent->computeDataPoint(mp, averageParameters);
 
-		for (size_t i = 0; i < 5; i++)
+		for (const auto& new_attr : new_attributes)
 		{
-			if (!new_attributes[i].converged) {
+			if (!new_attr.converged) {
 				averageParameters.print();
 			}
 		}
@@ -137,7 +137,7 @@ namespace Hubbard::Helper {
 		SECOND_IT_STEPS = input.getInt("second_iterator_steps");
 		SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
 
-		for (int i = 0; i < option_list.size(); i++)
+		for (size_t i = 0U; i < option_list.size(); ++i)
 		{
 			if (input.getString("second_iterator_type") == option_list[i]) {
 				SECOND_IT_MIN = model_params[i];
@@ -157,68 +157,58 @@ namespace Hubbard::Helper {
 			SquareLattice::HubbardCDW model(mp, startingValues.value());
 			return model.computePhases();
 		}
-		if (use_broyden) {
-			SquareLattice::UsingBroyden model(mp);
-			auto result = model.computePhases();
+		else {
+			if (use_broyden) {
+				SquareLattice::UsingBroyden model(mp);
+				ModelAttributes<double> result(model.computePhases());
 
-			// Remember: [0] returns the cdw and [1] the afm gap
-			if (std::abs(result[0]) > 1e-12 || std::abs(result[1]) > 1e-12) {
-				auto copy = result;
-				if (std::abs(result[0]) > 1e-12) {
-					copy[1] = result[0];
-					copy[0] = 0;
-				}
-				else {
-					copy[0] = result[1];
-					copy[1] = 0;
-				}
+				// Remember: [0] returns the cdw and [1] the afm gap
+				if (std::abs(result[0]) > 1e-12 || std::abs(result[1]) > 1e-12) {
+					ModelAttributes<double> copy( result );
+					if (std::abs(result[0]) > 1e-12) {
+						copy[1] = result[0];
+						copy[0] = 0;
+					}
+					else {
+						copy[0] = result[1];
+						copy[1] = 0;
+					}
 
-				SquareLattice::UsingBroyden model_copy(mp, copy);
-				copy = model_copy.computePhases();
-				if (copy.converged) {
-					if (model_copy.freeEnergyPerSite() < model.freeEnergyPerSite()) {
-						result = copy;
+					SquareLattice::UsingBroyden model_copy(mp, copy);
+					copy = model_copy.computePhases();
+					if (copy.converged) {
+						if (model_copy.freeEnergyPerSite() < model.freeEnergyPerSite()) {
+							return copy;
+						}
 					}
 				}
-			}
 
-			return result;
+				return result;
+			}
+			SquareLattice::HubbardCDW model(mp);
+			return model.computePhases();
 		}
-		SquareLattice::HubbardCDW model(mp);
-		return model.computePhases();
 	}
 
 	void PhaseHelper::compute_crude(std::vector<data_vector>& data_mapper) {
 		size_t NUMBER_OF_GAP_VALUES = data_mapper.size();
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
 		{
-#pragma omp parallel for num_threads(4) schedule(dynamic)
+//#pragma omp parallel for num_threads(4) schedule(dynamic)
 			for (int U = 0; U < SECOND_IT_STEPS; U++)
 			{
-				ModelParameters local = modelParameters;
+				modelParameters.printParameters();
+				ModelParameters local{ modelParameters };
 				local.setSecondIterator(U);
-				ModelAttributes<double> ret = computeDataPoint(local);
+				ModelAttributes<double> ret{ computeDataPoint(local) };
 
-				for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+				for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 				{
 					data_mapper[i][(T * SECOND_IT_STEPS) + U] = ret[i];
 				}
 			}
 			modelParameters.incrementGlobalIterator();
 		}
-	}
-
-	template <typename T>
-	std::vector<T> joinVectors(const std::vector<std::vector<T>>& vectors)
-	{
-		std::vector<T> result;
-
-		for (const auto& vec : vectors)
-		{
-			result.insert(result.end(), vec.begin(), vec.end());
-		}
-
-		return result;
 	}
 
 	void PhaseHelper::findSingleBoundary(const std::vector<data_vector>& origin, data_vector& recieve_data, int value_index, int rank) {
@@ -248,7 +238,7 @@ namespace Hubbard::Helper {
 				plaq.lowerSecond = modelParameters.setSecondIterator(j - 1);
 				plaq.upperSecond = modelParameters.setSecondIterator(j);
 
-				plaqs.push_back(plaq);
+				plaqs.push_back(std::move(plaq));
 			}
 		}
 
@@ -264,7 +254,7 @@ namespace Hubbard::Helper {
 			{
 				plaqs[i].devidePlaquette(buffer[omp_get_thread_num()]);
 			}
-			size_t totalSize = 0;
+			size_t totalSize = 0U;
 			for (const auto& vec : buffer)
 			{
 				totalSize += vec.size();
@@ -279,7 +269,7 @@ namespace Hubbard::Helper {
 			for (const auto& vec : buffer)
 			{
 				if (removal) {
-					for (size_t i = 0; i < vec.size(); i += 2)
+					for (size_t i = 0U; i < vec.size(); i += 2)
 					{
 						plaqs.push_back(vec[i]);
 					}

@@ -10,26 +10,27 @@ namespace Hubbard {
 	private:
 		void initializeParamters(const ModelParameters& _params) {
 			this->selfconsistency_values[0] = (std::abs(_params.U) + _params.V) * 0.5 + 0.1;
+			this->selfconsistency_values[1] = std::abs(_params.U) * 0.5 + 0.1;
+			this->selfconsistency_values[2] = std::abs(_params.U) * 0.5 + 0.1;
 			if (_params.U > 0) {
-				this->selfconsistency_values[1] = std::abs(_params.U - std::abs(_params.V)) * 0.5 + 0.1;
+				this->selfconsistency_values[2] = 0.;
 			}
 			else {
 				this->selfconsistency_values[1] = 0.;
 			}
-			this->selfconsistency_values[2] = std::abs(_params.U) * 0.5 + 0.1;
 			if (_params.V > 0) {
-				this->selfconsistency_values[2] *= 0.;
+				this->selfconsistency_values[2] = 0.;
 			}
 			else if (_params.V < 0) {
-				this->selfconsistency_values[0] *= 0.;
+				this->selfconsistency_values[0] = 0.;
 			}
 
 			this->selfconsistency_values[3] = 0.;
 			this->selfconsistency_values[4] = std::abs(_params.V) * 0.2;
 
-			this->selfconsistency_values[5] = _params.V * 0.2;
+			this->selfconsistency_values[5] = 0.;//_params.U * 0.1;
 			this->selfconsistency_values[6] = _params.V * 0.2;
-			this->selfconsistency_values[7] = 0.;//_params.U * 0.1;
+			this->selfconsistency_values[7] = _params.V * 0.2;
 		}
 	public:
 		/* On a 2D System we choose the following:
@@ -38,9 +39,9 @@ namespace Hubbard {
 		* 2 - Delta_SC
 		* 3 - Gamma_SC
 		* 4 - Xi_SC (1D: Tau_SC, 3D: None? P-wave?)
-		* 5 - Gamma_n_up
-		* 6 - Gamma_n_down
-		* 7 - Delta_eta
+		* 5 - Delta_eta
+		* 6 - Gamma_n_up
+		* 7 - Gamma_n_down
 		*/
 		std::vector<DataType> selfconsistency_values = std::vector<DataType>(8);
 		bool converged{};
@@ -117,18 +118,18 @@ namespace Hubbard {
 
 		inline double renormalizedEnergy_up(const double GAMMA) const {
 			if constexpr (std::is_same_v<DataType, std::complex<double>>) {
-				return -(1. + this->selfconsistency_values[5].real()) * GAMMA;
+				return -(2. + this->selfconsistency_values[6].real()) * GAMMA;
 			}
 			else {
-				return -(1. + this->selfconsistency_values[5]) * GAMMA;
+				return -(2. + this->selfconsistency_values[6]) * GAMMA;
 			}
 		};
 		inline double renormalizedEnergy_down(const double GAMMA) const {
 			if constexpr (std::is_same_v<DataType, std::complex<double>>) {
-				return -(1. + this->selfconsistency_values[6].real()) * GAMMA;
+				return -(2. + this->selfconsistency_values[7].real()) * GAMMA;
 			}
 			else {
-				return -(1. + this->selfconsistency_values[6]) * GAMMA;
+				return -(2. + this->selfconsistency_values[7]) * GAMMA;
 			}
 		};
 
@@ -139,10 +140,10 @@ namespace Hubbard {
 		};
 
 		inline bool isFinite(size_t i, double epsilon = 1e-12) const {
-			return (std::abs((*this)[i]) > epsilon);
+			return (std::abs(selfconsistency_values[i]) > epsilon);
 		}
 		inline void print() const {
-			for (const auto value : selfconsistency_values)
+			for (const auto& value : selfconsistency_values)
 			{
 				std::cout << value << "\t";
 			}
@@ -155,21 +156,21 @@ namespace Hubbard {
 		*/
 
 		inline ModelAttributes& operator+=(const ModelAttributes& rhs) {
-			for (size_t i = 0; i < this->selfconsistency_values.size(); i++)
+			for (size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
 			{
 				this->selfconsistency_values[i] += rhs.selfconsistency_values[i];
 			}
 			return *this;
 		};
 		inline ModelAttributes& operator*=(const double rhs) {
-			for (size_t i = 0; i < this->selfconsistency_values.size(); i++)
+			for (size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
 			{
 				this->selfconsistency_values[i] *= rhs;
 			}
 			return *this;
 		};
 		inline ModelAttributes& operator/=(const double rhs) {
-			for (size_t i = 0; i < this->selfconsistency_values.size(); i++)
+			for (size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
 			{
 				this->selfconsistency_values[i] /= rhs;
 			}

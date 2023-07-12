@@ -1,24 +1,34 @@
 #pragma once
 #include "../MomentumBasedModel.hpp"
+#include <numeric>
 
 #define DELTA_CDW this->model_attributes[0]
 #define DELTA_AFM this->model_attributes[1]
 #define DELTA_SC this->model_attributes[2]
 #define GAMMA_SC this->model_attributes[3]
 #define TAU_SC this->model_attributes[4]
-#define GAMMA_OCCUPATION_UP this->model_attributes[5]
-#define GAMMA_OCCUPATION_DOWN this->model_attributes[6]
-#define DELTA_ETA this->model_attributes[7]
+#define DELTA_ETA this->model_attributes[5]
+#define GAMMA_OCCUPATION_UP this->model_attributes[6]
+#define GAMMA_OCCUPATION_DOWN this->model_attributes[7]
 
-namespace Hubbard::ChainLattice {
+namespace Hubbard::ChainLattice
+{
+	inline void complexParametersToReal(const ComplexParameterVector& c, Eigen::VectorXd& r) {
+		r(0) = c(0).real(); // CDW
+		r(1) = c(1).real(); // AFM
+		r(2) = c(2).real(); // SC
+		r(3) = c(3).real(); // Gamma SC
+		r(4) = c(4).imag(); // Xi SC
+		r(5) = c(5).imag(); // Eta
+		r(6) = c(6).real(); // Gamma Occupation Up
+		r(7) = c(7).real(); // Gamma Occupation Down
+	};
+
 	template <typename DataType>
 	class Model1D : public MomentumBasedModel<DataType, 1>
 	{
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
-		virtual inline void complexParametersToReal(const ComplexParameterVector& c, ParameterVector& r) const {
-			// Does nothing, unless the derived class states otherwise
-		};
 
 		inline void iterationStep(const ParameterVector& x, ParameterVector& F) {
 			F.fill(0);
@@ -28,12 +38,9 @@ namespace Hubbard::ChainLattice {
 			SpinorMatrix rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
-			for (size_t i = 0; i < this->model_attributes.size(); i++)
-			{
-				this->model_attributes[i] = x(i);
-			}
+			std::copy(x.begin(), x.end(), this->model_attributes.selfconsistency_values.begin());
 
-			for (int k = -Constants::K_DISCRETIZATION; k < 0; k++)
+			for (int k = -Constants::K_DISCRETIZATION; k < 0; ++k)
 			{
 				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
 				this->fillHamiltonian(1, k_x);
@@ -66,13 +73,12 @@ namespace Hubbard::ChainLattice {
 				this->fillHamiltonian(1, k_x);
 				solver.compute(this->hamilton, false);
 
-				for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-				{
-					auto occ = BaseModel<DataType>::fermi_dirac(solver.eigenvalues()(i));
-					if (occ > 1e-12) { // Let's just not take the ln of 0. Negative numbers cannot be reached (by definition)
-						entropy -= occ * std::log(occ);
-					}
-				}
+				entropy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
+					[this](double current, double toAdd) {
+						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
+						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
+						return (occ > 1e-12 ? current - occ * std::log(occ) : current);
+					});
 			}
 			return entropy / Constants::BASIS_SIZE;
 		};
@@ -87,10 +93,10 @@ namespace Hubbard::ChainLattice {
 				this->fillHamiltonian(1, k_x);
 				solver.compute(this->hamilton, false);
 
-				for (size_t i = 0; i < solver.eigenvalues().size(); i++)
-				{
-					energy += BaseModel<DataType>::fermi_dirac(solver.eigenvalues()(i)) * solver.eigenvalues()(i);
-				}
+				energy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
+					[this](double current, double toAdd) {
+						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
+					});
 			}
 			return energy / Constants::BASIS_SIZE;
 		};

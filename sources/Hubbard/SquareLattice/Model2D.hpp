@@ -1,16 +1,29 @@
 #pragma once
 #include "../MomentumBasedModel.hpp"
+#include <numeric>
 
 #define DELTA_CDW this->model_attributes[0]
 #define DELTA_AFM this->model_attributes[1]
 #define DELTA_SC this->model_attributes[2]
 #define GAMMA_SC this->model_attributes[3]
 #define XI_SC this->model_attributes[4]
-#define GAMMA_OCCUPATION_UP this->model_attributes[5]
-#define GAMMA_OCCUPATION_DOWN this->model_attributes[6]
-#define DELTA_ETA this->model_attributes[7]
+#define DELTA_ETA this->model_attributes[5]
+#define GAMMA_OCCUPATION_UP this->model_attributes[6]
+#define GAMMA_OCCUPATION_DOWN this->model_attributes[7]
 
-namespace Hubbard::SquareLattice {
+namespace Hubbard::SquareLattice
+{
+	inline void complexParametersToReal(const ComplexParameterVector& c, Eigen::VectorXd& r) {
+		r(0) = c(0).real(); // CDW
+		r(1) = c(1).real(); // AFM
+		r(2) = c(2).real(); // SC
+		r(3) = c(3).real(); // Gamma SC
+		r(4) = c(4).imag(); // Xi SC
+		r(5) = c(5).imag(); // Eta
+		r(6) = c(6).real(); // Gamma Occupation Up
+		r(7) = c(7).real(); // Gamma Occupation Down
+	};
+
 	template <typename DataType>
 	class Model2D : public MomentumBasedModel<DataType, 2>
 	{
@@ -27,12 +40,8 @@ namespace Hubbard::SquareLattice {
 				this->V_OVER_N, // Occupation Down
 			};
 		};
-
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
-		virtual inline void complexParametersToReal(const ComplexParameterVector& c, ParameterVector& r) const {
-			// Does nothing, unless the derived class states otherwise
-		};
 
 		inline void iterationStep(const ParameterVector& x, ParameterVector& F) {
 			F.fill(0);
@@ -42,10 +51,7 @@ namespace Hubbard::SquareLattice {
 			SpinorMatrix rho{ SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE) };
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
-			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
-			{
-				this->model_attributes[i] = x(i);
-			}
+			std::copy(x.begin(), x.end(), this->model_attributes.selfconsistency_values.begin());
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
@@ -61,19 +67,35 @@ namespace Hubbard::SquareLattice {
 				}
 			}
 
+			/* { // Checks for numerical accurarcy
+				const double ERROR_MARGIN = 1e-10 * Constants::BASIS_SIZE;
+				if (std::abs(complex_F(2).imag()) > ERROR_MARGIN) {
+					std::cout << "sc: " << complex_F(2) << "\t Params: " << this->temperature << ", " << this->U << ", " << this->V << std::endl;
+				}
+				if (std::abs(complex_F(3).imag()) > ERROR_MARGIN) {
+					std::cout << "gamma sc: " << complex_F(3) << "\t Params: " << this->temperature << ", " << this->U << ", " << this->V << std::endl;
+				}
+				if (std::abs(complex_F(4).real()) > ERROR_MARGIN) {
+					std::cout << "xi sc: " << complex_F(4) << "\t Params: " << this->temperature << ", " << this->U << ", " << this->V << std::endl;
+				}
+				if (std::abs(complex_F(5).real()) > ERROR_MARGIN) {
+					std::cout << "eta: " << complex_F(5) << "\t Params: " << this->temperature << ", " << this->U << ", " << this->V << std::endl;
+				}
+			}*/
+
 			if constexpr (!std::is_same_v<DataType, complex_prec>) {
 				complexParametersToReal(complex_F, F);
 			}
 			this->multiplyParametersByCoefficients(F);
-			//for (auto& value : F) {
-			//	if (std::abs(value) < 1e-12) value = 0.;
-			//}
+			for (auto& value : F) {
+				if (std::abs(value) < 1e-12) value = 0.;
+			}
 			this->setParameters(F);
 
 			F -= x;
 		};
 	public:
-		Model2D(const ModelParameters& _params) 
+		Model2D(const ModelParameters& _params)
 			: MomentumBasedModel<DataType, 2>(_params)
 		{
 			this->init();
@@ -126,13 +148,12 @@ namespace Hubbard::SquareLattice {
 					this->fillHamiltonian(2, k_x, k_y);
 					solver.compute(this->hamilton, false);
 
-					for (size_t i = 0; i < solver.eigenvalues().size(); ++i)
-					{
-						auto occ = BaseModel<DataType>::fermi_dirac(solver.eigenvalues()(i));
-						if (occ > 1e-12) { // Let's just not take the ln of 0. Negative numbers cannot be reached (by definition)
-							entropy -= occ * std::log(occ);
-						}
-					}
+					entropy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
+						[this](double current, double toAdd) {
+							auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
+							// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
+							return (occ > 1e-12 ? current - occ * std::log(occ) : current);
+						});
 				}
 			}
 			return entropy / Constants::BASIS_SIZE;
@@ -150,10 +171,10 @@ namespace Hubbard::SquareLattice {
 					this->fillHamiltonian(2, k_x, k_y);
 					solver.compute(this->hamilton, false);
 
-					for (size_t i = 0; i < solver.eigenvalues().size(); ++i)
-					{
-						energy += BaseModel<DataType>::fermi_dirac(solver.eigenvalues()(i)) * solver.eigenvalues()(i);
-					}
+					energy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
+						[this](double current, double toAdd) {
+							return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
+						});
 				}
 			}
 			return energy / Constants::BASIS_SIZE;
@@ -190,7 +211,7 @@ namespace Hubbard::SquareLattice {
 					expecs[6](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = 1 - (rho(0, 0) - rho(2, 2)).real();
 					// g_up + g_down
 					expecs[7](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = rho(2, 3) - rho(1, 0);
-					for (int idx = 0; idx < 8; idx++)
+					for (size_t idx = 0U; idx < 8U; ++idx)
 					{
 						sum_of_all[idx] += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
 					}

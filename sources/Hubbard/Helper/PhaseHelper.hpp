@@ -1,5 +1,6 @@
 #pragma once
 #include <optional>
+#include <array>
 #include "../../Utility/InputFileReader.hpp"
 #include "../SquareLattice/Model2D.hpp"
 
@@ -9,15 +10,17 @@ namespace Hubbard::Helper {
 	{
 	private:
 		struct Plaquette {
-			PhaseHelper* parent = nullptr;
-			int value_index = 0;
-			double lowerFirst = 0, upperFirst = 0;
-			double lowerSecond = 0, upperSecond = 0;
 			/* Layout:
 			*  0 1
 			*  2 3
 			*/
-			std::vector<ModelAttributes<double>> attributes;
+			std::array<ModelAttributes<double>, 4> attributes;
+			PhaseHelper* parent{};
+			
+			double lowerFirst{}, upperFirst{};
+			double lowerSecond{}, upperSecond{};
+			int value_index{};
+
 			inline double& operator()(const size_t i, const size_t j) {
 				return attributes[i][j];
 			};
@@ -38,32 +41,30 @@ namespace Hubbard::Helper {
 				}
 				return false;
 			};
-			inline double getCenterFirst() const {
+			inline double getCenterFirst() const noexcept {
 				return 0.5 * (lowerFirst + upperFirst);
 			};
-			inline double getCenterSecond() const {
+			inline double getCenterSecond() const noexcept {
 				return 0.5 * (lowerSecond + upperSecond);
 			};
-			inline double size() const {
+			inline double size() const noexcept {
 				return 0.5 * (std::abs(upperFirst - lowerFirst) + std::abs(upperSecond - lowerSecond));
 			}
 			// Devides *this into 4 equally sized plaquettes
 			// The result is appended to <appendTo>
 			void devidePlaquette(std::vector<Plaquette>& appendTo);
-
-			Plaquette() : attributes(4) {};
 		};
 
-		const std::vector<std::string> option_list = { "T", "U", "V" };
-		int FIRST_IT_STEPS;
-		double FIRST_IT_MIN, FIRST_IT_MAX;
-		int SECOND_IT_STEPS;
-		double SECOND_IT_MIN, SECOND_IT_MAX;
-
-		int rank, numberOfRanks;
-
-		bool use_broyden;
 		ModelParameters modelParameters;
+		const std::vector<std::string> option_list = { "T", "U", "V" };
+		int FIRST_IT_STEPS{};
+		double FIRST_IT_MIN{}, FIRST_IT_MAX{};
+		int SECOND_IT_STEPS{};
+		double SECOND_IT_MIN{}, SECOND_IT_MAX{};
+
+		int rank{}, numberOfRanks{};
+		bool use_broyden{};
+		
 		ModelAttributes<double> computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues = std::nullopt);
 	public:
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);

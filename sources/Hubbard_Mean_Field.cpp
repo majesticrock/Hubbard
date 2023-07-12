@@ -63,8 +63,8 @@ int main(int argc, char** argv)
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point test_e;
 
-		model.computePhases(true).print();
-		std::cout << "Internal energy = " << model.internalEnergyPerSite() << std::endl;
+		model.computePhases(false).print();
+		std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 
 		test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
@@ -78,7 +78,9 @@ int main(int argc, char** argv)
 
 		Hubbard::SquareLattice::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
-		model2.computePhases(true).print();
+		model2.computePhases().print();
+		std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
+
 		test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 	}
@@ -89,14 +91,13 @@ int main(int argc, char** argv)
 		double GLOBAL_IT_LIMS[2] = { 0, input.getDouble("global_iterator_upper_limit") };
 		std::vector<std::string> option_list = { "T", "U", "V" };
 		double FIRST_IT_RANGE = 0;
-		double FIRST_IT_MIN = 0, FIRST_IT_MAX = 0;
+		double FIRST_IT_MIN = 0;
 		for (int i = 0; i < option_list.size(); i++)
 		{
 			if (input.getString("global_iterator_type") == option_list[i]) {
 				GLOBAL_IT_LIMS[0] = model_params[i];
 				FIRST_IT_RANGE = (GLOBAL_IT_LIMS[1] - GLOBAL_IT_LIMS[0]) / numberOfRanks;
 				FIRST_IT_MIN = GLOBAL_IT_LIMS[0] + rank * FIRST_IT_RANGE;
-				FIRST_IT_MAX = FIRST_IT_MIN + FIRST_IT_RANGE;
 				model_params[i] = FIRST_IT_MIN;
 			}
 		}
@@ -110,10 +111,6 @@ int main(int argc, char** argv)
 				SECOND_IT_MIN = model_params[i];
 			}
 		}
-
-		Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
-			(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, (SECOND_IT_MAX - SECOND_IT_MIN) / SECOND_IT_STEPS,
-			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
 		std::vector<data_vector> local_data(NUMBER_OF_PARAMETERS, data_vector(FIRST_IT_STEPS * SECOND_IT_STEPS));
 

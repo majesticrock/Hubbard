@@ -112,6 +112,10 @@ namespace Hubbard {
 	{
 		std::cout << global_iterator_type << " = " << getGlobal();
 	}
+	void ModelParameters::printParameters() const
+	{
+		std::cout << "[T U V] = [ " << temperature << " " << U << " " << V << " ]" << std::endl;
+	}
 	std::string ModelParameters::getFileName() const
 	{
 		auto improved_string = [](double number) -> std::string {

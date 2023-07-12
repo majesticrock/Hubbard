@@ -20,7 +20,7 @@ namespace Hubbard::SquareLattice {
 	void UsingBroyden::fillHamiltonianHelper(va_list args)
 	{
 		UNPACK_2D;
-		hamilton.fill(0);
+		hamilton.fill(0.);
 		const double GAMMA = gamma(k_x, k_y);
 		const double XI = xi(k_x, k_y);
 
@@ -32,7 +32,7 @@ namespace Hubbard::SquareLattice {
 		hamilton(1, 3) = DELTA_SC - (GAMMA_SC * GAMMA + I * XI_SC * XI);
 		hamilton(2, 3) = -DELTA_CDW - DELTA_AFM;
 
-		SpinorMatrix buffer = hamilton.adjoint();
+		SpinorMatrix buffer{ hamilton.adjoint() };
 		hamilton += buffer;
 		double eps = model_attributes.renormalizedEnergy_up(GAMMA);
 		hamilton(0, 0) = eps;
@@ -42,13 +42,13 @@ namespace Hubbard::SquareLattice {
 		hamilton(3, 3) = eps;
 	}
 
-	UsingBroyden::UsingBroyden(const ModelParameters& _params, int _MaxPreBroydenIterations/* = 300*/)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, size_t _MaxPreBroydenIterations/* = 300U*/)
 		: Model2D(_params), MaxPreBroydenIterations(_MaxPreBroydenIterations)
 	{
 		init();
 	}
 
-	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, int _MaxPreBroydenIterations/* = 300*/)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, size_t _MaxPreBroydenIterations/* = 300U*/)
 		: Model2D(_params, startingValues), MaxPreBroydenIterations(_MaxPreBroydenIterations)
 	{
 		init();
@@ -60,25 +60,24 @@ namespace Hubbard::SquareLattice {
 			iterationStep(x, F);
 		};
 		const size_t NUMBER_OF_PARAMETERS = model_attributes.size();
-		ParameterVector f0 = ParameterVector::Zero(NUMBER_OF_PARAMETERS);
-		for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
-		{
-			f0(i) = model_attributes[i];
-		}
+		ParameterVector f0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
+
+		std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), f0.begin());
 		ParameterVector x0 = f0;
 
+		if (print) {
+			std::cout << "-1:\t" << std::fixed << std::setprecision(8);
+			printAsRow<-1>(x0);
+		}
 		for (size_t i = 0U; i < MaxPreBroydenIterations && f0.squaredNorm() > 1e-15; ++i)
 		{
 			func(x0, f0);
-			for (size_t j = 0U; j < NUMBER_OF_PARAMETERS; ++j)
-			{
-				x0(j) = model_attributes[j];
-			}
+			std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), x0.begin());
 
-			for (size_t i = 0; i < x0.size(); i++)
+			for (auto& x : x0)
 			{
-				if (std::abs(x0(i)) < 1e-14) {
-					x0(i) = 0;
+				if (std::abs(x) < 1e-14) {
+					x = 0.;
 				}
 			}
 
@@ -105,14 +104,14 @@ namespace Hubbard::SquareLattice {
 			func(x0, f0);
 			std::cout << "T=" << temperature << "   U=" << U << "   V=" << V << "\n";
 			std::cout << "x0 = (";
-			for (int i = 0; i < x0.size(); i++)
+			for (const auto& x : x0)
 			{
-				std::cout << " " << x0(i) << " ";
+				std::cout << " " << x << " ";
 			}
 			std::cout << ")\nf0 = (";
-			for (int i = 0; i < f0.size(); i++)
+			for (const auto& f : f0)
 			{
-				std::cout << " " << f0(i) << " ";
+				std::cout << " " << f << " ";
 			}
 			std::cout << ")\n -> |f0| = " << std::scientific << std::setprecision(8) << f0.norm() << std::endl;
 		}

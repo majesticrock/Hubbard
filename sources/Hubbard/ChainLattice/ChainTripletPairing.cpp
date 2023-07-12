@@ -72,11 +72,8 @@ namespace Hubbard::ChainLattice {
 		constexpr size_t MAX_STEPS = 2000;
 		const size_t NUMBER_OF_PARAMETERS = model_attributes.size();
 
-		ParameterVector f0 = ParameterVector(NUMBER_OF_PARAMETERS);
-		for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
-		{
-			f0(i) = model_attributes[i];
-		}
+		ParameterVector f0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
+		std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), f0.begin());
 
 		ParameterVector x0 = f0;
 
@@ -88,10 +85,8 @@ namespace Hubbard::ChainLattice {
 		{
 			iterationStep(x0, f0);
 			error = f0.norm();
-			for (size_t j = 0U; j < NUMBER_OF_PARAMETERS; ++j)
-			{
-				x0(j) = model_attributes[j];
-			}
+			std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), x0.begin());
+
 			if (print) {
 				std::cout << i << ":\t" << std::fixed << std::setprecision(8);
 				printAsRow<-1>(x0);

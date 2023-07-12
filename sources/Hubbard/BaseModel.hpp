@@ -17,10 +17,10 @@ namespace Hubbard {
 
 	template <const int vector_size = Eigen::Dynamic>
 	void printAsRow(Eigen::Vector<double, vector_size>& printer) {
-		for (size_t i = 0; i < printer.size(); i++)
+		for (size_t i = 0U; i < printer.size(); ++i)
 		{
-			std::cout << "\t" << printer(i);
-			if ((i + 1) % 8 == 0) {
+			std::cout << " \t" << printer(i);
+			if ((i + 1U) % 8U == 0U) {
 				std::cout << "\n\t    ";
 			}
 		}
@@ -29,10 +29,10 @@ namespace Hubbard {
 
 	template <const int vector_size = Eigen::Dynamic>
 	void printAsRow(Eigen::Vector<complex_prec, vector_size>& printer) {
-		for (size_t i = 0; i < printer.size(); i++)
+		for (size_t i = 0U; i < printer.size(); ++i)
 		{
 			std::cout << " \t" << printer(i);
-			if ((i + 1) % 4 == 0) {
+			if ((i + 1U) % 4U == 0U) {
 				std::cout << "\n\t    ";
 			}
 		}
@@ -109,7 +109,7 @@ namespace Hubbard {
 		};
 
 		virtual void fillHamiltonianHelper(va_list args) = 0;
-		void fillHamiltonian(int variadic_count, ...) {
+		inline void fillHamiltonian(int variadic_count, ...) {
 			va_list args;
 			va_start(args, variadic_count);
 			fillHamiltonianHelper(args);
@@ -117,7 +117,7 @@ namespace Hubbard {
 		};
 
 		virtual void addToParameterSetHelper(const SpinorMatrix& rho, ComplexParameterVector& F, va_list args) = 0;
-		void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, int variadic_count, ...) {
+		inline void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, int variadic_count, ...) {
 			va_list args;
 			va_start(args, variadic_count);
 			addToParameterSetHelper(rho, F, args);
