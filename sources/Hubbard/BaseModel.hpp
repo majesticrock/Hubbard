@@ -50,6 +50,17 @@ namespace Hubbard {
 
 	using ComplexParameterVector = Eigen::Vector<complex_prec, Eigen::Dynamic>;
 
+	inline void complexParametersToReal(const ComplexParameterVector& c, Eigen::VectorXd& r) {
+		r(0) = c(0).real(); // CDW
+		r(1) = c(1).real(); // AFM
+		r(2) = c(2).real(); // SC
+		r(3) = c(3).real(); // Gamma SC
+		r(4) = c(4).imag(); // Xi SC
+		r(5) = c(5).imag(); // Eta
+		r(6) = c(6).real(); // Gamma Occupation Up
+		r(7) = c(7).real(); // Gamma Occupation Down
+	};
+
 	template <typename DataType>
 	class BaseModel
 	{

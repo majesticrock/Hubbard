@@ -1,5 +1,5 @@
 #include "UsingBroyden.hpp"
-#include "../../Utility/Roots_Broyden.hpp"
+#include "../../Utility/BroydensMethodEigen.hpp"
 
 namespace Hubbard::SquareLattice {
 	void UsingBroyden::init()
@@ -96,9 +96,9 @@ namespace Hubbard::SquareLattice {
 							<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
 						}
 
-						//std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
-						//model_attributes.converged = false;
-						//return ModelAttributes<double>(this->model_attributes);
+						std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
+						model_attributes.converged = false;
+						return ModelAttributes<double>(this->model_attributes);
 					}
 				}
 			}
@@ -119,7 +119,7 @@ namespace Hubbard::SquareLattice {
 			}
 		}
 
-		Utility::NumericalSolver::Roots::Broyden<double, -1> broyden_solver;
+		Utility::NumericalSolver::Roots::BroydensMethodEigen<double, -1> broyden_solver;
 		if (!broyden_solver.compute(func, x0, 400)) {
 			if (debugPolicy.convergenceWarning){
 				std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)

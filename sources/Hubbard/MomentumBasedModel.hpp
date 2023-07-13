@@ -24,7 +24,7 @@ namespace Hubbard {
 		MomentumBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
 			: BaseModel<DataType>(_params, startingValues) {};
 
-		inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector2i& momentum) const {
+		inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {
 				NumericalMomentum<2> temp{index_to_k_vector(momentum(0)), index_to_k_vector(momentum(1))};
 				return temp.unperturbed_energy() - this->chemical_potential;

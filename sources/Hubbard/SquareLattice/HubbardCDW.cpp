@@ -1,7 +1,5 @@
 #include "HubbardCDW.hpp"
 
-constexpr size_t NUMBER_OF_PARAMETERS = 16;
-
 #define GAMMA_CDW this->model_attributes[8]
 #define XI_CDW this->model_attributes[9]
 #define GAMMA_AFM this->model_attributes[10]
@@ -106,11 +104,10 @@ namespace Hubbard::SquareLattice {
 	}
 	ModelAttributes<double> HubbardCDW::computePhases(const PhaseDebuggingPolicy debugPolicy/*=PhaseDebuggingPolicy{}*/)
 	{
-		computeChemicalPotential();
-
 		constexpr double EPSILON = 1e-12;
 		double error = 100;
 		constexpr size_t MAX_STEPS = 1000;
+		const size_t NUMBER_OF_PARAMETERS = this->model_attributes.size();
 
 		ParameterVector f0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
 		std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), f0.begin());
@@ -143,22 +140,6 @@ namespace Hubbard::SquareLattice {
 			}
 		}
 
-		if (std::abs(DELTA_SC.imag()) > 1e-8) {
-			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
-				<< "]" << std::endl;
-		}
-		if (std::abs(GAMMA_SC) > 1e-8) {
-			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
-				<< "]" << std::endl;
-		}
-		if (std::abs(XI_SC.real()) > 1e-8) {
-			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
-				<< "]" << std::endl;
-		}
-		if (std::abs(DELTA_ETA) > 1e-8) {
-			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
-				<< "]" << std::endl;
-		}
 		return ModelAttributes<double>(this->model_attributes);
 	}
 }

@@ -107,6 +107,18 @@ namespace Hubbard {
 		inline void push_back(DataType&& value) {
 			selfconsistency_values.push_back(std::move(value));
 		};
+		auto begin() {
+			return selfconsistency_values.begin();
+		}
+		auto begin() const {
+			return selfconsistency_values.begin();
+		}
+		auto end() {
+			return selfconsistency_values.end();
+		}
+		auto end() const {
+			return selfconsistency_values.end();
+		}
 
 		inline bool isOrdered() const {
 			for (const auto value : selfconsistency_values)
