@@ -35,22 +35,22 @@ namespace Hubbard::ChainLattice
 			std::conditional_t<std::is_same_v<DataType, complex_prec>,
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
-			SpinorMatrix rho {SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE) };
+			SpinorMatrix rho{ SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE) };
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.selfconsistency_values.begin());
 
 			for (int k = -Constants::K_DISCRETIZATION; k < 0; ++k)
 			{
-				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
-				this->fillHamiltonian(k_x);
+				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
+				this->fillHamiltonian(NumericalMomentum{ k_x });
 				solver.compute(this->hamilton);
 
 				this->fillRho(rho, solver);
 				this->addToParameterSet(rho, complex_F, k_x);
 			}
 
-			if constexpr (!std::is_same<DataType, complex_prec>::value) {
+			if constexpr (!std::is_same_v<DataType, complex_prec>) {
 				complexParametersToReal(complex_F, F);
 			}
 			this->setParameters(F);
@@ -68,9 +68,9 @@ namespace Hubbard::ChainLattice
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
 
-				this->fillHamiltonian(1, k_x);
+				this->fillHamiltonian(k_x);
 				solver.compute(this->hamilton, false);
 
 				entropy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
@@ -88,9 +88,9 @@ namespace Hubbard::ChainLattice
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
 
-				this->fillHamiltonian(1, k_x);
+				this->fillHamiltonian(k_x);
 				solver.compute(this->hamilton, false);
 
 				energy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
@@ -110,7 +110,8 @@ namespace Hubbard::ChainLattice
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				this->fillHamiltonian(1, (k * L_PI) / Constants::K_DISCRETIZATION);
+				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
+				this->fillHamiltonian(k_x);
 				solver.compute(this->hamilton);
 				this->fillRho(rho, solver);
 

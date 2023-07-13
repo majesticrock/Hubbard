@@ -3,10 +3,10 @@
 constexpr size_t NUMBER_OF_PARAMETERS = 18;
 
 namespace Hubbard::SquareLattice {
-	void SquareTripletPairing::fillHamiltonianHelper(const std::array<double, 2>& k_values)
+	void SquareTripletPairing::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{
 		hamilton.fill(0.0);
-		const double GAMMA = gamma(k_values);
+		const double GAMMA = k_values.gamma();
 		const double XI = xi(k_values);
 
 		SpinorMatrix diagonalBlock = SpinorMatrix::Zero(4, 4);
@@ -32,7 +32,7 @@ namespace Hubbard::SquareLattice {
 		hamilton.block<4, 4>(0, 0) = diagonalBlock;
 		hamilton.block<4, 4>(4, 4) = -diagonalBlock.adjoint();
 
-		const double TAU = tau(k_values);
+		const double TAU = k_values.tau();
 		const double THETA = theta(k_values);
 		diagonalBlock = SpinorMatrix::Zero(4, 4);
 		diagonalBlock(0, 0) = tau_sc * TAU + theta_sc * THETA;
@@ -44,11 +44,11 @@ namespace Hubbard::SquareLattice {
 		hamilton.block<4, 4>(4, 0) = diagonalBlock.adjoint();
 	}
 
-	void SquareTripletPairing::addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const std::array<double, 2>& k_values)
+	void SquareTripletPairing::addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const NumericalMomentum<2>& k_values)
 	{
 		HubbardCDW::addToParameterSet(rho, F, k_values);
 
-		F(16) -= tau(k_values) * rho(6, 2);
+		F(16) -= k_values.tau() * rho(6, 2);
 		F(17) -= theta(k_values[0], k_values[1]) * rho(6, 2);
 	}
 

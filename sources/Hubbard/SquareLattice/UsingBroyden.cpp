@@ -17,10 +17,10 @@ namespace Hubbard::SquareLattice {
 			V_OVER_N, // Occupation Down
 		};
 	}
-	void UsingBroyden::fillHamiltonian(const std::array<double, 2>& k_values)
+	void UsingBroyden::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{
 		hamilton.fill(0.);
-		const double GAMMA = gamma(k_values);
+		const double GAMMA = k_values.gamma();
 		const double XI = xi(k_values);
 
 		hamilton(0, 1) = DELTA_CDW - DELTA_AFM;;
@@ -41,9 +41,9 @@ namespace Hubbard::SquareLattice {
 		hamilton(3, 3) = eps;
 	}
 
-	void UsingBroyden::addToParameterSetHelper(const SpinorMatrix& rho, ComplexParameterVector& F, const std::array<double, 2>& k_values)
+	void UsingBroyden::addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, const NumericalMomentum<2>& k_values)
 	{
-		const double GAMMA = gamma(k_values);
+		const double GAMMA = k_values.gamma();
 		const double XI = xi(k_values);
 
 		F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
@@ -86,7 +86,7 @@ namespace Hubbard::SquareLattice {
 		for (size_t i = 0U; i < MaxPreBroydenIterations && f0.squaredNorm() > 1e-15; ++i)
 		{
 			func(x0, f0);
-			for (size_t j = 0U; j < count; ++j)
+			for (size_t j = 0U; j < NUMBER_OF_PARAMETERS; ++j)
 			{
 				if(std::abs(x0[j] + model_attributes[j]) < 1e-12){
 					// Sign flipping behaviour

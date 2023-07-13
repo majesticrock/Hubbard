@@ -37,14 +37,14 @@ namespace Hubbard {
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				double gamma = k / Constants::K_DISCRETIZATION;
-				this->fillHamiltonian(1, gamma);
+				this->fillHamiltonian(gamma);
 				solver.compute(this->hamilton);
 				this->fillRho(rho, solver);
 
-				this->addToParameterSet(rho, complex_F, 1, gamma);
+				this->addToParameterSet(rho, complex_F, gamma);
 			}
 
-			if constexpr (!std::is_same<DataType, complex_prec>::value) {
+			if constexpr (!std::is_same_v<DataType, complex_prec>) {
 				complexParametersToReal(complex_F, F);
 			}
 			this->setParameters(F);

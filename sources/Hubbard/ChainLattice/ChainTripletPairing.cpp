@@ -1,11 +1,10 @@
 #include "ChainTripletPairing.hpp"
 
 namespace Hubbard::ChainLattice {
-	void ChainTripletPairing::fillHamiltonianHelper(va_list args)
+	void ChainTripletPairing::fillHamiltonian(const NumericalMomentum<1>& k_x)
 	{
-		UNPACK_1D;
 		hamilton.fill(0.0);
-		const double GAMMA = gamma(k_x);
+		const double GAMMA = k_x.gamma();
 
 		SpinorMatrix diagonalBlock = SpinorMatrix::Zero(4, 4);
 		diagonalBlock(0, 1) = DELTA_CDW - DELTA_AFM;
@@ -30,7 +29,7 @@ namespace Hubbard::ChainLattice {
 		hamilton.block<4, 4>(0, 0) = diagonalBlock;
 		hamilton.block<4, 4>(4, 4) = -diagonalBlock.adjoint();
 
-		const double TAU = tau(k_x);
+		const double TAU = k_x.tau();
 		diagonalBlock = SpinorMatrix::Zero(4, 4);
 		diagonalBlock(0, 0) = TAU_SC * TAU;
 		diagonalBlock(1, 1) = -TAU_SC * TAU;
@@ -41,17 +40,23 @@ namespace Hubbard::ChainLattice {
 		hamilton.block<4, 4>(4, 0) = diagonalBlock.adjoint();
 	}
 
+	void ChainTripletPairing::addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const NumericalMomentum<1>& k_x)
+	{
+		F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
+		F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
+		F(2) -= (rho(0, 2) + rho(1, 3)); // SC
+		F(3) -= k_x.gamma() * (rho(0, 2) - rho(1, 3)); // Gamma SC
+		F(4) -= k_x.tau() * rho(6, 2); // Tau SC
+		F(5) -= (rho(0, 3) + rho(1, 2)); // Eta
+		F(6) -= k_x.gamma() * (rho(0, 0) - rho(1, 1)).real(); // Gamma Occupation Up
+		F(7) += k_x.gamma() * (rho(2, 2) - rho(3, 3)).real(); // Gamma Occupation Down
+	}
+
 	ChainTripletPairing::ChainTripletPairing(const ModelParameters& _params)
 		: Model1D(_params)
 	{
 		SPINOR_SIZE = 8;
 		hamilton = SpinorMatrix::Zero(8, 8);
-
-		//*(parameterMapper[0])=0;
-		//*(parameterMapper[1])=0;
-		//*(parameterMapper[2]) = 0.3 * U;
-		//*(parameterMapper[3]) = 0.1 * V;
-		//*(parameterMapper[4]) = 0.3 * V;
 
 		parameterCoefficients = {
 			0.5 * U_OVER_N - 2. * V_OVER_N, // CDW

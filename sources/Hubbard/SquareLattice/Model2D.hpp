@@ -12,6 +12,13 @@
 
 namespace Hubbard::SquareLattice
 {
+	inline double xi(double k_x, double k_y) {
+		return cos(k_x) - cos(k_y);
+	}
+	inline double xi(const NumericalMomentum<2>& ks) {
+		return xi(ks[0], ks[1]);
+	}
+
 	inline void complexParametersToReal(const ComplexParameterVector& c, Eigen::VectorXd& r) {
 		r(0) = c(0).real(); // CDW
 		r(1) = c(1).real(); // AFM
@@ -58,7 +65,7 @@ namespace Hubbard::SquareLattice
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
 					double k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
-					const std::array<double, 2> ks{k_x, k_y};
+					NumericalMomentum<2> ks{k_x, k_y};
 
 					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton);
@@ -122,7 +129,7 @@ namespace Hubbard::SquareLattice
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
 					l_val = l * L_PI / Constants::K_DISCRETIZATION;
-					const std::array<double, 2> ks{k_val, k_val};
+					NumericalMomentum<2> ks{k_val, l_val};
 					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton, false);
 					reciever[k + Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(0);
@@ -147,7 +154,7 @@ namespace Hubbard::SquareLattice
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
 					double k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
-					const std::array<double, 2> ks{k_x, k_y};
+					NumericalMomentum<2> ks{k_x, k_y};
 
 					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton, false);
@@ -172,7 +179,7 @@ namespace Hubbard::SquareLattice
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
 					double k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
-					const std::array<double, 2> ks{k_x, k_y};
+					NumericalMomentum<2> ks{k_x, k_y};
 					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton, false);
 
@@ -196,7 +203,9 @@ namespace Hubbard::SquareLattice
 			{
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					const std::array<double, 2> ks{(k * L_PI) / Constants::K_DISCRETIZATION, (l * L_PI) / Constants::K_DISCRETIZATION)};
+					NumericalMomentum<2> ks{
+						(k* L_PI) / Constants::K_DISCRETIZATION, (l* L_PI) / Constants::K_DISCRETIZATION
+					};
 					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton);
 					this->fillRho(rho, solver);

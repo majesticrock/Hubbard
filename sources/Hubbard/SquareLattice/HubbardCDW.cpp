@@ -50,10 +50,10 @@ namespace Hubbard::SquareLattice {
 			V_OVER_N // Xi ETA - 15
 		};
 	}
-	void HubbardCDW::fillHamiltonian(const std::array<double, 2>& k_values)
+	void HubbardCDW::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{
 		hamilton.fill(0.0);
-		const double GAMMA = gamma(k_values);
+		const double GAMMA = k_values.gamma();
 		const double XI = xi(k_values);
 
 		hamilton(0, 1) = DELTA_CDW - DELTA_AFM + ((GAMMA_CDW - GAMMA_AFM) * GAMMA + (XI_CDW - XI_AFM) * XI);
@@ -76,9 +76,9 @@ namespace Hubbard::SquareLattice {
 		hamilton(3, 3) = eps;
 	}
 
-	void HubbardCDW::addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const std::array<double, 2>& k_values)
+	void HubbardCDW::addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const NumericalMomentum<2>& k_values)
 	{
-			const double GAMMA = gamma(k_values);
+			const double GAMMA = k_values.gamma();
 			const double XI = xi(k_values);
 
 			F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
