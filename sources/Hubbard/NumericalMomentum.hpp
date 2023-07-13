@@ -21,11 +21,11 @@ namespace Hubbard {
 		};
 
 		inline double& operator[](size_t index) {
-			assert(index < Dimension && index > 0);
+			assert(index < Dimension);
 			return momenta[index];
 		};
 		inline const double& operator[](size_t index) const {
-			assert(index < Dimension && index > 0);
+			assert(index < Dimension);
 			return momenta[index];
 		};
 	};

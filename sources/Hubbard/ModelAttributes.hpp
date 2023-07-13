@@ -91,9 +91,11 @@ namespace Hubbard {
 		*/
 
 		inline DataType& operator[](size_t i) {
+			assert(i < selfconsistency_values.size());
 			return selfconsistency_values[i];
 		};
 		inline const DataType& operator[](size_t i) const {
+			assert(i < selfconsistency_values.size());
 			return selfconsistency_values[i];
 		};
 		inline size_t size() const noexcept {

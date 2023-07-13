@@ -88,16 +88,18 @@ namespace Hubbard::SquareLattice {
 			func(x0, f0);
 			for (size_t j = 0U; j < NUMBER_OF_PARAMETERS; ++j)
 			{
-				if(std::abs(x0[j] + model_attributes[j]) < 1e-12){
-					// Sign flipping behaviour
-					if (debugPolicy.convergenceWarning){
-						std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
-						<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
-					}
+				if(std::abs(x0[j]) > 1e-10){
+					if(std::abs((x0[j] + model_attributes[j]) / x0[j]) < 1e-12){
+						// Sign flipping behaviour
+						if (debugPolicy.convergenceWarning){
+							std::cerr << "Sign flipper for [T U V] = [" << std::fixed << std::setprecision(8)
+							<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
+						}
 
-					//std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
-					//model_attributes.converged = false;
-					//return ModelAttributes<double>(this->model_attributes);
+						//std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
+						//model_attributes.converged = false;
+						//return ModelAttributes<double>(this->model_attributes);
+					}
 				}
 			}
 			
