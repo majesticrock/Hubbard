@@ -12,6 +12,7 @@ namespace Hubbard {
 	private:
 		inline void init()
 		{
+			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			computeChemicalPotential();
 		};
 

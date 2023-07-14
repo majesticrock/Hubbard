@@ -12,6 +12,8 @@
 #include "Hubbard/Helper/PhaseHelper.hpp"
 #include "Hubbard/Helper/XPModes.hpp"
 #include "Hubbard/SquareLattice/SquareTripletPairing.hpp"
+#include "Hubbard/DOSModels/BroydenDOS.hpp"
+#include "Hubbard/DensityOfStates/Square.hpp"
 
 using Hubbard::Helper::data_vector;
 
@@ -56,15 +58,26 @@ int main(int argc, char** argv)
 	std::vector<double> model_params = input.getDoubleList("model_parameters");
 
 	if (input.getString("compute_what") == "test") {
+		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
+		std::chrono::steady_clock::time_point test_e;
 		Hubbard::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
+		
+		//------------------------------------------------------------//
+
+		Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::Square> model3(mP);
+		test_b = std::chrono::steady_clock::now();
+		model3.computePhases({ true, true }).print();
+		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
+
+		test_e = std::chrono::steady_clock::now();
+		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
+		return 0;
+
+
 		Hubbard::SquareLattice::HubbardCDW model(mP);
 		//Hubbard::Constants::BASIS_SIZE = 2 * Hubbard::Constants::K_DISCRETIZATION;
 		//Hubbard::ChainLattice::TripletPairingIterative model(mP);
-
-		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
-		std::chrono::steady_clock::time_point test_e;
-
-		model.computePhases({true, true}).print();
+		//model.computePhases({false, true}).print();
 		std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 
 		test_e = std::chrono::steady_clock::now();
@@ -74,12 +87,12 @@ int main(int argc, char** argv)
 #ifndef _NO_MPI
 		//return MPI_Finalize();
 #else
-		return 0;
+		//return 0;
 #endif // !_NO_MPI
 
 		Hubbard::SquareLattice::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
-		model2.computePhases({false, true}).print();
+		//model2.computePhases({false, true}).print();
 		std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
 
 		test_e = std::chrono::steady_clock::now();
