@@ -1,6 +1,8 @@
 #include "PhaseHelper.hpp"
 #include "../SquareLattice/HubbardCDW.hpp"
 #include "../SquareLattice/UsingBroyden.hpp"
+#include "../Selfconsistency/BroydenSolver.hpp"
+#include "../Selfconsistency/IterativeSolver.hpp"
 #include <omp.h>
 
 namespace Hubbard::Helper {

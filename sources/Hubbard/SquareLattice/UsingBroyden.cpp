@@ -1,5 +1,5 @@
 #include "UsingBroyden.hpp"
-#include "../../Utility/BroydensMethodEigen.hpp"
+#include "../Selfconsistency/BroydenSolver.hpp"
 
 namespace Hubbard::SquareLattice {
 	void UsingBroyden::init()
@@ -56,98 +56,21 @@ namespace Hubbard::SquareLattice {
 		F(7) += GAMMA * (rho(2, 2) - rho(3, 3)).real(); // Gamma Occupation Down
 	}
 
-	UsingBroyden::UsingBroyden(const ModelParameters& _params, size_t _MaxPreBroydenIterations/* = 300U*/)
-		: Model2D(_params), MaxPreBroydenIterations(_MaxPreBroydenIterations)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, size_t MaxPreBroydenIterations)
+		: Model2D(_params), _MaxPreBroydenIterations(MaxPreBroydenIterations)
 	{
 		init();
 	}
 
-	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, size_t _MaxPreBroydenIterations/* = 300U*/)
-		: Model2D(_params, startingValues), MaxPreBroydenIterations(_MaxPreBroydenIterations)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, size_t MaxPreBroydenIterations)
+		: Model2D(_params, startingValues), _MaxPreBroydenIterations(MaxPreBroydenIterations)
 	{
 		init();
 	}
 
-	ModelAttributes<double> UsingBroyden::computePhases(const PhaseDebuggingPolicy debugPolicy/*=PhaseDebuggingPolicy{}*/)
+	ModelAttributes<double> UsingBroyden::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{
-		std::function<void(const ParameterVector&, ParameterVector&)> func = [&](const ParameterVector& x, ParameterVector& F) {
-			iterationStep(x, F);
-		};
-		const size_t NUMBER_OF_PARAMETERS = model_attributes.size();
-		ParameterVector f0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
-
-		std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), f0.begin());
-		ParameterVector x0 = f0;
-
-		if (debugPolicy.printAll) {
-			std::cout << "-1:\t" << std::fixed << std::setprecision(8);
-			printAsRow<-1>(x0);
-		}
-		for (size_t i = 0U; i < MaxPreBroydenIterations && f0.squaredNorm() > 1e-15; ++i)
-		{
-			func(x0, f0);
-			for (size_t j = 0U; j < NUMBER_OF_PARAMETERS; ++j)
-			{
-				if(std::abs(x0[j]) > 1e-10){
-					if(std::abs((x0[j] + model_attributes[j]) / x0[j]) < 1e-12){
-						// Sign flipping behaviour
-						if (debugPolicy.convergenceWarning){
-							std::cerr << "Sign flipper for [T U V] = [" << std::fixed << std::setprecision(8)
-							<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
-						}
-
-						std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
-						model_attributes.converged = false;
-						return ModelAttributes<double>(this->model_attributes);
-					}
-				}
-			}
-			
-			
-			std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), x0.begin());
-
-			for (auto& x : x0)
-			{
-				if (std::abs(x) < 1e-14) {
-					x = 0.;
-				}
-			}
-
-			if (debugPolicy.printAll) {
-				std::cout << i << ":  " << std::scientific << std::setprecision(4);
-				printAsRow<-1>(x0);
-			}
-		}
-
-		Utility::NumericalSolver::Roots::BroydensMethodEigen<double, -1> broyden_solver;
-		if (!broyden_solver.compute(func, x0, 400)) {
-			if (debugPolicy.convergenceWarning){
-				std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
-				<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
-			}
-
-			std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
-			model_attributes.converged = false;
-		}
-		else {
-			model_attributes.converged = true;
-		}
-
-		if (debugPolicy.printAll) {
-			func(x0, f0);
-			std::cout << "T=" << temperature << "   U=" << U << "   V=" << V << "\n";
-			std::cout << "x0 = (";
-			for (const auto& x : x0)
-			{
-				std::cout << " " << x << " ";
-			}
-			std::cout << ")\nf0 = (";
-			for (const auto& f : f0)
-			{
-				std::cout << " " << f << " ";
-			}
-			std::cout << ")\n -> |f0| = " << std::scientific << std::setprecision(8) << f0.norm() << std::endl;
-		}
-		return ModelAttributes<double>(this->model_attributes);
+		Selfconsistency::BroydenSolver solver(this, &model_attributes, _MaxPreBroydenIterations);
+		return solver.computePhases(debugPolicy);
 	}
 }

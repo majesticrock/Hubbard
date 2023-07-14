@@ -19,6 +19,7 @@ namespace Hubbard::SquareLattice {
 		virtual void addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const NumericalMomentum<2>& k_values) override;
 	public:
 		SquareTripletPairing(const ModelParameters& _params);
-		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy=PhaseDebuggingPolicy{}) override;
+
+		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) override;
 	};
 }

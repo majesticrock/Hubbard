@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point test_e;
 
-		model.computePhases({false, true}).print();
+		model.computePhases({true, true}).print();
 		std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 
 		test_e = std::chrono::steady_clock::now();
@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 
 		Hubbard::SquareLattice::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
-		model2.computePhases({true, true}).print();
+		model2.computePhases({false, true}).print();
 		std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
 
 		test_e = std::chrono::steady_clock::now();

@@ -1,4 +1,5 @@
 #include "HubbardCDW.hpp"
+#include "../Selfconsistency/IterativeSolver.hpp"
 
 #define GAMMA_CDW this->model_attributes[8]
 #define XI_CDW this->model_attributes[9]
@@ -102,44 +103,9 @@ namespace Hubbard::SquareLattice {
 	{
 		init();
 	}
-	ModelAttributes<double> HubbardCDW::computePhases(const PhaseDebuggingPolicy debugPolicy/*=PhaseDebuggingPolicy{}*/)
+	ModelAttributes<double> HubbardCDW::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{
-		constexpr double EPSILON = 1e-12;
-		double error = 100;
-		constexpr size_t MAX_STEPS = 1000;
-		const size_t NUMBER_OF_PARAMETERS = this->model_attributes.size();
-
-		ParameterVector f0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
-		std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), f0.begin());
-
-		ParameterVector x0 = f0;
-
-		if (debugPolicy.printAll) {
-			std::cout << "-1:\t" << std::fixed << std::setprecision(8);
-			printAsRow<-1>(x0);
-		}
-		model_attributes.converged = true;
-		for (size_t i = 0U; i < MAX_STEPS && error > EPSILON; ++i)
-		{
-			iterationStep(x0, f0);
-			error = f0.norm();
-			std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), x0.begin());
-
-			if (debugPolicy.printAll) {
-				std::cout << i << ":\t" << std::fixed << std::setprecision(8);
-				printAsRow<-1>(x0);
-			}
-			if (i == MAX_STEPS - 1) {
-				if (debugPolicy.convergenceWarning){
-					std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
-					<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
-				}
-
-				std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
-				model_attributes.converged = false;
-			}
-		}
-
-		return ModelAttributes<double>(this->model_attributes);
+		Selfconsistency::IterativeSolver<std::complex<double>> solver(this, &model_attributes);
+		return solver.computePhases(debugPolicy);
 	}
 }

@@ -30,7 +30,7 @@ namespace Hubbard::ChainLattice
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
-		inline void iterationStep(const ParameterVector& x, ParameterVector& F) {
+		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(0);
 			std::conditional_t<std::is_same_v<DataType, complex_prec>,
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;

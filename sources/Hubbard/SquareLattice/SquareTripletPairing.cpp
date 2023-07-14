@@ -1,4 +1,5 @@
 #include "SquareTripletPairing.hpp"
+#include "../Selfconsistency/IterativeSolver.hpp"
 
 constexpr size_t NUMBER_OF_PARAMETERS = 18;
 
@@ -71,60 +72,9 @@ namespace Hubbard::SquareLattice {
 		model_attributes[16] = (I + 0.5) * V;
 		model_attributes[17] = (I + 0.5) * V;
 	}
-
-	ModelAttributes<double> SquareTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy/*=PhaseDebuggingPolicy{}*/)
+	ModelAttributes<double> SquareTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{
-		constexpr double EPSILON = 1e-12;
-		double error = 100;
-		constexpr size_t MAX_STEPS = 2500;
-
-		ParameterVector f0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
-		std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), f0.begin());
-
-		ParameterVector x0 = f0;
-
-		if (debugPolicy.printAll) {
-			std::cout << "-1:\t" << std::fixed << std::setprecision(8);
-			printAsRow<-1>(x0);
-		}
-		for (size_t i = 0U; i < MAX_STEPS && error > EPSILON; ++i)
-		{
-			iterationStep(x0, f0);
-			error = f0.norm();
-			std::copy(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), x0.begin());
-
-			if (debugPolicy.printAll) {
-				std::cout << i << ":\t" << std::fixed << std::setprecision(8);
-				printAsRow<-1>(x0);
-			}
-			if (i == MAX_STEPS - 1) {
-				if (debugPolicy.convergenceWarning){
-					std::cerr << "No convergence for [T U V] = [" << std::fixed << std::setprecision(8)
-					<< this->temperature << " " << this->U << " " << this->V << "]" << std::endl;
-				}
-
-				std::fill(model_attributes.selfconsistency_values.begin(), model_attributes.selfconsistency_values.end(), 0.);
-				model_attributes.converged = false;
-			}
-		}
-
-		if (std::abs(DELTA_SC.imag()) > 1e-8) {
-			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
-				<< "]" << std::endl;
-		}
-		if (std::abs(GAMMA_SC.real()) > 1e-8) {
-			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
-				<< "]" << std::endl;
-		}
-		if (std::abs(XI_SC.real()) > 1e-8) {
-			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
-				<< "]" << std::endl;
-		}
-		if (std::abs(DELTA_ETA) > 1e-8) {
-			std::cout << "[T, U, V] = [" << this->temperature << ", " << this->U << "," << this->V
-				<< "]" << std::endl;
-		}
-
-		return ModelAttributes<double>(this->model_attributes);
+		Selfconsistency::IterativeSolver<std::complex<double>> solver(this, &model_attributes);
+		return solver.computePhases(debugPolicy);
 	}
 }

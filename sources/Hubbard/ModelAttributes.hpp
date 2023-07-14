@@ -3,6 +3,7 @@
 #include <complex>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 namespace Hubbard {
 	template <typename DataType>
@@ -107,17 +108,21 @@ namespace Hubbard {
 		inline void push_back(DataType&& value) {
 			selfconsistency_values.push_back(std::move(value));
 		};
-		auto begin() {
+		inline auto begin() {
 			return selfconsistency_values.begin();
 		}
-		auto begin() const {
+		inline auto begin() const {
 			return selfconsistency_values.begin();
 		}
-		auto end() {
+		inline auto end() {
 			return selfconsistency_values.end();
 		}
-		auto end() const {
+		inline auto end() const {
 			return selfconsistency_values.end();
+		}
+		inline void reset() {
+			converged = false;
+			std::fill(begin(), end(), DataType{});
 		}
 
 		inline bool isOrdered() const {

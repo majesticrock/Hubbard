@@ -13,6 +13,7 @@ namespace Hubbard::ChainLattice {
 		virtual void addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const NumericalMomentum<1>& k_x) override;
 	public:
 		explicit ChainTripletPairing(const ModelParameters& _params);
-		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy=PhaseDebuggingPolicy{}) override;
+
+		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) override;
 	};
 }
