@@ -17,14 +17,18 @@ namespace Hubbard::Helper {
 			std::array<ModelAttributes<double>, 4> attributes;
 			PhaseHelper* parent{};
 			
-			double lowerFirst{}, upperFirst{};
-			double lowerSecond{}, upperSecond{};
+			double lowerFirst{}; 
+			double upperFirst{};
+			double lowerSecond{};
+			double upperSecond{};
 			int value_index{};
 
 			inline double& operator()(const size_t i, const size_t j) {
+				assert(i < 4);
 				return attributes[i][j];
 			};
 			inline const double& operator()(const size_t i, const size_t j) const {
+				assert(i < 4);
 				return attributes[i][j];
 			};
 
@@ -33,7 +37,7 @@ namespace Hubbard::Helper {
 			};
 			inline bool containsPhaseBoundary() const
 			{
-				for (size_t i = 1U; i < 4; ++i)
+				for (size_t i = 1U; i < 4U; ++i)
 				{
 					if (valueIsFinite(0U) != valueIsFinite(i)) {
 						return true;
@@ -56,13 +60,16 @@ namespace Hubbard::Helper {
 		};
 
 		ModelParameters modelParameters;
-		const std::vector<std::string> option_list = { "T", "U", "V" };
-		int FIRST_IT_STEPS{};
-		double FIRST_IT_MIN{}, FIRST_IT_MAX{};
-		int SECOND_IT_STEPS{};
-		double SECOND_IT_MIN{}, SECOND_IT_MAX{};
+		double FIRST_IT_MIN{};
+		double FIRST_IT_MAX{};
+		double SECOND_IT_MIN{};
+		double SECOND_IT_MAX{};
 
-		int rank{}, numberOfRanks{};
+		int FIRST_IT_STEPS{};
+		int SECOND_IT_STEPS{};
+
+		int rank{};
+		int numberOfRanks{};
 		bool use_broyden{};
 		
 		ModelAttributes<double> computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues = std::nullopt);
@@ -70,6 +77,6 @@ namespace Hubbard::Helper {
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);
 
 		void compute_crude(std::vector<data_vector>& data_mapper);
-		void findSingleBoundary(const std::vector<data_vector>& origin, data_vector& recieve_data, int value_index, int rank);
+		void findSingleBoundary(const std::vector<data_vector>& origin, data_vector& recieve_data, int value_index);
 	};
 }

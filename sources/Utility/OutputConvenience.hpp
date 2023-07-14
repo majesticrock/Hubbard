@@ -160,13 +160,13 @@ namespace Utility {
 
 	// This function assumes that the number of elements of <data> is divisible by linebreak
 	template <typename data_type>
-	void saveData(const std::vector<data_type>& data, int linebreak, const std::string& filename,
+	void saveData(const std::vector<data_type>& data, size_t linebreak, const std::string& filename,
 		const std::vector<std::string>& comments)
 	{
-		if (linebreak == 0) {
+		if (linebreak == 0U) {
 			linebreak = data.size();
 		}
-		else if (data.size() % linebreak != 0) {
+		else if (data.size() % linebreak != 0U) {
 			std::cerr << "The numbe rof data elements is not divisible by linebreak!" << std::endl;
 			return;
 		}

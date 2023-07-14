@@ -3,9 +3,13 @@
 #include "../SquareLattice/UsingBroyden.hpp"
 #include "../Selfconsistency/BroydenSolver.hpp"
 #include "../Selfconsistency/IterativeSolver.hpp"
+#include "../Constants.hpp"
 #include <omp.h>
 
+
 namespace Hubbard::Helper {
+	using Constants::option_list;
+
 	void PhaseHelper::Plaquette::devidePlaquette(std::vector<PhaseHelper::Plaquette>& appendTo) {
 		/*
 		*			x---A---x
@@ -121,9 +125,9 @@ namespace Hubbard::Helper {
 		int GLOBAL_IT_STEPS = input.getInt("global_iterator_steps");
 		FIRST_IT_STEPS = GLOBAL_IT_STEPS / numberOfRanks;
 		double GLOBAL_IT_LIMS[2] = { 0, input.getDouble("global_iterator_upper_limit") };
-		const std::vector<std::string> option_list = { "T", "U", "V" };
 		double FIRST_IT_RANGE = 0;
 		FIRST_IT_MIN = 0, FIRST_IT_MAX = 0;
+
 		for (int i = 0; i < option_list.size(); i++)
 		{
 			if (input.getString("global_iterator_type") == option_list[i]) {
@@ -213,14 +217,14 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	void PhaseHelper::findSingleBoundary(const std::vector<data_vector>& origin, data_vector& recieve_data, int value_index, int rank) {
+	void PhaseHelper::findSingleBoundary(const std::vector<data_vector>& origin, data_vector& recieve_data, int value_index) {
 		modelParameters.reset();
 		std::vector<Plaquette> plaqs;
 		const int rank_offset = FIRST_IT_STEPS * SECOND_IT_STEPS * rank;
 
-		for (size_t i = (rank > 0) ? 0U : 1U; i < FIRST_IT_STEPS; ++i)
+		for (int i = (rank > 0) ? 0 : 1; i < FIRST_IT_STEPS; ++i)
 		{
-			for (size_t j = 1U; j < SECOND_IT_STEPS; ++j)
+			for (int j = 1; j < SECOND_IT_STEPS; ++j)
 			{
 				Plaquette plaq;
 				plaq.value_index = value_index;
@@ -231,7 +235,7 @@ namespace Hubbard::Helper {
 					plaq(2, l) = origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j - 1];
 					plaq(3, l) = origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j];
 				}
-
+				
 				if (!plaq.containsPhaseBoundary()) continue;
 
 				plaq.parent = this;
@@ -263,7 +267,7 @@ namespace Hubbard::Helper {
 			}
 			plaqs.clear();
 			bool removal = false;
-			if (totalSize > 100U) {
+			if (totalSize > 80U) {
 				totalSize /= 2;
 				removal = true;
 			}
@@ -271,7 +275,7 @@ namespace Hubbard::Helper {
 			for (const auto& vec : buffer)
 			{
 				if (removal) {
-					for (size_t i = 0U; i < vec.size(); i += 2)
+					for (size_t i = 0U; i < vec.size(); i += 2U)
 					{
 						plaqs.push_back(vec[i]);
 					}

@@ -19,6 +19,7 @@ int Hubbard::Constants::K_DISCRETIZATION = 100;
 int Hubbard::Constants::BASIS_SIZE = 10000;
 constexpr int NUMBER_OF_PARAMETERS = 8;
 constexpr int NUMBER_OF_GAP_VALUES = NUMBER_OF_PARAMETERS - 2; // The Fock parameters are not important
+std::vector<std::string> Hubbard::Constants::option_list = { "T", "U", "V" };
 
 std::ostream& operator<<(std::ostream& os, const Hubbard::ModelParameters& mp) {
 	os << mp.temperature << "\t" << mp.U << "\t" << mp.V;
@@ -157,7 +158,7 @@ int main(int argc, char** argv)
 
 			for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 			{
-				phaseHelper.findSingleBoundary(recieve_data, local[i], i, rank);
+				phaseHelper.findSingleBoundary(recieve_data, local[i], i);
 				sizes[i] = local[i].size();
 			}
 			std::vector < data_vector> recieve_boundaries(NUMBER_OF_GAP_VALUES);

@@ -4,8 +4,8 @@
 namespace Hubbard {
 	class ModelParameters {
 	private:
-		std::string global_iterator_type;
-		std::string second_iterator_type;
+		std::string global_iterator_type{"N/A"};
+		std::string second_iterator_type{"N/A"};
 		double global_step{-1};
 		double second_step{-1};
 		double global_it_min{-1};
@@ -22,9 +22,10 @@ namespace Hubbard {
 		// This is offered as a simpler way of initializing the class.
 		ModelParameters() = default;
 
-		double setGlobalIterator(size_t it_num);
+		// Signed is required as the value can be negative (findSingleBoundary in PhaseHelper)
+		double setGlobalIterator(int it_num);
 		double setGlobalIteratorExact(double newValue);
-		double setSecondIterator(size_t it_num);
+		double setSecondIterator(int it_num);
 		double setSecondIteratorExact(double newValue);
 		void incrementGlobalIterator();
 		void incrementSecondIterator();
