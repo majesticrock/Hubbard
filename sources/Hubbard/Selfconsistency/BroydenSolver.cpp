@@ -4,7 +4,7 @@
 namespace Hubbard::Selfconsistency {
 	ModelAttributes<double> BroydenSolver::computePhases(const PhaseDebuggingPolicy& debugPolicy)
 	{
-		procedureIterative(debugPolicy, _MaxPreBroydenIterations, std::numeric_limits<double>::epsilon());
+		procedureIterative(debugPolicy, _MaxPreBroydenIterations, 1e-15);
 
 		std::function<void(const ParameterVector&, ParameterVector&)> func = [&](const ParameterVector& x, ParameterVector& F) {
 			_model->iterationStep(x, F);

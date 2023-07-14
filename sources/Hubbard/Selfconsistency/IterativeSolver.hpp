@@ -44,7 +44,7 @@ namespace Hubbard::Selfconsistency {
 					return false;
 				}
 
-				error = f0.norm();
+				error = f0.squaredNorm();
 				std::copy(this->_attr->begin(), this->_attr->end(), x0.begin());
 
 				if (debugPolicy.printAll) {
