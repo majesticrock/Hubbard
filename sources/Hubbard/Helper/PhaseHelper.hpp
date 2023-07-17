@@ -18,8 +18,8 @@ namespace Hubbard::Helper {
 			*/
 			std::array<ModelAttributes<double>, 4> attributes;
 			PhaseHelper* parent{};
-			
-			double lowerFirst{}; 
+
+			double lowerFirst{};
 			double upperFirst{};
 			double lowerSecond{};
 			double upperSecond{};
@@ -74,7 +74,7 @@ namespace Hubbard::Helper {
 		int numberOfRanks{};
 		bool use_broyden{};
 		unsigned char _internal_lattice_type{};
-		
+
 		std::unique_ptr<BaseModel<double>> getModelType(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues = std::nullopt);
 
 		ModelAttributes<double> computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues = std::nullopt);

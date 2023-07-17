@@ -9,13 +9,16 @@ namespace Hubbard {
 	template <typename DataType>
 	class BaseModel
 	{
-	protected:
+	public:
 		using ParameterVector = Eigen::Vector<DataType, Eigen::Dynamic>;
 		using BaseAttributes = ModelAttributes<DataType>;
+		using HamiltonSolver = Eigen::SelfAdjointEigenSolver<SpinorMatrix>;
 	private:
 		inline void init()
 		{
 			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+
 			computeChemicalPotential();
 			this->parameterCoefficients = {
 				0.5 * this->U_OVER_N - 4. * this->V_OVER_N, // CDW
@@ -48,6 +51,8 @@ namespace Hubbard {
 		std::vector<double> parameterCoefficients;
 
 		SpinorMatrix hamilton;
+		SpinorMatrix rho;
+		HamiltonSolver hamilton_solver;
 
 		double temperature{};
 		double U{};
@@ -74,13 +79,14 @@ namespace Hubbard {
 				return ((energy > 0) ? 0 : 1);
 			}
 		};
-		inline void fillRho(SpinorMatrix& rho, const Eigen::SelfAdjointEigenSolver<SpinorMatrix>& solvedHamilton) const {
+		inline void fillRho() {
+			this->hamilton_solver.compute(this->hamilton);
 			rho.fill(0);
 			for (int i = 0; i < rho.rows(); i++)
 			{
-				rho(i, i) = 1 - fermi_dirac(solvedHamilton.eigenvalues()(i));
+				rho(i, i) = 1 - fermi_dirac(hamilton_solver.eigenvalues()(i));
 			}
-			rho = solvedHamilton.eigenvectors() * rho * solvedHamilton.eigenvectors().adjoint();
+			rho = hamilton_solver.eigenvectors() * rho * hamilton_solver.eigenvectors().adjoint();
 		};
 		inline void applyIteration(ParameterVector& F) {
 			this->multiplyParametersByCoefficients(F);

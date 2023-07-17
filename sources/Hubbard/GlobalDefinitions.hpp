@@ -59,5 +59,4 @@ namespace Hubbard {
 		r(6) = c(6).real(); // Gamma Occupation Up
 		r(7) = c(7).real(); // Gamma Occupation Down
 	};
-
 }

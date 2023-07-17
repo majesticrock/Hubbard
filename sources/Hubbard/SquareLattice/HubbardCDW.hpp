@@ -9,7 +9,7 @@ namespace Hubbard::SquareLattice {
 	protected:
 		virtual void fillHamiltonian(const NumericalMomentum<2>& k_values) override;
 
-		virtual void addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const NumericalMomentum<2>& k_values) override;
+		virtual void addToParameterSet(ParameterVector& F, const NumericalMomentum<2>& k_values) override;
 	public:
 		HubbardCDW(const ModelParameters& _params);
 

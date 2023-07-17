@@ -35,19 +35,15 @@ namespace Hubbard::ChainLattice
 			std::conditional_t<std::is_same_v<DataType, complex_prec>,
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
-			SpinorMatrix rho{ SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE) };
-			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-
-			std::copy(x.begin(), x.end(), this->model_attributes.selfconsistency_values.begin());
+			std::copy(x.begin(), x.end(), this->model_attributes.begin());
 
 			for (int k = -Constants::K_DISCRETIZATION; k < 0; ++k)
 			{
 				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
-				this->fillHamiltonian(NumericalMomentum{ k_x });
-				solver.compute(this->hamilton);
 
-				this->fillRho(rho, solver);
-				this->addToParameterSet(rho, complex_F, k_x);
+				this->fillHamiltonian(NumericalMomentum{ k_x });
+				this->fillRho();
+				this->addToParameterSet(complex_F, k_x);
 			}
 
 			if constexpr (!std::is_same_v<DataType, complex_prec>) {
@@ -65,15 +61,14 @@ namespace Hubbard::ChainLattice
 
 		inline virtual double entropyPerSite() override {
 			double entropy = 0;
-			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
 
 				this->fillHamiltonian(k_x);
-				solver.compute(this->hamilton, false);
+				this->hamilton_solver.compute(this->hamilton, false);
 
-				entropy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
+				entropy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), double{},
 					[this](double current, double toAdd) {
 						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
@@ -85,15 +80,15 @@ namespace Hubbard::ChainLattice
 
 		inline virtual double internalEnergyPerSite() override {
 			double energy = 0;
-			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
+
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
 
 				this->fillHamiltonian(k_x);
-				solver.compute(this->hamilton, false);
+				this->hamilton_solver.compute(this->hamilton, false);
 
-				energy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
+				energy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), double{},
 					[this](double current, double toAdd) {
 						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
 					});
@@ -102,9 +97,6 @@ namespace Hubbard::ChainLattice
 		};
 
 		inline void computeExpectationValues(std::vector<VectorCL>& expecs, std::vector<complex_prec>& sum_of_all) {
-			SpinorMatrix rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
-			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-
 			expecs = std::vector<VectorCL>(8, VectorCL::Zero(2 * Constants::K_DISCRETIZATION));
 			sum_of_all = std::vector<std::complex<double>>(8, 0.0);
 
@@ -112,32 +104,31 @@ namespace Hubbard::ChainLattice
 			{
 				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
 				this->fillHamiltonian(k_x);
-				solver.compute(this->hamilton);
-				this->fillRho(rho, solver);
+				this->fillRho();
 
 				// n_up
-				expecs[0](k + Constants::K_DISCRETIZATION) = 1 - rho(0, 0).real();
+				expecs[0](k + Constants::K_DISCRETIZATION) = 1 - this->rho(0, 0).real();
 				// g_up
-				expecs[1](k + Constants::K_DISCRETIZATION) = -rho(1, 0);
+				expecs[1](k + Constants::K_DISCRETIZATION) = -this->rho(1, 0);
 				// f
-				expecs[2](k + Constants::K_DISCRETIZATION) = -rho(0, 2);
+				expecs[2](k + Constants::K_DISCRETIZATION) = -this->rho(0, 2);
 				// eta
-				expecs[3](k + Constants::K_DISCRETIZATION) = -rho(0, 3);
+				expecs[3](k + Constants::K_DISCRETIZATION) = -this->rho(0, 3);
 				// n_down
-				expecs[4](k + Constants::K_DISCRETIZATION) = rho(2, 2).real();
+				expecs[4](k + Constants::K_DISCRETIZATION) = this->rho(2, 2).real();
 				// g_down
-				expecs[5](k + Constants::K_DISCRETIZATION) = rho(2, 3);
+				expecs[5](k + Constants::K_DISCRETIZATION) = this->rho(2, 3);
 				// n_up + n_down
-				expecs[6](k + Constants::K_DISCRETIZATION) = 1 - (rho(0, 0) - rho(2, 2)).real();
+				expecs[6](k + Constants::K_DISCRETIZATION) = 1 - (this->rho(0, 0) - this->rho(2, 2)).real();
 				// g_up + g_down
-				expecs[7](k + Constants::K_DISCRETIZATION) = rho(2, 3) - rho(1, 0);
+				expecs[7](k + Constants::K_DISCRETIZATION) = this->rho(2, 3) - this->rho(1, 0);
 				for (int idx = 0; idx < 8; idx++)
 				{
 					sum_of_all[idx] += expecs[idx](k + Constants::K_DISCRETIZATION);
 				}
 
-				if (std::abs(rho(3, 0)) > 1e-10) {
-					std::cerr << "Warning: <eta> does not vanish! " << rho(3, 0) << std::endl;
+				if (std::abs(this->rho(3, 0)) > 1e-10) {
+					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
 				}
 			}
 		};

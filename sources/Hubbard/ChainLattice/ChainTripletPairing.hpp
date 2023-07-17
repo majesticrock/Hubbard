@@ -6,11 +6,12 @@ namespace Hubbard::ChainLattice {
 		public Model1D<complex_prec>
 	{
 	private:
+		void init();
 	protected:
 
 		virtual void fillHamiltonian(const NumericalMomentum<1>& k_x) override;
 
-		virtual void addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const NumericalMomentum<1>& k_x) override;
+		virtual void addToParameterSet(ParameterVector& F, const NumericalMomentum<1>& k_x) override;
 	public:
 		explicit ChainTripletPairing(const ModelParameters& _params);
 

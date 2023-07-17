@@ -4,18 +4,18 @@
 namespace Hubbard {
 	class ModelParameters {
 	private:
-		std::string global_iterator_type{"N/A"};
+		std::string global_iterator_type{ "N/A" };
 		std::string second_iterator_type{"N/A"};
-		double global_step{-1};
-		double second_step{-1};
-		double global_it_min{-1};
-		double second_it_min{-1};
+		double global_step{ -1 };
+		double second_step{ -1 };
+		double global_it_min{ -1 };
+		double second_it_min{ -1 };
 
 		void incrementer(std::string& s, const double step);
 	public:
 		double temperature{-1};
-		double U{-1};
-		double V{-1};
+		double U{ -1 };
+		double V{ -1 };
 
 		ModelParameters(double _temperature, double _U, double _V, double global_step, double second_step,
 			std::string _global_iterator_type, std::string _second_iterator_type);

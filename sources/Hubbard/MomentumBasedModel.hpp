@@ -15,7 +15,7 @@ namespace Hubbard {
 	{
 	protected:
 		virtual void fillHamiltonian(const NumericalMomentum<Dimension>& k_values) = 0;
-		virtual void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, const NumericalMomentum<Dimension>& k_values) = 0;
+		virtual void addToParameterSet(ComplexParameterVector& F, const NumericalMomentum<Dimension>& k_values) = 0;
 	public:
 		MomentumBasedModel(const ModelParameters& _params)
 			: BaseModel<DataType>(_params) {};

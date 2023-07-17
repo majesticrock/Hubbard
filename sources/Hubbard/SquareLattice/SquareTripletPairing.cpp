@@ -4,6 +4,25 @@
 constexpr size_t NUMBER_OF_PARAMETERS = 18;
 
 namespace Hubbard::SquareLattice {
+	void SquareTripletPairing::init()
+	{
+		this->SPINOR_SIZE = 8;
+		hamilton = SpinorMatrix::Zero(8, 8);
+		rho = SpinorMatrix::Zero(8, 8);
+
+		model_attributes.push_back(this->tau_sc);
+		model_attributes.push_back(this->theta_sc);
+
+		parameterCoefficients.push_back(V_OVER_N); // Tau_sc
+		parameterCoefficients.push_back(V_OVER_N); // Theta_sc
+
+		for (size_t i = 0; i < 16; i++)
+		{
+			model_attributes[i] = 0;
+		}
+		model_attributes[16] = (I + 0.5) * V;
+		model_attributes[17] = (I + 0.5) * V;
+	}
 	void SquareTripletPairing::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{
 		hamilton.fill(0.0);
@@ -45,9 +64,9 @@ namespace Hubbard::SquareLattice {
 		hamilton.block<4, 4>(4, 0) = diagonalBlock.adjoint();
 	}
 
-	void SquareTripletPairing::addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const NumericalMomentum<2>& k_values)
+	void SquareTripletPairing::addToParameterSet(ParameterVector& F, const NumericalMomentum<2>& k_values)
 	{
-		HubbardCDW::addToParameterSet(rho, F, k_values);
+		HubbardCDW::addToParameterSet(F, k_values);
 
 		F(16) -= k_values.tau() * rho(6, 2);
 		F(17) -= theta(k_values[0], k_values[1]) * rho(6, 2);
@@ -56,21 +75,7 @@ namespace Hubbard::SquareLattice {
 	SquareTripletPairing::SquareTripletPairing(const ModelParameters& _params)
 		: HubbardCDW(_params)
 	{
-		SPINOR_SIZE = 8;
-		hamilton = SpinorMatrix::Zero(8, 8);
-
-		model_attributes.push_back(this->tau_sc);
-		model_attributes.push_back(this->theta_sc);
-
-		parameterCoefficients.push_back(V_OVER_N); // Tau_sc
-		parameterCoefficients.push_back(V_OVER_N); // Theta_sc
-
-		for (size_t i = 0; i < 16; i++)
-		{
-			model_attributes[i] = 0;
-		}
-		model_attributes[16] = (I + 0.5) * V;
-		model_attributes[17] = (I + 0.5) * V;
+		init();
 	}
 	ModelAttributes<double> SquareTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{

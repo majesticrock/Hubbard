@@ -78,22 +78,20 @@ int main(int argc, char** argv)
 
 		//------------------------------------------------------------//
 
-		Hubbard::SquareLattice::HubbardCDW model(mP);
-		//Hubbard::Constants::BASIS_SIZE = 2 * Hubbard::Constants::K_DISCRETIZATION;
-		//Hubbard::ChainLattice::TripletPairingIterative model(mP);
-		model.computePhases({false, true}).print();
-		std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
-
-		test_e = std::chrono::steady_clock::now();
-		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
-		std::cout << "\n\n" << std::endl;
+		//Hubbard::SquareLattice::HubbardCDW model(mP);
+		//model.computePhases({false, true}).print();
+		//std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
+		//
+		//test_e = std::chrono::steady_clock::now();
+		//std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
+		//std::cout << "\n\n" << std::endl;
 
 		//return _DEFAULT_EXIT;
 		//------------------------------------------------------------//
 
 		Hubbard::SquareLattice::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
-		model2.computePhases({false, true}).print();
+		model2.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
 
 		test_e = std::chrono::steady_clock::now();

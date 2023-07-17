@@ -24,20 +24,6 @@ namespace Hubbard {
 				DOS dos;
 				dos.computeValues();
 			}
-
-			this->U_OVER_N = 2 * this->U / (2 * Constants::BASIS_SIZE - 1);
-			this->V_OVER_N = 2 * this->V / (2 * Constants::BASIS_SIZE - 1);
-
-			this->parameterCoefficients = {
-				0.5 * this->U_OVER_N - 4. * this->V_OVER_N, // CDW
-				0.5 * this->U_OVER_N, // AFM
-				this->U_OVER_N, // SC
-				this->V_OVER_N, // Gamma SC
-				this->V_OVER_N, // Xi SC
-				this->U_OVER_N, // Eta
-				this->V_OVER_N, // Occupation Up
-				this->V_OVER_N, // Occupation Down
-			};
 		};
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
@@ -63,15 +49,15 @@ namespace Hubbard {
 			this->hamilton(3, 3) = eps;
 		};
 
-		void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, const double gamma, const double dos_value) {
-			F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real() * dos_value; // CDW
-			F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real() * dos_value; // AFM
-			F(2) -= (rho(0, 2) + rho(1, 3)) * dos_value; // SC
-			F(3) -= gamma * (rho(0, 2) - rho(1, 3)) * dos_value; // Gamma SC
+		void addToParameterSet(ComplexParameterVector& F, const double gamma, const double dos_value) {
+			F(0) -= (this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real() * dos_value; // CDW
+			F(1) -= (this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real() * dos_value; // AFM
+			F(2) -= (this->rho(0, 2) + this->rho(1, 3)) * dos_value; // SC
+			F(3) -= gamma * (this->rho(0, 2) - this->rho(1, 3)) * dos_value; // Gamma SC
 
-			F(5) -= (rho(0, 3) + rho(1, 2)) * dos_value; // Eta
-			F(6) -= gamma * (rho(0, 0) - rho(1, 1)).real() * dos_value; // Gamma Occupation Up
-			F(7) += gamma * (rho(2, 2) - rho(3, 3)).real() * dos_value; // Gamma Occupation Down
+			F(5) -= (this->rho(0, 3) + this->rho(1, 2)) * dos_value; // Eta
+			F(6) -= gamma * (this->rho(0, 0) - this->rho(1, 1)).real() * dos_value; // Gamma Occupation Up
+			F(7) += gamma * (this->rho(2, 2) - this->rho(3, 3)).real() * dos_value; // Gamma Occupation Down
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
@@ -79,19 +65,20 @@ namespace Hubbard {
 			std::conditional_t<std::is_same_v<DataType, complex_prec>,
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
-			SpinorMatrix rho{ SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE) };
-			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
+			std::copy(x.begin(), x.end(), this->model_attributes.begin());
 
-			std::copy(x.begin(), x.end(), this->model_attributes.selfconsistency_values.begin());
-
-			for (int k = -Constants::BASIS_SIZE + 1; k < Constants::BASIS_SIZE; ++k)
+			for (int k = 0; k < Constants::BASIS_SIZE; ++k)
 			{
 				double gamma = (0.5 + k) * DOS::step;
 				this->fillHamiltonian(gamma);
-				solver.compute(this->hamilton);
-				this->fillRho(rho, solver);
+				this->fillRho();
+				this->addToParameterSet(complex_F, gamma, DOS::values[k]);
 
-				this->addToParameterSet(rho, complex_F, gamma, DOS::values[std::abs(k)]);
+				// Same procedure for -gamma, the DOS is symmetrical about gamma = 0
+				gamma *= -1;
+				this->fillHamiltonian(gamma);
+				this->fillRho();
+				this->addToParameterSet(complex_F, gamma, DOS::values[k]);
 			}
 
 			if constexpr (!std::is_same_v<DataType, complex_prec>) {
@@ -116,37 +103,53 @@ namespace Hubbard {
 		inline virtual double entropyPerSite() override {
 			double entropy = 0;
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			for (int k = -Constants::BASIS_SIZE + 1; k < Constants::BASIS_SIZE; k++)
+			for (int k = 0; k < Constants::BASIS_SIZE; k++)
 			{
 				double gamma = (0.5 + k) * DOS::step;
 				this->fillHamiltonian(gamma);
 				solver.compute(this->hamilton, false);
-
 				entropy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
 					[this, k](double current, double toAdd) {
 						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
-						return (occ > 1e-12 ? current - occ * std::log(occ) : current) * DOS::values[std::abs(k)];
+						return (occ > 1e-12 ? current - occ * std::log(occ) : current) * DOS::values[k];
+					});
+
+				gamma *= -1;
+				this->fillHamiltonian(gamma);
+				solver.compute(this->hamilton, false);
+				entropy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
+					[this, k](double current, double toAdd) {
+						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
+						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
+						return (occ > 1e-12 ? current - occ * std::log(occ) : current) * DOS::values[k];
 					});
 			}
-			return 2 * entropy / (2 * Constants::BASIS_SIZE - 1);
+			return entropy / Constants::BASIS_SIZE;
 		};
 
 		inline virtual double internalEnergyPerSite() override {
 			double energy = 0;
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			for (int k = -Constants::BASIS_SIZE + 1; k < Constants::BASIS_SIZE; k++)
+			for (int k = 0; k < Constants::BASIS_SIZE; k++)
 			{
 				double gamma = (0.5 + k) * DOS::step;
 				this->fillHamiltonian(gamma);
 				solver.compute(this->hamilton, false);
+				energy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
+					[this, k](double current, double toAdd) {
+						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd) * DOS::values[std::abs(k)];
+					});
 
+				gamma *= -1;
+				this->fillHamiltonian(gamma);
+				solver.compute(this->hamilton, false);
 				energy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
 					[this, k](double current, double toAdd) {
 						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd) * DOS::values[std::abs(k)];
 					});
 			}
-			return 2 * energy / (2 * Constants::BASIS_SIZE - 1);
+			return energy / Constants::BASIS_SIZE;
 		};
 
 		virtual inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const double gamma) const {

@@ -41,7 +41,7 @@ namespace Hubbard::SquareLattice {
 		hamilton(3, 3) = eps;
 	}
 
-	void UsingBroyden::addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, const NumericalMomentum<2>& k_values)
+	void UsingBroyden::addToParameterSet(ComplexParameterVector& F, const NumericalMomentum<2>& k_values)
 	{
 		const double GAMMA = k_values.gamma();
 		const double XI = xi(k_values);

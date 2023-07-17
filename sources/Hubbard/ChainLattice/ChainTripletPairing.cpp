@@ -2,6 +2,22 @@
 #include "../Selfconsistency/IterativeSolver.hpp"
 
 namespace Hubbard::ChainLattice {
+	void ChainTripletPairing::init()
+	{
+		hamilton = SpinorMatrix::Zero(8, 8);
+		rho = SpinorMatrix::Zero(8, 8);
+
+		parameterCoefficients = {
+			0.5 * U_OVER_N - 2. * V_OVER_N, // CDW
+			0.5 * U_OVER_N, // AFM
+			U_OVER_N, // SC
+			2 * V_OVER_N, // Gamma SC
+			2 * V_OVER_N, // Tau SC
+			U_OVER_N, // Eta
+			2 * V_OVER_N, // Occupation Up
+			2 * V_OVER_N, // Occupation Down
+		};
+	}
 	void ChainTripletPairing::fillHamiltonian(const NumericalMomentum<1>& k_x)
 	{
 		hamilton.fill(0.0);
@@ -41,7 +57,7 @@ namespace Hubbard::ChainLattice {
 		hamilton.block<4, 4>(4, 0) = diagonalBlock.adjoint();
 	}
 
-	void ChainTripletPairing::addToParameterSet(const SpinorMatrix& rho, ParameterVector& F, const NumericalMomentum<1>& k_x)
+	void ChainTripletPairing::addToParameterSet(ParameterVector& F, const NumericalMomentum<1>& k_x)
 	{
 		F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
 		F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
@@ -56,19 +72,7 @@ namespace Hubbard::ChainLattice {
 	ChainTripletPairing::ChainTripletPairing(const ModelParameters& _params)
 		: Model1D(_params)
 	{
-		SPINOR_SIZE = 8;
-		hamilton = SpinorMatrix::Zero(8, 8);
-
-		parameterCoefficients = {
-			0.5 * U_OVER_N - 2. * V_OVER_N, // CDW
-			0.5 * U_OVER_N, // AFM
-			U_OVER_N, // SC
-			2 * V_OVER_N, // Gamma SC
-			2 * V_OVER_N, // Tau SC
-			U_OVER_N, // Eta
-			2 * V_OVER_N, // Occupation Up
-			2 * V_OVER_N, // Occupation Down
-		};
+		init();
 	}
 	ModelAttributes<double> ChainTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{

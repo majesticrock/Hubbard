@@ -10,7 +10,7 @@ namespace Hubbard::SquareLattice {
 	protected:
 		virtual void fillHamiltonian(const NumericalMomentum<2>& k_values) override;
 
-		virtual void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, const NumericalMomentum<2>& k_values) override;
+		virtual void addToParameterSet(ComplexParameterVector& F, const NumericalMomentum<2>& k_values) override;
 	public:
 		UsingBroyden(const ModelParameters& _params, size_t MaxPreBroydenIterations = 300U);
 		UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, size_t MaxPreBroydenIterations = 300U);
