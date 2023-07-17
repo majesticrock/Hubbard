@@ -9,17 +9,40 @@ namespace Hubbard {
 	template <typename DataType>
 	class BaseModel
 	{
+	protected:
+		using ParameterVector = Eigen::Vector<DataType, Eigen::Dynamic>;
+		using BaseAttributes = ModelAttributes<DataType>;
 	private:
 		inline void init()
 		{
 			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			computeChemicalPotential();
+			this->parameterCoefficients = {
+				0.5 * this->U_OVER_N - 4. * this->V_OVER_N, // CDW
+				0.5 * this->U_OVER_N, // AFM
+				this->U_OVER_N, // SC
+				this->V_OVER_N, // Gamma SC
+				this->V_OVER_N, // Xi SC
+				this->U_OVER_N, // Eta
+				this->V_OVER_N, // Occupation Up
+				this->V_OVER_N, // Occupation Down
+			};
+		};
+		inline void multiplyParametersByCoefficients(ParameterVector& F) const {
+			for (size_t i = 0U; i < F.size(); ++i)
+			{
+				F(i) *= parameterCoefficients[i];
+			}
+		};
+		inline void setParameters(ParameterVector& F) {
+			constexpr double new_weight = 0.5;
+			for (size_t i = 0U; i < F.size(); ++i)
+			{
+				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
+			}
 		};
 
 	protected:
-		using ParameterVector = Eigen::Vector<DataType, Eigen::Dynamic>;
-		using BaseAttributes = ModelAttributes<DataType>;
-
 		ModelAttributes<DataType> model_attributes;
 		// Stores the coefficients for the parameters (e.g. V/N) with the appropriate index
 		std::vector<double> parameterCoefficients;
@@ -59,20 +82,14 @@ namespace Hubbard {
 			}
 			rho = solvedHamilton.eigenvectors() * rho * solvedHamilton.eigenvectors().adjoint();
 		};
-		inline void multiplyParametersByCoefficients(ParameterVector& F) const {
-			for (size_t i = 0U; i < F.size(); ++i)
-			{
-				F(i) *= parameterCoefficients[i];
+		inline void applyIteration(ParameterVector& F) {
+			this->multiplyParametersByCoefficients(F);
+			// Numerical noise correction
+			for (auto& value : F) {
+				if (std::abs(value) < 1e-12) value = 0.;
 			}
-		};
-		inline void setParameters(ParameterVector& F) {
-			constexpr double new_weight = 0.5;
-			for (size_t i = 0U; i < F.size(); ++i)
-			{
-				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
-			}
-		};
-
+			this->setParameters(F);
+		}
 	public:
 		explicit BaseModel(const ModelParameters& params)
 			: model_attributes(params), temperature(params.temperature), U(params.U), V(params.V)

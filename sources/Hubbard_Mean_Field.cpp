@@ -4,7 +4,10 @@
 
 #include <omp.h>
 #ifndef _NO_MPI
+#define _DEFAULT_EXIT MPI_Finalize()
 #include <mpi.h>
+#else
+#define _DEFAULT_EXIT 0
 #endif
 
 #include <filesystem>
@@ -61,7 +64,7 @@ int main(int argc, char** argv)
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point test_e;
 		Hubbard::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
-		
+
 		//------------------------------------------------------------//
 
 		Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::Square> model3(mP);
@@ -71,28 +74,26 @@ int main(int argc, char** argv)
 
 		test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
-		return 0;
+		std::cout << "\n\n" << std::endl;
 
+		//------------------------------------------------------------//
 
 		Hubbard::SquareLattice::HubbardCDW model(mP);
 		//Hubbard::Constants::BASIS_SIZE = 2 * Hubbard::Constants::K_DISCRETIZATION;
 		//Hubbard::ChainLattice::TripletPairingIterative model(mP);
-		//model.computePhases({false, true}).print();
+		model.computePhases({false, true}).print();
 		std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 
 		test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 		std::cout << "\n\n" << std::endl;
 
-#ifndef _NO_MPI
-		//return MPI_Finalize();
-#else
-		//return 0;
-#endif // !_NO_MPI
+		//return _DEFAULT_EXIT;
+		//------------------------------------------------------------//
 
 		Hubbard::SquareLattice::UsingBroyden model2(mP);
 		test_b = std::chrono::steady_clock::now();
-		//model2.computePhases({false, true}).print();
+		model2.computePhases({false, true}).print();
 		std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
 
 		test_e = std::chrono::steady_clock::now();
@@ -289,9 +290,5 @@ int main(int argc, char** argv)
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 	}
-#ifndef _NO_MPI
-	return MPI_Finalize();
-#else
-	return 0;
-#endif
+	return _DEFAULT_EXIT;
 }

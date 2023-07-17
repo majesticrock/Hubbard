@@ -3,19 +3,17 @@
 #include <string>
 
 namespace Utility {
-	using namespace std;
+	InputFileReader::InputFileReader(std::string fileName) {
+		std::ifstream f;
 
-	InputFileReader::InputFileReader(string fileName) {
-		ifstream f;
+		f.open(fileName, std::ios::in);
 
-		f.open(fileName, ios::in);
-
-		string s;
-		while (getline(f, s)) {
+		std::string s;
+		while (std::getline(f, s)) {
 			if (s[0] == '#') continue;
 			size_t pos = s.find(" ");
-			string name = s.substr(0, pos);
-			string content = s.substr(pos + 1);
+			std::string name = s.substr(0, pos);
+			std::string content = s.substr(pos + 1);
 
 			if (content.back() == 13) {
 				content.erase(prev(content.end()));
@@ -27,10 +25,10 @@ namespace Utility {
 		}
 	}
 
-	int InputFileReader::find(string s) {
+	int InputFileReader::find(std::string s) {
 		int pos = -1;
 		bool done = false;
-		for (unsigned int i = 0; i < names.size() && !done; i++) {
+		for (unsigned int i = 0U; i < names.size() && !done; ++i) {
 			if (names[i] == s) {
 				pos = i;
 				done = true;
@@ -39,7 +37,7 @@ namespace Utility {
 		return pos;
 	}
 
-	bool InputFileReader::is(string name) {
+	bool InputFileReader::is(std::string name) {
 		int i = find(name);
 		if (i != -1) {
 			used[i] = true;
@@ -50,9 +48,9 @@ namespace Utility {
 		}
 	}
 
-	bool InputFileReader::getBool(string name) {
+	bool InputFileReader::getBool(std::string name) {
 		int i = find(name);
-		if (i == -1) abort();
+		if (i == -1) throw std::invalid_argument("Could not find parameter " + name);
 		used[i] = true;
 		if (contents[i] == "true") {
 			return true;
@@ -61,28 +59,24 @@ namespace Utility {
 			return false;
 		}
 		else {
-			cerr << "Parameter " << name << " not found in Inputfile" << endl;
-			abort();
+			throw std::invalid_argument("The Parameter " + name + " is not bool; " + contents[i]);
 		}
 	}
 
-	int InputFileReader::getInt(string name) {
+	int InputFileReader::getInt(std::string name) {
 		int i = find(name);
-		if (i == -1) abort();
+		if (i == -1) throw std::invalid_argument("Could not find parameter " + name);
 		used[i] = true;
 		return stoi(contents[i]);
 	}
 
-	vector<int> InputFileReader::getIntList(string name) {
+	std::vector<int> InputFileReader::getIntList(std::string name) {
 		int i = find(name);
-		if (i == -1) {
-			cerr << "Parameter " << name << " not found in Inputfile" << endl;
-			abort();
-		}
+		if (i == -1) throw std::invalid_argument("Could not find parameter " + name);
 		used[i] = true;
 
-		string s = contents[i];
-		vector<int> result;
+		std::string s = contents[i];
+		std::vector<int> result;
 		size_t pos = 0;
 		bool done = false;
 		while (!done) {
@@ -97,26 +91,20 @@ namespace Utility {
 		return result;
 	}
 
-	double InputFileReader::getDouble(string name) {
+	double InputFileReader::getDouble(std::string name) {
 		int i = find(name);
-		if (i == -1) {
-			cerr << "Parameter " << name << " not found in Inputfile" << endl;
-			abort();
-		}
+		if (i == -1) throw std::invalid_argument("Could not find parameter " + name);
 		used[i] = true;
 		return stod(contents[i]);
 	}
 
-	vector<double> InputFileReader::getDoubleList(string name) {
+	std::vector<double> InputFileReader::getDoubleList(std::string name) {
 		int i = find(name);
-		if (i == -1) {
-			cerr << "Parameter " << name << " not found in Inputfile" << endl;
-			abort();
-		}
+		if (i == -1) throw std::invalid_argument("Could not find parameter " + name);
 		used[i] = true;
 
-		string s = contents[i];
-		vector<double> result;
+		std::string s = contents[i];
+		std::vector<double> result;
 		size_t pos = 0;
 		bool done = false;
 		while (!done) {
@@ -131,37 +119,31 @@ namespace Utility {
 		return result;
 	}
 
-	string InputFileReader::getString(string name) {
+	std::string InputFileReader::getString(std::string name) {
 		int i = find(name);
-		if (i == -1) {
-			cerr << "Parameter " << name << " not found in Inputfile" << endl;
-			abort();
-		}
+		if (i == -1) throw std::invalid_argument("Could not find parameter " + name);
 		used[i] = true;
 
 		return contents[i];
 	}
 
-	vector<string> InputFileReader::getStringList(string name) {
+	std::vector<std::string> InputFileReader::getStringList(std::string name) {
 		int i = find(name);
-		if (i == -1) {
-			cerr << "Parameter " << name << " not found in Inputfile" << endl;
-			abort();
-		}
+		if (i == -1) throw std::invalid_argument("Could not find parameter " + name);
 		used[i] = true;
 
-		string s = contents[i];
-		vector<string> result;
+		std::string s = contents[i];
+		std::vector<std::string> result;
 		bool done = false;
 		while (!done) {
 			size_t pos2 = s.find(" ");
-			if (pos2 == string::npos) {
-				string content = s;
+			if (pos2 == std::string::npos) {
+				std::string content = s;
 				result.push_back(content);
 				done = true;
 			}
 			else {
-				string content = s.substr(0, pos2);
+				std::string content = s.substr(0, pos2);
 				s = s.substr(pos2 + 1);
 				result.push_back(content);
 			}
@@ -177,8 +159,8 @@ namespace Utility {
 		return result;
 	}
 
-	vector<string> InputFileReader::listNotUsed() {
-		vector<string> result;
+	std::vector<std::string> InputFileReader::listNotUsed() {
+		std::vector<std::string> result;
 		for (unsigned int i = 0; i < used.size(); i++) {
 			if (!used[i]) {
 				result.push_back(names[i]);

@@ -1,11 +1,13 @@
 #include "PhaseHelper.hpp"
 #include "../SquareLattice/HubbardCDW.hpp"
 #include "../SquareLattice/UsingBroyden.hpp"
+#include "../ChainLattice/ChainTripletPairing.hpp"
+#include "../DOSModels/BroydenDOS.hpp"
+
 #include "../Selfconsistency/BroydenSolver.hpp"
 #include "../Selfconsistency/IterativeSolver.hpp"
 #include "../Constants.hpp"
 #include <omp.h>
-
 
 namespace Hubbard::Helper {
 	using Constants::option_list;
@@ -117,8 +119,26 @@ namespace Hubbard::Helper {
 	}
 
 	PhaseHelper::PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks)
-		: rank(_rank), numberOfRanks(_nRanks)
+		: rank(_rank), numberOfRanks(_nRanks), use_broyden(input.getBool("use_broyden"))
 	{
+		std::string lattice_type = input.getString("lattice_type");
+		if (lattice_type == "chain") {
+			_internal_lattice_type = 1;
+		}
+		else if (lattice_type == "square") {
+			_internal_lattice_type = 2;
+		}
+		else if (lattice_type == "cube") {
+			_internal_lattice_type = 3;
+		}
+		else {
+			throw std::invalid_argument("Did not recognise lattice type: " + lattice_type);
+		}
+
+		if (input.getBool("use_DOS")) {
+			_internal_lattice_type += 128;
+		}
+
 		// Setup the parameters T, U, V
 		std::vector<double> model_params = input.getDoubleList("model_parameters");
 		// Setup the number of steps
@@ -139,7 +159,6 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		use_broyden = input.getBool("use_broyden");
 		SECOND_IT_STEPS = input.getInt("second_iterator_steps");
 		SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
 
@@ -154,46 +173,83 @@ namespace Hubbard::Helper {
 			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 	}
 
-	ModelAttributes<double> PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues /*= std::nullopt*/) {
+	std::unique_ptr<BaseModel<double>> PhaseHelper::getModelType(const ModelParameters& mp,
+		std::optional<ModelAttributes<double>> startingValues /*= std::nullopt*/)
+	{
+		if (!use_broyden) {
+			throw std::invalid_argument("Not using broyden's method but requiring real returns.");
+		}
 		if (startingValues.has_value()) {
-			if (use_broyden) {
-				SquareLattice::UsingBroyden model(mp, startingValues.value(), 10);
-				return model.computePhases();
+			switch (_internal_lattice_type) {
+			case 1:
+				throw std::runtime_error("1D Chain: To be implemented!");
+			case 2:
+				return std::make_unique<SquareLattice::UsingBroyden>(mp, startingValues.value(), 10);
+			case 3:
+				throw std::runtime_error("3D Cube: To be implemented!");
+
+			case 129:
+				throw std::runtime_error("1D Chain: To be implemented!");
+			case 130:
+				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::Square>>(mp, startingValues.value(), 10);
+			case 131:
+				throw std::runtime_error("3D Cube: To be implemented!");
+			default:
+				throw std::runtime_error("_internal_lattice_type not properly set " + std::to_string(_internal_lattice_type));
 			}
-			SquareLattice::HubbardCDW model(mp, startingValues.value());
-			return model.computePhases();
 		}
 		else {
-			if (use_broyden) {
-				SquareLattice::UsingBroyden model(mp);
-				ModelAttributes<double> result{model.computePhases()};
+			switch (_internal_lattice_type) {
+			case 1:
+				throw std::runtime_error("1D Chain: To be implemented!");
+			case 2:
+				return std::make_unique<SquareLattice::UsingBroyden>(mp);
+			case 3:
+				throw std::runtime_error("3D Cube: To be implemented!");
 
-				if(mp.U < 0 || mp.V < 0) return result;
-				// Remember: [0] returns the cdw and [1] the afm gap
-				if (std::abs(result[0]) > 1e-12 || std::abs(result[1]) > 1e-12) {
-					ModelAttributes<double> copy{ result };
-					if (std::abs(result[0]) > 1e-12) {
-						copy[1] = result[0];
-						copy[0] = 0;
-					}
-					else {
-						copy[0] = result[1];
-						copy[1] = 0;
-					}
+			case 129:
+				throw std::runtime_error("1D Chain: To be implemented!");
+			case 130:
+				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::Square>>(mp);
+			case 131:
+				throw std::runtime_error("3D Cube: To be implemented!");
+			default:
+				throw std::runtime_error("_internal_lattice_type not properly set " + std::to_string(_internal_lattice_type));
+			}
+		}
+	}
 
-					SquareLattice::UsingBroyden model_copy(mp, copy);
-					copy = model_copy.computePhases({false, false});
-					if (copy.converged) {
-						if (model_copy.freeEnergyPerSite() < model.freeEnergyPerSite()) {
-							return copy;
-						}
-					}
+	ModelAttributes<double> PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues /*= std::nullopt*/) {
+		if (startingValues.has_value()) {
+			return getModelType(mp, startingValues)->computePhases();
+		}
+		else {
+			auto model_ptr = getModelType(mp, startingValues);
+			ModelAttributes<double> result{model_ptr->computePhases()};
+
+			if (mp.U < 0 || mp.V < 0) return result;
+			// Remember: [0] returns the cdw and [1] the afm gap
+			if (std::abs(result[0]) > 1e-12 || std::abs(result[1]) > 1e-12) {
+				ModelAttributes<double> copy{ result };
+				if (std::abs(result[0]) > 1e-12) {
+					copy[1] = result[0];
+					copy[0] = 0;
+				}
+				else {
+					copy[0] = result[1];
+					copy[1] = 0;
 				}
 
-				return result;
+				auto model_copy_ptr = getModelType(mp, copy);
+				copy = model_copy_ptr->computePhases({ false, false });
+				if (copy.converged) {
+					if (model_copy_ptr->freeEnergyPerSite() < model_ptr->freeEnergyPerSite()) {
+						return copy;
+					}
+				}
 			}
-			SquareLattice::HubbardCDW model(mp);
-			return model.computePhases();
+
+			return result;
 		}
 	}
 
@@ -235,7 +291,7 @@ namespace Hubbard::Helper {
 					plaq(2, l) = origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j - 1];
 					plaq(3, l) = origin[l][rank_offset + (i - 1) * SECOND_IT_STEPS + j];
 				}
-				
+
 				if (!plaq.containsPhaseBoundary()) continue;
 
 				plaq.parent = this;

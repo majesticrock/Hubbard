@@ -2,6 +2,7 @@
 #include "../BaseModel.hpp"
 #include "../../../../FermionCommute/sources/Coefficient.hpp"
 #include "../DensityOfStates/Square.hpp"
+#include <algorithm>
 
 #define DELTA_CDW this->model_attributes[0]
 #define DELTA_AFM this->model_attributes[1]
@@ -11,7 +12,6 @@
 #define DELTA_ETA this->model_attributes[5]
 #define GAMMA_OCCUPATION_UP this->model_attributes[6]
 #define GAMMA_OCCUPATION_DOWN this->model_attributes[7]
-
 
 namespace Hubbard {
 	template <typename DataType, class DOS>
@@ -24,11 +24,25 @@ namespace Hubbard {
 				DOS dos;
 				dos.computeValues();
 			}
+
+			this->U_OVER_N = 2 * this->U / (2 * Constants::BASIS_SIZE - 1);
+			this->V_OVER_N = 2 * this->V / (2 * Constants::BASIS_SIZE - 1);
+
+			this->parameterCoefficients = {
+				0.5 * this->U_OVER_N - 4. * this->V_OVER_N, // CDW
+				0.5 * this->U_OVER_N, // AFM
+				this->U_OVER_N, // SC
+				this->V_OVER_N, // Gamma SC
+				this->V_OVER_N, // Xi SC
+				this->U_OVER_N, // Eta
+				this->V_OVER_N, // Occupation Up
+				this->V_OVER_N, // Occupation Down
+			};
 		};
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
-		void fillHamiltonian(const double gamma){
+		void fillHamiltonian(const double gamma) {
 			this->hamilton.fill(0.);
 
 			this->hamilton(0, 1) = DELTA_CDW - DELTA_AFM;;
@@ -49,15 +63,15 @@ namespace Hubbard {
 			this->hamilton(3, 3) = eps;
 		};
 
-		void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, const double gamma, const size_t gamma_index){
-			F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real() * DOS::values[gamma_index]; // CDW
-			F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real() * DOS::values[gamma_index]; // AFM
-			F(2) -= (rho(0, 2) + rho(1, 3)) * DOS::values[gamma_index]; // SC
-			F(3) -= gamma * (rho(0, 2) - rho(1, 3)) * DOS::values[gamma_index]; // Gamma SC
+		void addToParameterSet(const SpinorMatrix& rho, ComplexParameterVector& F, const double gamma, const double dos_value) {
+			F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real() * dos_value; // CDW
+			F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real() * dos_value; // AFM
+			F(2) -= (rho(0, 2) + rho(1, 3)) * dos_value; // SC
+			F(3) -= gamma * (rho(0, 2) - rho(1, 3)) * dos_value; // Gamma SC
 
-			F(5) -= (rho(0, 3) + rho(1, 2)) * DOS::values[gamma_index]; // Eta
-			F(6) -= gamma * (rho(0, 0) - rho(1, 1)).real() * DOS::values[gamma_index]; // Gamma Occupation Up
-			F(7) += gamma * (rho(2, 2) - rho(3, 3)).real() * DOS::values[gamma_index]; // Gamma Occupation Down
+			F(5) -= (rho(0, 3) + rho(1, 2)) * dos_value; // Eta
+			F(6) -= gamma * (rho(0, 0) - rho(1, 1)).real() * dos_value; // Gamma Occupation Up
+			F(7) += gamma * (rho(2, 2) - rho(3, 3)).real() * dos_value; // Gamma Occupation Down
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
@@ -65,13 +79,10 @@ namespace Hubbard {
 			std::conditional_t<std::is_same_v<DataType, complex_prec>,
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
-			SpinorMatrix rho { SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE) };
+			SpinorMatrix rho{ SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE) };
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
-			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
-			{
-				this->model_attributes[i] = x(i);
-			}
+			std::copy(x.begin(), x.end(), this->model_attributes.selfconsistency_values.begin());
 
 			for (int k = -Constants::BASIS_SIZE + 1; k < Constants::BASIS_SIZE; ++k)
 			{
@@ -80,24 +91,24 @@ namespace Hubbard {
 				solver.compute(this->hamilton);
 				this->fillRho(rho, solver);
 
-				this->addToParameterSet(rho, complex_F, gamma, std::abs(k));
+				this->addToParameterSet(rho, complex_F, gamma, DOS::values[std::abs(k)]);
 			}
 
 			if constexpr (!std::is_same_v<DataType, complex_prec>) {
 				complexParametersToReal(complex_F, F);
 			}
-			this->setParameters(F);
+			this->applyIteration(F);
 			F -= x;
 		};
 	public:
-		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params) 
-		{ 
+		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params)
+		{
 			init();
 		};
 
 		template<typename StartingValuesDataType>
 		DOSBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
-			: BaseModel<DataType>(_params, startingValues) 
+			: BaseModel<DataType>(_params, startingValues)
 		{
 			init();
 		};
@@ -105,35 +116,37 @@ namespace Hubbard {
 		inline virtual double entropyPerSite() override {
 			double entropy = 0;
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			for (int k = -Constants::BASIS_SIZE; k < Constants::BASIS_SIZE; k++)
+			for (int k = -Constants::BASIS_SIZE + 1; k < Constants::BASIS_SIZE; k++)
 			{
-				this->fillHamiltonian(k * DOS::step);
+				double gamma = (0.5 + k) * DOS::step;
+				this->fillHamiltonian(gamma);
 				solver.compute(this->hamilton, false);
 
 				entropy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
-					[this](double current, double toAdd) {
+					[this, k](double current, double toAdd) {
 						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
-						return (occ > 1e-12 ? current - occ * std::log(occ) : current);
+						return (occ > 1e-12 ? current - occ * std::log(occ) : current) * DOS::values[std::abs(k)];
 					});
 			}
-			return entropy / (Constants::BASIS_SIZE * 2);
+			return 2 * entropy / (2 * Constants::BASIS_SIZE - 1);
 		};
 
 		inline virtual double internalEnergyPerSite() override {
 			double energy = 0;
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			for (int k = -Constants::BASIS_SIZE; k < Constants::BASIS_SIZE; k++)
+			for (int k = -Constants::BASIS_SIZE + 1; k < Constants::BASIS_SIZE; k++)
 			{
-				this->fillHamiltonian(k);
+				double gamma = (0.5 + k) * DOS::step;
+				this->fillHamiltonian(gamma);
 				solver.compute(this->hamilton, false);
 
 				energy += std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
-					[this](double current, double toAdd) {
-						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
+					[this, k](double current, double toAdd) {
+						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd) * DOS::values[std::abs(k)];
 					});
 			}
-			return energy / (Constants::BASIS_SIZE * 2);
+			return 2 * energy / (2 * Constants::BASIS_SIZE - 1);
 		};
 
 		virtual inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const double gamma) const {

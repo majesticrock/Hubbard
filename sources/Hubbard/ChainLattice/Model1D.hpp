@@ -53,7 +53,7 @@ namespace Hubbard::ChainLattice
 			if constexpr (!std::is_same_v<DataType, complex_prec>) {
 				complexParametersToReal(complex_F, F);
 			}
-			this->setParameters(F);
+			this->applyIteration(F);
 			F -= x;
 		};
 	public:

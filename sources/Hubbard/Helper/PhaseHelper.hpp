@@ -1,8 +1,10 @@
 #pragma once
 #include <optional>
 #include <array>
+#include <cassert>
+#include <memory>
 #include "../../Utility/InputFileReader.hpp"
-#include "../SquareLattice/Model2D.hpp"
+#include "../BaseModel.hpp"
 
 namespace Hubbard::Helper {
 	typedef std::vector<double> data_vector;
@@ -71,7 +73,10 @@ namespace Hubbard::Helper {
 		int rank{};
 		int numberOfRanks{};
 		bool use_broyden{};
+		unsigned char _internal_lattice_type{};
 		
+		std::unique_ptr<BaseModel<double>> getModelType(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues = std::nullopt);
+
 		ModelAttributes<double> computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues = std::nullopt);
 	public:
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);

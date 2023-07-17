@@ -22,19 +22,6 @@ namespace Hubbard::SquareLattice
 	template <typename DataType>
 	class Model2D : public MomentumBasedModel<DataType, 2>
 	{
-	private:
-		void init() {
-			this->parameterCoefficients = {
-				0.5 * this->U_OVER_N - 4. * this->V_OVER_N, // CDW
-				0.5 * this->U_OVER_N, // AFM
-				this->U_OVER_N, // SC
-				this->V_OVER_N, // Gamma SC
-				this->V_OVER_N, // Xi SC
-				this->U_OVER_N, // Eta
-				this->V_OVER_N, // Occupation Up
-				this->V_OVER_N, // Occupation Down
-			};
-		};
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
@@ -83,27 +70,19 @@ namespace Hubbard::SquareLattice
 			if constexpr (!std::is_same_v<DataType, complex_prec>) {
 				complexParametersToReal(complex_F, F);
 			}
-			this->multiplyParametersByCoefficients(F);
-			for (auto& value : F) {
-				if (std::abs(value) < 1e-12) value = 0.;
-			}
-			this->setParameters(F);
+			this->applyIteration(F);
 
 			F -= x;
 		};
 	public:
 		Model2D(const ModelParameters& _params)
 			: MomentumBasedModel<DataType, 2>(_params)
-		{
-			this->init();
-		};
+		{ };
 
 		template<typename StartingValuesDataType>
 		Model2D(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
 			: MomentumBasedModel<DataType, 2>(_params, startingValues)
-		{
-			this->init();
-		};
+		{ };
 
 		// saves all one particle energies to reciever
 		inline void getAllEnergies(std::vector<std::vector<double>>& reciever)

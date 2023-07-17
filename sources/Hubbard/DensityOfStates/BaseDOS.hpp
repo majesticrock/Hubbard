@@ -8,7 +8,8 @@ namespace Hubbard::DensityOfStates {
 		static std::vector<double> values;
 		static double step;
 		static bool computed;
-		
+		static void printValues();
+
 		virtual void computeValues() = 0;
 		virtual ~BaseDOS() = default;
 	};
