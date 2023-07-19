@@ -75,10 +75,7 @@ int main(int argc, char** argv)
 		
 		Hubbard::DensityOfStates::SimpleCubic sc_dos;
 		sc_dos.computeValues();
-		//for (const auto& v : sc_dos.values) {
-		//	std::cout << v << " ";
-		//}
-		//std::cout << std::endl << std::endl;
+		Utility::saveData(sc_dos.values, "../../data/3d_dos.dat.gz");
 
 		test_e = std::chrono::steady_clock::now();
 		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
