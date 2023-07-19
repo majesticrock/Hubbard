@@ -3,6 +3,7 @@
 
 namespace Hubbard::DensityOfStates {
 	class SimpleCubic : public BaseDOS {
+	public:
 		virtual void computeValues() override;
 	};
 }
