@@ -10,7 +10,7 @@ LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -
 
 WARNINGS = -Wall -Wno-sign-compare
 
-OPT = -march=native -O3
+OPT = -march=native -O3# -ffast-math
 
 COMMUTE_SRCS=Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickTerm.cpp WickCleaner.cpp
 

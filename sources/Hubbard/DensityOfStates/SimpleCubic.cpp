@@ -2,6 +2,7 @@
 #include "SimpleCubic.hpp"
 #include "../Constants.hpp"
 #include "../../Utility/MidpointRule.hpp"
+#include <omp.h>
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -11,7 +12,7 @@
 namespace Hubbard::DensityOfStates {
 	void SimpleCubic::computeValues()
 	{
-		constexpr size_t MID_POINT_STEP_NUM = 10000;
+		const int MID_POINT_STEP_NUM = Constants::BASIS_SIZE;
 		/*
 		*  Algorithm, remember, we have t = 0.5
 		*/
@@ -19,17 +20,18 @@ namespace Hubbard::DensityOfStates {
 		values.resize(Constants::BASIS_SIZE);
 
 		auto integrand = [](const double phi, const double gamma) -> double {
-			const double pass_to_rho_2D = gamma + phi;
-			return boost::math::ellint_1(sqrt(1. - (pass_to_rho_2D * pass_to_rho_2D / 4.))) / sqrt(1 - phi * phi);
+			return boost::math::ellint_1(sqrt(1. - ((gamma + phi) * (gamma + phi) / 4.))) / sqrt(1 - phi * phi);
 		};
 
+#pragma omp parallel for num_threads(8)
 		for (int g = 0; g < Constants::BASIS_SIZE; ++g)
 		{
-			const double gamma = (0.5 + g) * step;
-			const double lower_bound = std::max(-1., -2. - gamma);
+			const double gamma = (g + 0.5) * step;
+			const double lower_bound = -1;// std::max(-1., -2. - gamma);
 			const double upper_bound = std::min(1., 2. - gamma);
-			// We extractet 1/pi^2 from the 2D DOS for computational benefit
-			values[g] = boost::math::pow<3>(M_1_PI) * Utility::NumericalSolver::Integration::midpoint_rule(integrand, lower_bound, upper_bound, MID_POINT_STEP_NUM, gamma);
+			// We extracted 1/pi^2 from the 2D DOS for computational benefit
+			values[g] = boost::math::pow<3>(M_1_PI) 
+				* Utility::NumericalSolver::Integration::midpoint_rule(integrand, lower_bound, upper_bound, MID_POINT_STEP_NUM, gamma);
 		}
 		computed = true;
 
