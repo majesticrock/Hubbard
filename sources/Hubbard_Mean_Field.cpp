@@ -15,11 +15,10 @@
 #include "Hubbard/Helper/PhaseHelper.hpp"
 #include "Hubbard/Helper/XPModes.hpp"
 #include "Hubbard/SquareLattice/SquareTripletPairing.hpp"
+#include "Hubbard/DOSModels/DOSBasedModel.hpp"
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
-
-#include "Utility/MidpointRule.hpp"
 
 using Hubbard::Helper::data_vector;
 
@@ -70,42 +69,31 @@ int main(int argc, char** argv)
 
 		//------------------------------------------------------------//
 
-		//Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::Square> model3(mP);
-		//test_b = std::chrono::steady_clock::now();
-		//model3.computePhases({ true, true }).print();
-		//std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
-		const std::vector<int> ranges = {
-			100, 200, 500, 1000,
-			2000, 5000, 10000,
-			20000, 50000, 100000
-		};
-
-		for (auto range : ranges) {
-			Hubbard::Constants::BASIS_SIZE = range;
+		if (input.getString("lattice_type") == "square") {
+			Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::Square> model3(mP);
 			test_b = std::chrono::steady_clock::now();
-
-			auto c = [](double k) {
-				return cos(k);
-			};
-			std::vector<double> v(range);
-#pragma omp parallel for num_threads(8)
-			for (size_t i = 0U; i < range; ++i)
-			{
-				for (size_t j = 0U; j < range; ++j)
-				{
-					v[i] += c(j);
-				}
-				// Utility::NumericalSolver::Integration::midpoint_rule(c, -3., 2., range);
-			}
-
-			//Hubbard::DensityOfStates::SimpleCubic sc_dos;
-			//sc_dos.computeValues();
-			////Utility::saveData(sc_dos.values, "../../data/3d_dos.dat.gz");
-
-			test_e = std::chrono::steady_clock::now();
-			std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
-			std::cout << "\n\n" << std::endl;
+			model3.computePhases({ false, true }).print();
+			std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 		}
+		else if (input.getString("lattice_type") == "cube") {
+			Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::SimpleCubic> model3(mP);
+			test_b = std::chrono::steady_clock::now();
+			model3.computePhases({ false, true }).print();
+			std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
+		}
+
+		//test_b = std::chrono::steady_clock::now();
+		//Hubbard::DensityOfStates::SimpleCubic sc_dos;
+		//sc_dos.computeValues();
+		//Utility::saveData(sc_dos.values, "../../data/3d_dos.dat.gz");
+		//Hubbard::DensityOfStates::Square square_dos;
+		//square_dos.computeValues();
+		//Utility::saveData(square_dos.values, "../../data/2d_dos.dat.gz");
+
+		test_e = std::chrono::steady_clock::now();
+		std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
+		std::cout << "\n\n" << std::endl;
+
 		return _DEFAULT_EXIT;
 		//------------------------------------------------------------//
 
@@ -226,11 +214,11 @@ int main(int argc, char** argv)
 					{
 						displacements[j] = displacements[j - 1] + all_sizes[i][j - 1];
 					}
-			}
+				}
 
 				recieve_boundaries[i].resize(totalSizes[i]);
 				MPI_Gatherv(local[i].data(), sizes[i], MPI_DOUBLE, recieve_boundaries[i].data(), all_sizes[i].data(), displacements.data(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
-		}
+			}
 #endif
 			if (rank == 0) {
 				std::vector<std::string> comments;
@@ -260,8 +248,6 @@ int main(int argc, char** argv)
 		}
 	}
 	else if (input.getString("compute_what") == "modes") {
-		omp_set_num_threads(8);
-
 		std::vector<data_vector> reciever;
 		std::vector<data_vector> oneParticleEnergies;
 		double totalGapValue;

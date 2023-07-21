@@ -3,6 +3,8 @@
 #include "../SquareLattice/UsingBroyden.hpp"
 #include "../ChainLattice/ChainTripletPairing.hpp"
 #include "../DOSModels/BroydenDOS.hpp"
+#include "../DensityOfStates/Square.hpp"
+#include "../DensityOfStates/SimpleCubic.hpp"
 
 #include "../Selfconsistency/BroydenSolver.hpp"
 #include "../Selfconsistency/IterativeSolver.hpp"
@@ -193,7 +195,7 @@ namespace Hubbard::Helper {
 			case 130:
 				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::Square>>(mp, startingValues.value(), 10);
 			case 131:
-				throw std::runtime_error("3D Cube: To be implemented!");
+				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::SimpleCubic>>(mp, startingValues.value(), 10);
 			default:
 				throw std::runtime_error("_internal_lattice_type not properly set " + std::to_string(_internal_lattice_type));
 			}
@@ -212,7 +214,7 @@ namespace Hubbard::Helper {
 			case 130:
 				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::Square>>(mp);
 			case 131:
-				throw std::runtime_error("3D Cube: To be implemented!");
+				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::SimpleCubic>>(mp);
 			default:
 				throw std::runtime_error("_internal_lattice_type not properly set " + std::to_string(_internal_lattice_type));
 			}
@@ -257,7 +259,7 @@ namespace Hubbard::Helper {
 		size_t NUMBER_OF_GAP_VALUES = data_mapper.size();
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
 		{
-#pragma omp parallel for num_threads(4) schedule(dynamic)
+#pragma omp parallel for schedule(dynamic)
 			for (int U = 0; U < SECOND_IT_STEPS; U++)
 			{
 				ModelParameters local{ modelParameters };
@@ -308,10 +310,10 @@ namespace Hubbard::Helper {
 			std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
 			const auto N_PLAQUETTES = plaqs.size();
 
-			constexpr int n_omp_threads = 8;
+			const int n_omp_threads = omp_get_num_threads();
 			std::vector<std::vector<Plaquette>> buffer(n_omp_threads);
 			// omp wants a signed type, so it shall get one
-#pragma omp parallel for num_threads(n_omp_threads)
+#pragma omp parallel for
 			for (int i = 0; i < N_PLAQUETTES; i++)
 			{
 				plaqs[i].devidePlaquette(buffer[omp_get_thread_num()]);

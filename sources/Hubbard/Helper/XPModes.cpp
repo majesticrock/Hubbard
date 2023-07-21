@@ -212,7 +212,6 @@ namespace Hubbard::Helper {
 		Matrix_L solver_matrix;
 		Eigen::SelfAdjointEigenSolver<Matrix_L> k_solver[2];
 
-		omp_set_num_threads(8);
 		omp_set_nested(1);
 		Eigen::initParallel();
 

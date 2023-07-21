@@ -15,6 +15,7 @@ namespace Hubbard::DensityOfStates {
 			values[g] = (M_1_PI * M_1_PI)
 				* boost::math::ellint_1(sqrt(1. - (gamma * gamma / 4.)));
 		}
+		renormalize();
 		computed = true;
 	}
 }

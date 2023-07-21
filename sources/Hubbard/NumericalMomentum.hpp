@@ -2,7 +2,7 @@
 #include <numeric>
 
 namespace Hubbard {
-	template<size_t Dimension>
+	template<unsigned int Dimension>
 	struct NumericalMomentum {
 		double momenta[Dimension];
 
@@ -20,11 +20,11 @@ namespace Hubbard {
 			return -2. * gamma();
 		};
 
-		inline double& operator[](size_t index) {
+		inline double& operator[](unsigned int index) {
 			assert(index < Dimension);
 			return momenta[index];
 		};
-		inline const double& operator[](size_t index) const {
+		inline const double& operator[](unsigned int index) const {
 			assert(index < Dimension);
 			return momenta[index];
 		};

@@ -1,8 +1,9 @@
 #pragma once
 #include "../BaseModel.hpp"
 #include "../../../../FermionCommute/sources/Coefficient.hpp"
-#include "../DensityOfStates/Square.hpp"
+#include "../DensityOfStates/BaseDOS.hpp"
 #include <algorithm>
+#include <mutex>
 
 #define DELTA_CDW this->model_attributes[0]
 #define DELTA_AFM this->model_attributes[1]
@@ -18,11 +19,17 @@ namespace Hubbard {
 	class DOSBasedModel : public BaseModel<DataType>
 	{
 	private:
+		static std::mutex dos_mutex;
 		void init() {
 			this->model_attributes[4] = 0.;
+			
 			if (!DOS::computed) {
-				DOS dos;
-				dos.computeValues();
+				std::lock_guard<std::mutex> guard(dos_mutex);
+				// Might have been changed by another thread
+				if (!DOS::computed) {
+					DOS dos;
+					dos.computeValues();
+				}
 			}
 		};
 	protected:
@@ -165,4 +172,7 @@ namespace Hubbard {
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
 	};
+
+	template <typename DataType, class DOS>
+	std::mutex DOSBasedModel<DataType, DOS>::dos_mutex;
 }
