@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 		std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 		std::chrono::steady_clock::time_point test_e;
 		Hubbard::ModelParameters mP(model_params[0], model_params[1], model_params[2], 0, 0, "", "");
-
+		
 		//------------------------------------------------------------//
 
 		if (input.getString("lattice_type") == "square") {
@@ -121,12 +121,11 @@ int main(int argc, char** argv)
 		int GLOBAL_IT_STEPS = input.getInt("global_iterator_steps");
 		int FIRST_IT_STEPS = GLOBAL_IT_STEPS / numberOfRanks;
 		double GLOBAL_IT_LIMS[2] = { 0, input.getDouble("global_iterator_upper_limit") };
-		std::vector<std::string> option_list = { "T", "U", "V" };
 		double FIRST_IT_RANGE = 0;
 		double FIRST_IT_MIN = 0;
-		for (int i = 0; i < option_list.size(); i++)
+		for (int i = 0; i < Hubbard::Constants::option_list.size(); i++)
 		{
-			if (input.getString("global_iterator_type") == option_list[i]) {
+			if (input.getString("global_iterator_type") == Hubbard::Constants::option_list[i]) {
 				GLOBAL_IT_LIMS[0] = model_params[i];
 				FIRST_IT_RANGE = (GLOBAL_IT_LIMS[1] - GLOBAL_IT_LIMS[0]) / numberOfRanks;
 				FIRST_IT_MIN = GLOBAL_IT_LIMS[0] + rank * FIRST_IT_RANGE;
@@ -137,9 +136,9 @@ int main(int argc, char** argv)
 		int SECOND_IT_STEPS = input.getInt("second_iterator_steps");
 		double SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
 
-		for (int i = 0; i < option_list.size(); i++)
+		for (int i = 0; i < Hubbard::Constants::option_list.size(); i++)
 		{
-			if (input.getString("second_iterator_type") == option_list[i]) {
+			if (input.getString("second_iterator_type") == Hubbard::Constants::option_list[i]) {
 				SECOND_IT_MIN = model_params[i];
 			}
 		}

@@ -6,6 +6,7 @@
 #include <boost/math/special_functions/ellint_1.hpp>
 #include <boost/math/special_functions/pow.hpp>
 #include <boost/math/quadrature/tanh_sinh.hpp>
+#include <boost/math/quadrature/gauss.hpp>
 
 namespace Hubbard::DensityOfStates {
 	// Computes sqrt(1 - x^2)
@@ -16,8 +17,13 @@ namespace Hubbard::DensityOfStates {
 
 	void SimpleCubic::computeValues()
 	{
+		constexpr size_t num_positions = 30U;
+		const auto& abcissa = boost::math::quadrature::gauss<double, num_positions>::abscissa();
+
 		step = 3. / Constants::BASIS_SIZE;
-		values.resize(Constants::BASIS_SIZE);
+		values.reserve(2 * Constants::BASIS_SIZE - 1);
+		values.resize(Constants::BASIS_SIZE + 1);
+		values.back() = 0.0;
 		/*
 		*  Algorithm, remember, we have t = 0.5
 		*/
@@ -27,11 +33,11 @@ namespace Hubbard::DensityOfStates {
 #pragma omp parallel for
 		for (int g = 0; g < Constants::BASIS_SIZE; ++g)
 		{
-			const double gamma = (g + 0.5) * step;
+			const double gamma = (g)*step;
 			constexpr double lower_bound = -1;// std::max(-1., -2. - gamma);
-			const double upper_bound = std::min(1.L, 2.L - gamma);
+			const double upper_bound = std::min(1., 2. - gamma);
 
-			auto boost_integrand = [gamma](double phi) -> double {
+			auto boost_integrand = [gamma](long double phi) -> double {
 				return boost::math::ellint_1(sqrt_1_minus_x_squared((gamma + phi) / 2.L)) / sqrt_1_minus_x_squared(phi);
 			};
 
@@ -46,6 +52,7 @@ namespace Hubbard::DensityOfStates {
 					* integrator.integrate(boost_integrand, lower_bound, upper_bound);
 			}
 		}
+		symmetrizeVector<true>(values);
 		computed = true;
 	}
 }

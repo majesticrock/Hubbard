@@ -26,7 +26,7 @@ namespace Hubbard::Selfconsistency {
 
 		if (debugPolicy.printAll) {
 			ParameterVector f0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
-			func(x0, f0);
+			_model->iterationStep(x0, f0);
 			std::cout << _model->parametersAsTriplet() << "\n";
 			std::cout << "x0 = (";
 			for (const auto& x : x0)
