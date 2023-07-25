@@ -32,6 +32,7 @@ namespace Hubbard {
 				std::lock_guard<std::mutex> guard(dos_mutex);
 				// Might have been changed by another thread
 				if (!DOS::computed) {
+					gammaLoopUpperBoundary = DOSBasedModel<DataType, DOS>::DOS_IS_SQUARE ? Constants::BASIS_SIZE : Constants::BASIS_SIZE + 1;
 					DOS dos;
 					dos.computeValues();
 					std::cout << "1 - DOS-Norm = " << std::scientific << 1. - dos.getNorm() << std::endl;
@@ -63,15 +64,14 @@ namespace Hubbard {
 		};
 
 		void addToParameterSet(ComplexParameterVector& F, const double gamma, const double dos_value) {
-			F(0) -= (this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real(); // CDW
-			F(1) -= (this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real(); // AFM
-			F(2) -= (this->rho(0, 2) + this->rho(1, 3)); // SC
-			F(3) -= gamma * (this->rho(0, 2) - this->rho(1, 3)); // Gamma SC
+			F(0) -= (this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real() * dos_value; // CDW
+			F(1) -= (this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real() * dos_value; // AFM
+			F(2) -= (this->rho(0, 2) + this->rho(1, 3)) * dos_value; // SC
+			F(3) -= gamma * (this->rho(0, 2) - this->rho(1, 3)) * dos_value; // Gamma SC
 
-			F(5) -= (this->rho(0, 3) + this->rho(1, 2)); // Eta
-			F(6) -= gamma * (this->rho(0, 0) - this->rho(1, 1)).real(); // Gamma Occupation Up
-			F(7) += gamma * (this->rho(2, 2) - this->rho(3, 3)).real(); // Gamma Occupation Down
-			F *= dos_value;
+			F(5) -= (this->rho(0, 3) + this->rho(1, 2)) * dos_value; // Eta
+			F(6) -= gamma * (this->rho(0, 0) - this->rho(1, 1)).real() * dos_value; // Gamma Occupation Up
+			F(7) += gamma * (this->rho(2, 2) - this->rho(3, 3)).real() * dos_value; // Gamma Occupation Down
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
@@ -169,5 +169,5 @@ namespace Hubbard {
 	std::mutex DOSBasedModel<DataType, DOS>::dos_mutex;
 
 	template <typename DataType, class DOS>
-	int DOSBasedModel<DataType, DOS>::gammaLoopUpperBoundary = DOSBasedModel<DataType, DOS>::DOS_IS_SQUARE ? Constants::BASIS_SIZE : Constants::BASIS_SIZE + 1;
+	int DOSBasedModel<DataType, DOS>::gammaLoopUpperBoundary = 0;
 }

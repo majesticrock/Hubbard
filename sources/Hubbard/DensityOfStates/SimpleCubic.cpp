@@ -6,7 +6,6 @@
 #include <boost/math/special_functions/ellint_1.hpp>
 #include <boost/math/special_functions/pow.hpp>
 #include <boost/math/quadrature/tanh_sinh.hpp>
-#include <boost/math/quadrature/gauss.hpp>
 
 namespace Hubbard::DensityOfStates {
 	// Computes sqrt(1 - x^2)
@@ -17,9 +16,6 @@ namespace Hubbard::DensityOfStates {
 
 	void SimpleCubic::computeValues()
 	{
-		constexpr size_t num_positions = 30U;
-		const auto& abcissa = boost::math::quadrature::gauss<double, num_positions>::abscissa();
-
 		step = 3. / Constants::BASIS_SIZE;
 		values.reserve(2 * Constants::BASIS_SIZE - 1);
 		values.resize(Constants::BASIS_SIZE + 1);
