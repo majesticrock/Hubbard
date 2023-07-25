@@ -25,20 +25,21 @@ namespace Hubbard::DensityOfStates {
 	}
 	double BaseDOS::getNorm()
 	{
-		//constexpr size_t num_positions = 30U;
-		//auto proc = [](double k) {
-		//	for (size_t i = 0U; i < num_positions; ++i)
-		//	{
-		//		if (boost::math::quadrature::gauss<double, num_positions>::abscissa()[i] == k
-		//			|| boost::math::quadrature::gauss<double, num_positions>::abscissa()[i] == -k) {
-		//			return values[i];
-		//		}
-		//	}
-		//	throw std::runtime_error("Did not find k within the abscissa!");
-		//};
-		//return 2 * boost::math::quadrature::gauss<double, num_positions>::integrate(proc, 0., 3.);
+		return 0;
+		constexpr size_t num_positions = 30U;
+		auto proc = [](double k) {
+			for (size_t i = 0U; i < num_positions; ++i)
+			{
+				if (boost::math::quadrature::gauss<double, num_positions>::abscissa()[i] == k
+					|| boost::math::quadrature::gauss<double, num_positions>::abscissa()[i] == -k) {
+					return values[i];
+				}
+			}
+			throw std::runtime_error("Did not find k within the abscissa!");
+		};
+		return 2 * boost::math::quadrature::gauss<double, num_positions>::integrate(proc, 0., 3.);
 		
 
-		return step * std::accumulate(values.begin(), values.end(), double{});
+		//return step * std::accumulate(values.begin(), values.end(), double{});
 	}
 }

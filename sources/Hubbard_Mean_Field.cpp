@@ -77,6 +77,7 @@ int main(int argc, char** argv)
 		}
 		else if (input.getString("lattice_type") == "cube") {
 			Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::SimpleCubic> model3(mP);
+			return _DEFAULT_EXIT;
 			test_b = std::chrono::steady_clock::now();
 			model3.computePhases({ false, true }).print();
 			std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
