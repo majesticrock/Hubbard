@@ -3,6 +3,12 @@
 #include <algorithm>
 
 namespace Hubbard::DensityOfStates {
+	// Computes sqrt(1 - x^2)
+	template <class RealType>
+	inline RealType sqrt_1_minus_x_squared(RealType x) {
+		return sqrt(1 - x * x);
+	}
+
 	template <bool includesZero, class DataType>
 	inline void symmetrizeVector(std::vector<DataType>& v) {
 		std::reverse(v.begin(), v.end());

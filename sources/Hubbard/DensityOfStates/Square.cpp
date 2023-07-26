@@ -15,7 +15,7 @@ namespace Hubbard::DensityOfStates {
 		{
 			const double gamma = (0.5 + g) * step;
 			values[g] = (M_1_PI * M_1_PI)
-				* boost::math::ellint_1(sqrt(1. - (gamma * gamma / 4.)));
+				* boost::math::ellint_1(sqrt_1_minus_x_squared(0.5 * gamma));
 		}
 		symmetrizeVector<false>(values);
 		computed = true;

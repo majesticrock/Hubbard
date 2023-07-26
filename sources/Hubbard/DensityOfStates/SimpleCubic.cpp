@@ -4,15 +4,73 @@
 #include <omp.h>
 #include <cmath>
 #include <boost/math/special_functions/ellint_1.hpp>
+#include <boost/math/special_functions/ellint_2.hpp>
 #include <boost/math/special_functions/pow.hpp>
 #include <boost/math/quadrature/tanh_sinh.hpp>
-#include <boost/math/quadrature/gauss.hpp>
+#include <boost/math/quadrature/gauss_kronrod.hpp>
 
 namespace Hubbard::DensityOfStates {
-	// Computes sqrt(1 - x^2)
-	template <class RealType>
-	inline RealType sqrt_1_minus_x_squared(RealType x) {
-		return sqrt(1 - x * x);
+	constexpr long double LONG_PI = 3.141592653589793238462643383L;
+	constexpr long double LOG_4 = 2 * 0.693147180559945309417L; // ln(4) = 2 ln(2)
+	constexpr long double R_AT_2 = (LONG_PI - 4.L) / 8;
+	constexpr long double R_AT_2_1 = (5 * LONG_PI / 64 - 0.25L);
+	constexpr long double CUT_OFF = 1e-12;
+
+	using boost::math::ellint_1;
+	using boost::math::ellint_2;
+
+	inline long double R(long double phi, long double gamma) {
+		// Special, analytically known cases:
+		const long double SUM = 0.5 * (phi + gamma);
+		if (std::abs(SUM) < CUT_OFF) {
+			return LOG_4;
+		}
+		return ellint_1(sqrt_1_minus_x_squared(SUM)) + 0.5 * std::log(SUM * SUM);
+	}
+
+	inline long double derivative_R(long double phi, long double gamma) {
+		// Special, analytically known cases:
+		const long double SUM = phi + gamma;
+		if (std::abs(SUM) < CUT_OFF) {
+			return 0.0L;
+		}
+		if (std::abs(SUM + 2) < CUT_OFF) {
+			return R_AT_2 + R_AT_2_1 * (SUM + 2);
+		}
+		if (std::abs(SUM - 2) < CUT_OFF) {
+			return -R_AT_2 + R_AT_2_1 * (SUM - 2);
+		}
+
+		const long double ALPHA = sqrt_1_minus_x_squared(0.5 * SUM);
+		return (SUM * SUM * (1 - ellint_1(ALPHA)) + 4 * (ellint_2(ALPHA) - 1)) / (SUM * (SUM + 2) * (SUM - 2));
+	}
+
+	inline long double I_1(long double gamma) {
+		const long double lower_bound = std::max(-1.L, -2.L - gamma);
+		const long double upper_bound = std::min(1.L, 2.L - gamma);
+		long double ret = std::asin(upper_bound) * R(upper_bound, gamma) - std::asin(lower_bound) * R(lower_bound, gamma);
+
+		auto integrand = [gamma](long double phi) {
+			return std::asin(phi) * derivative_R(phi, gamma);
+		};
+		ret -= boost::math::quadrature::gauss_kronrod<double, 15>::integrate(integrand, lower_bound, upper_bound, 10, 1e-12);
+		return ret;
+	}
+
+	inline long double I_2(long double gamma) {
+		// For some magical reason this integral is constant for gamma in [-1, 1]
+		// I_2 = -pi * ln(4)
+		if (gamma >= -1 && gamma <= 1) {
+			return (-LONG_PI * LOG_4);
+		}
+		const long double lower_bound = std::max(-1.L, -2.L - gamma);
+		const long double upper_bound = std::min(1.L, 2.L - gamma);
+
+		auto integrand = [gamma](long double phi) {
+			return std::log(0.25 * (gamma + phi) * (gamma + phi)) / sqrt_1_minus_x_squared(phi);
+		};
+		boost::math::quadrature::tanh_sinh<double> integrator;
+		return 0.5 * integrator.integrate(integrand, lower_bound, upper_bound);
 	}
 
 	void SimpleCubic::computeValues()
@@ -44,33 +102,9 @@ namespace Hubbard::DensityOfStates {
 			std::pair<double, double> lims{-3, -1};
 
 			auto procedure = [&](double gamma) -> double {
-				const double lower_bound = std::max(-1., -2. - gamma);
-				const double upper_bound = std::min(1., 2. - gamma);
-				auto boost_integrand = [gamma](long double phi) -> long double {
-					return boost::math::ellint_1(sqrt_1_minus_x_squared((gamma + phi) / 2.L)) / sqrt_1_minus_x_squared(phi);
-				};
-
 				double k = (gamma - 0.5 * (lims.first + lims.second)) * (2. / (lims.second - lims.first));
 				const int pos = offset + getIndex(k);
-				if (gamma <= -3 || gamma >= 3) {
-					values[pos] = 0.;
-					return 0.;
-				}
-				const long double tol = std::sqrt(std::numeric_limits<double>::epsilon());
-				long double error = 0;
-				long double L1 = 0;
-				size_t levels = 0;
-				if (-gamma - singularity_offset > lower_bound && -gamma + singularity_offset < upper_bound) {
-					values[pos] = boost::math::pow<3>(M_1_PI)
-						* integrator.integrate(boost_integrand, lower_bound, -gamma - singularity_offset, tol, &error, &L1, &levels);
-					values[pos] += boost::math::pow<3>(M_1_PI)
-						* integrator.integrate(boost_integrand, -gamma + singularity_offset, upper_bound, tol, &error, &L1, &levels);
-				}
-				else {
-					values[pos] = boost::math::pow<3>(M_1_PI)
-						* integrator.integrate(boost_integrand, lower_bound, upper_bound, tol, &error, &L1, &levels);
-				}
-				std::cout << error << "   " << L1 << "   " << levels << std::endl;
+				values[pos] = boost::math::pow<3>(M_1_PI) * (I_2(gamma) - I_1(gamma));
 				return values[pos];
 			};
 
