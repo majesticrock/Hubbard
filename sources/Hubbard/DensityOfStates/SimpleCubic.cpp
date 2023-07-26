@@ -35,7 +35,7 @@ namespace Hubbard::DensityOfStates {
 			return 0.0L;
 		}
 		if (std::abs(SUM + 2) < CUT_OFF) {
-			return R_AT_2 * R_AT_2_1 * (SUM + 2);
+			return R_AT_2 + R_AT_2_1 * (SUM + 2);
 		}
 		if (std::abs(SUM - 2) < CUT_OFF) {
 			return -R_AT_2 + R_AT_2_1 * (SUM - 2);
