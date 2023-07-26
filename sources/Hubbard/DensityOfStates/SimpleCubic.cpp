@@ -84,9 +84,6 @@ namespace Hubbard::DensityOfStates {
 			/*
 			*  Algorithm, remember, we have t = 0.5
 			*/
-			boost::math::quadrature::tanh_sinh<long double> integrator;
-			constexpr double singularity_offset = 1e-7;
-
 			auto getIndex = [](double k) {
 				for (size_t i = 0U; i < num_positions; ++i)
 				{
@@ -101,13 +98,12 @@ namespace Hubbard::DensityOfStates {
 			int offset = 0;
 			std::pair<double, double> lims{-3, -1};
 
-			auto procedure = [&](double gamma) -> double {
+			auto procedure = [&](long double gamma) -> double {
 				double k = (gamma - 0.5 * (lims.first + lims.second)) * (2. / (lims.second - lims.first));
 				const int pos = offset + getIndex(k);
 				values[pos] = boost::math::pow<3>(M_1_PI) * (I_2(gamma) - I_1(gamma));
 				return values[pos];
 			};
-
 
 			double norm = 0;
 			for (int i = 0; i < splits; ++i)
