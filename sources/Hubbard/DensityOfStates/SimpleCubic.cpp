@@ -101,7 +101,7 @@ namespace Hubbard::DensityOfStates {
 			auto procedure = [&](long double gamma) -> double {
 				double k = (gamma - 0.5 * (lims.first + lims.second)) * (2. / (lims.second - lims.first));
 				const int pos = offset + getIndex(k);
-				values[pos] = boost::math::pow<3>(M_1_PI) * (I_2(gamma) - I_1(gamma));
+				values[pos] = boost::math::pow<3>(M_1_PI) * (I_1(gamma) - I_2(gamma));
 				return values[pos];
 			};
 
