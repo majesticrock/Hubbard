@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 namespace Hubbard {
 	class ModelParameters {
@@ -11,13 +12,16 @@ namespace Hubbard {
 		double global_it_min{ -1 };
 		double second_it_min{ -1 };
 
+		void init();
 		void incrementer(std::string& s, const double step);
 	public:
 		double temperature{-1};
 		double U{ -1 };
 		double V{ -1 };
 
-		ModelParameters(double _temperature, double _U, double _V, double global_step, double second_step,
+		ModelParameters(double _temperature, double _U, double _V, double _global_step, double _second_step,
+			std::string _global_iterator_type, std::string _second_iterator_type);
+		ModelParameters(const std::vector<double>& params, double _global_step, double _second_step,
 			std::string _global_iterator_type, std::string _second_iterator_type);
 		// This is offered as a simpler way of initializing the class.
 		ModelParameters() = default;

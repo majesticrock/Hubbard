@@ -20,6 +20,7 @@ namespace Hubbard::DensityOfStates {
 			v.insert(v.end(), v.rbegin(), v.rend());
 		}
 	}
+
 	struct BaseDOS {
 		// Contains the values for gamma in (-2, 0) as the the positive part is symmetric.
 		// Open boundaries, as the dos at 0 contains a singularity for d=2
