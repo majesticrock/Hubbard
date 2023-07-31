@@ -31,7 +31,7 @@ namespace Hubbard::DensityOfStates {
 		}
 		symmetrizeVector<false>(values);
 
-		const size_t VECTOR_SIZE = 2 * Constants::BASIS_SIZE ;
+		const size_t VECTOR_SIZE = 2 * Constants::BASIS_SIZE;
 		regular_values.resize(VECTOR_SIZE);
 		singular_values_linear.resize(VECTOR_SIZE);
 		singular_values_quadratic.resize(VECTOR_SIZE);

@@ -57,7 +57,7 @@ namespace Hubbard::DensityOfStates {
 
 	template <class DOS>
 	inline double computeNorm() {
-		return DOS::integrate_with_dos([](double) -> double { return 1.0; });
+		return typename DOS::DOSIntegrator<double>().integrate_by_value([](double) -> double { return 1.0; });
 	}
 
 	struct BaseDOS {

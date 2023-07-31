@@ -27,8 +27,8 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 
 	if (input.getString("lattice_type") == "square") {
 		Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::Square> model3(modelParameters);
-		//model3.computePhases({ false, true }).print();
-		//std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
+		model3.computePhases({ false, true }).print();
+		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
 	else if (input.getString("lattice_type") == "cube") {
 		Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::SimpleCubic> model3(modelParameters);
@@ -47,7 +47,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	test_e = std::chrono::steady_clock::now();
 	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 	std::cout << "\n\n" << std::endl;
-	return;
+
 	//------------------------------------------------------------//
 
 	//Hubbard::SquareLattice::HubbardCDW model(modelParameters);

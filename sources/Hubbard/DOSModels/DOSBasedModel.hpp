@@ -21,7 +21,9 @@ namespace Hubbard {
 	class DOSBasedModel : public BaseModel<DataType>
 	{
 	private:
+		typename DOS::template DOSIntegrator<ComplexParameterVector> _self_consistency_integrator;
 		static std::mutex dos_mutex;
+		constexpr static int NUMBER_OF_PARAMETERS = 8;
 
 		void init() {
 			this->model_attributes[4] = 0.;
@@ -74,29 +76,29 @@ namespace Hubbard {
 			this->hamilton(3, 3) = eps;
 		};
 
-		inline void addToParameterSet(ComplexParameterVector& F, const double gamma, const double dos_value) const {
-			F(0) -= 0.5 * (this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real() * dos_value; // CDW
-			F(1) -= 0.5 * (this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real() * dos_value; // AFM
-			F(2) -= 0.5 * (this->rho(0, 2) + this->rho(1, 3)) * dos_value; // SC
-			F(3) -= 0.5 * gamma * (this->rho(0, 2) - this->rho(1, 3)) * dos_value; // Gamma SC
-			F(5) -= 0.5 * (this->rho(0, 3) + this->rho(1, 2)) * dos_value; // Eta
-			F(6) -= 0.5 * gamma * (this->rho(0, 0) - this->rho(1, 1)).real() * dos_value; // Gamma Occupation Up
-			F(7) += 0.5 * gamma * (this->rho(2, 2) - this->rho(3, 3)).real() * dos_value; // Gamma Occupation Down
+		inline void setParameterSet(ComplexParameterVector& F, const double gamma) const {
+			F(0) = -0.5 * (this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real(); // CDW
+			F(1) = -0.5 * (this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real(); // AFM
+			F(2) = -0.5 * (this->rho(0, 2) + this->rho(1, 3)); // SC
+			F(3) = -0.5 * gamma * (this->rho(0, 2) - this->rho(1, 3)); // Gamma SC
+			F(5) = -0.5 * (this->rho(0, 3) + this->rho(1, 2)); // Eta
+			F(6) = -0.5 * gamma * (this->rho(0, 0) - this->rho(1, 1)).real(); // Gamma Occupation Up
+			F(7) = +0.5 * gamma * (this->rho(2, 2) - this->rho(3, 3)).real(); // Gamma Occupation Down
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(0);
-			std::conditional_t<std::is_same_v<DataType, complex_prec>,
-				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
+			std::conditional_t<std::is_same_v<DataType, complex_prec>, ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
 
-			auto expectationValues = [this](ComplexParameterVector& result, double gamma, double dos_value) {
+			auto expectationValues = [this](double gamma, ComplexParameterVector& result) {
 				this->fillHamiltonian(gamma);
 				this->fillRho();
-				this->addToParameterSet(result, gamma, dos_value);
+				this->setParameterSet(result, gamma);
 			};
-			DOS::integrate_with_dos(expectationValues, complex_F);
+
+			complex_F = _self_consistency_integrator.integrate_by_reference(expectationValues);
 
 			if constexpr (!std::is_same_v<DataType, complex_prec>) {
 				complexParametersToReal(complex_F, F);
@@ -105,14 +107,16 @@ namespace Hubbard {
 			F -= x;
 		};
 	public:
-		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params)
+		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params),
+			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
 		};
 
 		template<typename StartingValuesDataType>
 		DOSBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
-			: BaseModel<DataType>(_params, startingValues)
+			: BaseModel<DataType>(_params, startingValues),
+			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
 		};
@@ -131,7 +135,7 @@ namespace Hubbard {
 					});
 			};
 
-			return DOS::integrate_with_dos(procedure);
+			return typename DOS::DOSIntegrator<double>().integrate_by_value(procedure);
 		};
 
 		inline virtual double internalEnergyPerSite() override {
@@ -139,14 +143,14 @@ namespace Hubbard {
 			auto procedure = [this, &solver](double gamma) {
 				this->fillHamiltonian(gamma);
 				solver.compute(this->hamilton, false);
-			
+
 				return std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
 					[this](double current, double toAdd) {
 						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
 					});
 			};
-			
-			return DOS::integrate_with_dos(procedure);
+
+			return typename DOS::DOSIntegrator<double>().integrate_by_value(procedure);
 		};
 
 		virtual inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const double gamma) const {
