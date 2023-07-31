@@ -1,10 +1,22 @@
 #include "TestHandler.hpp"
 #include <chrono>
+#include <iostream>
 #include "Hubbard/ModelParameters.hpp"
 #include "Hubbard/SquareLattice/UsingBroyden.hpp"
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
+
+std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
+	for (size_t i = 0U; i < data.size(); ++i)
+	{
+		os << data[i];
+		if (i != data.size() - 1) {
+			os << ", ";
+		}
+	}
+	return os;
+}
 
 void TestHandler::execute(Utility::InputFileReader& input) const
 {
@@ -15,13 +27,11 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 
 	if (input.getString("lattice_type") == "square") {
 		Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::Square> model3(modelParameters);
-		test_b = std::chrono::steady_clock::now();
-		model3.computePhases({ false, true }).print();
-		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
+		//model3.computePhases({ false, true }).print();
+		//std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
 	else if (input.getString("lattice_type") == "cube") {
 		Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::SimpleCubic> model3(modelParameters);
-		test_b = std::chrono::steady_clock::now();
 		model3.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
@@ -55,7 +65,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	test_b = std::chrono::steady_clock::now();
 	model2.computePhases({ false, true }).print();
 	std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
-	
+
 	test_e = std::chrono::steady_clock::now();
 	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 }

@@ -21,9 +21,6 @@ namespace Hubbard {
 	class DOSBasedModel : public BaseModel<DataType>
 	{
 	private:
-		static constexpr bool DOS_IS_SQUARE = std::is_same_v<DOS, DensityOfStates::Square>;
-		// The square lattice DOS cannot include gamma = 0, due to the singularity
-		static int gammaLoopUpperBoundary;
 		static std::mutex dos_mutex;
 
 		void init() {
@@ -33,10 +30,9 @@ namespace Hubbard {
 				std::lock_guard<std::mutex> guard(dos_mutex);
 				// Might have been changed by another thread
 				if (!DOS::computed) {
-					gammaLoopUpperBoundary = DOSBasedModel<DataType, DOS>::DOS_IS_SQUARE ? Constants::BASIS_SIZE : Constants::BASIS_SIZE + 1;
 					DOS dos;
 					dos.computeValues();
-					std::cout << "1 - DOS-Norm = " << std::scientific << 1. - dos.getNorm() << std::endl;
+					std::cout << "1 - DOS-Norm = " << std::scientific << 1. - DensityOfStates::computeNorm<DOS>() << std::endl;
 
 					// The "1/N"-part is handled in the integration method
 					this->V_OVER_N = this->V;// * DOS::step;
@@ -169,7 +165,4 @@ namespace Hubbard {
 
 	template <typename DataType, class DOS>
 	std::mutex DOSBasedModel<DataType, DOS>::dos_mutex;
-
-	template <typename DataType, class DOS>
-	int DOSBasedModel<DataType, DOS>::gammaLoopUpperBoundary = 0;
 }
