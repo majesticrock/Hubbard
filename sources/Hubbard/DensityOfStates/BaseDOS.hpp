@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <cmath>
 #include <algorithm>
 #include <cmath>
 #include <boost/math/special_functions/ellint_1.hpp>
