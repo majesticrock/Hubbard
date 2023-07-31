@@ -134,8 +134,8 @@ namespace Hubbard {
 						return (occ > 1e-12 ? current - occ * std::log(occ) : current);
 					});
 			};
-
-			return typename DOS::DOSIntegrator<double>().integrate_by_value(procedure);
+			// Devide by two because the matrix representation already includes gamma and -gamma.
+			return typename DOS::DOSIntegrator<double>().integrate_by_value(procedure) / 2;
 		};
 
 		inline virtual double internalEnergyPerSite() override {
@@ -149,8 +149,8 @@ namespace Hubbard {
 						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
 					});
 			};
-
-			return typename DOS::DOSIntegrator<double>().integrate_by_value(procedure);
+			// Devide by two because the matrix representation already includes gamma and -gamma.
+			return typename DOS::DOSIntegrator<double>().integrate_by_value(procedure) / 2;
 		};
 
 		virtual inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const double gamma) const {
