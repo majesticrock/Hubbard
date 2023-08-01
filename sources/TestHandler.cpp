@@ -35,7 +35,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 		model3.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
-
+	return;
 	//test_b = std::chrono::steady_clock::now();
 	//Hubbard::DensityOfStates::SimpleCubic sc_dos;
 	//sc_dos.computeValues();
