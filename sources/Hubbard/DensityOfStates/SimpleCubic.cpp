@@ -73,7 +73,7 @@ namespace Hubbard::DensityOfStates {
 		*/
 		for (int i = 0; i < n_splits; ++i)
 		{
-			split_limits[i] = {-3. + i * 6. / n_splits, -3. + (i + 1) * 6. / n_splits};
+			split_limits[i] = { -3. + i * 6. / n_splits, -3. + (i + 1) * 6. / n_splits };
 		}
 		for (int i = 0; i < n_splits; ++i)
 		{

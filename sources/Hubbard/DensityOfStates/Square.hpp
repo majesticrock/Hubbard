@@ -1,7 +1,6 @@
 #pragma once
 #include "BaseDOS.hpp"
 #include <cmath>
-#include <type_traits>
 
 namespace Hubbard::DensityOfStates {
 	struct Square : public BaseDOS {

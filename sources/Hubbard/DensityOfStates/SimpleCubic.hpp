@@ -11,7 +11,7 @@ namespace Hubbard::DensityOfStates {
 		// It should also be even to reflect the symmetry of the DOS
 		constexpr static int n_splits = 32 * 3;
 		constexpr static double b_minus_a_halved = 3. / n_splits;
-		
+
 		static std::pair<double, double> split_limits[n_splits];
 		static std::array<double, num_positions> abscissa;
 		static std::array<double, num_positions> weights;
@@ -45,7 +45,7 @@ namespace Hubbard::DensityOfStates {
 						}
 					}
 				}
-				
+
 				return result;
 			};
 		public:
