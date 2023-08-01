@@ -8,9 +8,11 @@
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
 namespace Hubbard::DensityOfStates {
-	std::pair<double, double> SimpleCubic::split_limits[n_splits];
+	std::vector<std::pair<double, double>> SimpleCubic::split_limits;
 	std::array<double, SimpleCubic::num_positions> SimpleCubic::abscissa;
 	std::array<double, SimpleCubic::num_positions> SimpleCubic::weights;
+	int SimpleCubic::n_splits;
+	double SimpleCubic::b_minus_a_halved;
 
 	inline long double I_1(long double gamma) {
 		const long double lower_bound = std::max(-1.L, -2.L - gamma);
@@ -42,9 +44,13 @@ namespace Hubbard::DensityOfStates {
 
 	void SimpleCubic::computeValues()
 	{
+		n_splits = 3 * Constants::K_DISCRETIZATION;
+		b_minus_a_halved = 1. / Constants::K_DISCRETIZATION;
+
 		step = 3. / Constants::BASIS_SIZE;
 		values.clear();
 		values.resize(n_splits * num_positions);
+		split_limits.resize(n_splits);
 
 		std::copy(boost::math::quadrature::gauss<double, num_positions>::abscissa().begin(),
 			boost::math::quadrature::gauss<double, num_positions>::abscissa().end(), abscissa.begin());

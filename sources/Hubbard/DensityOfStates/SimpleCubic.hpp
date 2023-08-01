@@ -9,13 +9,13 @@ namespace Hubbard::DensityOfStates {
 		// Needs to be a multiple of three of optimal accuracy
 		// This is due to the discontinuity in the first derivative at +/- 1
 		// It should also be even to reflect the symmetry of the DOS
-		constexpr static int n_splits = 32 * 3;
-		constexpr static double b_minus_a_halved = 3. / n_splits;
+		static int n_splits;
+		static double b_minus_a_halved;
 
-		static std::pair<double, double> split_limits[n_splits];
+		static std::vector<std::pair<double, double>> split_limits;
 		static std::array<double, num_positions> abscissa;
 		static std::array<double, num_positions> weights;
-
+		
 		// Returns the offset in the gauss quadrature (a+b)/2 depending on the interval number i
 		inline static double functionQuadratureOffset(int i) {
 			return 0.5 * (split_limits[i].first + split_limits[i].second);
