@@ -1,25 +1,9 @@
 #pragma once
 #include "BaseDOS.hpp"
-#include <array>
 
 namespace Hubbard::DensityOfStates {
 	struct SimpleCubic : public BaseDOS {
 		static constexpr double LOWER_BORDER = -3;
-		constexpr static int num_positions = 30U;
-		// Needs to be a multiple of three of optimal accuracy
-		// This is due to the discontinuity in the first derivative at +/- 1
-		// It should also be even to reflect the symmetry of the DOS
-		static int n_splits;
-		static double b_minus_a_halved;
-
-		static std::vector<std::pair<double, double>> split_limits;
-		static std::array<double, num_positions> abscissa;
-		static std::array<double, num_positions> weights;
-		
-		// Returns the offset in the gauss quadrature (a+b)/2 depending on the interval number i
-		inline static double functionQuadratureOffset(int i) {
-			return 0.5 * (split_limits[i].first + split_limits[i].second);
-		}
 		virtual void computeValues() override;
 
 		template <class ResultType>
@@ -30,22 +14,24 @@ namespace Hubbard::DensityOfStates {
 
 			template <bool byValue, class UnaryFunction>
 			const ResultType& _internal_integrate(const UnaryFunction& F) {
-				result *= 0;
-
-				for (int i = 0; i < n_splits; ++i)
+				if constexpr (byValue) {
+					result = values[0] * F(LOWER_BORDER);
+				}
+				else {
+					F(LOWER_BORDER, buffer);
+					result = values[0] * buffer;
+				}
+				for (size_t i = 1U; i < values.size(); ++i)
 				{
-					for (size_t j = 0U; j < num_positions; ++j)
-					{
-						if constexpr (byValue) {
-							result += weights[j] * values[i * num_positions + j] * F(functionQuadratureOffset(i) + abscissa[j]);
-						}
-						else {
-							F(functionQuadratureOffset(i) + abscissa[j], buffer);
-							result += weights[j] * values[i * num_positions + j] * buffer;
-						}
+					if constexpr (byValue) {
+						result += values[i] * F(step * i + LOWER_BORDER);
+					}
+					else {
+						F(step * i + LOWER_BORDER, buffer);
+						result += values[i] * buffer;
 					}
 				}
-
+				result *= step;
 				return result;
 			};
 		public:
