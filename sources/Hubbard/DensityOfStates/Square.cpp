@@ -6,6 +6,8 @@ namespace Hubbard::DensityOfStates {
 	std::vector<double> Square::regular_values;
 	std::vector<double> Square::singular_values_linear;
 	std::vector<double> Square::singular_values_quadratic;
+
+	std::vector<double> Square::singular_weights;
 	double Square::LOWER_BORDER;
 
 	template <class RealType>
@@ -44,6 +46,19 @@ namespace Hubbard::DensityOfStates {
 			singular_values_quadratic[g] = (LONG_1_PI * LONG_1_PI) * 0.5 * gamma * (x_log_x_2_squared(gamma) - gamma);
 		}
 
+		auto weight = [](double gamma){
+			if(gamma > -1e-12 && gamma < 1e-12) return 0.0;
+			return gamma * (std::log(gamma * gamma * 0.25) - 2);
+		};
+
+		singular_weights.resize(VECTOR_SIZE);
+
+		for (int g = 1; g < VECTOR_SIZE; g++)
+		{
+			long double gamma = LOWER_BORDER + (g - 0.5) * step;
+			singular_weights[g] = LONG_1_PI * LONG_1_PI * (weight(gamma + step) - weight(gamma));
+		}
+		
 		computed = true;
 	}
 }

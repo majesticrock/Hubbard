@@ -7,6 +7,8 @@ namespace Hubbard::DensityOfStates {
 		static std::vector<double> regular_values;
 		static std::vector<double> singular_values_linear;
 		static std::vector<double> singular_values_quadratic;
+		static std::vector<double> singular_weights;
+
 		static double LOWER_BORDER;
 
 		template <class ResultType>
@@ -44,8 +46,9 @@ namespace Hubbard::DensityOfStates {
 				}
 				result = regular_values[0] * previous_function_value + regular_values[1] * current_function_value;
 
-				singular_value = neighbouringDifference_linear(1) * (previous_function_value - LOWER_BORDER * slope_m(previous_function_value, current_function_value))
-					+ neighbouringDifference_quadratic(1) * slope_m(previous_function_value, current_function_value);
+				//singular_value = neighbouringDifference_linear(1) * (previous_function_value - LOWER_BORDER * slope_m(previous_function_value, current_function_value))
+				//	+ neighbouringDifference_quadratic(1) * slope_m(previous_function_value, current_function_value);
+				singular_value = singular_weights[0] * previous_function_value + singular_weights[1] * current_function_value;
 
 				for (size_t i = 2U; i < regular_values.size(); ++i)
 				{
@@ -60,9 +63,10 @@ namespace Hubbard::DensityOfStates {
 
 					result += regular_values[i] * current_function_value; // Integral R(alpha) * F(gamma)
 
-					singular_value += neighbouringDifference_linear(i)
-						* (previous_function_value - (gamma - step) * slope_m(previous_function_value, current_function_value));
-					singular_value += neighbouringDifference_quadratic(i) * slope_m(previous_function_value, current_function_value);
+					singular_value += singular_weights[i] * current_function_value;
+					//singular_value += neighbouringDifference_linear(i)
+					//	* (previous_function_value - (gamma - step) * slope_m(previous_function_value, current_function_value));
+					//singular_value += neighbouringDifference_quadratic(i) * slope_m(previous_function_value, current_function_value);
 				}
 
 				result *= step;
