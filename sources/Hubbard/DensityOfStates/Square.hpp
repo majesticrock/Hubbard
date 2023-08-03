@@ -9,7 +9,13 @@ namespace Hubbard::DensityOfStates {
 		static std::vector<double> singular_values_quadratic;
 		static std::vector<double> singular_weights;
 
+		static std::vector<double> abscissa;
+		static std::vector<double> weights;
+
 		static double LOWER_BORDER;
+		static double b_minus_a_halved;
+
+		static void tanh_sinh();
 
 		template <class ResultType>
 		static inline ResultType slope_m(const ResultType& previous_function_value, const ResultType& current_function_value) {
@@ -35,7 +41,7 @@ namespace Hubbard::DensityOfStates {
 
 			template <bool byValue, class UnaryFunction>
 			const ResultType& _internal_integrate(const UnaryFunction& F) {
-				gamma = LOWER_BORDER;
+				gamma = LOWER_BORDER + step;
 				if constexpr (byValue) {
 					previous_function_value = F(LOWER_BORDER); // F(a_n)
 					current_function_value = F(gamma); // F(a_n+1)

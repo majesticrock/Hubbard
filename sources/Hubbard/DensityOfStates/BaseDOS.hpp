@@ -17,7 +17,7 @@ namespace Hubbard::DensityOfStates {
 	// Computes sqrt(1 - x^2)
 	template <class RealType>
 	inline RealType sqrt_1_minus_x_squared(RealType x) {
-		return std::sqrt(1 - x * x);
+		return std::sqrt((1 - x) * (1 + x));
 	}
 
 	inline long double R(long double x) {
