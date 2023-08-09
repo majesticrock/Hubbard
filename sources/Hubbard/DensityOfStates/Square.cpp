@@ -4,6 +4,7 @@
 
 namespace Hubbard::DensityOfStates {
 	std::vector<double> Square::abscissa;
+	std::vector<double> Square::upper_border_to_abscissa;
 	std::vector<double> Square::weights;
 
 	std::vector<double> Square::regular_values;
@@ -34,49 +35,83 @@ namespace Hubbard::DensityOfStates {
 		}
 	}
 
+	struct tanh_sinh_helper{
+	private:
+		// Integrating from 0 to 2
+		const double _lower_border{ 0 };
+		const double _upper_border{ 2 };
+		const double _center{ (_upper_border + _lower_border) / 2 }; // (a+b)/2
+		const double _half_distance{ (_upper_border - _lower_border) / 2 }; // (b-a)/2
+		long double _sinh_x{};
+	public:
+		inline void set_sinh_x(long double x){
+			_sinh_x = std::sinh(x);
+		};
+		inline long double compute_abscissa(int k) const {
+			return _center + _half_distance * std::tanh(LONG_PI_2 * _sinh_x);
+		};
+		// Computes b - x
+		inline long double compute_upper_border_to_abscissa(int k) const {
+			return _half_distance * 2. / (1 + std::exp(LONG_PI * _sinh_x));
+		};
+		// Computes a - x
+		inline long double compute_lower_border_to_abscissa(int k) const {
+			return -2. * _half_distance * std::exp(LONG_PI * _sinh_x) / (1 + std::exp(LONG_PI * _sinh_x));
+		};
+		inline long double compute_weight(int k) const {
+			return Square::step * LONG_PI_2 * std::cosh(k * Square::step) / std::pow(std::cosh(LONG_PI_2 * _sinh_x), 2);
+		};
+
+		inline double half_distance() const {
+			return _half_distance;
+		}
+
+		tanh_sinh_helper() = default;
+		tanh_sinh_helper(double a, double b)
+			: _lower_border(a), _upper_border(b), _center((b+a)/2), _half_distance((b-a)/2) {};
+	};
+
 	void Square::tanh_sinh(){
-		auto compute_DOS = [](long double gamma){
-			//std::cout << std::scientific << std::setprecision(12) << "         t = " << sqrt_1_minus_x_squared<long double>(0.5 * gamma) << std::endl;
-			return (LONG_1_PI * LONG_1_PI) * boost::math::ellint_1(sqrt_1_minus_x_squared(0.5L * gamma));
-		};
-		auto compute_abscissa = [](int k) {
-			return 0.5 + 0.5 * std::tanh(0.5 * LONG_PI * std::sinh(k * step));
-		};
-		auto compute_weight = [](int k){
-			return 0.5 * 0.5 * step * LONG_PI * std::cosh(k * step) / std::pow(std::cosh(0.5 * LONG_PI * std::sinh(k * step)), 2);
+		auto compute_DOS = [](long double gamma, long double one_minus_gamma){
+			return std::log((1 + gamma) * one_minus_gamma);//(LONG_1_PI * LONG_1_PI) * boost::math::ellint_1(sqrt_1_minus_x_squared(0.5L * one_plus_gamma, 0.5L * one_minus_gamma));
 		};
 
-		double old_integral = 0;
-		int min_k = 0;
-		do {
-			abscissa.push_back(compute_abscissa(min_k));
-			weights.push_back(compute_weight(min_k));
-			values.push_back(compute_DOS(abscissa.back()));
-			--min_k;
+		tanh_sinh_helper tsh{0, 1};
+		double old_integral{};
 
-			old_integral += values.back() * weights.back();
-		} while (std::abs(values.back() * weights.back()) > 1e-9);
-		++min_k;
+		auto fill_vectors = [&](int k, bool sign){
+			do {
+				tsh.set_sinh_x((sign ? k : -k) * step);
+				upper_border_to_abscissa.push_back(tsh.compute_upper_border_to_abscissa((sign ? k : -k)));
+				abscissa.push_back(tsh.compute_abscissa((sign ? k : -k)));
+				weights.push_back(tsh.compute_weight((sign ? k : -k)));
+				values.push_back(compute_DOS(abscissa.back(), upper_border_to_abscissa.back()));
+				++k;
+
+				old_integral += values.back() * weights.back();
+			} while (std::abs(values.back() * weights.back()) > 1e-12 || std::abs(weights.back()) > 1e-8);
+			return k - 1;
+		};
+		
+		int min_k{-fill_vectors(0, false)};
+
 		std::reverse(values.begin(), values.end());
-		int max_k = 1;
-		do {
-			abscissa.push_back(compute_abscissa(max_k));
-			weights.push_back(compute_weight(max_k));
+		std::reverse(weights.begin(), weights.end());
+		std::reverse(abscissa.begin(), abscissa.end());
+		std::reverse(upper_border_to_abscissa.begin(), upper_border_to_abscissa.end());
 
-			values.push_back(compute_DOS(abscissa.back()));
-			++max_k;
+		fill_vectors(1, true);
+		old_integral *= tsh.half_distance();
 
-			old_integral += values.back() * weights.back();
-		} while (std::abs(values.back() * weights.back()) > 1e-9);
-
-		double new_integral;
-		double error = 100;
-		size_t level = 0;
-		while(error > 1e-10){
+		double new_integral{};
+		double error{100.0};
+		size_t level{};
+		while(error > 1e-12){
 			++level;
 			step /= 2;
 			expand_vector(values);
 			expand_vector(abscissa);
+			expand_vector(upper_border_to_abscissa);
 			expand_vector(weights);
 			min_k *= 2;
 
@@ -84,31 +119,21 @@ namespace Hubbard::DensityOfStates {
 			for (int k = 0; k < values.size(); ++k)
 			{
 				if(k % 2 != 0){
-					abscissa[k] = compute_abscissa(k + min_k);
-					weights[k] = compute_weight(k + min_k);
-					values[k] = compute_DOS(abscissa[k]);
-				}else{
+					tsh.set_sinh_x((k + min_k) * step);
+					abscissa[k] = tsh.compute_abscissa(k + min_k);
+					upper_border_to_abscissa[k] = tsh.compute_upper_border_to_abscissa(k + min_k);
+					weights[k] = tsh.compute_weight(k + min_k);
+					values[k] = compute_DOS(abscissa[k], upper_border_to_abscissa[k]);
+				} else {
 					weights[k] *= 0.5;
 				}
 				new_integral += values[k] * weights[k];
 			}
-			
-			auto w_it = weights.begin();
-			auto a_it = abscissa.begin();
-			for(auto v_it = values.begin(); v_it != values.end();){
-				if( std::abs((*v_it) * (*w_it)) < 1e-9){
-					v_it = values.erase(v_it);
-					a_it = abscissa.erase(a_it);
-					w_it = weights.erase(w_it);
-				}else{
-					++v_it;
-					++a_it;
-					++w_it;
-				}
-			}
+			new_integral *= tsh.half_distance();
 
-			error = std::abs((new_integral - old_integral));
-			std::cout << "New value = " << new_integral << "         Error = " << error << std::endl;
+			error = new_integral - old_integral;
+			std::cout << "New value = " << new_integral << "         Estimated error = " << error 
+				<< "        True error = " << new_integral - 0.5*std::log(16) + 2 << std::endl;
 			std::cout << "Total amount of values = " << values.size() << std::endl;
 			old_integral = new_integral;
 		}
@@ -119,7 +144,7 @@ namespace Hubbard::DensityOfStates {
 
 	void Square::computeValues()
 	{
-		step = 0.01;
+		step = std::ldexp(1, -3);
 		tanh_sinh();
 
 		step = 2. / Constants::BASIS_SIZE;

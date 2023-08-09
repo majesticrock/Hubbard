@@ -10,6 +10,7 @@ namespace Hubbard::DensityOfStates {
 		static std::vector<double> singular_weights;
 
 		static std::vector<double> abscissa;
+		static std::vector<double> upper_border_to_abscissa;
 		static std::vector<double> weights;
 
 		static double LOWER_BORDER;
@@ -28,7 +29,7 @@ namespace Hubbard::DensityOfStates {
 			return (singular_values_quadratic[i] - singular_values_quadratic[i - 1]);
 		};
 		virtual void computeValues() override;
-
+		
 		template <class ResultType>
 		class DOSIntegrator {
 		private:

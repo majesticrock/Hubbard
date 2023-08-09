@@ -8,6 +8,7 @@
 
 namespace Hubbard::DensityOfStates {
 	constexpr long double LONG_PI = 3.141592653589793238462643383L;
+	constexpr long double LONG_PI_2 = LONG_PI / 2;
 	constexpr long double LONG_1_PI = 1 / LONG_PI;
 	constexpr long double LOG_4 = 2 * 0.693147180559945309417L; // ln(4) = 2 ln(2)
 	constexpr long double R_AT_2 = (LONG_PI - 4.L) / 8;
@@ -18,6 +19,12 @@ namespace Hubbard::DensityOfStates {
 	template <class RealType>
 	inline RealType sqrt_1_minus_x_squared(RealType x) {
 		return std::sqrt((1 - x) * (1 + x));
+	}
+	// Use this overload for better results, if |x| is close to 1
+	// However, you need to provide an accurate reprensantion of 1+/-x yourself.
+	template <class RealType>
+	inline RealType sqrt_1_minus_x_squared(RealType one_plus_x, RealType one_minus_x) {
+		return std::sqrt(one_minus_x * one_plus_x);
 	}
 
 	inline long double R(long double x) {
