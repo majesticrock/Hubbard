@@ -226,7 +226,7 @@ namespace Hubbard::Helper {
 			return getModelType(mp, startingValues)->computePhases();
 		}
 		else {
-			auto model_ptr = getModelType(mp, startingValues);
+			auto model_ptr = getModelType(mp);
 			ModelAttributes<double> result{model_ptr->computePhases()};
 
 			if (mp.U < 0 || mp.V < 0) return result;

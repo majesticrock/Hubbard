@@ -7,6 +7,8 @@
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
 
+using namespace Hubbard::DensityOfStates;
+
 std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
 	for (size_t i = 0U; i < data.size(); ++i)
 	{
@@ -26,12 +28,12 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	//------------------------------------------------------------//
 
 	if (input.getString("lattice_type") == "square") {
-		Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::Square> model3(modelParameters);
+		Hubbard::DOSModels::BroydenDOS<Square> model3(modelParameters);
 		model3.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
 	else if (input.getString("lattice_type") == "cube") {
-		Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::SimpleCubic> model3(modelParameters);
+		Hubbard::DOSModels::BroydenDOS<SimpleCubic> model3(modelParameters);
 		model3.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}

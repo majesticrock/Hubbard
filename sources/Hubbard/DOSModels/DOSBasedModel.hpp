@@ -27,6 +27,19 @@ namespace Hubbard {
 
 		void init() {
 			this->model_attributes[4] = 0.;
+			// The "1/N"-part is handled in the integration method
+			this->V_OVER_N = this->V;// * DOS::step;
+			this->U_OVER_N = this->U;// *DOS::step;
+			this->parameterCoefficients = {
+				(0.5 * this->U_OVER_N - 4. * this->V_OVER_N), // CDW
+				0.5 * this->U_OVER_N, // AFM
+				this->U_OVER_N, // SC
+				this->V_OVER_N, // Gamma SC
+				this->V_OVER_N, // Xi SC
+				this->U_OVER_N, // Eta
+				this->V_OVER_N, // Occupation Up
+				this->V_OVER_N, // Occupation Down
+			};
 
 			if (!DOS::computed) {
 				std::lock_guard<std::mutex> guard(dos_mutex);
@@ -35,20 +48,6 @@ namespace Hubbard {
 					DOS dos;
 					dos.computeValues();
 					std::cout << "1 - DOS-Norm = " << std::scientific << 1. - DensityOfStates::computeNorm<DOS>() << std::endl;
-
-					// The "1/N"-part is handled in the integration method
-					this->V_OVER_N = this->V;// * DOS::step;
-					this->U_OVER_N = this->U;// *DOS::step;
-					this->parameterCoefficients = {
-						(0.5 * this->U_OVER_N - 4. * this->V_OVER_N), // CDW
-						0.5 * this->U_OVER_N, // AFM
-						this->U_OVER_N, // SC
-						this->V_OVER_N, // Gamma SC
-						this->V_OVER_N, // Xi SC
-						this->U_OVER_N, // Eta
-						this->V_OVER_N, // Occupation Up
-						this->V_OVER_N, // Occupation Down
-					};
 				}
 			}
 		};

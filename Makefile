@@ -4,9 +4,9 @@ CXX = mpicxx
 # the compilation of the eigen library (I cant fix them anyways)
 INCLUDEFLAGS = -isystem ~/usr/local/include
 
-CXXFLAGS = -g $(WARNINGS) -std=c++17 $(OPT) -fopenmp
+CXXFLAGS = -g $(WARNINGS) -std=gnu++17 $(OPT) -fopenmp# -mlong-double-128
 
-LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -lboost_serialization -lboost_iostreams -lz
+LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -lboost_serialization -lboost_iostreams -lz -lquadmath
 
 WARNINGS = -Wall -Wno-sign-compare
 
@@ -48,6 +48,4 @@ build:
 	ln -s ../../FermionCommute/build build/SymbolicOperators
 
 clean:
-	rm -f $(OBJS)
-	rm -f main
 	rm -rf build
