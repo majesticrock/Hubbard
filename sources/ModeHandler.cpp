@@ -7,6 +7,7 @@
 #include "Utility/OutputConvenience.hpp"
 
 using data_vector = std::vector<double>;
+const std::string BASE_FOLDER = "../../data/modes/";
 
 void ModeHandler::execute(Utility::InputFileReader& input) const
 {
@@ -28,13 +29,13 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	resolvents = modeHelper->computeCollectiveModes(reciever);
 
 	if (rank == 0) {
-		std::string output_folder = input.getString("output_folder") + modelParameters.getFileName();
-		std::filesystem::create_directories("../../data/" + output_folder);
+		std::string output_folder{ getOutputFolder(input) };
+		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
 		std::vector<std::string> comments;
 		comments.push_back("Total Gap=" + std::to_string(totalGapValue));
 		if (!(reciever.empty())) {
-			Utility::saveData(reciever, "../../data/" + output_folder + ".dat.gz", comments);
+			Utility::saveData(reciever, BASE_FOLDER + output_folder + ".dat.gz", comments);
 		}
 		if (resolvents.size() > 0) {
 			std::vector<std::string> names;
@@ -50,13 +51,13 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 
 			for (size_t i = 0; i < resolvents.size(); i++)
 			{
-				resolvents[i].writeDataToFile("../../data/" + output_folder + "resolvent_" + names[i]);
+				resolvents[i].writeDataToFile(BASE_FOLDER + output_folder + "resolvent_" + names[i]);
 			}
 		}
 		else {
 			std::cout << "Resolvent returned an empty vector." << std::endl;
 		}
 		comments.pop_back();
-		Utility::saveData(oneParticleEnergies, "../../data/" + output_folder + "one_particle.dat.gz", comments);
+		Utility::saveData(oneParticleEnergies, BASE_FOLDER + output_folder + "one_particle.dat.gz", comments);
 	}
 }

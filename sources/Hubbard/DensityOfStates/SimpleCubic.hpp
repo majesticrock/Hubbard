@@ -3,7 +3,7 @@
 
 namespace Hubbard::DensityOfStates {
 	struct SimpleCubic : public BaseDOS {
-		static constexpr double LOWER_BORDER = -3;
+		static constexpr dos_precision LOWER_BORDER = -3;
 		virtual void computeValues() override;
 
 		template <class ResultType>

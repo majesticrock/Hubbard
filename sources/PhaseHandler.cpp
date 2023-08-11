@@ -18,6 +18,7 @@
 using data_vector = std::vector<double>;
 constexpr int NUMBER_OF_PARAMETERS = 8;
 constexpr int NUMBER_OF_GAP_VALUES = NUMBER_OF_PARAMETERS - 2; // The Fock parameters are not important
+const std::string BASE_FOLDER = "../../data/phases/";
 
 void PhaseHandler::execute(Utility::InputFileReader& input) const
 {
@@ -63,6 +64,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 			recieve_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
 	}
 #endif
+	std::string output_folder{ getOutputFolder(input) };
 	if (rank == 0) {
 		std::vector<std::string> comments;
 		comments.push_back(input.getString("second_iterator_type") + "_MIN=" + std::to_string(SECOND_IT_MIN)
@@ -71,15 +73,14 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 		comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
 			+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
-		std::string output_folder = input.getString("output_folder");
-		std::filesystem::create_directories("../../data/phases/" + output_folder);
+		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
-		Utility::saveData(recieve_data[0], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "cdw.dat.gz", comments);
-		Utility::saveData(recieve_data[1], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "afm.dat.gz", comments);
-		Utility::saveData(recieve_data[2], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "sc.dat.gz", comments);
-		Utility::saveData(recieve_data[3], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "gamma_sc.dat.gz", comments);
-		Utility::saveData(recieve_data[4], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "xi_sc.dat.gz", comments);
-		Utility::saveData(recieve_data[5], SECOND_IT_STEPS, "../../data/phases/" + output_folder + "eta.dat.gz", comments);
+		Utility::saveData(recieve_data[0], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "cdw.dat.gz", comments);
+		Utility::saveData(recieve_data[1], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "afm.dat.gz", comments);
+		Utility::saveData(recieve_data[2], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "sc.dat.gz", comments);
+		Utility::saveData(recieve_data[3], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "gamma_sc.dat.gz", comments);
+		Utility::saveData(recieve_data[4], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "xi_sc.dat.gz", comments);
+		Utility::saveData(recieve_data[5], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "eta.dat.gz", comments);
 
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 		std::cout << "Crude computation time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
@@ -133,8 +134,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 			comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
 				+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
-			std::string output_folder = input.getString("output_folder");
-			std::filesystem::create_directories("../../data/phases/" + output_folder);
+			std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
 			std::string names[] = { "cdw", "afm", "sc", "gamma_sc", "xi_sc", "eta" };
 			for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
@@ -147,7 +147,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 					buffer[1][j / 2] = recieve_boundaries[i][j + 1];
 				}
 
-				Utility::saveData(buffer, "../../data/phases/" + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
+				Utility::saveData(buffer, BASE_FOLDER + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
 			}
 		}
 	}

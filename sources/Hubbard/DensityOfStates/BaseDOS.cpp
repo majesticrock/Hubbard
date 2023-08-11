@@ -3,11 +3,11 @@
 #include <numeric>
 
 namespace Hubbard::DensityOfStates {
-	std::vector<double> BaseDOS::values;
+	std::vector<dos_precision> BaseDOS::values;
 	bool BaseDOS::computed = false;
-	double BaseDOS::step = 0;
+	dos_precision BaseDOS::step = 0;
 
-	double BaseDOS::integrateValues()
+	dos_precision BaseDOS::integrateValues()
 	{
 		return step * std::reduce(values.begin(), values.end());
 	}

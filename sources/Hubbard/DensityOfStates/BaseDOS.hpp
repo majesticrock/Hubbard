@@ -7,6 +7,7 @@
 #include <boost/math/special_functions/ellint_2.hpp>
 
 namespace Hubbard::DensityOfStates {
+	typedef long double dos_precision;
 	constexpr long double LONG_PI = 3.141592653589793238462643383L;
 	constexpr long double LONG_PI_2 = LONG_PI / 2;
 	constexpr long double LONG_1_PI = 1 / LONG_PI;
@@ -27,31 +28,6 @@ namespace Hubbard::DensityOfStates {
 		return (x < 0.25 ? std::sqrt(1 - x * x) : std::sqrt(one_minus_x * (1 + x)));
 	}
 
-	inline long double R(long double x) {
-		x *= 0.5;
-		// Special, analytically known cases:
-		if (std::abs(x) < CUT_OFF) {
-			return LOG_4;
-		}
-		return boost::math::ellint_1(sqrt_1_minus_x_squared(x)) + 0.5 * std::log(x * x);
-	}
-
-	inline long double derivative_R(long double x) {
-		// Special, analytically known cases:
-		if (std::abs(x) < CUT_OFF) {
-			return 0.0L;
-		}
-		if (std::abs(x + 2) < CUT_OFF) {
-			return R_AT_2 + R_AT_2_1 * (x + 2);
-		}
-		if (std::abs(x - 2) < CUT_OFF) {
-			return -R_AT_2 + R_AT_2_1 * (x - 2);
-		}
-
-		const long double ALPHA = sqrt_1_minus_x_squared(0.5 * x);
-		return (x * x * (1 - boost::math::ellint_1(ALPHA)) + 4 * (boost::math::ellint_2(ALPHA) - 1)) / (x * (x + 2) * (x - 2));
-	}
-
 	template <bool includesZero, class DataType>
 	inline void symmetrizeVector(std::vector<DataType>& v) {
 		std::reverse(v.begin(), v.end());
@@ -64,17 +40,17 @@ namespace Hubbard::DensityOfStates {
 	}
 
 	template <class DOS>
-	inline double computeNorm() {
-		return typename DOS::DOSIntegrator<double>().integrate_by_value([](double) -> double { return 1.0; });
+	inline dos_precision computeNorm() {
+		return typename DOS::DOSIntegrator<dos_precision>().integrate_by_value([](dos_precision) -> dos_precision { return 1.L; });
 	}
 
 	struct BaseDOS {
 		// Contains the values for gamma in (-2, 0) as the the positive part is symmetric.
 		// Open boundaries, as the dos at 0 contains a singularity for d=2
-		static std::vector<double> values;
-		static double step;
+		static std::vector<dos_precision> values;
+		static dos_precision step;
 		static bool computed;
-		static double integrateValues();
+		static dos_precision integrateValues();
 		static void printValues();
 
 		virtual void computeValues() = 0;

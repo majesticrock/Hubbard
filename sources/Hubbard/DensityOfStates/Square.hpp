@@ -8,10 +8,10 @@ namespace Hubbard::DensityOfStates {
 	struct Square : public BaseDOS {
 		static std::vector<abscissa_t> abscissa;
 		static std::vector<abscissa_t> upper_border_to_abscissa;
-		static std::vector<double> weights;
+		static std::vector<dos_precision> weights;
 
-		static double LOWER_BORDER;
-		static double b_minus_a_halved;
+		static dos_precision LOWER_BORDER;
+		static dos_precision b_minus_a_halved;
 
 		virtual void computeValues() override;
 
@@ -24,19 +24,19 @@ namespace Hubbard::DensityOfStates {
 			template <bool byValue, class UnaryFunction>
 			const ResultType& _internal_integrate(const UnaryFunction& F) {
 				if constexpr (byValue) {
-					result = values[0] * weights[0] * F(static_cast<double>(abscissa.front()));
+					result = values[0] * weights[0] * F(static_cast<dos_precision>(abscissa.front()));
 				}
 				else {
-					F(static_cast<double>(abscissa.front()), buffer);
+					F(static_cast<dos_precision>(abscissa.front()), buffer);
 					result = values[0] * weights[0] * buffer;
 				}
 				for (size_t i = 1U; i < values.size(); ++i)
 				{
 					if constexpr (byValue) {
-						result += values[i] * weights[i] * F(static_cast<double>(abscissa[i]));
+						result += values[i] * weights[i] * F(static_cast<dos_precision>(abscissa[i]));
 					}
 					else {
-						F(static_cast<double>(abscissa[i]), buffer);
+						F(static_cast<dos_precision>(abscissa[i]), buffer);
 						result += values[i] * weights[i] * buffer;
 					}
 				}
