@@ -1,10 +1,12 @@
 #pragma once
 #include <boost/multiprecision/float128.hpp>
+#include <boost/multiprecision/cpp_bin_float.hpp>
 #include "BaseDOS.hpp"
 #include <cmath>
 
 namespace Hubbard::DensityOfStates {
-	typedef boost::multiprecision::float128 abscissa_t;
+	//typedef boost::multiprecision::float128 abscissa_t;
+	typedef boost::multiprecision::cpp_bin_float_100 abscissa_t;
 	struct Square : public BaseDOS {
 		static std::vector<abscissa_t> abscissa;
 		static std::vector<abscissa_t> upper_border_to_abscissa;
@@ -24,20 +26,20 @@ namespace Hubbard::DensityOfStates {
 			template <bool byValue, class UnaryFunction>
 			const ResultType& _internal_integrate(const UnaryFunction& F) {
 				if constexpr (byValue) {
-					result = values[0] * weights[0] * F(static_cast<dos_precision>(abscissa.front()));
+					result = values[0] * static_cast<dos_precision>(weights[0]) * F(static_cast<dos_precision>(abscissa.front()));
 				}
 				else {
 					F(static_cast<dos_precision>(abscissa.front()), buffer);
-					result = values[0] * weights[0] * buffer;
+					result = values[0] * static_cast<dos_precision>(weights[0]) * buffer;
 				}
 				for (size_t i = 1U; i < values.size(); ++i)
 				{
 					if constexpr (byValue) {
-						result += values[i] * weights[i] * F(static_cast<dos_precision>(abscissa[i]));
+						result += values[i] * static_cast<dos_precision>(weights[i]) * F(static_cast<dos_precision>(abscissa[i]));
 					}
 					else {
 						F(static_cast<dos_precision>(abscissa[i]), buffer);
-						result += values[i] * weights[i] * buffer;
+						result += values[i] * static_cast<dos_precision>(weights[i]) * buffer;
 					}
 				}
 				result *= 2;
