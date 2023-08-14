@@ -13,7 +13,7 @@
 
 namespace Hubbard::ChainLattice
 {
-	inline void complexParametersToReal(const ComplexParameterVector& c, Eigen::VectorXd& r) {
+	inline void complexParametersToReal(const ComplexParameterVector& c, Vector_L& r) {
 		r(0) = c(0).real(); // CDW
 		r(1) = c(1).real(); // AFM
 		r(2) = c(2).real(); // SC
@@ -32,7 +32,7 @@ namespace Hubbard::ChainLattice
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(0);
-			std::conditional_t<std::is_same_v<DataType, complex_prec>,
+			std::conditional_t<Utility::is_complex<DataType>(),
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
@@ -46,7 +46,7 @@ namespace Hubbard::ChainLattice
 				this->addToParameterSet(complex_F, k_x);
 			}
 
-			if constexpr (!std::is_same_v<DataType, complex_prec>) {
+			if constexpr (!Utility::is_complex<DataType>()) {
 				complexParametersToReal(complex_F, F);
 			}
 			this->applyIteration(F);
@@ -59,8 +59,8 @@ namespace Hubbard::ChainLattice
 		Model1D(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
 			: MomentumBasedModel<DataType, 1>(_params, startingValues) {};
 
-		inline virtual double entropyPerSite() override {
-			double entropy = 0;
+		inline virtual global_floating_type entropyPerSite() override {
+			global_floating_type entropy = 0;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
@@ -68,8 +68,8 @@ namespace Hubbard::ChainLattice
 				this->fillHamiltonian(k_x);
 				this->hamilton_solver.compute(this->hamilton, false);
 
-				entropy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), double{},
-					[this](double current, double toAdd) {
+				entropy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), global_floating_type{},
+					[this](global_floating_type current, global_floating_type toAdd) {
 						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
 						return (occ > 1e-12 ? current - occ * std::log(occ) : current);
@@ -78,8 +78,8 @@ namespace Hubbard::ChainLattice
 			return entropy / Constants::BASIS_SIZE;
 		};
 
-		inline virtual double internalEnergyPerSite() override {
-			double energy = 0;
+		inline virtual global_floating_type internalEnergyPerSite() override {
+			global_floating_type energy = 0;
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
@@ -88,8 +88,8 @@ namespace Hubbard::ChainLattice
 				this->fillHamiltonian(k_x);
 				this->hamilton_solver.compute(this->hamilton, false);
 
-				energy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), double{},
-					[this](double current, double toAdd) {
+				energy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), global_floating_type{},
+					[this](global_floating_type current, global_floating_type toAdd) {
 						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
 					});
 			}
@@ -98,7 +98,7 @@ namespace Hubbard::ChainLattice
 
 		inline void computeExpectationValues(std::vector<VectorCL>& expecs, std::vector<complex_prec>& sum_of_all) {
 			expecs = std::vector<VectorCL>(8, VectorCL::Zero(2 * Constants::K_DISCRETIZATION));
-			sum_of_all = std::vector<std::complex<double>>(8, 0.0);
+			sum_of_all = std::vector<complex_prec>(8, 0.0);
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{

@@ -54,7 +54,7 @@ namespace Hubbard {
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
-		inline void fillHamiltonian(const double gamma) {
+		inline void fillHamiltonian(const global_floating_type gamma) {
 			this->hamilton.fill(0.);
 
 			this->hamilton(0, 1) = DELTA_CDW - DELTA_AFM;;
@@ -67,7 +67,7 @@ namespace Hubbard {
 
 			SpinorMatrix buffer{ this->hamilton.adjoint() };
 			this->hamilton += buffer;
-			double eps = this->model_attributes.renormalizedEnergy_up(gamma);
+			global_floating_type eps = this->model_attributes.renormalizedEnergy_up(gamma);
 			this->hamilton(0, 0) = eps;
 			this->hamilton(1, 1) = -eps;
 			eps = this->model_attributes.renormalizedEnergy_down(gamma);
@@ -75,23 +75,23 @@ namespace Hubbard {
 			this->hamilton(3, 3) = eps;
 		};
 
-		inline void setParameterSet(ComplexParameterVector& F, const double gamma) const {
-			F(0) = -0.5 * (this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real(); // CDW
-			F(1) = -0.5 * (this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real(); // AFM
-			F(2) = -0.5 * (this->rho(0, 2) + this->rho(1, 3)); // SC
-			F(3) = -0.5 * gamma * (this->rho(0, 2) - this->rho(1, 3)); // Gamma SC
-			F(5) = -0.5 * (this->rho(0, 3) + this->rho(1, 2)); // Eta
-			F(6) = -0.5 * gamma * (this->rho(0, 0) - this->rho(1, 1)).real(); // Gamma Occupation Up
-			F(7) = +0.5 * gamma * (this->rho(2, 2) - this->rho(3, 3)).real(); // Gamma Occupation Down
+		inline void setParameterSet(ComplexParameterVector& F, const global_floating_type gamma) const {
+			F(0) = -ONE_HALF * (this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real(); // CDW
+			F(1) = -ONE_HALF * (this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real(); // AFM
+			F(2) = -ONE_HALF * (this->rho(0, 2) + this->rho(1, 3)); // SC
+			F(3) = -ONE_HALF * gamma * (this->rho(0, 2) - this->rho(1, 3)); // Gamma SC
+			F(5) = -ONE_HALF * (this->rho(0, 3) + this->rho(1, 2)); // Eta
+			F(6) = -ONE_HALF * gamma * (this->rho(0, 0) - this->rho(1, 1)).real(); // Gamma Occupation Up
+			F(7) = +ONE_HALF * gamma * (this->rho(2, 2) - this->rho(3, 3)).real(); // Gamma Occupation Down
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(0);
-			std::conditional_t<std::is_same_v<DataType, complex_prec>, ComplexParameterVector&, ComplexParameterVector> complex_F = F;
+			std::conditional_t<Utility::is_complex<DataType>(), ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
 
-			auto expectationValues = [this](double gamma, ComplexParameterVector& result) {
+			auto expectationValues = [this](global_floating_type gamma, ComplexParameterVector& result) {
 				this->fillHamiltonian(gamma);
 				this->fillRho();
 				this->setParameterSet(result, gamma);
@@ -120,39 +120,39 @@ namespace Hubbard {
 			init();
 		};
 
-		inline virtual double entropyPerSite() override {
+		inline virtual global_floating_type entropyPerSite() override {
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			auto procedure = [this, &solver](double gamma) {
+			auto procedure = [this, &solver](global_floating_type gamma) {
 				this->fillHamiltonian(gamma);
 				solver.compute(this->hamilton, false);
 
-				return std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
-					[this](double current, double toAdd) {
+				return std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), global_floating_type{},
+					[this](global_floating_type current, global_floating_type toAdd) {
 						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
 						return (occ > 1e-12 ? current - occ * std::log(occ) : current);
 					});
 			};
 			// Devide by two because the matrix representation already includes gamma and -gamma.
-			return typename DOS::DOSIntegrator<double>().integrate_by_value(procedure) / 2;
+			return typename DOS::DOSIntegrator<global_floating_type>().integrate_by_value(procedure) / 2;
 		};
 
-		inline virtual double internalEnergyPerSite() override {
+		inline virtual global_floating_type internalEnergyPerSite() override {
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			auto procedure = [this, &solver](double gamma) {
+			auto procedure = [this, &solver](global_floating_type gamma) {
 				this->fillHamiltonian(gamma);
 				solver.compute(this->hamilton, false);
 
-				return std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), double{},
-					[this](double current, double toAdd) {
+				return std::accumulate(solver.eigenvalues().begin(), solver.eigenvalues().end(), global_floating_type{},
+					[this](global_floating_type current, global_floating_type toAdd) {
 						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
 					});
 			};
 			// Devide by two because the matrix representation already includes gamma and -gamma.
-			return typename DOS::DOSIntegrator<double>().integrate_by_value(procedure) / 2;
+			return typename DOS::DOSIntegrator<global_floating_type>().integrate_by_value(procedure) / 2;
 		};
 
-		virtual inline double computeCoefficient(const SymbolicOperators::Coefficient& coeff, const double gamma) const {
+		virtual inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const global_floating_type gamma) const {
 			if (coeff.name == "\\epsilon_0") {
 				return (-2 * gamma - this->chemical_potential);
 			}

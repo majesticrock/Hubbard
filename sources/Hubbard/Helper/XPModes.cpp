@@ -141,7 +141,7 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	std::vector<Resolvent_L> XPModes::computeCollectiveModes(std::vector<std::vector<double>>& reciever)
+	std::vector<Resolvent_L> XPModes::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever)
 	{
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();

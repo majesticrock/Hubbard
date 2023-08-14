@@ -27,7 +27,7 @@ namespace Hubbard::DensityOfStates {
 		}
 	};
 
-	template <class RealType, class FinalType=double>
+	template <class RealType, class FinalType = double>
 	struct tanh_sinh_helper {
 	private:
 		RealType _sinh_x{};

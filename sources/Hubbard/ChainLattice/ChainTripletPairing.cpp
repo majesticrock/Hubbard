@@ -21,7 +21,7 @@ namespace Hubbard::ChainLattice {
 	void ChainTripletPairing::fillHamiltonian(const NumericalMomentum<1>& k_x)
 	{
 		hamilton.fill(0.0);
-		const double GAMMA = k_x.gamma();
+		const global_floating_type GAMMA = k_x.gamma();
 
 		SpinorMatrix diagonalBlock = SpinorMatrix::Zero(4, 4);
 		diagonalBlock(0, 1) = DELTA_CDW - DELTA_AFM;
@@ -36,7 +36,7 @@ namespace Hubbard::ChainLattice {
 
 		SpinorMatrix buffer = diagonalBlock.adjoint();
 		diagonalBlock += buffer;
-		double eps = model_attributes.renormalizedEnergy_up(GAMMA);
+		global_floating_type eps = model_attributes.renormalizedEnergy_up(GAMMA);
 		diagonalBlock(0, 0) = eps;
 		diagonalBlock(1, 1) = -eps;
 		eps = model_attributes.renormalizedEnergy_down(GAMMA);
@@ -46,7 +46,7 @@ namespace Hubbard::ChainLattice {
 		hamilton.block<4, 4>(0, 0) = diagonalBlock;
 		hamilton.block<4, 4>(4, 4) = -diagonalBlock.adjoint();
 
-		const double TAU = k_x.tau();
+		const global_floating_type TAU = k_x.tau();
 		diagonalBlock = SpinorMatrix::Zero(4, 4);
 		diagonalBlock(0, 0) = TAU_SC * TAU;
 		diagonalBlock(1, 1) = -TAU_SC * TAU;
@@ -74,9 +74,9 @@ namespace Hubbard::ChainLattice {
 	{
 		init();
 	}
-	ModelAttributes<double> ChainTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy)
+	ModelAttributes<global_floating_type> ChainTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{
-		Selfconsistency::IterativeSolver<std::complex<double>> solver(this, &model_attributes);
+		Selfconsistency::IterativeSolver<std::complex<global_floating_type>> solver(this, &model_attributes);
 		return solver.computePhases(debugPolicy);
 	}
 }

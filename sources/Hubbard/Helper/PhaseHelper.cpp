@@ -35,7 +35,7 @@ namespace Hubbard::Helper {
 		ModelParameters mp{ parent->modelParameters };
 		const double centerFirst{ this->getCenterFirst() };
 		const double centerSecond{ this->getCenterSecond() };
-		ModelAttributes<double> averageParameters{ this->attributes[0] };
+		ModelAttributes<global_floating_type> averageParameters{ this->attributes[0] };
 		int finiteCount = averageParameters.isOrdered() ? 1 : 0;
 		for (const auto& attr : this->attributes)
 		{
@@ -48,9 +48,9 @@ namespace Hubbard::Helper {
 			averageParameters /= finiteCount;
 		}
 		else {
-			averageParameters = ModelAttributes<double>(mp);
+			averageParameters = ModelAttributes<global_floating_type>(mp);
 		}
-		std::array<ModelAttributes<double>, 5> new_attributes;
+		std::array<ModelAttributes<global_floating_type>, 5> new_attributes;
 
 		mp.setGlobalIteratorExact(this->upperFirst);
 		mp.setSecondIteratorExact(centerSecond);
@@ -175,8 +175,8 @@ namespace Hubbard::Helper {
 			input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 	}
 
-	std::unique_ptr<BaseModel<double>> PhaseHelper::getModelType(const ModelParameters& mp,
-		std::optional<ModelAttributes<double>> startingValues /*= std::nullopt*/)
+	std::unique_ptr<BaseModel<global_floating_type>> PhaseHelper::getModelType(const ModelParameters& mp,
+		std::optional<ModelAttributes<global_floating_type>> startingValues /*= std::nullopt*/)
 	{
 		if (!use_broyden) {
 			throw std::invalid_argument("Not using broyden's method but requiring real returns.");
@@ -221,18 +221,18 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	ModelAttributes<double> PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues /*= std::nullopt*/) {
+	ModelAttributes<global_floating_type> PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<global_floating_type>> startingValues /*= std::nullopt*/) {
 		if (startingValues.has_value()) {
 			return getModelType(mp, startingValues)->computePhases();
 		}
 		else {
 			auto model_ptr{ getModelType(mp) };
-			ModelAttributes<double> result{model_ptr->computePhases()};
+			ModelAttributes<global_floating_type> result{model_ptr->computePhases()};
 
 			if (mp.U < 0 || mp.V < 0) return result;
 			// Remember: [0] returns the cdw and [1] the afm gap
 			if (std::abs(result[0]) > 1e-12 || std::abs(result[1]) > 1e-12) {
-				ModelAttributes<double> copy{ result };
+				ModelAttributes<global_floating_type> copy{ result };
 				if (std::abs(result[0]) > 1e-12) {
 					copy[1] = result[0];
 					copy[0] = 0;
@@ -264,7 +264,7 @@ namespace Hubbard::Helper {
 			{
 				ModelParameters local{ modelParameters };
 				local.setSecondIterator(U);
-				ModelAttributes<double> ret{ computeDataPoint(local) };
+				ModelAttributes<global_floating_type> ret{ computeDataPoint(local) };
 
 				for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 				{

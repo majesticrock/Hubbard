@@ -6,14 +6,14 @@
 #include "Hubbard/Helper/XPModes.hpp"
 #include "Utility/OutputConvenience.hpp"
 
-using data_vector = std::vector<double>;
+using data_vector = std::vector<Hubbard::global_floating_type>;
 const std::string BASE_FOLDER = "../../data/modes/";
 
 void ModeHandler::execute(Utility::InputFileReader& input) const
 {
 	std::vector<data_vector> reciever;
 	std::vector<data_vector> oneParticleEnergies;
-	double totalGapValue;
+	Hubbard::global_floating_type totalGapValue;
 	std::vector<Hubbard::Resolvent_L> resolvents;
 
 	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;

@@ -26,7 +26,8 @@ namespace Utility {
 
 		return os;
 	}
-	inline size_t findSmallestValue(const Eigen::VectorXd& diagonal) {
+	template <typename RealType>
+	inline size_t findSmallestValue(const Eigen::Vector<RealType, -1>& diagonal) {
 		size_t position = 0;
 		for (size_t i = 1U; i < diagonal.size(); ++i)
 		{

@@ -75,7 +75,7 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	std::vector<Resolvent_L> GeneralBasis::computeCollectiveModes(std::vector<std::vector<double>>& reciever) {
+	std::vector<Resolvent_L> GeneralBasis::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
@@ -92,7 +92,7 @@ namespace Hubbard::Helper {
 
 		auto bufferMatrix = N * M_solver.eigenvectors();
 		MatrixCL n_hacek = bufferMatrix
-			* evs_M.unaryExpr([](double x) { return std::abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
+			* evs_M.unaryExpr([](global_floating_type x) { return std::abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
 			* bufferMatrix.adjoint();
 
 		Eigen::SelfAdjointEigenSolver<MatrixCL> norm_solver(n_hacek);
@@ -100,7 +100,7 @@ namespace Hubbard::Helper {
 		applyMatrixOperation<OPERATION_SQRT>(evs_norm);
 
 		n_hacek = norm_solver.eigenvectors()
-			* evs_norm.unaryExpr([](double x) { return std::abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
+			* evs_norm.unaryExpr([](global_floating_type x) { return std::abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
 			* norm_solver.eigenvectors().adjoint();
 		// Starting here M is the adjusted solver matrix (s s hackem)
 		M = n_hacek * M_solver.eigenvectors() * evs_M.asDiagonal() * M_solver.eigenvectors().adjoint() * n_hacek;
@@ -151,7 +151,7 @@ namespace Hubbard::Helper {
 
 			resolvents[3 * i].setStartingState(a);
 			resolvents[3 * i + 1].setStartingState(0.5 * (a + b));
-			resolvents[3 * i + 2].setStartingState(0.5 * (a + std::complex<double>(0, 1.) * b));
+			resolvents[3 * i + 2].setStartingState(0.5 * (a + I * b));
 		}
 #pragma omp parallel for
 		for (int i = 0; i < 3 * NUMBER_OF_GREENSFUNCTIONS; i++)

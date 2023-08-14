@@ -19,14 +19,14 @@ namespace Hubbard::SquareLattice {
 
 		model_attributes.selfconsistency_values.reserve(16);
 
-		model_attributes.push_back(I * V * 0.);
-		model_attributes.push_back(I * V * 0.);
-		model_attributes.push_back(I * V * 0.);
-		model_attributes.push_back(I * V * 0.);
-		model_attributes.push_back(V * 0.);
-		model_attributes.push_back(V * 0.);
-		model_attributes.push_back(I * V * 0.);
-		model_attributes.push_back(V * 0.);
+		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
+		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
+		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
+		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
+		model_attributes.push_back(V * static_cast<global_floating_type>(0.));
+		model_attributes.push_back(V * static_cast<global_floating_type>(0.));
+		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
+		model_attributes.push_back(V * static_cast<global_floating_type>(0.));
 
 		this->hamilton = SpinorMatrix::Zero(4, 4);
 
@@ -52,8 +52,8 @@ namespace Hubbard::SquareLattice {
 	void HubbardCDW::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{
 		hamilton.fill(0.0);
-		const double GAMMA = k_values.gamma();
-		const double XI = xi(k_values);
+		const global_floating_type GAMMA = k_values.gamma();
+		const global_floating_type XI = xi(k_values);
 
 		hamilton(0, 1) = DELTA_CDW - DELTA_AFM + ((GAMMA_CDW - GAMMA_AFM) * GAMMA + (XI_CDW - XI_AFM) * XI);
 
@@ -67,7 +67,7 @@ namespace Hubbard::SquareLattice {
 
 		SpinorMatrix buffer{ hamilton.adjoint() };
 		hamilton += buffer;
-		double eps = model_attributes.renormalizedEnergy_up(GAMMA) - model_attributes[12].real() * XI;
+		global_floating_type eps = model_attributes.renormalizedEnergy_up(GAMMA) - model_attributes[12].real() * XI;
 		hamilton(0, 0) = eps;
 		hamilton(1, 1) = -eps;
 		eps = model_attributes.renormalizedEnergy_down(GAMMA) - model_attributes[13].real() * XI;
@@ -77,8 +77,8 @@ namespace Hubbard::SquareLattice {
 
 	void HubbardCDW::addToParameterSet(ParameterVector& F, const NumericalMomentum<2>& k_values)
 	{
-		const double GAMMA = k_values.gamma();
-		const double XI = xi(k_values);
+		const global_floating_type GAMMA = k_values.gamma();
+		const global_floating_type XI = xi(k_values);
 
 		F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
 		F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
@@ -103,9 +103,9 @@ namespace Hubbard::SquareLattice {
 	{
 		init();
 	}
-	ModelAttributes<double> HubbardCDW::computePhases(const PhaseDebuggingPolicy debugPolicy)
+	ModelAttributes<global_floating_type> HubbardCDW::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{
-		Selfconsistency::IterativeSolver<std::complex<double>> solver(this, &model_attributes);
+		Selfconsistency::IterativeSolver<std::complex<global_floating_type>> solver(this, &model_attributes);
 		return solver.computePhases(debugPolicy);
 	}
 }

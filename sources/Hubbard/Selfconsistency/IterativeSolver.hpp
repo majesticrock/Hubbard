@@ -60,7 +60,7 @@ namespace Hubbard::Selfconsistency {
 			return true;
 		};
 	public:
-		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy& debugPolicy) override
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy& debugPolicy) override
 		{
 			constexpr double EPSILON = 1e-12;
 			constexpr size_t MAX_STEPS = 1500;
@@ -72,7 +72,7 @@ namespace Hubbard::Selfconsistency {
 				this->_attr->reset();
 			}
 
-			return ModelAttributes<double>(*this->_attr);
+			return ModelAttributes<global_floating_type>(*this->_attr);
 		};
 
 		IterativeSolver() = delete;

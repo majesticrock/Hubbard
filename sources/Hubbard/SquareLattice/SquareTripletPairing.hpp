@@ -10,10 +10,10 @@ namespace Hubbard::SquareLattice {
 	protected:
 		complex_prec tau_sc, theta_sc;
 
-		inline double theta(double k_x, double k_y) {
+		inline global_floating_type theta(global_floating_type k_x, global_floating_type k_y) {
 			return sin(k_x) - sin(k_y);
 		};
-		inline double theta(const NumericalMomentum<2>& ks) {
+		inline global_floating_type theta(const NumericalMomentum<2>& ks) {
 			return theta(ks[0], ks[1]);
 		};
 
@@ -22,6 +22,6 @@ namespace Hubbard::SquareLattice {
 	public:
 		SquareTripletPairing(const ModelParameters& _params);
 
-		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) override;
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) override;
 	};
 }

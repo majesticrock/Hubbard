@@ -7,7 +7,7 @@
 #include "../BaseModel.hpp"
 
 namespace Hubbard::Helper {
-	typedef std::vector<double> data_vector;
+	typedef std::vector<global_floating_type> data_vector;
 	class PhaseHelper
 	{
 	private:
@@ -16,7 +16,7 @@ namespace Hubbard::Helper {
 			*  0 1
 			*  2 3
 			*/
-			std::array<ModelAttributes<double>, 4> attributes;
+			std::array<ModelAttributes<global_floating_type>, 4> attributes;
 			PhaseHelper* parent{};
 
 			double lowerFirst{};
@@ -25,11 +25,11 @@ namespace Hubbard::Helper {
 			double upperSecond{};
 			int value_index{};
 
-			inline double& operator()(const size_t i, const size_t j) {
+			inline global_floating_type& operator()(const size_t i, const size_t j) {
 				assert(i < 4);
 				return attributes[i][j];
 			};
-			inline const double& operator()(const size_t i, const size_t j) const {
+			inline const global_floating_type& operator()(const size_t i, const size_t j) const {
 				assert(i < 4);
 				return attributes[i][j];
 			};
@@ -75,9 +75,9 @@ namespace Hubbard::Helper {
 		bool use_broyden{};
 		unsigned char _internal_lattice_type{};
 
-		std::unique_ptr<BaseModel<double>> getModelType(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues = std::nullopt);
+		std::unique_ptr<BaseModel<global_floating_type>> getModelType(const ModelParameters& mp, std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt);
 
-		ModelAttributes<double> computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<double>> startingValues = std::nullopt);
+		ModelAttributes<global_floating_type> computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt);
 	public:
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);
 

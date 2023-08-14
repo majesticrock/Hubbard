@@ -11,7 +11,7 @@ namespace Hubbard::Selfconsistency {
 		const size_t NUMBER_OF_PARAMETERS;
 
 	public:
-		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy& debugPolicy) = 0;
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy& debugPolicy) = 0;
 
 		virtual ~SolverBase() = default;
 		SolverBase() = delete;

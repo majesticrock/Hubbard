@@ -27,12 +27,12 @@ namespace Utility::NumericalSolver::Roots {
 			double diff_x = 100, diff_F = 100;
 			int iter_num = 0;
 
-			VectorType F_old{ Eigen::VectorXd::Zero(DIM) },
-				F_new{ Eigen::VectorXd::Zero(DIM) },
-				delta_x{ Eigen::VectorXd::Zero(DIM) },
-				delta_F{ Eigen::VectorXd::Zero(DIM) };
-			MatrixType J_old{ Eigen::MatrixXd::Zero(DIM, DIM) },
-				J_new{ Eigen::MatrixXd::Identity(DIM, DIM) };
+			VectorType F_old{ VectorType::Zero(DIM) },
+				F_new{ VectorType::Zero(DIM) },
+				delta_x{ VectorType::Zero(DIM) },
+				delta_F{ VectorType::Zero(DIM) };
+			MatrixType J_old{ MatrixType::Zero(DIM, DIM) },
+				J_new{ MatrixType::Identity(DIM, DIM) };
 			func(x0, F_new);
 
 			while (diff_x > EPS_X && diff_F > EPS_F && iter_num++ <= MAX_ITER && F_new.norm() > EPS_F) {

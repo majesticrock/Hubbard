@@ -20,8 +20,8 @@ namespace Hubbard::SquareLattice {
 	void UsingBroyden::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{
 		hamilton.fill(0.);
-		const double GAMMA = k_values.gamma();
-		const double XI = xi(k_values);
+		const global_floating_type GAMMA = k_values.gamma();
+		const global_floating_type XI = xi(k_values);
 
 		hamilton(0, 1) = DELTA_CDW - DELTA_AFM;;
 		hamilton(0, 2) = DELTA_SC + (GAMMA_SC * GAMMA + I * XI_SC * XI);
@@ -33,7 +33,7 @@ namespace Hubbard::SquareLattice {
 
 		SpinorMatrix buffer{ hamilton.adjoint() };
 		hamilton += buffer;
-		double eps = model_attributes.renormalizedEnergy_up(GAMMA);
+		global_floating_type eps = model_attributes.renormalizedEnergy_up(GAMMA);
 		hamilton(0, 0) = eps;
 		hamilton(1, 1) = -eps;
 		eps = model_attributes.renormalizedEnergy_down(GAMMA);
@@ -43,8 +43,8 @@ namespace Hubbard::SquareLattice {
 
 	void UsingBroyden::addToParameterSet(ComplexParameterVector& F, const NumericalMomentum<2>& k_values)
 	{
-		const double GAMMA = k_values.gamma();
-		const double XI = xi(k_values);
+		const global_floating_type GAMMA = k_values.gamma();
+		const global_floating_type XI = xi(k_values);
 
 		F(0) -= (rho(0, 1) + rho(1, 0) - rho(2, 3) - rho(3, 2)).real(); // CDW
 		F(1) -= (rho(0, 1) + rho(1, 0) + rho(2, 3) + rho(3, 2)).real(); // AFM
@@ -68,7 +68,7 @@ namespace Hubbard::SquareLattice {
 		init();
 	}
 
-	ModelAttributes<double> UsingBroyden::computePhases(const PhaseDebuggingPolicy debugPolicy)
+	ModelAttributes<global_floating_type> UsingBroyden::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{
 		Selfconsistency::BroydenSolver solver(this, &model_attributes, _MaxPreBroydenIterations);
 		return solver.computePhases(debugPolicy);

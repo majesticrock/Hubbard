@@ -12,10 +12,10 @@
 
 namespace Hubbard::SquareLattice
 {
-	inline double xi(double k_x, double k_y) {
+	inline global_floating_type xi(global_floating_type k_x, global_floating_type k_y) {
 		return cos(k_x) - cos(k_y);
 	}
-	inline double xi(const NumericalMomentum<2>& ks) {
+	inline global_floating_type xi(const NumericalMomentum<2>& ks) {
 		return xi(ks[0], ks[1]);
 	}
 
@@ -27,17 +27,17 @@ namespace Hubbard::SquareLattice
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(0);
-			std::conditional_t<std::is_same_v<DataType, complex_prec>,
+			std::conditional_t<Utility::is_complex<DataType>(),
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
-				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				global_floating_type k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
-					double k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
+					global_floating_type k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_x, k_y};
 
 					this->fillHamiltonian(ks);
@@ -46,23 +46,7 @@ namespace Hubbard::SquareLattice
 				}
 			}
 
-			/* { // Checks for numerical accurarcy
-				const double ERROR_MARGIN = 1e-10 * Constants::BASIS_SIZE;
-				if (std::abs(complex_F(2).imag()) > ERROR_MARGIN) {
-					std::cout << "sc: " << complex_F(2) << "\t Params: " << this->temperature << ", " << this->U << ", " << this->V << std::endl;
-				}
-				if (std::abs(complex_F(3).imag()) > ERROR_MARGIN) {
-					std::cout << "gamma sc: " << complex_F(3) << "\t Params: " << this->temperature << ", " << this->U << ", " << this->V << std::endl;
-				}
-				if (std::abs(complex_F(4).real()) > ERROR_MARGIN) {
-					std::cout << "xi sc: " << complex_F(4) << "\t Params: " << this->temperature << ", " << this->U << ", " << this->V << std::endl;
-				}
-				if (std::abs(complex_F(5).real()) > ERROR_MARGIN) {
-					std::cout << "eta: " << complex_F(5) << "\t Params: " << this->temperature << ", " << this->U << ", " << this->V << std::endl;
-				}
-			}*/
-
-			if constexpr (!std::is_same_v<DataType, complex_prec>) {
+			if constexpr (!Utility::is_complex<DataType>()) {
 				complexParametersToReal(complex_F, F);
 			}
 			this->applyIteration(F);
@@ -80,12 +64,12 @@ namespace Hubbard::SquareLattice
 		{ };
 
 		// saves all one particle energies to reciever
-		inline void getAllEnergies(std::vector<std::vector<double>>& reciever)
+		inline void getAllEnergies(std::vector<std::vector<global_floating_type>>& reciever)
 		{
-			reciever.resize(4 * Constants::K_DISCRETIZATION, std::vector<double>(2 * Constants::K_DISCRETIZATION));
+			reciever.resize(4 * Constants::K_DISCRETIZATION, std::vector<global_floating_type>(2 * Constants::K_DISCRETIZATION));
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			double k_val = 0;
-			double l_val = 0;
+			global_floating_type k_val = 0;
+			global_floating_type l_val = 0;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				k_val = k * L_PI / Constants::K_DISCRETIZATION;
@@ -108,21 +92,21 @@ namespace Hubbard::SquareLattice
 			}
 		};
 
-		inline virtual double entropyPerSite() override {
-			double entropy = 0;
+		inline virtual global_floating_type entropyPerSite() override {
+			global_floating_type entropy = 0;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
-				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				global_floating_type k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
-					double k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
+					global_floating_type k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_x, k_y};
 
 					this->fillHamiltonian(ks);
 					this->hamilton_solver.compute(this->hamilton, false);
 
-					entropy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), double{},
-						[this](double current, double toAdd) {
+					entropy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), global_floating_type{},
+						[this](global_floating_type current, global_floating_type toAdd) {
 							auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 							// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
 							return (occ > 1e-12 ? current - occ * std::log(occ) : current);
@@ -132,20 +116,20 @@ namespace Hubbard::SquareLattice
 			return entropy / Constants::BASIS_SIZE;
 		};
 
-		inline virtual double internalEnergyPerSite() override {
-			double energy = 0;
+		inline virtual global_floating_type internalEnergyPerSite() override {
+			global_floating_type energy = 0;
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
-				double k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				global_floating_type k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
-					double k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
+					global_floating_type k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_x, k_y};
 					this->fillHamiltonian(ks);
 					this->hamilton_solver.compute(this->hamilton, false);
 
-					energy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), double{},
-						[this](double current, double toAdd) {
+					energy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), global_floating_type{},
+						[this](global_floating_type current, global_floating_type toAdd) {
 							return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
 						});
 				}
@@ -155,7 +139,7 @@ namespace Hubbard::SquareLattice
 
 		inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) {
 			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
-			sum_of_all = std::vector<std::complex<double>>(8, 0.0);
+			sum_of_all = std::vector<complex_prec>(8, 0.0);
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{

@@ -15,7 +15,7 @@
 #include <chrono>
 #include <filesystem>
 
-using data_vector = std::vector<double>;
+using data_vector = std::vector<Hubbard::global_floating_type>;
 constexpr int NUMBER_OF_PARAMETERS = 8;
 constexpr int NUMBER_OF_GAP_VALUES = NUMBER_OF_PARAMETERS - 2; // The Fock parameters are not important
 const std::string BASE_FOLDER = "../../data/phases/";
@@ -60,8 +60,8 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 #ifndef _NO_MPI
 	for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
 	{
-		MPI_Allgather(local_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE,
-			recieve_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, MPI_DOUBLE, MPI_COMM_WORLD);
+		MPI_Allgather(local_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE,
+			recieve_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE, MPI_COMM_WORLD);
 	}
 #endif
 	std::string output_folder{ getOutputFolder(input) };
@@ -98,7 +98,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 			phaseHelper.findSingleBoundary(recieve_data, local[i], i);
 			sizes[i] = local[i].size();
 		}
-		std::vector < data_vector> recieve_boundaries(NUMBER_OF_GAP_VALUES);
+		std::vector<data_vector> recieve_boundaries(NUMBER_OF_GAP_VALUES);
 		if (rank == 0) {
 			for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 			{
@@ -123,7 +123,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 			}
 
 			recieve_boundaries[i].resize(totalSizes[i]);
-			MPI_Gatherv(local[i].data(), sizes[i], MPI_DOUBLE, recieve_boundaries[i].data(), all_sizes[i].data(), displacements.data(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+			MPI_Gatherv(local[i].data(), sizes[i], _MPI_RETURN_TYPE, recieve_boundaries[i].data(), all_sizes[i].data(), displacements.data(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
 		}
 #endif
 		if (rank == 0) {
@@ -140,7 +140,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 			for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 			{
 				const size_t n = recieve_boundaries[i].size() / 2;
-				std::vector<std::vector<double>> buffer(2, std::vector<double>(n));
+				std::vector<data_vector> buffer(2, data_vector(n));
 				for (size_t j = 0U; j < recieve_boundaries[i].size(); j += 2)
 				{
 					buffer[0][j / 2] = recieve_boundaries[i][j];

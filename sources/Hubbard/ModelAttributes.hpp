@@ -1,5 +1,6 @@
 #pragma once
 #include "ModelParameters.hpp"
+#include "../Utility/IsComplex.hpp"
 #include <complex>
 #include <iostream>
 #include <vector>
@@ -57,7 +58,8 @@ namespace Hubbard {
 			this->initializeParamters(_params);
 		};
 
-		ModelAttributes(const ModelAttributes<std::complex<double>>& other)
+		template<class RealType>
+		ModelAttributes(const ModelAttributes<std::complex<RealType>>& other)
 			: selfconsistency_values(other.selfconsistency_values.size()), converged{ other.converged }
 		{
 			if constexpr (std::is_floating_point_v<DataType>) {
@@ -72,20 +74,18 @@ namespace Hubbard {
 				}
 			}
 			else {
-				for (size_t i = 0U; i < selfconsistency_values.size(); ++i)
-				{
-					selfconsistency_values[i] = other.selfconsistency_values[i];
-				}
+				std::copy(other.begin(), other.end(), this->begin());
 			}
 		};
-		ModelAttributes(const ModelAttributes<double>& other)
+		template<class RealType>
+		ModelAttributes(const ModelAttributes<RealType>& other)
 			: selfconsistency_values(other.selfconsistency_values.size()), converged{ other.converged }
 		{
-			for (size_t i = 0U; i < selfconsistency_values.size(); ++i)
-			{
-				selfconsistency_values[i] = other.selfconsistency_values[i];
-			}
+			std::copy(other.begin(), other.end(), this->begin());
 		}
+		ModelAttributes(const ModelAttributes<DataType>& other) {
+			std::copy(other.begin(), other.end(), this->begin());
+		};
 
 		/*
 		* Utility functions
@@ -135,16 +135,16 @@ namespace Hubbard {
 			return false;
 		};
 
-		inline double renormalizedEnergy_up(const double GAMMA) const {
-			if constexpr (std::is_same_v<DataType, std::complex<double>>) {
+		inline global_floating_type renormalizedEnergy_up(const global_floating_type GAMMA) const {
+			if constexpr (Utility::is_complex<DataType>()) {
 				return -(2. + this->selfconsistency_values[6].real()) * GAMMA;
 			}
 			else {
 				return -(2. + this->selfconsistency_values[6]) * GAMMA;
 			}
 		};
-		inline double renormalizedEnergy_down(const double GAMMA) const {
-			if constexpr (std::is_same_v<DataType, std::complex<double>>) {
+		inline global_floating_type renormalizedEnergy_down(const global_floating_type GAMMA) const {
+			if constexpr (Utility::is_complex<DataType>()) {
 				return -(2. + this->selfconsistency_values[7].real()) * GAMMA;
 			}
 			else {
@@ -153,7 +153,7 @@ namespace Hubbard {
 		};
 
 		// Returns the total gap value sqrt(sc^2 + cdw^2)
-		inline double getTotalGapValue() const {
+		inline global_floating_type getTotalGapValue() const {
 			return sqrt(std::abs(selfconsistency_values[0]) * std::abs(selfconsistency_values[0])
 				+ std::abs(selfconsistency_values[2]) * std::abs(selfconsistency_values[2]));
 		};
@@ -181,17 +181,19 @@ namespace Hubbard {
 			}
 			return *this;
 		};
-		inline ModelAttributes& operator*=(const double rhs) {
-			for (size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
+		template <class RealType>
+		inline ModelAttributes& operator*=(const RealType rhs) {
+			for (auto& value : this->selfconsistency_values)
 			{
-				this->selfconsistency_values[i] *= rhs;
+				value *= rhs;
 			}
 			return *this;
 		};
-		inline ModelAttributes& operator/=(const double rhs) {
-			for (size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
+		template <class RealType>
+		inline ModelAttributes& operator/=(const RealType rhs) {
+			for (auto& value : this->selfconsistency_values)
 			{
-				this->selfconsistency_values[i] /= rhs;
+				value /= rhs;
 			}
 			return *this;
 		};
@@ -202,18 +204,18 @@ namespace Hubbard {
 		return lhs += rhs;
 	};
 
-	template <typename DataType>
-	inline ModelAttributes<DataType> operator*(ModelAttributes<DataType> lhs, double rhs) {
+	template <typename DataType, class RealType>
+	inline ModelAttributes<DataType> operator*(ModelAttributes<DataType> lhs, RealType rhs) {
 		return lhs *= rhs;
 	};
 
-	template <typename DataType>
-	inline ModelAttributes<DataType> operator*(double lhs, ModelAttributes<DataType> rhs) {
+	template <typename DataType, class RealType>
+	inline ModelAttributes<DataType> operator*(RealType lhs, ModelAttributes<DataType> rhs) {
 		return rhs *= lhs;
 	};
 
-	template <typename DataType>
-	inline ModelAttributes<DataType> operator/(ModelAttributes<DataType> lhs, double rhs) {
+	template <typename DataType, class RealType>
+	inline ModelAttributes<DataType> operator/(ModelAttributes<DataType> lhs, RealType rhs) {
 		return lhs /= rhs;
 	};
 }

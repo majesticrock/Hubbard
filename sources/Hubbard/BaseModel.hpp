@@ -38,7 +38,7 @@ namespace Hubbard {
 			}
 		};
 		inline void setParameters(ParameterVector& F) {
-			constexpr double new_weight = 0.5;
+			constexpr global_floating_type new_weight{ 0.5 };
 			for (size_t i = 0U; i < F.size(); ++i)
 			{
 				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
@@ -48,18 +48,18 @@ namespace Hubbard {
 	protected:
 		ModelAttributes<DataType> model_attributes;
 		// Stores the coefficients for the parameters (e.g. V/N) with the appropriate index
-		std::vector<double> parameterCoefficients;
+		std::vector<global_floating_type> parameterCoefficients;
 
 		SpinorMatrix hamilton;
 		SpinorMatrix rho;
 		HamiltonSolver hamilton_solver;
 
-		double temperature{};
-		double U{};
-		double V{};
-		double U_OVER_N{ U / Constants::BASIS_SIZE };
-		double V_OVER_N{ V / Constants::BASIS_SIZE };
-		double chemical_potential{};
+		global_floating_type temperature{};
+		global_floating_type U{};
+		global_floating_type V{};
+		global_floating_type U_OVER_N{ U / Constants::BASIS_SIZE };
+		global_floating_type V_OVER_N{ V / Constants::BASIS_SIZE };
+		global_floating_type chemical_potential{};
 
 		size_t TOTAL_BASIS{};
 		size_t SPINOR_SIZE{ 4 };
@@ -68,7 +68,7 @@ namespace Hubbard {
 			this->chemical_potential = 0.5 * U + 4 * V;
 		};
 
-		inline double fermi_dirac(double energy) const {
+		inline global_floating_type fermi_dirac(global_floating_type energy) const {
 			if (temperature > 1e-8) {
 				return (1. / (1. + exp(energy / temperature)));
 			}
@@ -113,14 +113,14 @@ namespace Hubbard {
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) = 0;
 
-		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) = 0;
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) = 0;
 
-		inline double getTotalGapValue() const {
+		inline auto getTotalGapValue() const {
 			return this->model_attributes.getTotalGapValue();
 		}
-		inline virtual double entropyPerSite() = 0;
-		inline virtual double internalEnergyPerSite() = 0;
-		inline double freeEnergyPerSite() {
+		inline virtual global_floating_type entropyPerSite() = 0;
+		inline virtual global_floating_type internalEnergyPerSite() = 0;
+		inline global_floating_type freeEnergyPerSite() {
 			return this->internalEnergyPerSite() - temperature * this->entropyPerSite();
 		};
 

@@ -16,18 +16,18 @@ namespace Hubbard::SquareLattice {
 		parameterCoefficients.push_back(V_OVER_N); // Tau_sc
 		parameterCoefficients.push_back(V_OVER_N); // Theta_sc
 
-		for (size_t i = 0; i < 16; i++)
+		for (size_t i = 0U; i < 16U; i++)
 		{
-			model_attributes[i] = 0;
+			model_attributes[i] = global_floating_type{};
 		}
-		model_attributes[16] = (I + 0.5) * V;
-		model_attributes[17] = (I + 0.5) * V;
+		model_attributes[16] = (I + global_floating_type{0.5})* V;
+		model_attributes[17] = (I + global_floating_type{0.5})* V;
 	}
 	void SquareTripletPairing::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{
 		hamilton.fill(0.0);
-		const double GAMMA = k_values.gamma();
-		const double XI = xi(k_values);
+		const global_floating_type GAMMA = k_values.gamma();
+		const global_floating_type XI = xi(k_values);
 
 		SpinorMatrix diagonalBlock = SpinorMatrix::Zero(4, 4);
 		diagonalBlock(0, 1) = DELTA_CDW - DELTA_AFM;// +((gamma_cdw - this->gamma_afm) * GAMMA + (xi_cdw - this->xi_afm) * XI);
@@ -42,7 +42,7 @@ namespace Hubbard::SquareLattice {
 
 		SpinorMatrix buffer = diagonalBlock.adjoint();
 		diagonalBlock += buffer;
-		double eps = model_attributes.renormalizedEnergy_up(GAMMA) - 2. * model_attributes[12].real() * XI;
+		global_floating_type eps = model_attributes.renormalizedEnergy_up(GAMMA) - 2. * model_attributes[12].real() * XI;
 		diagonalBlock(0, 0) = eps;
 		diagonalBlock(1, 1) = -eps;
 		eps = model_attributes.renormalizedEnergy_down(GAMMA) - 2. * model_attributes[13].real() * XI;
@@ -52,8 +52,8 @@ namespace Hubbard::SquareLattice {
 		hamilton.block<4, 4>(0, 0) = diagonalBlock;
 		hamilton.block<4, 4>(4, 4) = -diagonalBlock.adjoint();
 
-		const double TAU = k_values.tau();
-		const double THETA = theta(k_values);
+		const global_floating_type TAU = k_values.tau();
+		const global_floating_type THETA = theta(k_values);
 		diagonalBlock = SpinorMatrix::Zero(4, 4);
 		diagonalBlock(0, 0) = tau_sc * TAU + theta_sc * THETA;
 		diagonalBlock(1, 1) = -tau_sc * TAU + theta_sc * THETA;
@@ -77,9 +77,9 @@ namespace Hubbard::SquareLattice {
 	{
 		init();
 	}
-	ModelAttributes<double> SquareTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy)
+	ModelAttributes<global_floating_type> SquareTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{
-		Selfconsistency::IterativeSolver<std::complex<double>> solver(this, &model_attributes);
+		Selfconsistency::IterativeSolver<std::complex<global_floating_type>> solver(this, &model_attributes);
 		return solver.computePhases(debugPolicy);
 	}
 }

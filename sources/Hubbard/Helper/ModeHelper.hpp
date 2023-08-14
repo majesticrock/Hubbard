@@ -20,7 +20,7 @@ namespace Hubbard::Helper {
 	class ModeHelper {
 	protected:
 		std::vector<MatrixCL> expecs{};
-		std::vector<std::complex<double>> sum_of_all{};
+		std::vector<complex_prec> sum_of_all{};
 
 		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M{}, wicks_N{};
 		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
@@ -47,7 +47,7 @@ namespace Hubbard::Helper {
 		///////////////////////
 		// maps an index; [0, N_K) -> [-pi, pi)
 		template <typename T>
-		inline double index_to_k_vector(const T index) const {
+		inline global_floating_type index_to_k_vector(const T index) const {
 			return (((index * L_PI) / Constants::K_DISCRETIZATION) - L_PI);
 		};
 		// Computes the respective x or y component from a given input index
@@ -104,11 +104,11 @@ namespace Hubbard::Helper {
 			return buffer;
 		};
 
-		const std::complex<double> getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const;
+		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const;
 
-		const std::complex<double> getSumOfAll(const SymbolicOperators::WickOperator& op) const;
+		complex_prec getSumOfAll(const SymbolicOperators::WickOperator& op) const;
 
-		std::complex<double> computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
+		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 
 		virtual void fillMatrices() = 0;
 
@@ -170,6 +170,6 @@ namespace Hubbard::Helper {
 			return *model;
 		}
 
-		virtual std::vector<Resolvent_L> computeCollectiveModes(std::vector<std::vector<double>>& reciever) = 0;
+		virtual std::vector<Resolvent_L> computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) = 0;
 	};
 }

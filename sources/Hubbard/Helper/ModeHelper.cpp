@@ -31,7 +31,7 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	const std::complex<double> ModeHelper::getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const
+	complex_prec ModeHelper::getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const
 	{
 		auto it = wick_map.find(op.type);
 		if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
@@ -47,7 +47,7 @@ namespace Hubbard::Helper {
 		return expecs[index](momentum_value(0), momentum_value(1));
 	}
 
-	const std::complex<double> ModeHelper::getSumOfAll(const SymbolicOperators::WickOperator& op) const
+	complex_prec ModeHelper::getSumOfAll(const SymbolicOperators::WickOperator& op) const
 	{
 		auto it = wick_map.find(op.type);
 		if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
@@ -63,7 +63,7 @@ namespace Hubbard::Helper {
 		return sum_of_all[index];
 	}
 
-	std::complex<double> ModeHelper::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
+	complex_prec ModeHelper::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
 	{
 		const Eigen::Vector2i l_idx = { x(l), y(l) };
 		const Eigen::Vector2i k_idx = { x(k), y(k) };
@@ -77,12 +77,12 @@ namespace Hubbard::Helper {
 				coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
 				return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 			}
-			return ((double)term.multiplicity);
+			return static_cast<global_floating_type>(term.multiplicity);
 		}
 
-		auto compute_single_sum = [&]() -> std::complex<double> {
-			std::complex<double> sumBuffer = 0;
-			std::complex<double> returnBuffer = 0;
+		auto compute_single_sum = [&]() -> complex_prec {
+			complex_prec sumBuffer = 0;
+			complex_prec returnBuffer = 0;
 			for (int q = 0; q < Constants::BASIS_SIZE; q++)
 			{
 				q_idx = { x(q), y(q) };
@@ -99,7 +99,7 @@ namespace Hubbard::Helper {
 				}
 				returnBuffer += sumBuffer;
 			}
-			return ((double)term.multiplicity) * returnBuffer;
+			return static_cast<global_floating_type>(term.multiplicity) * returnBuffer;
 		};
 
 		if (term.sum_momenta.size() > 0) {
@@ -118,7 +118,7 @@ namespace Hubbard::Helper {
 						return compute_single_sum();
 					}
 				}
-				return ((double)term.multiplicity) * getSumOfAll(term.operators[0]);
+				return static_cast<global_floating_type>(term.multiplicity) * getSumOfAll(term.operators[0]);
 			}
 			if (term.operators.size() == 2) {
 				// quartic term
@@ -127,7 +127,7 @@ namespace Hubbard::Helper {
 			throw std::invalid_argument("There are more than 2 WickOperators: " + term.operators.size());
 		}
 
-		std::complex<double> returnBuffer = 1;
+		complex_prec returnBuffer = 1;
 		for (size_t i = 0; i < term.operators.size(); i++)
 		{
 			Eigen::Vector2i momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k' });
@@ -137,7 +137,7 @@ namespace Hubbard::Helper {
 			coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
 			return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}
-		return ((double)term.multiplicity) * returnBuffer;
+		return static_cast<global_floating_type>(term.multiplicity) * returnBuffer;
 	}
 
 	ModeHelper::ModeHelper(Utility::InputFileReader& input)

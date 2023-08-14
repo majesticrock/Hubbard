@@ -8,7 +8,7 @@ namespace Hubbard::Helper {
 		void fillBlock(int i, int j);
 	protected:
 		Matrix_L K_plus, K_minus, L;
-		inline double computeRealTerm(const SymbolicOperators::WickTerm& term, int l, int k) const {
+		inline global_floating_type computeRealTerm(const SymbolicOperators::WickTerm& term, int l, int k) const {
 			auto result = computeTerm(term, l, k);
 			if (std::abs(result.imag()) > ERROR_MARGIN) {
 				throw std::runtime_error("computeRealTerm() encountered a complex value!");
@@ -19,6 +19,6 @@ namespace Hubbard::Helper {
 	public:
 		XPModes(Utility::InputFileReader& input) : ModeHelper(input) { };
 
-		virtual std::vector<Resolvent_L> computeCollectiveModes(std::vector<std::vector<double>>& reciever) override;
+		virtual std::vector<Resolvent_L> computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) override;
 	};
 }

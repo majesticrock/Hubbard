@@ -15,6 +15,6 @@ namespace Hubbard::ChainLattice {
 	public:
 		explicit ChainTripletPairing(const ModelParameters& _params);
 
-		virtual ModelAttributes<double> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) override;
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) override;
 	};
 }

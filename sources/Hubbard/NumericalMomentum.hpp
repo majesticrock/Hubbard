@@ -1,30 +1,31 @@
 #include <iterator>
 #include <numeric>
+#include "GlobalDefinitions.hpp"
 
 namespace Hubbard {
 	template<unsigned int Dimension>
 	struct NumericalMomentum {
-		double momenta[Dimension];
+		global_floating_type momenta[Dimension];
 
-		inline double tau() const {
-			return std::accumulate(std::begin(momenta), std::end(momenta), double{}, [](double current, double toAdd) {
+		inline global_floating_type tau() const {
+			return std::accumulate(std::begin(momenta), std::end(momenta), global_floating_type{}, [](global_floating_type current, global_floating_type toAdd) {
 				return current + sin(toAdd);
 				});
 		};
-		inline double gamma() const {
-			return std::accumulate(std::begin(momenta), std::end(momenta), double{}, [](double current, double toAdd) {
+		inline global_floating_type gamma() const {
+			return std::accumulate(std::begin(momenta), std::end(momenta), global_floating_type{}, [](global_floating_type current, global_floating_type toAdd) {
 				return current + cos(toAdd);
 				});
 		};
-		inline double unperturbed_energy() const {
+		inline global_floating_type unperturbed_energy() const {
 			return -2. * gamma();
 		};
 
-		inline double& operator[](unsigned int index) {
+		inline global_floating_type& operator[](unsigned int index) {
 			assert(index < Dimension);
 			return momenta[index];
 		};
-		inline const double& operator[](unsigned int index) const {
+		inline const global_floating_type& operator[](unsigned int index) const {
 			assert(index < Dimension);
 			return momenta[index];
 		};
