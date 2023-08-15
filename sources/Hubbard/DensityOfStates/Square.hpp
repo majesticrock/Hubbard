@@ -16,6 +16,9 @@ namespace Hubbard::DensityOfStates {
 		static dos_precision b_minus_a_halved;
 
 		virtual void computeValues() override;
+		inline static size_t n_abscissa() noexcept {
+			return abscissa.size();
+		};
 
 		template <class ResultType>
 		class DOSIntegrator {

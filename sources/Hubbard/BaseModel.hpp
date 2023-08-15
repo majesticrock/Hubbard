@@ -69,7 +69,7 @@ namespace Hubbard {
 		};
 
 		inline global_floating_type fermi_dirac(global_floating_type energy) const {
-			if (temperature > 1e-8) {
+			if (temperature > 1e-12) {
 				return (1. / (1. + exp(energy / temperature)));
 			}
 			else {
@@ -82,7 +82,7 @@ namespace Hubbard {
 		inline void fillRho() {
 			this->hamilton_solver.compute(this->hamilton);
 			rho.fill(0);
-			for (int i = 0; i < rho.rows(); i++)
+			for (int i = 0; i < rho.rows(); ++i)
 			{
 				rho(i, i) = 1 - fermi_dirac(hamilton_solver.eigenvalues()(i));
 			}
@@ -92,7 +92,7 @@ namespace Hubbard {
 			this->multiplyParametersByCoefficients(F);
 			// Numerical noise correction
 			for (auto& value : F) {
-				if (std::abs(value) < 1e-12) value = 0.;
+				if (std::abs(value) < std::numeric_limits<global_floating_type>::epsilon() * 1e2) value = 0.;
 			}
 			this->setParameters(F);
 		}

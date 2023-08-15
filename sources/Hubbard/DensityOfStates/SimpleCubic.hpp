@@ -5,6 +5,9 @@ namespace Hubbard::DensityOfStates {
 	struct SimpleCubic : public BaseDOS {
 		static constexpr dos_precision LOWER_BORDER = -3;
 		virtual void computeValues() override;
+		inline static size_t n_abscissa() noexcept {
+			return 2 * Constants::BASIS_SIZE;
+		};
 
 		template <class ResultType>
 		class DOSIntegrator {

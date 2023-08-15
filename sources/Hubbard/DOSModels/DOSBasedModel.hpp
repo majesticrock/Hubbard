@@ -28,8 +28,8 @@ namespace Hubbard {
 		void init() {
 			this->model_attributes[4] = 0.;
 			// The "1/N"-part is handled in the integration method
-			this->V_OVER_N = this->V;// * DOS::step;
-			this->U_OVER_N = this->U;// *DOS::step;
+			this->V_OVER_N = this->V;
+			this->U_OVER_N = this->U;
 			this->parameterCoefficients = {
 				(0.5 * this->U_OVER_N - 4. * this->V_OVER_N), // CDW
 				0.5 * this->U_OVER_N, // AFM
@@ -163,6 +163,11 @@ namespace Hubbard {
 				return this->V_OVER_N * gamma;
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
+		};
+
+		inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) {
+			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
+			sum_of_all = std::vector<complex_prec>(8, 0.0);
 		};
 	};
 

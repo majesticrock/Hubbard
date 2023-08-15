@@ -1,6 +1,5 @@
 #pragma once
 #include <boost/math/constants/constants.hpp>
-#include <boost/multiprecision/float128.hpp>
 #include <vector>
 #include <algorithm>
 
