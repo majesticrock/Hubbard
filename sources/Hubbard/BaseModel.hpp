@@ -91,9 +91,9 @@ namespace Hubbard {
 		inline void applyIteration(ParameterVector& F) {
 			this->multiplyParametersByCoefficients(F);
 			// Numerical noise correction
-			for (auto& value : F) {
-				if (std::abs(value) < std::numeric_limits<global_floating_type>::epsilon() * 1e2) value = 0.;
-			}
+			//for (auto& value : F) {
+			//	if (std::abs(value) < std::numeric_limits<global_floating_type>::epsilon() * 1e2) value = 0.;
+			//}
 			this->setParameters(F);
 		}
 	public:

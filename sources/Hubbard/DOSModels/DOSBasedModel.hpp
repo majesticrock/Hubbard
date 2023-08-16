@@ -27,6 +27,7 @@ namespace Hubbard {
 
 		void init() {
 			this->model_attributes[4] = 0.;
+			DELTA_CDW = 0.;
 			// The "1/N"-part is handled in the integration method
 			this->V_OVER_N = this->V;
 			this->U_OVER_N = this->U;

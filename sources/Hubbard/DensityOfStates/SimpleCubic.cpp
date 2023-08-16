@@ -2,12 +2,21 @@
 #include "../Constants.hpp"
 #include <omp.h>
 #include <cmath>
+#include <algorithm>
 #include <boost/math/special_functions/pow.hpp>
 #include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
 namespace Hubbard::DensityOfStates {
-	inline long double R(long double x) {
+	std::vector<std::pair<dos_precision, dos_precision>> SimpleCubic::split_limits;
+	std::array<dos_precision, SimpleCubic::num_positions> SimpleCubic::abscissa;
+	std::array<dos_precision, SimpleCubic::num_positions> SimpleCubic::weights;
+	int SimpleCubic::n_splits;
+	dos_precision SimpleCubic::b_minus_a_halved;
+
+	using _internal_precision = dos_precision;
+
+	inline _internal_precision R(_internal_precision x) {
 		x *= 0.5;
 		// Special, analytically known cases:
 		if (std::abs(x) < CUT_OFF) {
@@ -16,7 +25,7 @@ namespace Hubbard::DensityOfStates {
 		return boost::math::ellint_1(sqrt_1_minus_x_squared(x)) + 0.5 * std::log(x * x);
 	}
 
-	inline long double derivative_R(long double x) {
+	inline _internal_precision derivative_R(_internal_precision x) {
 		// Special, analytically known cases:
 		if (std::abs(x) < CUT_OFF) {
 			return 0.0L;
@@ -28,16 +37,16 @@ namespace Hubbard::DensityOfStates {
 			return -R_AT_2 + R_AT_2_1 * (x - 2);
 		}
 
-		const long double ALPHA = sqrt_1_minus_x_squared(0.5 * x);
+		const _internal_precision ALPHA = sqrt_1_minus_x_squared(0.5 * x);
 		return (x * x * (1 - boost::math::ellint_1(ALPHA)) + 4 * (boost::math::ellint_2(ALPHA) - 1)) / (x * (x + 2) * (x - 2));
 	}
 
-	inline long double I_1(long double gamma) {
-		const long double lower_bound = std::max(-1.L, -2.L - gamma);
-		const long double upper_bound = std::min(1.L, 2.L - gamma);
-		long double ret = std::asin(upper_bound) * R(upper_bound + gamma) - std::asin(lower_bound) * R(lower_bound + gamma);
+	inline _internal_precision I_1(_internal_precision gamma) {
+		const _internal_precision lower_bound = std::max(-1.L, -2.L - gamma);
+		const _internal_precision upper_bound = std::min(1.L, 2.L - gamma);
+		_internal_precision ret = std::asin(upper_bound) * R(upper_bound + gamma) - std::asin(lower_bound) * R(lower_bound + gamma);
 
-		auto integrand = [gamma](long double phi) {
+		auto integrand = [gamma](_internal_precision phi) {
 			return std::asin(phi) * derivative_R(phi + gamma);
 		};
 
@@ -45,16 +54,16 @@ namespace Hubbard::DensityOfStates {
 		return ret;
 	}
 
-	inline long double I_2(long double gamma) {
+	inline _internal_precision I_2(_internal_precision gamma) {
 		// For some magical reason this integral is constant for gamma in [-1, 1]
 		// I_2 = -pi * ln(4)
 		if (gamma >= -1 && gamma <= 1) {
 			return (-LONG_PI * LOG_4);
 		}
-		const long double lower_bound = std::max(-1.L, -2.L - gamma);
-		const long double upper_bound = std::min(1.L, 2.L - gamma);
+		const _internal_precision lower_bound = std::max(-1.L, -2.L - gamma);
+		const _internal_precision upper_bound = std::min(1.L, 2.L - gamma);
 
-		auto integrand = [gamma](long double phi) {
+		auto integrand = [gamma](_internal_precision phi) {
 			return std::log(0.25 * (gamma + phi) * (gamma + phi)) / sqrt_1_minus_x_squared(phi);
 		};
 		boost::math::quadrature::tanh_sinh<dos_precision> integrator;
@@ -63,18 +72,54 @@ namespace Hubbard::DensityOfStates {
 
 	void SimpleCubic::computeValues()
 	{
-		step = 3.L / Constants::BASIS_SIZE;
-		values.reserve(2 * Constants::BASIS_SIZE - 1);
-		values.resize(Constants::BASIS_SIZE + 1);
-		values.back() = 0.0;
+		n_splits = 3 * Constants::K_DISCRETIZATION;
+		b_minus_a_halved = 1. / Constants::K_DISCRETIZATION;
 
-#pragma omp parallel for
-		for (int g = 0; g < Constants::BASIS_SIZE; ++g)
+		step = 3. / Constants::BASIS_SIZE;
+		values.clear();
+		values.resize(n_splits * num_positions);
+		split_limits.resize(n_splits);
+
+		std::copy(boost::math::quadrature::gauss<dos_precision, num_positions>::abscissa().begin(),
+			boost::math::quadrature::gauss<dos_precision, num_positions>::abscissa().end(), abscissa.begin());
+		for (auto& a : abscissa)
 		{
-			const dos_precision gamma = g * step;
-			values[g] = boost::math::pow<3>(LONG_1_PI) * (I_1(gamma) - I_2(gamma));
+			a *= -1;
 		}
-		symmetrizeVector<true>(values);
+		std::copy(boost::math::quadrature::gauss<dos_precision, num_positions>::abscissa().rbegin(),
+			boost::math::quadrature::gauss<dos_precision, num_positions>::abscissa().rend(), abscissa.begin() + num_positions / 2);
+		for (auto& a : abscissa)
+		{
+			a *= b_minus_a_halved;
+		}
+		std::cout << std::endl;
+		std::copy(boost::math::quadrature::gauss<dos_precision, num_positions>::weights().begin(),
+			boost::math::quadrature::gauss<dos_precision, num_positions>::weights().end(), weights.begin());
+		std::copy(boost::math::quadrature::gauss<dos_precision, num_positions>::weights().rbegin(),
+			boost::math::quadrature::gauss<dos_precision, num_positions>::weights().rend(), weights.begin() + num_positions / 2);
+		for (auto& w : weights)
+		{
+			w *= b_minus_a_halved;
+		}
+
+		/*
+		*  Algorithm, remember, we have t = 0.5
+		*/
+		for (int i = 0; i < n_splits; ++i)
+		{
+			split_limits[i] = { -3. + i * 6. / n_splits, -3. + (i + 1) * 6. / n_splits };
+		}
+		for (int i = 0; i < n_splits; ++i)
+		{
+			for (size_t j = 0U; j < num_positions; ++j)
+			{
+				const int pos = i * num_positions + j;
+				const dos_precision gamma = functionQuadratureOffset(i) + abscissa[j];
+
+				values[pos] = boost::math::pow<3>(LONG_1_PI) * (I_1(gamma) - I_2(gamma));
+			}
+		}
+
 		computed = true;
 	}
 }
