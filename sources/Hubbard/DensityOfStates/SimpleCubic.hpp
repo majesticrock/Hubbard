@@ -4,7 +4,7 @@
 namespace Hubbard::DensityOfStates {
 	struct SimpleCubic : public BaseDOS {
 		static constexpr dos_precision LOWER_BORDER = -3;
-		constexpr static int num_positions = 30U;
+		constexpr static int num_positions = 300U;
 		// Needs to be a multiple of three of optimal accuracy
 		// This is due to the discontinuity in the first derivative at +/- 1
 		// It should also be even to reflect the symmetry of the DOS
