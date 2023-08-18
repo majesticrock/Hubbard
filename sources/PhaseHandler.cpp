@@ -58,10 +58,15 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 	std::vector<data_vector> recieve_data(NUMBER_OF_PARAMETERS, data_vector(GLOBAL_IT_STEPS * SECOND_IT_STEPS));
 
 #ifndef _NO_MPI
-	for (size_t i = 0; i < NUMBER_OF_PARAMETERS; i++)
+	for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
 	{
 		MPI_Allgather(local_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE,
 			recieve_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE, MPI_COMM_WORLD);
+	}
+#else
+	for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
+	{
+		recieve_data[i] = local_data[i];
 	}
 #endif
 	std::string output_folder{ getOutputFolder(input) };
@@ -106,7 +111,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 			}
 		}
 #ifndef _NO_MPI
-		for (size_t i = 0; i < NUMBER_OF_GAP_VALUES; i++)
+		for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 		{
 			MPI_Gather(&(sizes[i]), 1, MPI_INT, all_sizes[i].data(), 1, MPI_INT, 0, MPI_COMM_WORLD);
 			std::vector<int> displacements(numberOfRanks, 0);
@@ -123,7 +128,12 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 			}
 
 			recieve_boundaries[i].resize(totalSizes[i]);
-			MPI_Gatherv(local[i].data(), sizes[i], _MPI_RETURN_TYPE, recieve_boundaries[i].data(), all_sizes[i].data(), displacements.data(), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+			MPI_Gatherv(local[i].data(), sizes[i], _MPI_RETURN_TYPE, recieve_boundaries[i].data(), all_sizes[i].data(), displacements.data(), _MPI_RETURN_TYPE, 0, MPI_COMM_WORLD);
+		}
+#else
+		for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+		{
+			recieve_boundaries[i] = local[i];
 		}
 #endif
 		if (rank == 0) {

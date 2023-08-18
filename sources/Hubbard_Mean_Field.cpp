@@ -1,6 +1,7 @@
 #ifdef _DEBUG
 #define _NO_MPI
 #endif
+#include "Hubbard/GlobalDefinitions.hpp"
 
 #include <omp.h>
 #ifndef _NO_MPI

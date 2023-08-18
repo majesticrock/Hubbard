@@ -19,7 +19,7 @@ namespace Hubbard::SquareLattice {
 	}
 	void UsingBroyden::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{
-		hamilton.fill(0.);
+		hamilton.fill(global_floating_type{});
 		const global_floating_type GAMMA = k_values.gamma();
 		const global_floating_type XI = xi(k_values);
 

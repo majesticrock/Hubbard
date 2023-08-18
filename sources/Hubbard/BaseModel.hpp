@@ -38,7 +38,7 @@ namespace Hubbard {
 			}
 		};
 		inline void setParameters(ParameterVector& F) {
-			constexpr global_floating_type new_weight{ 0.5 };
+			_CONST_LONG_FLOATING new_weight{ 0.5 };
 			for (size_t i = 0U; i < F.size(); ++i)
 			{
 				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
@@ -54,15 +54,15 @@ namespace Hubbard {
 		SpinorMatrix rho;
 		HamiltonSolver hamilton_solver;
 
-		global_floating_type temperature{};
-		global_floating_type U{};
-		global_floating_type V{};
-		global_floating_type U_OVER_N{ U / Constants::BASIS_SIZE };
-		global_floating_type V_OVER_N{ V / Constants::BASIS_SIZE };
-		global_floating_type chemical_potential{};
+		double temperature{};
+		double U{};
+		double V{};
+		double U_OVER_N{ U / Constants::BASIS_SIZE };
+		double V_OVER_N{ V / Constants::BASIS_SIZE };
+		double chemical_potential{};
 
 		size_t TOTAL_BASIS{};
-		size_t SPINOR_SIZE{ 4 };
+		size_t SPINOR_SIZE{ 4U };
 
 		inline virtual void computeChemicalPotential() {
 			this->chemical_potential = 0.5 * U + 4 * V;
@@ -73,15 +73,15 @@ namespace Hubbard {
 				return (1. / (1. + exp(energy / temperature)));
 			}
 			else {
-				if (std::abs(energy) < 1e-12) {
-					return 0.5;
+				if (abs(energy) < 1e-12) {
+					return global_floating_type{ 0.5 };
 				}
-				return ((energy > 0) ? 0 : 1);
+				return ((energy > 0) ? global_floating_type{} : global_floating_type{ 1 });
 			}
 		};
 		inline void fillRho() {
 			this->hamilton_solver.compute(this->hamilton);
-			rho.fill(0);
+			rho.fill(global_floating_type{});
 			for (int i = 0; i < rho.rows(); ++i)
 			{
 				rho(i, i) = 1 - fermi_dirac(hamilton_solver.eigenvalues()(i));
@@ -90,15 +90,16 @@ namespace Hubbard {
 		};
 		inline void applyIteration(ParameterVector& F) {
 			this->multiplyParametersByCoefficients(F);
+			std::cout << F << std::endl << std::endl;
 			// Numerical noise correction
 			//for (auto& value : F) {
-			//	if (std::abs(value) < std::numeric_limits<global_floating_type>::epsilon() * 1e2) value = 0.;
+			//	if (abs(value) < std::numeric_limits<global_floating_type>::epsilon() * 1e2) value = 0.;
 			//}
 			this->setParameters(F);
 		}
 	public:
-		explicit BaseModel(const ModelParameters& params)
-			: model_attributes(params), temperature(params.temperature), U(params.U), V(params.V)
+		explicit BaseModel(const ModelParameters& params, int dimension=0)
+			: model_attributes(params, dimension), temperature(params.temperature), U(params.U), V(params.V)
 		{
 			init();
 		};
@@ -125,7 +126,7 @@ namespace Hubbard {
 		};
 
 		inline std::string parametersAsTriplet() const {
-			return ("[T U V] = [" + std::to_string(temperature) + " " + std::to_string(U) + " " + std::to_string(V) + "]");
+			return ("[T U V] = [" + to_string(temperature) + " " + to_string(U) + " " + to_string(V) + "]");
 		}
 	};
 }

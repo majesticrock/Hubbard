@@ -10,7 +10,7 @@ namespace Hubbard::Helper {
 		Matrix_L K_plus, K_minus, L;
 		inline global_floating_type computeRealTerm(const SymbolicOperators::WickTerm& term, int l, int k) const {
 			auto result = computeTerm(term, l, k);
-			if (std::abs(result.imag()) > ERROR_MARGIN) {
+			if (abs(result.imag()) > ERROR_MARGIN) {
 				throw std::runtime_error("computeRealTerm() encountered a complex value!");
 			}
 			return result.real();

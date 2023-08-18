@@ -19,14 +19,14 @@ namespace Hubbard::SquareLattice {
 
 		model_attributes.selfconsistency_values.reserve(16);
 
-		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
-		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
-		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
-		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
-		model_attributes.push_back(V * static_cast<global_floating_type>(0.));
-		model_attributes.push_back(V * static_cast<global_floating_type>(0.));
-		model_attributes.push_back(I * V * static_cast<global_floating_type>(0.));
-		model_attributes.push_back(V * static_cast<global_floating_type>(0.));
+		model_attributes.push_back(I * static_cast<global_floating_type>(0. * V));
+		model_attributes.push_back(I * static_cast<global_floating_type>(0. * V));
+		model_attributes.push_back(I * static_cast<global_floating_type>(0. * V));
+		model_attributes.push_back(I * static_cast<global_floating_type>(0. * V));
+		model_attributes.push_back(static_cast<global_floating_type>(0. * V));
+		model_attributes.push_back(static_cast<global_floating_type>(0. * V));
+		model_attributes.push_back(I * static_cast<global_floating_type>(0. * V));
+		model_attributes.push_back(static_cast<global_floating_type>(0. * V));
 
 		this->hamilton = SpinorMatrix::Zero(4, 4);
 
@@ -51,7 +51,7 @@ namespace Hubbard::SquareLattice {
 	}
 	void HubbardCDW::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{
-		hamilton.fill(0.0);
+		hamilton.fill(global_floating_type{});
 		const global_floating_type GAMMA = k_values.gamma();
 		const global_floating_type XI = xi(k_values);
 

@@ -197,7 +197,7 @@ namespace Hubbard::Helper {
 			case 131:
 				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::SimpleCubic>>(mp, startingValues.value(), 10);
 			default:
-				throw std::runtime_error("_internal_lattice_type not properly set " + std::to_string(_internal_lattice_type));
+				throw std::runtime_error("_internal_lattice_type not properly set " + to_string(_internal_lattice_type));
 			}
 		}
 		else {
@@ -216,7 +216,7 @@ namespace Hubbard::Helper {
 			case 131:
 				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::SimpleCubic>>(mp);
 			default:
-				throw std::runtime_error("_internal_lattice_type not properly set " + std::to_string(_internal_lattice_type));
+				throw std::runtime_error("_internal_lattice_type not properly set " + to_string(_internal_lattice_type));
 			}
 		}
 	}
@@ -231,9 +231,9 @@ namespace Hubbard::Helper {
 
 			if (mp.U < 0 || mp.V < 0) return result;
 			// Remember: [0] returns the cdw and [1] the afm gap
-			if (std::abs(result[0]) > 1e-12 || std::abs(result[1]) > 1e-12) {
+			if (abs(result[0]) > 1e-12 || abs(result[1]) > 1e-12) {
 				ModelAttributes<global_floating_type> copy{ result };
-				if (std::abs(result[0]) > 1e-12) {
+				if (abs(result[0]) > 1e-12) {
 					copy[1] = result[0];
 					copy[0] = 0;
 				}

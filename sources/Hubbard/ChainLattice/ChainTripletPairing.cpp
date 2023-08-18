@@ -20,7 +20,7 @@ namespace Hubbard::ChainLattice {
 	}
 	void ChainTripletPairing::fillHamiltonian(const NumericalMomentum<1>& k_x)
 	{
-		hamilton.fill(0.0);
+		hamilton.fill(global_floating_type{});
 		const global_floating_type GAMMA = k_x.gamma();
 
 		SpinorMatrix diagonalBlock = SpinorMatrix::Zero(4, 4);

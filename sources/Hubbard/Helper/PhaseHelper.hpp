@@ -35,7 +35,7 @@ namespace Hubbard::Helper {
 			};
 
 			inline bool valueIsFinite(const size_t index) const {
-				return std::abs(attributes[index][value_index]) > 1e-10;
+				return abs(attributes[index][value_index]) > 1e-10;
 			};
 			inline bool containsPhaseBoundary() const
 			{
@@ -54,7 +54,7 @@ namespace Hubbard::Helper {
 				return 0.5 * (lowerSecond + upperSecond);
 			};
 			inline double size() const noexcept {
-				return 0.5 * (std::abs(upperFirst - lowerFirst) + std::abs(upperSecond - lowerSecond));
+				return 0.5 * (abs(upperFirst - lowerFirst) + abs(upperSecond - lowerSecond));
 			}
 			// Devides *this into 4 equally sized plaquettes
 			// The result is appended to <appendTo>

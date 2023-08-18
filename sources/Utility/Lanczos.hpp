@@ -41,7 +41,7 @@ namespace Utility {
 				vector_T& evs = const_cast<vector_T&>(solver.eigenvalues());
 				for (size_t i = 0; i < evs.size(); i++)
 				{
-					if (std::abs(evs(i)) < epsilon) {
+					if (abs(evs(i)) < epsilon) {
 						evs(i) = 0;
 					}
 					else {
@@ -60,7 +60,7 @@ namespace Utility {
 				vector_T& evs = const_cast<vector_T&>(solver.eigenvalues());
 				for (size_t i = 0; i < evs.size(); i++)
 				{
-					if (std::abs(evs(i)) < epsilon) {
+					if (abs(evs(i)) < epsilon) {
 						evs(i) = 0;
 					}
 					else {
@@ -128,7 +128,7 @@ namespace Utility {
 					if (iterNum >= toSolve.rows()) {
 						goOn = false;
 					}
-					if (std::abs(gammas.back()) < 1e-7) {
+					if (abs(gammas.back()) < 1e-7) {
 						goOn = false;
 					}
 				}

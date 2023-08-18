@@ -1,12 +1,11 @@
 #pragma once
-#include <boost/multiprecision/float128.hpp>
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include "BaseDOS.hpp"
 #include <cmath>
 
 namespace Hubbard::DensityOfStates {
-	//typedef boost::multiprecision::float128 abscissa_t;
-	typedef boost::multiprecision::cpp_bin_float_100 abscissa_t;
+	//typedef boost::multiprecision::cpp_bin_float_100 abscissa_t;
+	typedef boost::multiprecision::number<boost::multiprecision::cpp_bin_float<500>> abscissa_t;
 	struct Square : public BaseDOS {
 		static std::vector<abscissa_t> abscissa;
 		static std::vector<abscissa_t> upper_border_to_abscissa;
@@ -14,6 +13,7 @@ namespace Hubbard::DensityOfStates {
 
 		static dos_precision LOWER_BORDER;
 		static dos_precision b_minus_a_halved;
+		static constexpr int DIMENSION = 2;
 
 		virtual void computeValues() override;
 		inline static size_t n_abscissa() noexcept {
@@ -45,7 +45,7 @@ namespace Hubbard::DensityOfStates {
 						result += values[i] * static_cast<dos_precision>(weights[i]) * buffer;
 					}
 				}
-				result *= 2;
+				result *= dos_precision{2};
 				return result;
 			};
 		public:

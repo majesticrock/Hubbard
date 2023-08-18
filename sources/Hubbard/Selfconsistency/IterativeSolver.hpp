@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include "SolverBase.hpp"
+#include "../../Utility/UnderlyingFloatingPoint.hpp"
 
 namespace Hubbard::Selfconsistency {
 	template <typename DataType>
@@ -12,8 +13,8 @@ namespace Hubbard::Selfconsistency {
 		inline bool hasSignFlippingBehaviour(const ParameterVector& x0) {
 			for (size_t j = 0U; j < this->NUMBER_OF_PARAMETERS; ++j)
 			{
-				if (std::abs(x0[j]) > 1e-10) {
-					if (std::abs((x0[j] + (*this->_attr)[j]) / x0[j]) < 1e-12) {
+				if (abs(x0[j]) > 1e-10) {
+					if (abs((x0[j] + (*this->_attr)[j]) / x0[j]) < 1e-12) {
 						return true;
 					}
 				}
@@ -22,14 +23,14 @@ namespace Hubbard::Selfconsistency {
 		};
 		bool procedureIterative(const PhaseDebuggingPolicy& debugPolicy, const size_t MAX_STEPS, const double EPSILON)
 		{
-			double error = 100;
+			Utility::UnderlyingFloatingPoint_t<DataType> error{ 100 };
 
 			ParameterVector f0{ ParameterVector::Zero(this->NUMBER_OF_PARAMETERS) };
 			std::copy(this->_attr->begin(), this->_attr->end(), f0.begin());
 			ParameterVector x0{ f0 };
 
 			if (debugPolicy.printAll) {
-				std::cout << "-1:\t" << std::fixed << std::setprecision(8);
+				std::cout << "-1:\t" << std::scientific << std::setprecision(4);
 				printAsRow<-1>(x0);
 			}
 

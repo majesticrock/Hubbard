@@ -66,7 +66,7 @@ namespace Hubbard::DensityOfStates {
 			return -2. * _half_distance * exp(pi<RealType>() * _sinh_x) / (1 + exp(pi<RealType>() * _sinh_x));
 		};
 		inline WeightType compute_weight(int k) const {
-			return (_step * half_pi<WeightType>() * std::cosh(k * _step))
+			return (_step * half_pi<WeightType>() * cosh(k * _step))
 				/ static_cast<WeightType>(pow(cosh(half_pi<WeightType>() * _sinh_x), 2));
 		};
 
@@ -90,7 +90,7 @@ namespace Hubbard::DensityOfStates {
 			return _level;
 		};
 
-		template<class UnaryFunction>
+		template< int cut_off, class UnaryFunction>
 		FinalType initial_filling(const UnaryFunction& dos, SaveTo& save_to) {
 			FinalType integral{};
 			auto fill_vectors = [&](int k, bool sign) {
@@ -103,7 +103,7 @@ namespace Hubbard::DensityOfStates {
 					++k;
 
 					integral += save_to.values->back() * static_cast<FinalType>(save_to.weights->back());
-				} while (std::abs(save_to.values->back() * static_cast<FinalType>(save_to.weights->back())) > 1e-13
+				} while (abs(save_to.values->back() * static_cast<FinalType>(save_to.weights->back())) > boost::math::pow<cut_off>(10)
 					|| abs(save_to.weights->back()) > 1e-8);
 				return k - 1;
 			};

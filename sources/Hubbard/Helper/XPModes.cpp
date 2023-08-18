@@ -153,7 +153,7 @@ namespace Hubbard::Helper {
 			{
 				for (size_t j = 0; j < L.cols(); j++)
 				{
-					if (std::abs(L(i, j)) < SALT) {
+					if (abs(L(i, j)) < SALT) {
 						L(i, j) = 0;
 					}
 				}
@@ -162,13 +162,13 @@ namespace Hubbard::Helper {
 			{
 				for (size_t j = 0; j < K_plus.cols(); j++)
 				{
-					if (std::abs(K_plus(i, j)) < SALT) {
+					if (abs(K_plus(i, j)) < SALT) {
 						K_plus(i, j) = 0;
 					}
-					if (std::abs(K_plus(i, j) - K_plus(j, i)) > ERROR_MARGIN) {
-						std::cerr << std::scientific << std::setprecision(12) << std::abs(K_plus(i, j) - K_plus(j, i)) << std::endl;
-						throw std::invalid_argument("K_+ is not hermitian: " + std::to_string(K_plus(i, j))
-							+ " || " + std::to_string(K_plus(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
+					if (abs(K_plus(i, j) - K_plus(j, i)) > ERROR_MARGIN) {
+						std::cerr << std::scientific << std::setprecision(12) << abs(K_plus(i, j) - K_plus(j, i)) << std::endl;
+						throw std::invalid_argument("K_+ is not hermitian: " + to_string(K_plus(i, j))
+							+ " || " + to_string(K_plus(j, i)) + "\t\tPosition: " + to_string(i) + ", " + to_string(j));
 					}
 				}
 			}
@@ -176,13 +176,13 @@ namespace Hubbard::Helper {
 			{
 				for (size_t j = 0; j < K_minus.cols(); j++)
 				{
-					if (std::abs(K_minus(i, j)) < SALT) {
+					if (abs(K_minus(i, j)) < SALT) {
 						K_minus(i, j) = 0;
 					}
-					if (std::abs(K_minus(i, j) - K_minus(j, i)) > ERROR_MARGIN) {
-						std::cerr << std::scientific << std::setprecision(12) << std::abs(K_minus(i, j) - K_minus(j, i)) << std::endl;
-						throw std::invalid_argument("K_- is not hermitian: " + std::to_string(K_minus(i, j))
-							+ " || " + std::to_string(K_minus(j, i)) + "\t\tPosition: " + std::to_string(i) + ", " + std::to_string(j));
+					if (abs(K_minus(i, j) - K_minus(j, i)) > ERROR_MARGIN) {
+						std::cerr << std::scientific << std::setprecision(12) << abs(K_minus(i, j) - K_minus(j, i)) << std::endl;
+						throw std::invalid_argument("K_- is not hermitian: " + to_string(K_minus(i, j))
+							+ " || " + to_string(K_minus(j, i)) + "\t\tPosition: " + to_string(i) + ", " + to_string(j));
 					}
 				}
 			}
@@ -222,7 +222,7 @@ namespace Hubbard::Helper {
 				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
 				k_solver[0].compute(K_plus);
 
-				double tol = k_solver[0].eigenvalues().norm() * ERROR_MARGIN;
+				global_floating_type tol{ k_solver[0].eigenvalues().norm() * ERROR_MARGIN };
 				if (k_solver[0].info() == Eigen::Success && (k_solver[0].eigenvalues().array() >= -tol).all()) {
 					std::cout << "K_+: eigenvalues are real and accurate up to tolerance" << std::endl;
 				}
@@ -248,7 +248,7 @@ namespace Hubbard::Helper {
 					<< (k_solver[1].eigenvectors() * k_solver[1].eigenvalues().asDiagonal() * k_solver[1].eigenvectors().adjoint()
 						- K_minus).norm() << std::endl;
 
-				double tol = k_solver[1].eigenvalues().norm() * ERROR_MARGIN;
+				global_floating_type tol{ k_solver[1].eigenvalues().norm() * ERROR_MARGIN };
 				if (k_solver[1].info() == Eigen::Success && (k_solver[1].eigenvalues().array() >= -tol).all()) {
 					std::cout << "K_-: eigenvalues are real and accurate up to tolerance" << std::endl;
 				}
@@ -289,7 +289,7 @@ namespace Hubbard::Helper {
 
 			Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
 			solver.compute(N_new);
-			double tol = solver.eigenvalues().norm() * ERROR_MARGIN;
+			global_floating_type tol{ solver.eigenvalues().norm() * ERROR_MARGIN };
 			if (solver.info() == Eigen::Success && (solver.eigenvalues().array() >= -tol).all()) {
 				std::cout << "N_new: eigenvalues are real and accurate up to tolerance" << std::endl;
 			}

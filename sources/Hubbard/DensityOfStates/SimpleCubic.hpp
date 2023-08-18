@@ -3,7 +3,7 @@
 
 namespace Hubbard::DensityOfStates {
 	struct SimpleCubic : public BaseDOS {
-		static constexpr dos_precision LOWER_BORDER = -3;
+		static constexpr double LOWER_BORDER = -3;
 		constexpr static int num_positions = 300U;
 		// Needs to be a multiple of three of optimal accuracy
 		// This is due to the discontinuity in the first derivative at +/- 1
@@ -14,7 +14,9 @@ namespace Hubbard::DensityOfStates {
 		static std::vector<std::pair<dos_precision, dos_precision>> split_limits;
 		static std::array<dos_precision, num_positions> abscissa;
 		static std::array<dos_precision, num_positions> weights;
-		
+
+		static constexpr int DIMENSION = 3;
+
 		inline static size_t n_abscissa() noexcept {
 			return num_positions * n_splits;
 		};
@@ -32,7 +34,7 @@ namespace Hubbard::DensityOfStates {
 
 			template <bool byValue, class UnaryFunction>
 			const ResultType& _internal_integrate(const UnaryFunction& F) {
-				result *= 0;
+				result *= dos_precision{};
 
 				for (int i = 0; i < n_splits; ++i)
 				{

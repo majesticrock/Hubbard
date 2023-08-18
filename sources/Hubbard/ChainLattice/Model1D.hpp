@@ -31,7 +31,7 @@ namespace Hubbard::ChainLattice
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
-			F.fill(0);
+			F.fill(global_floating_type{});
 			std::conditional_t<Utility::is_complex<DataType>(),
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
@@ -39,7 +39,7 @@ namespace Hubbard::ChainLattice
 
 			for (int k = -Constants::K_DISCRETIZATION; k < 0; ++k)
 			{
-				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
+				const NumericalMomentum<1> k_x{ (k* LONG_PI) / Constants::K_DISCRETIZATION };
 
 				this->fillHamiltonian(NumericalMomentum{ k_x });
 				this->fillRho();
@@ -60,10 +60,11 @@ namespace Hubbard::ChainLattice
 			: MomentumBasedModel<DataType, 1>(_params, startingValues) {};
 
 		inline virtual global_floating_type entropyPerSite() override {
-			global_floating_type entropy = 0;
+			using std::log;
+			global_floating_type entropy{};
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
+				const NumericalMomentum<1> k_x{ (k* LONG_PI) / Constants::K_DISCRETIZATION };
 
 				this->fillHamiltonian(k_x);
 				this->hamilton_solver.compute(this->hamilton, false);
@@ -72,18 +73,18 @@ namespace Hubbard::ChainLattice
 					[this](global_floating_type current, global_floating_type toAdd) {
 						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
-						return (occ > 1e-12 ? current - occ * std::log(occ) : current);
+						return (occ > 1e-12 ? current - occ * log(occ) : current);
 					});
 			}
 			return entropy / Constants::BASIS_SIZE;
 		};
 
 		inline virtual global_floating_type internalEnergyPerSite() override {
-			global_floating_type energy = 0;
+			global_floating_type energy{};
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
+				const NumericalMomentum<1> k_x{ (k* LONG_PI) / Constants::K_DISCRETIZATION };
 
 				this->fillHamiltonian(k_x);
 				this->hamilton_solver.compute(this->hamilton, false);
@@ -98,11 +99,11 @@ namespace Hubbard::ChainLattice
 
 		inline void computeExpectationValues(std::vector<VectorCL>& expecs, std::vector<complex_prec>& sum_of_all) {
 			expecs = std::vector<VectorCL>(8, VectorCL::Zero(2 * Constants::K_DISCRETIZATION));
-			sum_of_all = std::vector<complex_prec>(8, 0.0);
+			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				const NumericalMomentum<1> k_x{ (k* L_PI) / Constants::K_DISCRETIZATION };
+				const NumericalMomentum<1> k_x{ (k* LONG_PI) / Constants::K_DISCRETIZATION };
 				this->fillHamiltonian(k_x);
 				this->fillRho();
 
@@ -127,7 +128,7 @@ namespace Hubbard::ChainLattice
 					sum_of_all[idx] += expecs[idx](k + Constants::K_DISCRETIZATION);
 				}
 
-				if (std::abs(this->rho(3, 0)) > 1e-10) {
+				if (abs(this->rho(3, 0)) > 1e-10) {
 					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
 				}
 			}

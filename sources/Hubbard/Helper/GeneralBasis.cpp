@@ -92,7 +92,7 @@ namespace Hubbard::Helper {
 
 		auto bufferMatrix = N * M_solver.eigenvectors();
 		MatrixCL n_hacek = bufferMatrix
-			* evs_M.unaryExpr([](global_floating_type x) { return std::abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
+			* evs_M.unaryExpr([](global_floating_type x) { return abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
 			* bufferMatrix.adjoint();
 
 		Eigen::SelfAdjointEigenSolver<MatrixCL> norm_solver(n_hacek);
@@ -100,7 +100,7 @@ namespace Hubbard::Helper {
 		applyMatrixOperation<OPERATION_SQRT>(evs_norm);
 
 		n_hacek = norm_solver.eigenvectors()
-			* evs_norm.unaryExpr([](global_floating_type x) { return std::abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
+			* evs_norm.unaryExpr([](global_floating_type x) { return abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
 			* norm_solver.eigenvectors().adjoint();
 		// Starting here M is the adjusted solver matrix (s s hackem)
 		M = n_hacek * M_solver.eigenvectors() * evs_M.asDiagonal() * M_solver.eigenvectors().adjoint() * n_hacek;

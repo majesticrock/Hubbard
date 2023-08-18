@@ -23,11 +23,11 @@ namespace Hubbard::DensityOfStates {
 
 		tanh_sinh_helper<abscissa_t, dos_precision> tsh{ 0, 2 };
 		tanh_sinh_helper<abscissa_t, dos_precision>::SaveTo buffer_vectors{ &abscissa, & upper_border_to_abscissa, & weights, & values};
-		dos_precision old_integral{ tsh.initial_filling(compute_DOS, buffer_vectors) };
+		dos_precision old_integral{ tsh.initial_filling<-30>(compute_DOS, buffer_vectors) };
 
 		dos_precision new_integral{};
 		dos_precision error{ 100.0 };
-		while (error > 1e-12) {
+		while (error > 1e-30) {
 			tsh.increase_level(buffer_vectors);
 
 			new_integral = 0;
@@ -43,11 +43,12 @@ namespace Hubbard::DensityOfStates {
 			}
 			new_integral *= tsh.half_distance();
 
-			error = std::abs(new_integral - old_integral);
+			error = abs(new_integral - old_integral);
+			std::cout << error << std::endl;
 			old_integral = new_integral;
 		}
 
-		std::cout << "Exit after " << tsh.level() << " levels with error = " << std::abs(0.5 - new_integral) << std::endl;
+		std::cout << "Exit after " << tsh.level() << " levels with error = " << abs(0.5 - new_integral) << std::endl;
 		std::cout << "Total amount of values = " << values.size() << std::endl;
 
 		computed = true;

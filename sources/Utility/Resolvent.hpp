@@ -106,7 +106,7 @@ namespace Utility {
 				deltas.push_back(basisVectors.back().dot(symplectic * buffer));
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 				T norm_squared = currentSolution.dot(symplectic * currentSolution);
-				assertm(norm_squared > 0, ("Norm in loop is complex!" + std::to_string(norm_squared)));
+				assertm(norm_squared > 0, ("Norm in loop is complex!" + to_string(norm_squared)));
 
 				gammas.push_back(sqrt(norm_squared));
 				basisVectors.push_back(currentSolution / gammas.back());
@@ -135,11 +135,11 @@ namespace Utility {
 				if (iterNum >= toSolve.rows()) {
 					goOn = false;
 				}
-				if (std::abs(gammas.back()) < 1e-7) {
+				if (abs(gammas.back()) < 1e-7) {
 					goOn = false;
 				}
 				if (oldEigenValue != 0.0) {
-					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
+					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
 						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 					}
@@ -173,8 +173,8 @@ namespace Utility {
 			vector_cT second = this->startingState.template cast<std::complex<T>>(); // corresponds to |q_1>
 			resolvent_data res;
 			auto norm_buffer = second.dot(symplectic * second);
-			assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
-			res.b_i.push_back(std::abs(norm_buffer));
+			assertm(abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
+			res.b_i.push_back(abs(norm_buffer));
 
 			second /= sqrt(res.b_i.back());
 			basisVectors.push_back(first);
@@ -197,13 +197,13 @@ namespace Utility {
 				// algorithm
 				buffer = toSolve * basisVectors.back();
 				norm_buffer = basisVectors.back().dot(symplectic * buffer);
-				assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
+				assertm(abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
 				deltas.push_back(norm_buffer.real());
 
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 				norm_buffer = sqrt(currentSolution.dot(symplectic * currentSolution));
-				assertm(std::abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
-				gammas.push_back(std::abs(norm_buffer));
+				assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
+				gammas.push_back(abs(norm_buffer));
 				basisVectors.push_back(currentSolution / gammas.back());
 
 				iterNum++;
@@ -231,11 +231,11 @@ namespace Utility {
 				if (iterNum >= toSolve.rows()) {
 					goOn = false;
 				}
-				if (std::abs(gammas.back()) < 1e-8) {
+				if (abs(gammas.back()) < 1e-8) {
 					goOn = false;
 				}
 				if (oldEigenValue != 0.0) {
-					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
+					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
 						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 					}
@@ -321,11 +321,11 @@ namespace Utility {
 				if (iterNum >= toSolve.rows()) {
 					goOn = false;
 				}
-				if (std::abs(gammas.back()) < 1e-7) {
+				if (abs(gammas.back()) < 1e-7) {
 					goOn = false;
 				}
 				if (oldEigenValue != 0.0) {
-					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
+					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
 						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 					}
@@ -359,8 +359,8 @@ namespace Utility {
 			vector_cT second = this->startingState.template cast<std::complex<T>>(); // corresponds to |q_1>
 			resolvent_data res;
 			auto norm_buffer = second.dot(symplectic * second);
-			assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
-			res.b_i.push_back(std::abs(norm_buffer));
+			assertm(abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
+			res.b_i.push_back(abs(norm_buffer));
 
 			second /= sqrt(res.b_i.back());
 			basisVectors.push_back(first);
@@ -383,13 +383,13 @@ namespace Utility {
 				// algorithm
 				buffer = toSolve * basisVectors.back();
 				norm_buffer = basisVectors.back().dot(N * basisVectors.back());
-				assertm(std::abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
+				assertm(abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
 				deltas.push_back(norm_buffer.real());
 
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 				norm_buffer = sqrt(currentSolution.dot(symplectic * currentSolution));
-				assertm(std::abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
-				gammas.push_back(std::abs(norm_buffer));
+				assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
+				gammas.push_back(abs(norm_buffer));
 				basisVectors.push_back(currentSolution / gammas.back());
 
 				iterNum++;
@@ -417,11 +417,11 @@ namespace Utility {
 				if (iterNum >= toSolve.rows()) {
 					goOn = false;
 				}
-				if (std::abs(gammas.back()) < 1e-8) {
+				if (abs(gammas.back()) < 1e-8) {
 					goOn = false;
 				}
 				if (oldEigenValue != 0.0) {
-					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
+					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
 						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 					}
@@ -508,11 +508,11 @@ namespace Utility {
 				if (iterNum >= toSolve.rows()) {
 					goOn = false;
 				}
-				if (std::abs(gammas.back()) < 1e-7) {
+				if (abs(gammas.back()) < 1e-7) {
 					goOn = false;
 				}
 				if (oldEigenValue != 0.0) {
-					if (std::abs(newEigenValue - oldEigenValue) / std::abs(oldEigenValue) < errorMargin) {
+					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
 						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
 					}

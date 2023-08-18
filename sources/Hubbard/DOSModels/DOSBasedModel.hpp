@@ -56,7 +56,7 @@ namespace Hubbard {
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
 		inline void fillHamiltonian(const global_floating_type gamma) {
-			this->hamilton.fill(0.);
+			this->hamilton.fill(global_floating_type{});
 
 			this->hamilton(0, 1) = DELTA_CDW - DELTA_AFM;;
 			this->hamilton(0, 2) = DELTA_SC + GAMMA_SC * gamma;
@@ -87,7 +87,7 @@ namespace Hubbard {
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
-			F.fill(0);
+			F.fill(global_floating_type{});
 			std::conditional_t<Utility::is_complex<DataType>(), ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
@@ -107,7 +107,7 @@ namespace Hubbard {
 			F -= x;
 		};
 	public:
-		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params),
+		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params, DOS::DIMENSION),
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
@@ -122,6 +122,7 @@ namespace Hubbard {
 		};
 
 		inline virtual global_floating_type entropyPerSite() override {
+			using std::log;
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			auto procedure = [this, &solver](global_floating_type gamma) {
 				this->fillHamiltonian(gamma);
@@ -131,7 +132,7 @@ namespace Hubbard {
 					[this](global_floating_type current, global_floating_type toAdd) {
 						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
-						return (occ > 1e-12 ? current - occ * std::log(occ) : current);
+						return (occ > 1e-12 ? current - occ * log(occ) : current);
 					});
 			};
 			// Devide by two because the matrix representation already includes gamma and -gamma.
@@ -168,7 +169,7 @@ namespace Hubbard {
 
 		inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) {
 			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
-			sum_of_all = std::vector<complex_prec>(8, 0.0);
+			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
 		};
 	};
 

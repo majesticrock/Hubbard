@@ -48,7 +48,7 @@ namespace Hubbard::Helper {
 		// maps an index; [0, N_K) -> [-pi, pi)
 		template <typename T>
 		inline global_floating_type index_to_k_vector(const T index) const {
-			return (((index * L_PI) / Constants::K_DISCRETIZATION) - L_PI);
+			return (((index * LONG_PI) / Constants::K_DISCRETIZATION) - LONG_PI);
 		};
 		// Computes the respective x or y component from a given input index
 		inline int x(int idx) const {
@@ -75,7 +75,7 @@ namespace Hubbard::Helper {
 				toClean(i) += Constants::K_DISCRETIZATION;
 				if (toClean(i) < 0) {
 					toClean(i) = ((2 * Constants::K_DISCRETIZATION)
-						- std::abs(toClean(i) % (2 * Constants::K_DISCRETIZATION))) % (2 * Constants::K_DISCRETIZATION);
+						- abs(toClean(i) % (2 * Constants::K_DISCRETIZATION))) % (2 * Constants::K_DISCRETIZATION);
 				}
 				else {
 					toClean(i) = (toClean(i) % (2 * Constants::K_DISCRETIZATION)) % (2 * Constants::K_DISCRETIZATION);
@@ -124,7 +124,7 @@ namespace Hubbard::Helper {
 			{
 				if (evs(i) < -SALT) {
 					std::cerr << "M:   " << evs(i) << std::endl;
-					throw std::invalid_argument("Matrix is not positive!  " + std::to_string(evs(i)));
+					throw std::invalid_argument("Matrix is not positive!  " + to_string(evs(i)));
 				}
 				if (evs(i) < SALT) {
 #ifdef _PSEUDO_INVERSE

@@ -33,7 +33,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
 		std::vector<std::string> comments;
-		comments.push_back("Total Gap=" + std::to_string(totalGapValue));
+		comments.push_back("Total Gap=" + to_string(totalGapValue));
 		if (!(reciever.empty())) {
 			Utility::saveData(reciever, BASE_FOLDER + output_folder + ".dat.gz", comments);
 		}

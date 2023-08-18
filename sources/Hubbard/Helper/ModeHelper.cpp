@@ -81,8 +81,8 @@ namespace Hubbard::Helper {
 		}
 
 		auto compute_single_sum = [&]() -> complex_prec {
-			complex_prec sumBuffer = 0;
-			complex_prec returnBuffer = 0;
+			complex_prec sumBuffer{};
+			complex_prec returnBuffer{};
 			for (int q = 0; q < Constants::BASIS_SIZE; q++)
 			{
 				q_idx = { x(q), y(q) };
@@ -127,7 +127,7 @@ namespace Hubbard::Helper {
 			throw std::invalid_argument("There are more than 2 WickOperators: " + term.operators.size());
 		}
 
-		complex_prec returnBuffer = 1;
+		complex_prec returnBuffer{ 1, 0 };
 		for (size_t i = 0; i < term.operators.size(); i++)
 		{
 			Eigen::Vector2i momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k' });

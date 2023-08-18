@@ -10,10 +10,16 @@ namespace Hubbard {
 	template <typename DataType>
 	struct ModelAttributes {
 	private:
-		void initializeParamters(const ModelParameters& _params) {
-			this->selfconsistency_values[0] = (std::abs(_params.U) + _params.V) * 0.5 + 0.1;
-			this->selfconsistency_values[1] = std::abs(_params.U) * 0.5 + 0.1;
-			this->selfconsistency_values[2] = std::abs(_params.U) * 0.5 + 0.1;
+		void initializeParamters_3d(const ModelParameters& _params) {
+			auto guess = [&]() -> double {
+				if (abs(_params.U) > 1e-12) {
+					return _params.U * exp(0.5 * log(36.)) * exp(-2. / (0.288731210720569176L * _params.U));
+				}
+				return 0.0;
+			};
+			this->selfconsistency_values[0] = guess() + std::abs(_params.V);
+			this->selfconsistency_values[1] = guess() + std::abs(_params.V);
+			this->selfconsistency_values[2] = guess() + std::abs(_params.V);
 			if (_params.U > 0) {
 				this->selfconsistency_values[2] = 0.;
 			}
@@ -28,7 +34,61 @@ namespace Hubbard {
 			}
 
 			this->selfconsistency_values[3] = 0.;
-			this->selfconsistency_values[4] = std::abs(_params.V) * 0.2;
+			this->selfconsistency_values[4] = abs(_params.V) * 0.2;
+
+			this->selfconsistency_values[5] = 0.;//_params.U * 0.1;
+			this->selfconsistency_values[6] = _params.V * 0.2;
+			this->selfconsistency_values[7] = _params.V * 0.2;
+		};
+		void initializeParamters_2d(const ModelParameters& _params) {
+			auto guess = [&]() -> double {
+				if (abs(_params.U) > 1e-12) {
+					return _params.U * 4. * exp(-2 * 3.1415926L / sqrt(_params.U));
+				}
+				return 0.0;
+			};
+			this->selfconsistency_values[0] = guess() + std::abs(_params.V);
+			this->selfconsistency_values[1] = guess() + std::abs(_params.V);
+			this->selfconsistency_values[2] = guess() + std::abs(_params.V);
+			if (_params.U > 0) {
+				this->selfconsistency_values[2] = 0.;
+			}
+			else {
+				this->selfconsistency_values[1] = 0.;
+			}
+			if (_params.V > 0) {
+				this->selfconsistency_values[2] = 0.;
+			}
+			else if (_params.V < 0) {
+				this->selfconsistency_values[0] = 0.;
+			}
+
+			this->selfconsistency_values[3] = 0.;
+			this->selfconsistency_values[4] = abs(_params.V) * 0.2;
+
+			this->selfconsistency_values[5] = 0.;//_params.U * 0.1;
+			this->selfconsistency_values[6] = _params.V * 0.2;
+			this->selfconsistency_values[7] = _params.V * 0.2;
+		};
+		void initializeParamters(const ModelParameters& _params) {
+			this->selfconsistency_values[0] = (abs(_params.U) + _params.V) * 0.5 + 0.1;
+			this->selfconsistency_values[1] = abs(_params.U) * 0.5 + 0.1;
+			this->selfconsistency_values[2] = abs(_params.U) * 0.5 + 0.1;
+			if (_params.U > 0) {
+				this->selfconsistency_values[2] = 0.;
+			}
+			else {
+				this->selfconsistency_values[1] = 0.;
+			}
+			if (_params.V > 0) {
+				this->selfconsistency_values[2] = 0.;
+			}
+			else if (_params.V < 0) {
+				this->selfconsistency_values[0] = 0.;
+			}
+
+			this->selfconsistency_values[3] = 0.;
+			this->selfconsistency_values[4] = abs(_params.V) * 0.2;
 
 			this->selfconsistency_values[5] = 0.;//_params.U * 0.1;
 			this->selfconsistency_values[6] = _params.V * 0.2;
@@ -54,15 +114,22 @@ namespace Hubbard {
 		ModelAttributes& operator=(const ModelAttributes& other) = default;
 		ModelAttributes& operator=(ModelAttributes&& other) = default;
 
-		explicit ModelAttributes(const ModelParameters& _params) {
-			this->initializeParamters(_params);
+		explicit ModelAttributes(const ModelParameters& _params, int dimension=0) {
+			if (dimension == 2) {
+				this->initializeParamters_2d(_params);
+			}
+			else if (dimension == 3) {
+				this->initializeParamters_3d(_params);
+			}
+			else {
+				this->initializeParamters(_params);
+			}
 		};
 
-		template<class RealType>
-		ModelAttributes(const ModelAttributes<std::complex<RealType>>& other)
+		ModelAttributes(const ModelAttributes<complex_prec>& other)
 			: selfconsistency_values(other.selfconsistency_values.size()), converged{ other.converged }
 		{
-			if constexpr (std::is_floating_point_v<DataType>) {
+			if constexpr (!Utility::is_complex<DataType>()) {
 				for (size_t i = 0U; i < selfconsistency_values.size(); ++i)
 				{
 					if (i == 4 || i == 7) {
@@ -77,13 +144,9 @@ namespace Hubbard {
 				std::copy(other.begin(), other.end(), this->begin());
 			}
 		};
-		template<class RealType>
-		ModelAttributes(const ModelAttributes<RealType>& other)
+		ModelAttributes(const ModelAttributes<global_floating_type>& other)
 			: selfconsistency_values(other.selfconsistency_values.size()), converged{ other.converged }
 		{
-			std::copy(other.begin(), other.end(), this->begin());
-		}
-		ModelAttributes(const ModelAttributes<DataType>& other) {
 			std::copy(other.begin(), other.end(), this->begin());
 		};
 
@@ -126,9 +189,9 @@ namespace Hubbard {
 		}
 
 		inline bool isOrdered() const {
-			for (const auto value : selfconsistency_values)
+			for (const auto& value : selfconsistency_values)
 			{
-				if (std::abs(value) > 1e-12) {
+				if (abs(value) > 1e-12) {
 					return true;
 				}
 			}
@@ -154,12 +217,12 @@ namespace Hubbard {
 
 		// Returns the total gap value sqrt(sc^2 + cdw^2)
 		inline global_floating_type getTotalGapValue() const {
-			return sqrt(std::abs(selfconsistency_values[0]) * std::abs(selfconsistency_values[0])
-				+ std::abs(selfconsistency_values[2]) * std::abs(selfconsistency_values[2]));
+			return sqrt(abs(selfconsistency_values[0]) * abs(selfconsistency_values[0])
+				+ abs(selfconsistency_values[2]) * abs(selfconsistency_values[2]));
 		};
 
 		inline bool isFinite(size_t i, double epsilon = 1e-12) const {
-			return (std::abs(selfconsistency_values[i]) > epsilon);
+			return (abs(selfconsistency_values[i]) > epsilon);
 		}
 		inline void print() const {
 			for (const auto& value : selfconsistency_values)

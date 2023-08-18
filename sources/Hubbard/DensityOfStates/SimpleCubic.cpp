@@ -8,6 +8,9 @@
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
 namespace Hubbard::DensityOfStates {
+	using std::log;
+	using std::asin;
+
 	std::vector<std::pair<dos_precision, dos_precision>> SimpleCubic::split_limits;
 	std::array<dos_precision, SimpleCubic::num_positions> SimpleCubic::abscissa;
 	std::array<dos_precision, SimpleCubic::num_positions> SimpleCubic::weights;
@@ -19,21 +22,21 @@ namespace Hubbard::DensityOfStates {
 	inline _internal_precision R(_internal_precision x) {
 		x *= 0.5;
 		// Special, analytically known cases:
-		if (std::abs(x) < CUT_OFF) {
+		if (abs(x) < CUT_OFF) {
 			return LOG_4;
 		}
-		return boost::math::ellint_1(sqrt_1_minus_x_squared(x)) + 0.5 * std::log(x * x);
+		return boost::math::ellint_1(sqrt_1_minus_x_squared(x)) + 0.5 * log(x * x);
 	}
 
 	inline _internal_precision derivative_R(_internal_precision x) {
 		// Special, analytically known cases:
-		if (std::abs(x) < CUT_OFF) {
+		if (abs(x) < CUT_OFF) {
 			return 0.0L;
 		}
-		if (std::abs(x + 2) < CUT_OFF) {
+		if (abs(x + 2) < CUT_OFF) {
 			return R_AT_2 + R_AT_2_1 * (x + 2);
 		}
-		if (std::abs(x - 2) < CUT_OFF) {
+		if (abs(x - 2) < CUT_OFF) {
 			return -R_AT_2 + R_AT_2_1 * (x - 2);
 		}
 
@@ -42,15 +45,15 @@ namespace Hubbard::DensityOfStates {
 	}
 
 	inline _internal_precision I_1(_internal_precision gamma) {
-		const _internal_precision lower_bound = std::max(-1.L, -2.L - gamma);
-		const _internal_precision upper_bound = std::min(1.L, 2.L - gamma);
-		_internal_precision ret = std::asin(upper_bound) * R(upper_bound + gamma) - std::asin(lower_bound) * R(lower_bound + gamma);
+		const _internal_precision lower_bound = std::max(_internal_precision{ -1 }, _internal_precision{ -2 } - gamma);
+		const _internal_precision upper_bound = std::min(_internal_precision{ 1 }, _internal_precision{ 2 } - gamma);
+		_internal_precision ret = asin(upper_bound) * R(upper_bound + gamma) - asin(lower_bound) * R(lower_bound + gamma);
 
 		auto integrand = [gamma](_internal_precision phi) {
-			return std::asin(phi) * derivative_R(phi + gamma);
+			return asin(phi) * derivative_R(phi + gamma);
 		};
 
-		ret -= boost::math::quadrature::gauss_kronrod<dos_precision, 30>::integrate(integrand, lower_bound, upper_bound, 10, 1e-12);
+		ret -= boost::math::quadrature::gauss_kronrod<_internal_precision, 30>::integrate(integrand, lower_bound, upper_bound, 10, 1e-12);
 		return ret;
 	}
 
@@ -60,13 +63,13 @@ namespace Hubbard::DensityOfStates {
 		if (gamma >= -1 && gamma <= 1) {
 			return (-LONG_PI * LOG_4);
 		}
-		const _internal_precision lower_bound = std::max(-1.L, -2.L - gamma);
-		const _internal_precision upper_bound = std::min(1.L, 2.L - gamma);
+		const _internal_precision lower_bound = std::max(_internal_precision{ -1 }, _internal_precision{ -2 } - gamma);
+		const _internal_precision upper_bound = std::min(_internal_precision{ 1 }, _internal_precision{ 2 } - gamma);
 
 		auto integrand = [gamma](_internal_precision phi) {
-			return std::log(0.25 * (gamma + phi) * (gamma + phi)) / sqrt_1_minus_x_squared(phi);
+			return log(0.25 * (gamma + phi) * (gamma + phi)) / sqrt_1_minus_x_squared(phi);
 		};
-		boost::math::quadrature::tanh_sinh<dos_precision> integrator;
+		boost::math::quadrature::tanh_sinh<_internal_precision> integrator;
 		return 0.5 * integrator.integrate(integrand, lower_bound, upper_bound);
 	}
 

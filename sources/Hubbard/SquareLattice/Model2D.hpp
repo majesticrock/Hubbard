@@ -26,7 +26,7 @@ namespace Hubbard::SquareLattice
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
-			F.fill(0);
+			F.fill(global_floating_type{});
 			std::conditional_t<Utility::is_complex<DataType>(),
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
@@ -34,10 +34,10 @@ namespace Hubbard::SquareLattice
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
-				global_floating_type k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				global_floating_type k_x = (k * LONG_PI) / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
-					global_floating_type k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
+					global_floating_type k_y = (l * LONG_PI) / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_x, k_y};
 
 					this->fillHamiltonian(ks);
@@ -68,14 +68,14 @@ namespace Hubbard::SquareLattice
 		{
 			reciever.resize(4 * Constants::K_DISCRETIZATION, std::vector<global_floating_type>(2 * Constants::K_DISCRETIZATION));
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			global_floating_type k_val = 0;
-			global_floating_type l_val = 0;
+			global_floating_type k_val{};
+			global_floating_type l_val{};
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				k_val = k * L_PI / Constants::K_DISCRETIZATION;
+				k_val = k * LONG_PI / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					l_val = l * L_PI / Constants::K_DISCRETIZATION;
+					l_val = l * LONG_PI / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_val, l_val};
 					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton, false);
@@ -83,7 +83,7 @@ namespace Hubbard::SquareLattice
 
 					for (int i = 1; i < 4; i++)
 					{
-						if (std::abs(solver.eigenvalues()(0) - solver.eigenvalues()(i)) > 1e-8) {
+						if (abs(solver.eigenvalues()(0) - solver.eigenvalues()(i)) > 1e-8) {
 							reciever[k + 3 * Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(i);
 							break;
 						}
@@ -93,13 +93,14 @@ namespace Hubbard::SquareLattice
 		};
 
 		inline virtual global_floating_type entropyPerSite() override {
-			global_floating_type entropy = 0;
+			using std::log;
+			global_floating_type entropy{};
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
-				global_floating_type k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				global_floating_type k_x = (k * LONG_PI) / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
-					global_floating_type k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
+					global_floating_type k_y = (l * LONG_PI) / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_x, k_y};
 
 					this->fillHamiltonian(ks);
@@ -109,7 +110,7 @@ namespace Hubbard::SquareLattice
 						[this](global_floating_type current, global_floating_type toAdd) {
 							auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 							// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
-							return (occ > 1e-12 ? current - occ * std::log(occ) : current);
+							return (occ > 1e-12 ? current - occ * log(occ) : current);
 						});
 				}
 			}
@@ -117,13 +118,13 @@ namespace Hubbard::SquareLattice
 		};
 
 		inline virtual global_floating_type internalEnergyPerSite() override {
-			global_floating_type energy = 0;
+			global_floating_type energy{};
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
-				global_floating_type k_x = (k * L_PI) / Constants::K_DISCRETIZATION;
+				global_floating_type k_x = (k * LONG_PI) / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
-					global_floating_type k_y = (l * L_PI) / Constants::K_DISCRETIZATION;
+					global_floating_type k_y = (l * LONG_PI) / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_x, k_y};
 					this->fillHamiltonian(ks);
 					this->hamilton_solver.compute(this->hamilton, false);
@@ -138,15 +139,15 @@ namespace Hubbard::SquareLattice
 		};
 
 		inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) {
-			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
-			sum_of_all = std::vector<complex_prec>(8, 0.0);
+			expecs = std::vector<MatrixCL>(8U, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
+			sum_of_all = std::vector<complex_prec>(8U, complex_prec{});
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
 					NumericalMomentum<2> ks{
-						(k* L_PI) / Constants::K_DISCRETIZATION, (l* L_PI) / Constants::K_DISCRETIZATION
+						(k* LONG_PI) / Constants::K_DISCRETIZATION, (l* LONG_PI) / Constants::K_DISCRETIZATION
 					};
 					this->fillHamiltonian(ks);
 					this->fillRho();
@@ -172,7 +173,7 @@ namespace Hubbard::SquareLattice
 						sum_of_all[idx] += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
 					}
 
-					if (std::abs(this->rho(3, 0)) > 1e-10) {
+					if (abs(this->rho(3, 0)) > 1e-10) {
 						std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
 					}
 				}
