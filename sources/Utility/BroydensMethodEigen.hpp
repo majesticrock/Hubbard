@@ -2,10 +2,10 @@
 #include <Eigen/Dense>
 
 namespace Utility::NumericalSolver::Roots {
-	template<typename data_type, int t_vector_size>
+	template<typename RealType, int t_vector_size>
 	class BroydensMethodEigen {
-		using MatrixType = Eigen::Matrix<data_type, t_vector_size, t_vector_size>;
-		using VectorType = Eigen::Vector<data_type, t_vector_size>;
+		using MatrixType = Eigen::Matrix<RealType, t_vector_size, t_vector_size>;
+		using VectorType = Eigen::Vector<RealType, t_vector_size>;
 
 		static void estimate_jacobian(MatrixType& J_new, const MatrixType& J_old,
 			const VectorType& delta_x, const VectorType& delta_F)
@@ -24,8 +24,8 @@ namespace Utility::NumericalSolver::Roots {
 			// EPS_F is the minimum f(x)
 			constexpr long double EPS_F = 1e-30;//std::numeric_limits<long double>::epsilon();
 			constexpr long double EPS_X = 1e-30;//std::numeric_limits<long double>::epsilon();
-			data_type diff_x{ 100 };
-			data_type diff_F{ 100 };
+			RealType diff_x{ 100 };
+			RealType diff_F{ 100 };
 			int iter_num{};
 
 			VectorType F_old{ VectorType::Zero(DIM) },

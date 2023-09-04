@@ -49,7 +49,7 @@ namespace Hubbard::Selfconsistency {
 				std::copy(this->_attr->begin(), this->_attr->end(), x0.begin());
 
 				if (debugPolicy.printAll) {
-					std::cout << iterNum << ":\t" << std::fixed << std::setprecision(8);
+					std::cout << iterNum << ":\t" << std::scientific << std::setprecision(4);
 					printAsRow<-1>(x0);
 					std::cout << "Error:  " << error << "\n";
 				}

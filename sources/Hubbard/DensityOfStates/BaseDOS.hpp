@@ -11,7 +11,11 @@ namespace Hubbard::DensityOfStates {
 	using dos_precision = long_double_t;
 	_CONST_LONG_FLOATING R_AT_2 = (LONG_PI - 4) / 8;
 	_CONST_LONG_FLOATING R_AT_2_1 = (5 * LONG_PI / 64 - 0.25L);
+#ifdef _BOOST_PRECISION
+	_CONST_LONG_FLOATING CUT_OFF = 1e-32;
+#else
 	_CONST_LONG_FLOATING CUT_OFF = 1e-12;
+#endif
 
 	// Computes sqrt(1 - x^2)
 	template <class RealType>

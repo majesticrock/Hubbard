@@ -114,6 +114,7 @@ namespace Hubbard::DensityOfStates {
 		}
 		for (int i = 0; i < n_splits; ++i)
 		{
+#pragma omp parallel for
 			for (size_t j = 0U; j < num_positions; ++j)
 			{
 				const int pos = i * num_positions + j;

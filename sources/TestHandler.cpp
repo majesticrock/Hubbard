@@ -8,6 +8,7 @@
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
 
 using namespace Hubbard::DensityOfStates;
+using namespace Hubbard;
 
 std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
 	for (size_t i = 0U; i < data.size(); ++i)
@@ -27,21 +28,21 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 
 	//------------------------------------------------------------//
 	if (input.getString("lattice_type") == "square") {
-		Hubbard::DOSModels::BroydenDOS<Square> model3(modelParameters);
+		DOSModels::BroydenDOS<Square> model3(modelParameters);
 		model3.computePhases({ true, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
 	else if (input.getString("lattice_type") == "cube") {
-		Hubbard::DOSModels::BroydenDOS<SimpleCubic> model3(modelParameters);
+		DOSModels::BroydenDOS<SimpleCubic> model3(modelParameters);
 		model3.computePhases({ true, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
 
 	//test_b = std::chrono::steady_clock::now();
-	//Hubbard::DensityOfStates::SimpleCubic sc_dos;
+	//DensityOfStates::SimpleCubic sc_dos;
 	//sc_dos.computeValues();
 	//Utility::saveData(sc_dos.values, "../../data/3d_dos.dat.gz");
-	//Hubbard::DensityOfStates::Square square_dos;
+	//DensityOfStates::Square square_dos;
 	//square_dos.computeValues();
 	//Utility::saveData(square_dos.values, "../../data/2d_dos.dat.gz");
 
@@ -51,7 +52,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	return;
 	//------------------------------------------------------------//
 
-	//Hubbard::SquareLattice::HubbardCDW model(modelParameters);
+	//SquareLattice::HubbardCDW model(modelParameters);
 	//model.computePhases({false, true}).print();
 	//std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 	//
@@ -62,7 +63,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	//return _DEFAULT_EXIT;
 	//------------------------------------------------------------//
 
-	Hubbard::SquareLattice::UsingBroyden model2(modelParameters);
+	SquareLattice::UsingBroyden model2(modelParameters);
 	test_b = std::chrono::steady_clock::now();
 	model2.computePhases({ false, true }).print();
 	std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
