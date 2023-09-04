@@ -3,9 +3,15 @@
 #include "../Utility/Resolvent.hpp"
 #include <boost/math/constants/constants.hpp>
 
-#define _BOOST_PRECISION
+//#define _BOOST_PRECISION
+//#define _LONG_PRECISION
 #ifdef _BOOST_PRECISION
 #include <boost/multiprecision/cpp_bin_float.hpp>
+#define SQUARE_QUAD_CUT_OFF -30
+#define SC_QUAD_CUT_OFF -15
+#else
+#define SQUARE_QUAD_CUT_OFF -14
+#define SC_QUAD_CUT_OFF -13
 #endif
 
 #include <cmath>
@@ -30,13 +36,15 @@ namespace Hubbard {
 	typedef boost::multiprecision::cpp_bin_float_100 global_floating_type;
 	// At least long double, but maybe larger
 	typedef boost::multiprecision::cpp_bin_float_100 long_double_t;
+#define _CONST_FLOATING const long_double_t
 #define _CONST_LONG_FLOATING const long_double_t
 #else
-#define _LONG_PRECISION
 #ifdef _LONG_PRECISION
+#define _CONST_FLOATING constexpr long double
 #define _MPI_RETURN_TYPE MPI_LONG_DOUBLE
 	typedef long double global_floating_type;
 #else
+#define _CONST_FLOATING constexpr double
 #define _MPI_RETURN_TYPE MPI_DOUBLE
 	typedef double global_floating_type;
 #endif // _LONG_PRECISION
@@ -49,7 +57,8 @@ namespace Hubbard {
 	_CONST_LONG_FLOATING LONG_1_PI = boost::math::constants::one_div_pi<long_double_t>(); // 1 / pi
 	_CONST_LONG_FLOATING LONG_PI_2 = boost::math::constants::half_pi<long_double_t>(); // pi / 2
 	_CONST_LONG_FLOATING LOG_4 = 2 * boost::math::constants::ln_two<long_double_t>(); // ln(4) = 2 ln(2)
-	_CONST_LONG_FLOATING ONE_HALF = 0.5L;
+	_CONST_FLOATING ONE_HALF = 0.5L;
+	_CONST_FLOATING BASE_PI = boost::math::constants::pi<global_floating_type>(); // pi
 
 	typedef Eigen::Matrix<global_floating_type, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
 	typedef Eigen::Vector<global_floating_type, Eigen::Dynamic> Vector_L;

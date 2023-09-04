@@ -34,10 +34,10 @@ namespace Hubbard::SquareLattice
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
-				global_floating_type k_x = (k * LONG_PI) / Constants::K_DISCRETIZATION;
+				global_floating_type k_x = (k * BASE_PI) / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
-					global_floating_type k_y = (l * LONG_PI) / Constants::K_DISCRETIZATION;
+					global_floating_type k_y = (l * BASE_PI) / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_x, k_y};
 
 					this->fillHamiltonian(ks);
@@ -72,10 +72,10 @@ namespace Hubbard::SquareLattice
 			global_floating_type l_val{};
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				k_val = k * LONG_PI / Constants::K_DISCRETIZATION;
+				k_val = k * BASE_PI / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					l_val = l * LONG_PI / Constants::K_DISCRETIZATION;
+					l_val = l * BASE_PI / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_val, l_val};
 					this->fillHamiltonian(ks);
 					solver.compute(this->hamilton, false);
@@ -97,10 +97,10 @@ namespace Hubbard::SquareLattice
 			global_floating_type entropy{};
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
-				global_floating_type k_x = (k * LONG_PI) / Constants::K_DISCRETIZATION;
+				global_floating_type k_x = (k * BASE_PI) / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
-					global_floating_type k_y = (l * LONG_PI) / Constants::K_DISCRETIZATION;
+					global_floating_type k_y = (l * BASE_PI) / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_x, k_y};
 
 					this->fillHamiltonian(ks);
@@ -121,10 +121,10 @@ namespace Hubbard::SquareLattice
 			global_floating_type energy{};
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
 			{
-				global_floating_type k_x = (k * LONG_PI) / Constants::K_DISCRETIZATION;
+				global_floating_type k_x = (k * BASE_PI) / Constants::K_DISCRETIZATION;
 				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
 				{
-					global_floating_type k_y = (l * LONG_PI) / Constants::K_DISCRETIZATION;
+					global_floating_type k_y = (l * BASE_PI) / Constants::K_DISCRETIZATION;
 					NumericalMomentum<2> ks{k_x, k_y};
 					this->fillHamiltonian(ks);
 					this->hamilton_solver.compute(this->hamilton, false);
@@ -147,7 +147,7 @@ namespace Hubbard::SquareLattice
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
 					NumericalMomentum<2> ks{
-						(k* LONG_PI) / Constants::K_DISCRETIZATION, (l* LONG_PI) / Constants::K_DISCRETIZATION
+						(k* BASE_PI) / Constants::K_DISCRETIZATION, (l* BASE_PI) / Constants::K_DISCRETIZATION
 					};
 					this->fillHamiltonian(ks);
 					this->fillRho();

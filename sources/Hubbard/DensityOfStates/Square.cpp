@@ -8,9 +8,11 @@ namespace Hubbard::DensityOfStates {
 	std::vector<abscissa_t> Square::upper_border_to_abscissa;
 	std::vector<dos_precision> Square::weights;
 
-	dos_precision Square::LOWER_BORDER;
 	dos_precision Square::b_minus_a_halved;
 
+#ifdef _BOOST_PRECISION
+#pragma omp declare reduction(+:dos_precision:omp_out+=omp_in)
+#endif
 	void Square::computeValues()
 	{
 		step = std::ldexp(1, -1);
@@ -23,14 +25,15 @@ namespace Hubbard::DensityOfStates {
 
 		tanh_sinh_helper<abscissa_t, dos_precision> tsh{ 0, 2 };
 		tanh_sinh_helper<abscissa_t, dos_precision>::SaveTo buffer_vectors{ &abscissa, & upper_border_to_abscissa, & weights, & values};
-		dos_precision old_integral{ tsh.initial_filling<-30>(compute_DOS, buffer_vectors) };
+		dos_precision old_integral{ tsh.initial_filling<SQUARE_QUAD_CUT_OFF>(compute_DOS, buffer_vectors) };
 
 		dos_precision new_integral{};
 		dos_precision error{ 100.0 };
-		while (error > 1e-30) {
+		while (error > (boost::math::pow<SQUARE_QUAD_CUT_OFF>(10))) {
 			tsh.increase_level(buffer_vectors);
 
 			new_integral = 0;
+#pragma omp parallel for reduction(+:new_integral) schedule(dynamic)
 			for (int k = 0; k < values.size(); ++k)
 			{
 				if (k % 2 != 0) {

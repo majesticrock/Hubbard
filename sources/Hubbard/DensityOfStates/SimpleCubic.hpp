@@ -3,27 +3,18 @@
 
 namespace Hubbard::DensityOfStates {
 	struct SimpleCubic : public BaseDOS {
-		static constexpr double LOWER_BORDER = -3;
-		constexpr static int num_positions = 300U;
-		// Needs to be a multiple of three of optimal accuracy
-		// This is due to the discontinuity in the first derivative at +/- 1
-		// It should also be even to reflect the symmetry of the DOS
-		static int n_splits;
+		static std::vector<abscissa_t> abscissa;
+		static std::vector<abscissa_t> upper_border_to_abscissa;
+		static std::vector<dos_precision> weights;
 		static dos_precision b_minus_a_halved;
 
-		static std::vector<std::pair<dos_precision, dos_precision>> split_limits;
-		static std::array<dos_precision, num_positions> abscissa;
-		static std::array<dos_precision, num_positions> weights;
-
+		static constexpr double LOWER_BORDER = -3;
 		static constexpr int DIMENSION = 3;
+		static constexpr int n_splits = 3;
 
 		inline static size_t n_abscissa() noexcept {
-			return num_positions * n_splits;
+			return abscissa.size();
 		};
-		// Returns the offset in the gauss quadrature (a+b)/2 depending on the interval number i
-		inline static dos_precision functionQuadratureOffset(int i) {
-			return 0.5 * (split_limits[i].first + split_limits[i].second);
-		}
 		virtual void computeValues() override;
 
 		template <class ResultType>
@@ -34,22 +25,24 @@ namespace Hubbard::DensityOfStates {
 
 			template <bool byValue, class UnaryFunction>
 			const ResultType& _internal_integrate(const UnaryFunction& F) {
-				result *= dos_precision{};
-
-				for (int i = 0; i < n_splits; ++i)
+				if constexpr (byValue) {
+					result = values[0] * static_cast<dos_precision>(weights[0]) * F(static_cast<dos_precision>(abscissa.front()));
+				}
+				else {
+					F(static_cast<dos_precision>(abscissa.front()), buffer);
+					result = values[0] * static_cast<dos_precision>(weights[0]) * buffer;
+				}
+				for (size_t i = 1U; i < values.size(); ++i)
 				{
-					for (size_t j = 0U; j < num_positions; ++j)
-					{
-						if constexpr (byValue) {
-							result += weights[j] * values[i * num_positions + j] * F(functionQuadratureOffset(i) + abscissa[j]);
-						}
-						else {
-							F(functionQuadratureOffset(i) + abscissa[j], buffer);
-							result += weights[j] * values[i * num_positions + j] * buffer;
-						}
+					if constexpr (byValue) {
+						result += values[i] * static_cast<dos_precision>(weights[i]) * F(static_cast<dos_precision>(abscissa[i]));
+					}
+					else {
+						F(static_cast<dos_precision>(abscissa[i]), buffer);
+						result += values[i] * static_cast<dos_precision>(weights[i]) * buffer;
 					}
 				}
-
+				result *= dos_precision{2};
 				return result;
 			};
 		public:

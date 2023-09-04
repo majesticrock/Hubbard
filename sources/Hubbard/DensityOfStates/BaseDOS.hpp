@@ -5,14 +5,17 @@
 #include <cmath>
 #include <boost/math/special_functions/ellint_1.hpp>
 #include <boost/math/special_functions/ellint_2.hpp>
+#include <boost/multiprecision/cpp_bin_float.hpp>
 #include "../GlobalDefinitions.hpp"
 
 namespace Hubbard::DensityOfStates {
+	typedef boost::multiprecision::number<boost::multiprecision::cpp_bin_float<100>> abscissa_t;
 	using dos_precision = long_double_t;
+
 	_CONST_LONG_FLOATING R_AT_2 = (LONG_PI - 4) / 8;
 	_CONST_LONG_FLOATING R_AT_2_1 = (5 * LONG_PI / 64 - 0.25L);
 #ifdef _BOOST_PRECISION
-	_CONST_LONG_FLOATING CUT_OFF = 1e-32;
+	_CONST_LONG_FLOATING CUT_OFF = 1e-20;
 #else
 	_CONST_LONG_FLOATING CUT_OFF = 1e-12;
 #endif

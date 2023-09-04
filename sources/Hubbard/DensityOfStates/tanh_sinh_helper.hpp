@@ -30,7 +30,6 @@ namespace Hubbard::DensityOfStates {
 	struct tanh_sinh_helper {
 	private:
 		using WeightType = FinalType;
-		RealType _sinh_x{};
 
 		// Standard from -1 to 1
 		const FinalType _lower_border{ -1 };
@@ -50,23 +49,19 @@ namespace Hubbard::DensityOfStates {
 			std::vector<FinalType>* values;
 		};
 
-		inline void set_sinh_x(RealType x) {
-			_sinh_x = sinh(x);
-		};
-		inline RealType compute_abscissa() const {
-			return _upper_border - compute_upper_border_to_abscissa();// _center + _half_distance * std::tanh(LONG_PI_2 * _sinh_x);
+		inline RealType compute_abscissa(const RealType& _sinh_x) const {
+			return _upper_border - compute_upper_border_to_abscissa(_sinh_x);// _center + _half_distance * tanh(LONG_PI_2 * _sinh_x);
 		};
 		// Computes b - x
-		inline RealType compute_upper_border_to_abscissa() const {
-			return _half_distance * 2. /
-				(1 + exp(pi<RealType>() * _sinh_x));
+		inline RealType compute_upper_border_to_abscissa(const RealType& _sinh_x) const {
+			return _half_distance * 2. / (1 + exp(pi<RealType>() * _sinh_x));
 		};
 		// Computes a - x
-		inline RealType compute_lower_border_to_abscissa() const {
+		inline RealType compute_lower_border_to_abscissa(const RealType& _sinh_x) const {
 			return -2. * _half_distance * exp(pi<RealType>() * _sinh_x) / (1 + exp(pi<RealType>() * _sinh_x));
 		};
-		inline WeightType compute_weight(int k) const {
-			return (_step * half_pi<WeightType>() * cosh(k * _step))
+		inline WeightType compute_weight(int k, const RealType& _sinh_x) const {
+			return _half_distance * (_step * half_pi<WeightType>() * cosh(k * _step))
 				/ static_cast<WeightType>(pow(cosh(half_pi<WeightType>() * _sinh_x), 2));
 		};
 
@@ -94,11 +89,13 @@ namespace Hubbard::DensityOfStates {
 		FinalType initial_filling(const UnaryFunction& dos, SaveTo& save_to) {
 			FinalType integral{};
 			auto fill_vectors = [&](int k, bool sign) {
+				RealType sinhx;
 				do {
-					set_sinh_x((sign ? k : -k) * _step);
-					save_to.border_to_abscissa->push_back(compute_upper_border_to_abscissa());
-					save_to.abscissa->push_back(compute_abscissa());
-					save_to.weights->push_back(compute_weight((sign ? k : -k)));
+					sinhx = sinh((sign ? k : -k) * _step);
+
+					save_to.border_to_abscissa->push_back(compute_upper_border_to_abscissa(sinhx));
+					save_to.abscissa->push_back(compute_abscissa(sinhx));
+					save_to.weights->push_back(compute_weight((sign ? k : -k), sinhx));
 					save_to.values->push_back(dos(save_to.abscissa->back(), save_to.border_to_abscissa->back()));
 					++k;
 
@@ -121,14 +118,14 @@ namespace Hubbard::DensityOfStates {
 
 		template<class UnaryFunction>
 		inline void compute_step(const UnaryFunction& dos, int k, SaveTo& save_to) {
-			set_sinh_x((k + _min_k) * _step);
-			save_to.abscissa->at(k) = compute_abscissa();
-			save_to.border_to_abscissa->at(k) = compute_upper_border_to_abscissa();
-			save_to.weights->at(k) = compute_weight(k + _min_k);
+			const RealType sinhx = sinh((k + _min_k) * _step);
+			save_to.abscissa->at(k) = compute_abscissa(sinhx);
+			save_to.border_to_abscissa->at(k) = compute_upper_border_to_abscissa(sinhx);
+			save_to.weights->at(k) = compute_weight(k + _min_k, sinhx);
 			save_to.values->at(k) = dos(save_to.abscissa->at(k), save_to.border_to_abscissa->at(k));
 		};
 
-		tanh_sinh_helper(RealType a = -1, RealType b = 1)
+		tanh_sinh_helper(const FinalType& a = -1, const FinalType& b = 1)
 			: _lower_border(a), _upper_border(b), _center((b + a) / 2), _half_distance((b - a) / 2) {};
 	};
 }

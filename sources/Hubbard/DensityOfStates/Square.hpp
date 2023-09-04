@@ -1,24 +1,22 @@
 #pragma once
-#include <boost/multiprecision/cpp_bin_float.hpp>
 #include "BaseDOS.hpp"
-#include <cmath>
 
 namespace Hubbard::DensityOfStates {
 	//typedef boost::multiprecision::cpp_bin_float_100 abscissa_t;
-	typedef boost::multiprecision::number<boost::multiprecision::cpp_bin_float<500>> abscissa_t;
 	struct Square : public BaseDOS {
 		static std::vector<abscissa_t> abscissa;
 		static std::vector<abscissa_t> upper_border_to_abscissa;
 		static std::vector<dos_precision> weights;
-
-		static dos_precision LOWER_BORDER;
 		static dos_precision b_minus_a_halved;
+
+		static constexpr double LOWER_BORDER = -2;
 		static constexpr int DIMENSION = 2;
 
-		virtual void computeValues() override;
 		inline static size_t n_abscissa() noexcept {
 			return abscissa.size();
 		};
+
+		virtual void computeValues() override;
 
 		template <class ResultType>
 		class DOSIntegrator {

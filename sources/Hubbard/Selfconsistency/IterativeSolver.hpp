@@ -1,13 +1,18 @@
 #pragma once
 #include <iostream>
 #include <iomanip>
-#include "SolverBase.hpp"
+#include "../GlobalDefinitions.hpp"
+#include "../BaseModel.hpp"
 #include "../../Utility/UnderlyingFloatingPoint.hpp"
 
 namespace Hubbard::Selfconsistency {
 	template <typename DataType>
-	class IterativeSolver : public SolverBase<DataType> {
+	class IterativeSolver {
 	protected:
+		BaseModel<DataType>* _model{};
+		ModelAttributes<DataType>* _attr{};
+		const size_t NUMBER_OF_PARAMETERS;
+
 		using ParameterVector = Eigen::Vector<DataType, Eigen::Dynamic>;
 
 		inline bool hasSignFlippingBehaviour(const ParameterVector& x0) {
@@ -61,7 +66,7 @@ namespace Hubbard::Selfconsistency {
 			return true;
 		};
 	public:
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy& debugPolicy) override
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy& debugPolicy) 
 		{
 			constexpr double EPSILON = 1e-12;
 			constexpr size_t MAX_STEPS = 1500;
@@ -76,8 +81,9 @@ namespace Hubbard::Selfconsistency {
 			return ModelAttributes<global_floating_type>(*this->_attr);
 		};
 
+		virtual ~IterativeSolver() = default;
 		IterativeSolver() = delete;
 		IterativeSolver(BaseModel<DataType>* model_ptr, ModelAttributes<DataType>* attribute_ptr)
-			: SolverBase<DataType>(model_ptr, attribute_ptr) {};
+			: _model(model_ptr), _attr(attribute_ptr), NUMBER_OF_PARAMETERS(_attr->size()) {};
 	};
 }

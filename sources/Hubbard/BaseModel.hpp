@@ -38,7 +38,7 @@ namespace Hubbard {
 			}
 		};
 		inline void setParameters(ParameterVector& F) {
-			_CONST_LONG_FLOATING new_weight{ 0.5 };
+			_CONST_FLOATING new_weight{ 0.5 };
 			for (size_t i = 0U; i < F.size(); ++i)
 			{
 				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
@@ -97,7 +97,7 @@ namespace Hubbard {
 			this->setParameters(F);
 		}
 	public:
-		explicit BaseModel(const ModelParameters& params, int dimension=0)
+		explicit BaseModel(const ModelParameters& params, int dimension = 0)
 			: model_attributes(params, dimension), temperature(params.temperature), U(params.U), V(params.V)
 		{
 			init();

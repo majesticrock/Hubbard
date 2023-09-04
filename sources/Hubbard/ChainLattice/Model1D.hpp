@@ -39,7 +39,7 @@ namespace Hubbard::ChainLattice
 
 			for (int k = -Constants::K_DISCRETIZATION; k < 0; ++k)
 			{
-				const NumericalMomentum<1> k_x{ (k* LONG_PI) / Constants::K_DISCRETIZATION };
+				const NumericalMomentum<1> k_x{ (k* BASE_PI) / Constants::K_DISCRETIZATION };
 
 				this->fillHamiltonian(NumericalMomentum{ k_x });
 				this->fillRho();
@@ -64,7 +64,7 @@ namespace Hubbard::ChainLattice
 			global_floating_type entropy{};
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				const NumericalMomentum<1> k_x{ (k* LONG_PI) / Constants::K_DISCRETIZATION };
+				const NumericalMomentum<1> k_x{ (k* BASE_PI) / Constants::K_DISCRETIZATION };
 
 				this->fillHamiltonian(k_x);
 				this->hamilton_solver.compute(this->hamilton, false);
@@ -84,7 +84,7 @@ namespace Hubbard::ChainLattice
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				const NumericalMomentum<1> k_x{ (k* LONG_PI) / Constants::K_DISCRETIZATION };
+				const NumericalMomentum<1> k_x{ (k* BASE_PI) / Constants::K_DISCRETIZATION };
 
 				this->fillHamiltonian(k_x);
 				this->hamilton_solver.compute(this->hamilton, false);
@@ -103,7 +103,7 @@ namespace Hubbard::ChainLattice
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
-				const NumericalMomentum<1> k_x{ (k* LONG_PI) / Constants::K_DISCRETIZATION };
+				const NumericalMomentum<1> k_x{ (k* BASE_PI) / Constants::K_DISCRETIZATION };
 				this->fillHamiltonian(k_x);
 				this->fillRho();
 
