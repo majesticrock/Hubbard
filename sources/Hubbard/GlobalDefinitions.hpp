@@ -92,7 +92,12 @@ namespace Hubbard {
 		}
 		std::cout << std::endl;
 	}
+
+#ifdef _BOOST_PRECISION
 	const complex_prec I = { 0, 1 };
+#else
+	constexpr complex_prec I = { 0, 1 };
+#endif
 
 	using ComplexParameterVector = Eigen::Vector<complex_prec, Eigen::Dynamic>;
 
@@ -105,5 +110,11 @@ namespace Hubbard {
 		r(5) = c(5).imag(); // Eta
 		r(6) = c(6).real(); // Gamma Occupation Up
 		r(7) = c(7).real(); // Gamma Occupation Down
+	};
+
+	// maps an index; [0, N_K) -> [-pi, pi)
+	template <typename T>
+	inline global_floating_type index_to_k_vector(const T index) {
+		return (((index * BASE_PI) / Constants::K_DISCRETIZATION) - BASE_PI);
 	};
 }

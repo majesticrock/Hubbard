@@ -168,8 +168,27 @@ namespace Hubbard {
 		};
 
 		inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) {
-			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
+			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(DOS::values.size(), 1));
 			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
+
+			int count = 0;
+			auto expectationValues = [&](global_floating_type gamma, ComplexParameterVector& result) {
+				this->fillHamiltonian(gamma);
+				this->fillRho();
+				this->setParameterSet(result, gamma);
+
+				for (size_t i = 0U; i < 8U; ++i)
+				{
+					expecs[i](count, 0) = result(i);
+				}
+				++count;
+			};
+			ComplexParameterVector sums{ _self_consistency_integrator.integrate_by_reference(expectationValues) };
+
+			for (size_t i = 0U; i < 8U; ++i)
+			{
+				sum_of_all[i] = sums(i);
+			}
 		};
 	};
 

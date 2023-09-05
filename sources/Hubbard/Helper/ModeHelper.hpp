@@ -8,15 +8,6 @@
 #define _PSEUDO_INVERSE
 
 namespace Hubbard::Helper {
-	constexpr double SQRT_SALT = 1e-5;
-	constexpr double SALT = SQRT_SALT * SQRT_SALT;
-	constexpr double ERROR_MARGIN = 1e-10;
-
-	constexpr int OPERATION_NONE = 0;
-	constexpr int OPERATION_INVERSE = 1;
-	constexpr int OPERATION_SQRT = 2;
-	constexpr int OPERATION_INVERSE_SQRT = 3;
-
 	class ModeHelper {
 	protected:
 		std::vector<MatrixCL> expecs{};
@@ -39,17 +30,21 @@ namespace Hubbard::Helper {
 		* 7 - g_up + g_down
 		*/
 
+		static constexpr double SQRT_SALT = 1e-5;
+		static constexpr double SALT = SQRT_SALT * SQRT_SALT;
+		static constexpr double ERROR_MARGIN = 1e-10;
+
+		static constexpr int OPERATION_NONE = 0;
+		static constexpr int OPERATION_INVERSE = 1;
+		static constexpr int OPERATION_SQRT = 2;
+		static constexpr int OPERATION_INVERSE_SQRT = 3;
+
 		int number_of_basis_terms{};
 		int start_basis_at{};
 
 		///////////////////////
 		// Utility functions //
 		///////////////////////
-		// maps an index; [0, N_K) -> [-pi, pi)
-		template <typename T>
-		inline global_floating_type index_to_k_vector(const T index) const {
-			return (((index * BASE_PI) / Constants::K_DISCRETIZATION) - BASE_PI);
-		};
 		// Computes the respective x or y component from a given input index
 		inline int x(int idx) const {
 			return idx / (2 * Constants::K_DISCRETIZATION) - Constants::K_DISCRETIZATION;
@@ -87,6 +82,7 @@ namespace Hubbard::Helper {
 		// methods //
 		/////////////
 		void loadWick(const std::string& filename);
+
 		inline Eigen::Vector2i computeMomentum(const SymbolicOperators::Momentum& momentum,
 			const std::vector<Eigen::Vector2i>& indizes, const std::vector<char>& momenta) const {
 			Eigen::Vector2i buffer = { 0,0 };
@@ -130,32 +126,25 @@ namespace Hubbard::Helper {
 #ifdef _PSEUDO_INVERSE
 					evs(i) = 0;
 #else
-					switch (option) {
-					default:
-						break;
-					case 1:
-						evs(i) = 1 / SALT;
-						break;
-
-					case 2:
+					if constexpr (option == 1) {
+						evs(i) = (1. / SALT);
+					}
+					else if constexpr (option == 2) {
 						evs(i) = SQRT_SALT;
-						break;
-					case 3:
-						evs(i) = 1. / SQRT_SALT;
+					}
+					else if constexpr (option == 3) {
+						evs(i) = (1. / SQRT_SALT);
 					}
 #endif
 				}
 				else {
-					switch (option) {
-					default:
-						break;
-					case 1:
+					if constexpr (option == 1) {
 						evs(i) = 1. / evs(i);
-						break;
-					case 2:
+					}
+					else if constexpr (option == 2) {
 						evs(i) = sqrt(evs(i));
-						break;
-					case 3:
+					}
+					else if constexpr (option == 3) {
 						evs(i) = 1. / sqrt(evs(i));
 					}
 				}

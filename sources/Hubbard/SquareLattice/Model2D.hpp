@@ -146,9 +146,7 @@ namespace Hubbard::SquareLattice
 			{
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					NumericalMomentum<2> ks{
-						(k* BASE_PI) / Constants::K_DISCRETIZATION, (l* BASE_PI) / Constants::K_DISCRETIZATION
-					};
+					NumericalMomentum<2> ks{ (k* BASE_PI) / Constants::K_DISCRETIZATION, (l* BASE_PI) / Constants::K_DISCRETIZATION };
 					this->fillHamiltonian(ks);
 					this->fillRho();
 

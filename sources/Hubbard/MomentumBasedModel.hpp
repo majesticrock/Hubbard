@@ -4,12 +4,6 @@
 #include "NumericalMomentum.hpp"
 
 namespace Hubbard {
-	// maps an index; [0, N_K) -> [-pi, pi)
-	template <typename T>
-	inline global_floating_type index_to_k_vector(const T index) {
-		return static_cast<global_floating_type>(((index * BASE_PI) / Constants::K_DISCRETIZATION) - BASE_PI);
-	};
-
 	template <typename DataType, size_t Dimension>
 	class MomentumBasedModel : public BaseModel<DataType>
 	{
