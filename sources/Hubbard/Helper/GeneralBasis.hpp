@@ -4,8 +4,6 @@
 namespace Hubbard::Helper {
 	class GeneralBasis : public ModeHelper
 	{
-	private:
-		virtual void fillBlock(int i, int j);
 	protected:
 		MatrixCL M, N;
 

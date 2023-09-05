@@ -66,7 +66,7 @@ namespace Hubbard::Selfconsistency {
 			return true;
 		};
 	public:
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy& debugPolicy) 
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy& debugPolicy)
 		{
 			constexpr double EPSILON = 1e-12;
 			constexpr size_t MAX_STEPS = 1500;

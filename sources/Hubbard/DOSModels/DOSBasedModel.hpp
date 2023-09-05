@@ -167,7 +167,7 @@ namespace Hubbard {
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
 
-		inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) {
+		virtual inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) override {
 			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(DOS::values.size(), 1));
 			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
 

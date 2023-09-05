@@ -138,7 +138,7 @@ namespace Hubbard::SquareLattice
 			return energy / Constants::BASIS_SIZE;
 		};
 
-		inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) {
+		inline virtual void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) override {
 			expecs = std::vector<MatrixCL>(8U, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
 			sum_of_all = std::vector<complex_prec>(8U, complex_prec{});
 

@@ -2,8 +2,8 @@
 #include <vector>
 #include <filesystem>
 #include "Hubbard/Helper/ModeHelper.hpp"
-#include "Hubbard/Helper/GeneralBasis.hpp"
-#include "Hubbard/Helper/XPModes.hpp"
+#include "Hubbard/Helper/SquareGeneral.hpp"
+#include "Hubbard/Helper/SquareXP.hpp"
 #include "Utility/OutputConvenience.hpp"
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
@@ -14,20 +14,20 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	using std::to_string;
 
 	std::vector<data_vector> reciever;
-	std::vector<data_vector> oneParticleEnergies;
+	//std::vector<data_vector> oneParticleEnergies;
 	Hubbard::global_floating_type totalGapValue;
 	std::vector<Hubbard::Resolvent_L> resolvents;
 
 	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;
 	if (input.getInt("start_basis_at") == -1) {
-		modeHelper = std::make_unique<Hubbard::Helper::XPModes>(input);
+		modeHelper = std::make_unique<Hubbard::Helper::SquareXP>(input);
 	}
 	else {
-		modeHelper = std::make_unique<Hubbard::Helper::GeneralBasis>(input);
+		modeHelper = std::make_unique<Hubbard::Helper::SquareGeneral>(input);
 	}
 
 	totalGapValue = modeHelper->getModel().getTotalGapValue();
-	modeHelper->getModel().getAllEnergies(oneParticleEnergies);
+	//modeHelper->getModel().getAllEnergies(oneParticleEnergies);
 	resolvents = modeHelper->computeCollectiveModes(reciever);
 
 	if (rank == 0) {
@@ -60,6 +60,6 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 			std::cout << "Resolvent returned an empty vector." << std::endl;
 		}
 		comments.pop_back();
-		Utility::saveData(oneParticleEnergies, BASE_FOLDER + output_folder + "one_particle.dat.gz", comments);
+		//Utility::saveData(oneParticleEnergies, BASE_FOLDER + output_folder + "one_particle.dat.gz", comments);
 	}
 }

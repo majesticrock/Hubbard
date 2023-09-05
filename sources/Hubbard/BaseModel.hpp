@@ -115,6 +115,8 @@ namespace Hubbard {
 
 		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) = 0;
 
+		virtual void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) = 0;
+
 		inline auto getTotalGapValue() const {
 			return this->model_attributes.getTotalGapValue();
 		}

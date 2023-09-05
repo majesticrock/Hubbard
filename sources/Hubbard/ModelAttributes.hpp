@@ -114,7 +114,7 @@ namespace Hubbard {
 		ModelAttributes& operator=(const ModelAttributes& other) = default;
 		ModelAttributes& operator=(ModelAttributes&& other) = default;
 
-		explicit ModelAttributes(const ModelParameters& _params, int dimension=0) {
+		explicit ModelAttributes(const ModelParameters& _params, int dimension = 0) {
 			if (dimension == 2) {
 				this->initializeParamters_2d(_params);
 			}
