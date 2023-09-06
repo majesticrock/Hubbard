@@ -92,6 +92,7 @@ namespace Hubbard::Helper {
 		virtual ~ModeHelper() = default;
 
 		virtual const BaseModel<global_floating_type>& getModel() const = 0;
+		virtual BaseModel<global_floating_type>& getModel() = 0;
 
 		virtual std::vector<Resolvent_L> computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) = 0;
 	};

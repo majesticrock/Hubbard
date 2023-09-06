@@ -8,7 +8,7 @@ namespace Hubbard {
 	template<unsigned int Dimension>
 	struct NumericalMomentum {
 		global_floating_type momenta[Dimension];
-		std::array<int, Dimension> k;
+		int k[Dimension];
 
 		NumericalMomentum()
 		{
@@ -18,32 +18,29 @@ namespace Hubbard {
 				k[d] = -Constants::K_DISCRETIZATION;
 			}
 		};
-		constexpr explicit NumericalMomentum(const std::array<int, Dimension>& point_in_bz) : k{ point_in_bz }
-		{
+		template <typename... Args>
+    	constexpr NumericalMomentum(Args... args) : k{static_cast<int>(args)...} {
+        	static_assert(sizeof...(Args) == Dimension, "Incorrect number of arguments");
+        	static_assert(std::conjunction_v<std::is_integral<Args>...>, "All arguments must be integers");
+        	
 			for (size_t d = 0U; d < Dimension; ++d)
 			{
-				momenta[d] = (k[d] * BASE_PI) / Constants::K_DISCRETIZATION;
+				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
 			}
-		};
-		constexpr explicit NumericalMomentum(std::array<int, Dimension>&& point_in_bz) : k{ point_in_bz }
-		{
-			for (size_t d = 0U; d < Dimension; ++d)
-			{
-				momenta[d] = (k[d] * BASE_PI) / Constants::K_DISCRETIZATION;
-			}
-		};
+   		}
 
-		template <bool shiftByPi>
-		constexpr explicit NumericalMomentum(const Eigen::Vector<int, Dimension>& point_in_bz) {
+		constexpr explicit NumericalMomentum(const Eigen::Array<int, Dimension, 1>& point_in_bz) {
 			for (size_t d = 0U; d < Dimension; ++d)
 			{
-				if constexpr (shiftByPi) {
-					k[d] = point_in_bz(d) - Constants::K_DISCRETIZATION;
-				}
-				else {
-					k[d] = point_in_bz(d);
-				}
-				momenta[d] = (k[d] * BASE_PI) / Constants::K_DISCRETIZATION;
+				k[d] = point_in_bz(d);
+				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
+			}
+		};
+		constexpr explicit NumericalMomentum(Eigen::Array<int, Dimension, 1>&& point_in_bz) {
+			for (size_t d = 0U; d < Dimension; ++d)
+			{
+				k[d] = std::move(point_in_bz(d));
+				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
 			}
 		};
 
@@ -71,34 +68,31 @@ namespace Hubbard {
 		};
 
 		inline NumericalMomentum& operator++() {
-			_increment<0>();
+			_increment();
 			return *this;
 		};
 
 		inline bool iterateHalfBZ() {
-			_increment<0>();
+			_increment();
 			return (k[Dimension - 1] < 0);
 		};
 
 		inline bool iterateFullBZ() {
-			_increment<0>();
+			_increment();
 			return (k[Dimension - 1] < Constants::K_DISCRETIZATION);
 		};
 
 	private:
-		template <int _d>
+		template <int _d=0>
 		inline void _increment() {
 			static_assert(_d < Dimension, "Call to increment in NumericalMomentum provides a too high dimension.");
 			if (++k[_d] >= Constants::K_DISCRETIZATION) {
 				k[_d] = -Constants::K_DISCRETIZATION;
-				_increment<_d + 1>();
+				if constexpr (_d + 1 < Dimension){
+					_increment<_d + 1>();
+				}
 			}
-			momenta[_d] = (k[_d] * BASE_PI) / Constants::K_DISCRETIZATION;
-		};
-
-		template <>
-		inline void _increment<Dimension - 1>() {
-			momenta[_d] = (++k[_d] * BASE_PI) / Constants::K_DISCRETIZATION;
+			momenta[_d] = k[_d] * Constants::PI_DIV_DISCRETIZATION;
 		};
 	};
 }

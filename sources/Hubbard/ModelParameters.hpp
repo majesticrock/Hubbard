@@ -1,12 +1,13 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace Hubbard {
 	class ModelParameters {
 	private:
 		std::string global_iterator_type{ "N/A" };
-		std::string second_iterator_type{"N/A"};
+		std::string second_iterator_type{ "N/A" };
 		double global_step{ -1 };
 		double second_step{ -1 };
 		double global_it_min{ -1 };
@@ -68,4 +69,9 @@ namespace Hubbard {
 		void printParameters() const;
 		std::string getFileName() const;
 	};
+
+	inline std::ostream& operator<<(std::ostream& os, const ModelParameters& mp) {
+		os << mp.temperature << "\t" << mp.U << "\t" << mp.V;
+		return os;
+	}
 }

@@ -54,7 +54,8 @@ namespace Hubbard {
 #endif // _BOOST_PRECISION
 
 	_CONST_LONG_FLOATING LONG_PI = boost::math::constants::pi<long_double_t>(); // pi
-	_CONST_LONG_FLOATING LONG_1_PI = boost::math::constants::one_div_pi<long_double_t>(); // 1 / pi
+	// tak, v kancelari mam boost 1.71 a ten nedefinuje 1/pi ale 2/pi. je to na hovno ale nelze delat nic
+	_CONST_LONG_FLOATING LONG_1_PI = 0.5 * boost::math::constants::two_div_pi<long_double_t>(); // 1 / pi
 	_CONST_LONG_FLOATING LONG_PI_2 = boost::math::constants::half_pi<long_double_t>(); // pi / 2
 	_CONST_LONG_FLOATING LOG_4 = 2 * boost::math::constants::ln_two<long_double_t>(); // ln(4) = 2 ln(2)
 	_CONST_FLOATING ONE_HALF = 0.5L;

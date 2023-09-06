@@ -121,6 +121,9 @@ namespace Hubbard {
 
 		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) = 0;
 
+		// saves all one particle energies to reciever
+		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) = 0;
+
 		virtual void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) = 0;
 
 		inline auto getTotalGapValue() const {

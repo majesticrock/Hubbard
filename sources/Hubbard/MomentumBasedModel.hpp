@@ -43,17 +43,69 @@ namespace Hubbard {
 
 		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {
-				NumericalMomentum<2> temp{{momentum(0) - Constants::K_DISCRETIZATION, momentum(1) - Constants::K_DISCRETIZATION}};
+				NumericalMomentum<Dimension> temp{ (momentum.array() - Constants::K_DISCRETIZATION).eval() };
 				return temp.unperturbed_energy() - this->chemical_potential;
 			}
 			if (coeff.name == "\\frac{U}{N}") {
 				return this->U_OVER_N;
 			}
 			if (coeff.name == "\\tilde{V}") {
-				NumericalMomentum<2> temp{{momentum(0) - Constants::K_DISCRETIZATION, momentum(1) - Constants::K_DISCRETIZATION}};
+				NumericalMomentum<Dimension> temp{ (momentum.array() - Constants::K_DISCRETIZATION).eval() };
 				return this->V_OVER_N * temp.gamma();
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
+		};
+
+		// saves all one particle energies to reciever
+		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) override
+		{
+			reciever.reserve(2 * Constants::BASIS_SIZE);
+			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
+
+			NumericalMomentum<Dimension> ks;
+			while (ks.iterateHalfBZ()) {
+				this->fillHamiltonian(ks);
+				solver.compute(this->hamilton, false);
+				for (int i = 0; i < 4; i++)
+				{
+					reciever.push_back(solver.eigenvalues()(i));
+				}
+			}
+		};
+
+		inline virtual global_floating_type entropyPerSite() override {
+			using std::log;
+			global_floating_type entropy{};
+
+			NumericalMomentum<Dimension> ks;
+			while (ks.iterateHalfBZ()) {
+				this->fillHamiltonian(ks);
+				this->hamilton_solver.compute(this->hamilton, false);
+
+				entropy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), global_floating_type{},
+					[this](global_floating_type current, global_floating_type toAdd) {
+						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
+						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
+						return (occ > 1e-12 ? current - occ * log(occ) : current);
+					});
+			}
+			return entropy / Constants::BASIS_SIZE;
+		};
+
+		inline virtual global_floating_type internalEnergyPerSite() override {
+			global_floating_type energy{};
+
+			NumericalMomentum<Dimension> ks;
+			while (ks.iterateHalfBZ()) {
+				this->fillHamiltonian(ks);
+				this->hamilton_solver.compute(this->hamilton, false);
+
+				energy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), global_floating_type{},
+					[this](global_floating_type current, global_floating_type toAdd) {
+						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
+					});
+			}
+			return energy / Constants::BASIS_SIZE;
 		};
 	};
 }
