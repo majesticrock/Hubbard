@@ -3,7 +3,7 @@
 namespace Hubbard::Helper {
 	void SquareXP::fillBlock(int i, int j)
 	{
-		{
+		
 			const std::vector<int> cdw_basis_positions = { 2,3,8,9 };
 			const int hermitian_offsets[6] = {
 				0,									Constants::BASIS_SIZE,
@@ -124,6 +124,6 @@ namespace Hubbard::Helper {
 					}
 				} // end k-loop
 			} // end term-loop
-		}
+		
 	}
 }
