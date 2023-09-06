@@ -24,35 +24,6 @@ namespace Hubbard::SquareLattice
 	{
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
-
-		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
-			F.fill(global_floating_type{});
-			std::conditional_t<Utility::is_complex<DataType>(),
-				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
-
-			std::copy(x.begin(), x.end(), this->model_attributes.begin());
-
-			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
-			{
-				global_floating_type k_x = (k * BASE_PI) / Constants::K_DISCRETIZATION;
-				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
-				{
-					global_floating_type k_y = (l * BASE_PI) / Constants::K_DISCRETIZATION;
-					NumericalMomentum<2> ks{k_x, k_y};
-
-					this->fillHamiltonian(ks);
-					this->fillRho();
-					this->addToParameterSet(complex_F, ks);
-				}
-			}
-
-			if constexpr (!Utility::is_complex<DataType>()) {
-				complexParametersToReal(complex_F, F);
-			}
-			this->applyIteration(F);
-
-			F -= x;
-		};
 	public:
 		Model2D(const ModelParameters& _params) : MomentumBasedModel<DataType, 2>(_params) { };
 
