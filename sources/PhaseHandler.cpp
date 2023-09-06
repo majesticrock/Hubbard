@@ -78,6 +78,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 		comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
 			+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
+		std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;
 		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
 		Utility::saveData(recieve_data[0], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "cdw.dat.gz", comments);

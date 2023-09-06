@@ -32,6 +32,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 
 	if (rank == 0) {
 		std::string output_folder{ getOutputFolder(input) };
+		std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;
 		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
 		std::vector<std::string> comments;

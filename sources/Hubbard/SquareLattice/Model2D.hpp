@@ -54,17 +54,13 @@ namespace Hubbard::SquareLattice
 			F -= x;
 		};
 	public:
-		Model2D(const ModelParameters& _params)
-			: MomentumBasedModel<DataType, 2>(_params)
-		{ };
+		Model2D(const ModelParameters& _params) : MomentumBasedModel<DataType, 2>(_params) { };
 
 		template<typename StartingValuesDataType>
-		Model2D(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
-			: MomentumBasedModel<DataType, 2>(_params, startingValues)
-		{ };
+		Model2D(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues) : MomentumBasedModel<DataType, 2>(_params, startingValues) { };
 
 		// saves all one particle energies to reciever
-		inline void getAllEnergies(std::vector<std::vector<global_floating_type>>& reciever)
+		void getAllEnergies(std::vector<std::vector<global_floating_type>>& reciever)
 		{
 			reciever.resize(4 * Constants::K_DISCRETIZATION, std::vector<global_floating_type>(2 * Constants::K_DISCRETIZATION));
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;

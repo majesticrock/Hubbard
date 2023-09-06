@@ -11,7 +11,7 @@ namespace Hubbard::Helper {
 	protected:
 		std::vector<MatrixCL> expecs{};
 		std::vector<complex_prec> sum_of_all{};
-		std::unique_ptr<BaseModel<global_floating_type>> model{};
+		std::unique_ptr<Model> model{};
 
 		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
 		const std::map<std::string, int> wick_spin_offset = { {"\\uparrow", 0}, {"\\downarrow", 4}, {"\\sigma", 6} };

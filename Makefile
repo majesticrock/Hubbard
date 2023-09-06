@@ -6,7 +6,7 @@ INCLUDEFLAGS = -isystem ~/usr/local/include
 
 CXXFLAGS = -g $(WARNINGS) -std=gnu++17 $(OPT) -fopenmp# -mlong-double-128
 
-LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -lboost_serialization -lboost_iostreams -lz -lquadmath
+LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -lboost_serialization -lboost_iostreams -lz
 
 WARNINGS = -Wall -Wno-sign-compare
 

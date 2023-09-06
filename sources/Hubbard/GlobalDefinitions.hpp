@@ -111,10 +111,4 @@ namespace Hubbard {
 		r(6) = c(6).real(); // Gamma Occupation Up
 		r(7) = c(7).real(); // Gamma Occupation Down
 	};
-
-	// maps an index; [0, N_K) -> [-pi, pi)
-	template <typename T>
-	inline global_floating_type index_to_k_vector(const T index) {
-		return (((index * BASE_PI) / Constants::K_DISCRETIZATION) - BASE_PI);
-	};
 }
