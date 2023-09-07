@@ -128,7 +128,7 @@ namespace Hubbard {
 	{
 		std::cout << "[T U V] = [ " << temperature << " " << U << " " << V << " ]" << std::endl;
 	}
-	std::string ModelParameters::getFileName() const
+	std::string ModelParameters::getFolderName() const
 	{
 		auto improved_string = [](double number) -> std::string {
 			if (std::floor(number) == number) {

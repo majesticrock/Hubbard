@@ -23,8 +23,6 @@ namespace Hubbard::Helper {
 
 		fillMatrices();
 
-
-
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;

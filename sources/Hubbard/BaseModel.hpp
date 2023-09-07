@@ -75,7 +75,6 @@ namespace Hubbard {
 		double V_OVER_N{ V / Constants::BASIS_SIZE };
 		double chemical_potential{};
 
-		size_t TOTAL_BASIS{};
 		size_t SPINOR_SIZE{ 4U };
 
 		inline virtual void computeChemicalPotential() {
