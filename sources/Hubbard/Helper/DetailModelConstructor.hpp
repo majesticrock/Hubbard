@@ -43,8 +43,6 @@ namespace Hubbard::Helper {
 
 			model->computePhases().print();
 			model->computeExpectationValues(expecs, sum_of_all);
-
-			std::cout << expecs[0] << std::endl;
 		}
 	};
 }
