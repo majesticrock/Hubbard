@@ -12,7 +12,7 @@ namespace Hubbard {
 	private:
 		void initializeParamters_3d(const ModelParameters& _params) {
 			auto guess = [&]() -> double {
-				if (abs(_params.U) > 1e-12) {
+				if (std::abs(_params.U) > 1e-12) {
 					return _params.U * exp(0.5 * log(36.)) * exp(-2. / (0.288731210720569176L * std::abs(_params.U)));
 				}
 				return 0.0;

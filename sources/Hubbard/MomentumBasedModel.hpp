@@ -33,7 +33,7 @@ namespace Hubbard {
 
 			F -= x;
 		};
-		
+
 		MomentumBasedModel(const ModelParameters& _params)
 			: BaseModel<DataType>(_params) {};
 
@@ -43,14 +43,14 @@ namespace Hubbard {
 
 		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {
-				NumericalMomentum<Dimension> temp{ (momentum.array() - Constants::K_DISCRETIZATION).eval() };
+				NumericalMomentum<Dimension> temp{ index_vector_to_k_vector(momentum) };
 				return temp.unperturbed_energy() - this->chemical_potential;
 			}
 			if (coeff.name == "\\frac{U}{N}") {
 				return this->U_OVER_N;
 			}
 			if (coeff.name == "\\tilde{V}") {
-				NumericalMomentum<Dimension> temp{ (momentum.array() - Constants::K_DISCRETIZATION).eval() };
+				NumericalMomentum<Dimension> temp{ index_vector_to_k_vector(momentum) };
 				return this->V_OVER_N * temp.gamma();
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));

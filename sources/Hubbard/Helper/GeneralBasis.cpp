@@ -8,9 +8,9 @@ namespace Hubbard::Helper {
 		N = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
 
 		//#pragma omp parallel for
-		for (int i = 0; i < number_of_basis_terms; i++)
+		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
-			for (int j = 0; j < number_of_basis_terms; j++)
+			for (int j = 0; j < number_of_basis_terms; ++j)
 			{
 				fillBlock(i, j);
 			}
@@ -22,6 +22,8 @@ namespace Hubbard::Helper {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		fillMatrices();
+
+
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "

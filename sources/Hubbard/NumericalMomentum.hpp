@@ -20,15 +20,15 @@ namespace Hubbard {
 		};
 
 		template <typename... Args>
-    	NumericalMomentum(Args... args) : k{static_cast<int>(args)...} {
-        	static_assert(sizeof...(Args) == Dimension, "Incorrect number of arguments");
-        	static_assert(std::conjunction_v<std::is_integral<Args>...>, "All arguments must be integers");
-        	
+		NumericalMomentum(Args... args) : k{ static_cast<int>(args)... } {
+			static_assert(sizeof...(Args) == Dimension, "Incorrect number of arguments");
+			static_assert(std::conjunction_v<std::is_integral<Args>...>, "All arguments must be integers");
+			//((std::cout << ',' << std::forward<Args>(args)), ...);
 			for (size_t d = 0U; d < Dimension; ++d)
 			{
 				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
 			}
-   		}
+		}
 
 		explicit NumericalMomentum(const Eigen::Array<int, Dimension, 1>& point_in_bz) {
 			for (size_t d = 0U; d < Dimension; ++d)
@@ -42,6 +42,18 @@ namespace Hubbard {
 			{
 				k[d] = std::move(point_in_bz(d));
 				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
+			}
+		};
+		explicit NumericalMomentum(const Eigen::Vector<global_floating_type, Dimension>& momentum) {
+			for (size_t d = 0U; d < Dimension; ++d)
+			{
+				momenta[d] = momentum(d);
+			}
+		}; 
+		explicit NumericalMomentum(Eigen::Vector<global_floating_type, Dimension>&& momentum) {
+			for (size_t d = 0U; d < Dimension; ++d)
+			{
+				momenta[d] = std::move(momentum(d));
 			}
 		};
 
@@ -72,12 +84,10 @@ namespace Hubbard {
 			_increment<0>();
 			return *this;
 		};
-
 		inline bool iterateHalfBZ() {
 			_increment<0>();
 			return (k[Dimension - 1] < 0);
 		};
-
 		inline bool iterateFullBZ() {
 			_increment<0>();
 			return (k[Dimension - 1] < Constants::K_DISCRETIZATION);
@@ -89,7 +99,7 @@ namespace Hubbard {
 			static_assert(_d < Dimension, "Call to increment in NumericalMomentum provides a too high dimension.");
 			if (++k[_d] >= Constants::K_DISCRETIZATION) {
 				k[_d] = -Constants::K_DISCRETIZATION;
-				if constexpr (_d + 1 < Dimension){
+				if constexpr (_d + 1 < Dimension) {
 					_increment<_d + 1>();
 				}
 			}
