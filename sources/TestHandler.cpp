@@ -29,12 +29,12 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	//------------------------------------------------------------//
 	if (input.getString("lattice_type") == "square") {
 		DOSModels::BroydenDOS<Square> model3(modelParameters);
-		model3.computePhases({ true, true }).print();
+		model3.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
 	else if (input.getString("lattice_type") == "cube") {
 		DOSModels::BroydenDOS<SimpleCubic> model3(modelParameters);
-		model3.computePhases({ true, true }).print();
+		model3.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
 
@@ -49,7 +49,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	test_e = std::chrono::steady_clock::now();
 	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 	std::cout << "\n\n" << std::endl;
-	return;
+
 	//------------------------------------------------------------//
 
 	//SquareLattice::HubbardCDW model(modelParameters);
