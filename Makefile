@@ -4,7 +4,7 @@ CXX = mpicxx
 # the compilation of the eigen library (I cant fix them anyways)
 INCLUDEFLAGS = -isystem ~/usr/local/include
 
-CXXFLAGS = -g $(WARNINGS) -std=gnu++17 $(OPT) -fopenmp# -mlong-double-128
+CXXFLAGS = -g $(WARNINGS) -std=gnu++17 $(OPT) -fopenmp
 
 LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -lboost_serialization -lboost_iostreams -lz
 
@@ -26,6 +26,8 @@ PART_SRCS=HandlerBase.cpp TestHandler.cpp ModeHandler.cpp PhaseHandler.cpp Hubba
 SRCS=$(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS) $(UTIL_SRCS)
 
 OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))
+
+#debug: build build/main 
 
 all: build build/main 
 

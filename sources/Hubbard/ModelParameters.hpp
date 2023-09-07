@@ -67,7 +67,7 @@ namespace Hubbard {
 		};
 		void printGlobal() const;
 		void printParameters() const;
-		std::string getFileName() const;
+		std::string getFolderName() const;
 	};
 
 	inline std::ostream& operator<<(std::ostream& os, const ModelParameters& mp) {

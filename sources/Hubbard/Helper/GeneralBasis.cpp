@@ -20,10 +20,9 @@ namespace Hubbard::Helper {
 	std::vector<Resolvent_L> GeneralBasis::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
+		std::cout << TOTAL_BASIS << std::endl;
 
 		fillMatrices();
-
-
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "

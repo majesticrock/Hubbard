@@ -32,9 +32,8 @@ namespace Hubbard::Helper {
 	}
 
 	ModeHelper::ModeHelper(Utility::InputFileReader& input)
+		: number_of_basis_terms{ input.getInt("number_of_basis_terms") }, start_basis_at{ input.getInt("start_basis_at") }
 	{
-		start_basis_at = input.getInt("start_basis_at");
-		this->number_of_basis_terms = input.getInt("number_of_basis_terms");
 		if (start_basis_at < 0) {
 			// We investigate the special x-p-basis
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * 8;
