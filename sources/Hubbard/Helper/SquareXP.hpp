@@ -20,6 +20,9 @@ namespace Hubbard::Helper {
 		virtual const BaseModel<global_floating_type>& getModel() const override { 
 			return *model;
 		};
+		virtual BaseModel<global_floating_type>& getModel() override {
+			return *model;
+		};
 
 		SquareXP(Utility::InputFileReader& input) : XPModes(input), TermOnSquare(input) {};
 	};

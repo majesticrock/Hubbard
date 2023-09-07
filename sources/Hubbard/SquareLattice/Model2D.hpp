@@ -24,117 +24,13 @@ namespace Hubbard::SquareLattice
 	{
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
-
-		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
-			F.fill(global_floating_type{});
-			std::conditional_t<Utility::is_complex<DataType>(),
-				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
-
-			std::copy(x.begin(), x.end(), this->model_attributes.begin());
-
-			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
-			{
-				global_floating_type k_x = (k * BASE_PI) / Constants::K_DISCRETIZATION;
-				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
-				{
-					global_floating_type k_y = (l * BASE_PI) / Constants::K_DISCRETIZATION;
-					NumericalMomentum<2> ks{k_x, k_y};
-
-					this->fillHamiltonian(ks);
-					this->fillRho();
-					this->addToParameterSet(complex_F, ks);
-				}
-			}
-
-			if constexpr (!Utility::is_complex<DataType>()) {
-				complexParametersToReal(complex_F, F);
-			}
-			this->applyIteration(F);
-
-			F -= x;
-		};
 	public:
 		Model2D(const ModelParameters& _params) : MomentumBasedModel<DataType, 2>(_params) { };
 
 		template<typename StartingValuesDataType>
 		Model2D(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues) : MomentumBasedModel<DataType, 2>(_params, startingValues) { };
 
-		// saves all one particle energies to reciever
-		void getAllEnergies(std::vector<std::vector<global_floating_type>>& reciever)
-		{
-			reciever.resize(4 * Constants::K_DISCRETIZATION, std::vector<global_floating_type>(2 * Constants::K_DISCRETIZATION));
-			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			global_floating_type k_val{};
-			global_floating_type l_val{};
-			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
-			{
-				k_val = k * BASE_PI / Constants::K_DISCRETIZATION;
-				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
-				{
-					l_val = l * BASE_PI / Constants::K_DISCRETIZATION;
-					NumericalMomentum<2> ks{k_val, l_val};
-					this->fillHamiltonian(ks);
-					solver.compute(this->hamilton, false);
-					reciever[k + Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(0);
-
-					for (int i = 1; i < 4; i++)
-					{
-						if (abs(solver.eigenvalues()(0) - solver.eigenvalues()(i)) > 1e-8) {
-							reciever[k + 3 * Constants::K_DISCRETIZATION][l + Constants::K_DISCRETIZATION] = solver.eigenvalues()(i);
-							break;
-						}
-					}
-				}
-			}
-		};
-
-		inline virtual global_floating_type entropyPerSite() override {
-			using std::log;
-			global_floating_type entropy{};
-			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
-			{
-				global_floating_type k_x = (k * BASE_PI) / Constants::K_DISCRETIZATION;
-				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
-				{
-					global_floating_type k_y = (l * BASE_PI) / Constants::K_DISCRETIZATION;
-					NumericalMomentum<2> ks{k_x, k_y};
-
-					this->fillHamiltonian(ks);
-					this->hamilton_solver.compute(this->hamilton, false);
-
-					entropy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), global_floating_type{},
-						[this](global_floating_type current, global_floating_type toAdd) {
-							auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
-							// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
-							return (occ > 1e-12 ? current - occ * log(occ) : current);
-						});
-				}
-			}
-			return entropy / Constants::BASIS_SIZE;
-		};
-
-		inline virtual global_floating_type internalEnergyPerSite() override {
-			global_floating_type energy{};
-			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; ++k)
-			{
-				global_floating_type k_x = (k * BASE_PI) / Constants::K_DISCRETIZATION;
-				for (int l = -Constants::K_DISCRETIZATION; l < 0; ++l)
-				{
-					global_floating_type k_y = (l * BASE_PI) / Constants::K_DISCRETIZATION;
-					NumericalMomentum<2> ks{k_x, k_y};
-					this->fillHamiltonian(ks);
-					this->hamilton_solver.compute(this->hamilton, false);
-
-					energy += std::accumulate(this->hamilton_solver.eigenvalues().begin(), this->hamilton_solver.eigenvalues().end(), global_floating_type{},
-						[this](global_floating_type current, global_floating_type toAdd) {
-							return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
-						});
-				}
-			}
-			return energy / Constants::BASIS_SIZE;
-		};
-
-		inline virtual void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) override {
+		virtual void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) override {
 			expecs = std::vector<MatrixCL>(8U, Matrix_L::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
 			sum_of_all = std::vector<complex_prec>(8U, complex_prec{});
 
@@ -142,7 +38,7 @@ namespace Hubbard::SquareLattice
 			{
 				for (int l = -Constants::K_DISCRETIZATION; l < Constants::K_DISCRETIZATION; l++)
 				{
-					NumericalMomentum<2> ks{ (k* BASE_PI) / Constants::K_DISCRETIZATION, (l* BASE_PI) / Constants::K_DISCRETIZATION };
+					NumericalMomentum<2> ks{ k, l };
 					this->fillHamiltonian(ks);
 					this->fillRho();
 

@@ -32,7 +32,7 @@ namespace Hubbard::Helper {
 		clean_factor_2pi(buffer);
 		return buffer;
 	}
-	
+
 	complex_prec TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
 	{
 		const Eigen::Vector2i l_idx = { x(l), y(l) };

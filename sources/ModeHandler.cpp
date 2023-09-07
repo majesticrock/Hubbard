@@ -14,7 +14,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	using std::to_string;
 
 	std::vector<data_vector> reciever;
-	//std::vector<data_vector> oneParticleEnergies;
+	data_vector oneParticleEnergies;
 	Hubbard::global_floating_type totalGapValue;
 	std::vector<Hubbard::Resolvent_L> resolvents;
 
@@ -27,7 +27,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	}
 
 	totalGapValue = modeHelper->getModel().getTotalGapValue();
-	//modeHelper->getModel().getAllEnergies(oneParticleEnergies);
+	modeHelper->getModel().getAllEnergies(oneParticleEnergies);
 	resolvents = modeHelper->computeCollectiveModes(reciever);
 
 	if (rank == 0) {
@@ -61,6 +61,6 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 			std::cout << "Resolvent returned an empty vector." << std::endl;
 		}
 		comments.pop_back();
-		//Utility::saveData(oneParticleEnergies, BASE_FOLDER + output_folder + "one_particle.dat.gz", comments);
+		Utility::saveData(oneParticleEnergies, BASE_FOLDER + output_folder + "one_particle.dat.gz", comments);
 	}
 }

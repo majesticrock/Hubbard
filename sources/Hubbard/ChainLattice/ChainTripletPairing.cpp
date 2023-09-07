@@ -76,7 +76,7 @@ namespace Hubbard::ChainLattice {
 	}
 	ModelAttributes<global_floating_type> ChainTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{
-		Selfconsistency::IterativeSolver<std::complex<global_floating_type>> solver(this, &model_attributes);
+		Selfconsistency::IterativeSolver<complex_prec> solver(this, &model_attributes);
 		return solver.computePhases(debugPolicy);
 	}
 }

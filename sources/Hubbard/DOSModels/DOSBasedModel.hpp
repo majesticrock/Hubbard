@@ -167,7 +167,7 @@ namespace Hubbard {
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
 
-		virtual inline void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) override {
+		virtual void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) override {
 			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(DOS::values.size(), 1));
 			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
 
@@ -188,6 +188,29 @@ namespace Hubbard {
 			for (size_t i = 0U; i < 8U; ++i)
 			{
 				sum_of_all[i] = sums(i);
+			}
+		};
+
+		// saves all one particle energies to reciever
+		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) override
+		{
+			reciever.reserve(4 * Constants::BASIS_SIZE + 4);
+			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
+			const global_floating_type step{ (2. * DOS::DIMENSION) / Constants::BASIS_SIZE };
+
+			for(int g = -Constants::BASIS_SIZE; g <= Constants::BASIS_SIZE; ++g)
+			{
+				this->fillHamiltonian(g * step);
+				solver.compute(this->hamilton, false);
+				reciever.push_back(solver.eigenvalues()(0));
+
+				for (int i = 1; i < 4; i++)
+				{
+					if (abs(solver.eigenvalues()(0) + solver.eigenvalues()(i)) > 1e-8) {
+						reciever.push_back(solver.eigenvalues()(i));
+						break;
+					}
+				}
 			}
 		};
 	};

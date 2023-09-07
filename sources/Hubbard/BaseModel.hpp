@@ -7,9 +7,17 @@
 
 namespace Hubbard {
 	// maps an index; [0, N_K) -> [-pi, pi)
-	template <typename T>
-	inline global_floating_type index_to_k_vector(const T index) {
-		return (((index * BASE_PI) / Constants::K_DISCRETIZATION) - BASE_PI);
+	inline global_floating_type index_to_k_vector(const int index) {
+		return ((index * Constants::PI_DIV_DISCRETIZATION) - BASE_PI);
+	};
+	template <int Dimension>
+	inline Eigen::Vector<global_floating_type, Dimension> index_vector_to_k_vector(const Eigen::Vector<int, Dimension>& index_vec) {
+		Eigen::Vector<global_floating_type, Dimension> ret;
+		for (size_t i = 0U; i < Dimension; ++i)
+		{
+			ret(i) = index_to_k_vector(index_vec(i));
+		}
+		return ret;
 	};
 
 	template <typename DataType>
@@ -120,6 +128,9 @@ namespace Hubbard {
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) = 0;
 
 		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) = 0;
+
+		// saves all one particle energies to reciever
+		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) = 0;
 
 		virtual void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) = 0;
 
