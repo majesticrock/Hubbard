@@ -18,9 +18,8 @@ namespace Hubbard {
 				k[d] = -Constants::K_DISCRETIZATION;
 			}
 		};
-
 		template <typename... Args>
-		NumericalMomentum(Args... args) : k{ static_cast<int>(args)... } {
+		explicit NumericalMomentum(Args... args) : k{ static_cast<int>(args)... } {
 			static_assert(sizeof...(Args) == Dimension, "Incorrect number of arguments");
 			static_assert(std::conjunction_v<std::is_integral<Args>...>, "All arguments must be integers");
 			//((std::cout << ',' << std::forward<Args>(args)), ...);
@@ -29,7 +28,6 @@ namespace Hubbard {
 				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
 			}
 		}
-
 		explicit NumericalMomentum(const Eigen::Array<int, Dimension, 1>& point_in_bz) {
 			for (size_t d = 0U; d < Dimension; ++d)
 			{
@@ -84,10 +82,14 @@ namespace Hubbard {
 			_increment<0>();
 			return *this;
 		};
+		// To be used with a do-while(.iterateHalfBZ()) loop
+		// Otherwise the first point is omitted!
 		inline bool iterateHalfBZ() {
 			_increment<0>();
 			return (k[Dimension - 1] < 0);
 		};
+		// To be used with a do-while(.iterateFullBZ()) loop
+		// Otherwise the first point is omitted!
 		inline bool iterateFullBZ() {
 			_increment<0>();
 			return (k[Dimension - 1] < Constants::K_DISCRETIZATION);

@@ -20,11 +20,11 @@ namespace Hubbard {
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
 
 			NumericalMomentum<Dimension> ks;
-			while (ks.iterateHalfBZ()) {
+			do {
 				this->fillHamiltonian(ks);
 				this->fillRho();
 				this->addToParameterSet(complex_F, ks);
-			}
+			} while (ks.iterateHalfBZ());
 
 			if constexpr (!Utility::is_complex<DataType>()) {
 				complexParametersToReal(complex_F, F);
@@ -63,14 +63,14 @@ namespace Hubbard {
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
 			NumericalMomentum<Dimension> ks;
-			while (ks.iterateHalfBZ()) {
+			do {
 				this->fillHamiltonian(ks);
 				solver.compute(this->hamilton, false);
 				for (int i = 0; i < 4; i++)
 				{
 					reciever.push_back(solver.eigenvalues()(i));
 				}
-			}
+			} while (ks.iterateHalfBZ());
 		};
 
 		inline virtual global_floating_type entropyPerSite() override {
@@ -78,7 +78,7 @@ namespace Hubbard {
 			global_floating_type entropy{};
 
 			NumericalMomentum<Dimension> ks;
-			while (ks.iterateHalfBZ()) {
+			do {
 				this->fillHamiltonian(ks);
 				this->hamilton_solver.compute(this->hamilton, false);
 
@@ -88,7 +88,7 @@ namespace Hubbard {
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
 						return (occ > 1e-12 ? current - occ * log(occ) : current);
 					});
-			}
+			} while (ks.iterateHalfBZ());
 			return entropy / Constants::BASIS_SIZE;
 		};
 
@@ -96,7 +96,7 @@ namespace Hubbard {
 			global_floating_type energy{};
 
 			NumericalMomentum<Dimension> ks;
-			while (ks.iterateHalfBZ()) {
+			do {
 				this->fillHamiltonian(ks);
 				this->hamilton_solver.compute(this->hamilton, false);
 
@@ -104,7 +104,7 @@ namespace Hubbard {
 					[this](global_floating_type current, global_floating_type toAdd) {
 						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
 					});
-			}
+			} while (ks.iterateHalfBZ());
 			return energy / Constants::BASIS_SIZE;
 		};
 	};
