@@ -30,4 +30,14 @@ namespace Hubbard {
 			return momenta[index];
 		};
 	};
+
+	template<unsigned int Dimension>
+	inline std::ostream& operator<<(std::ostream& os, const NumericalMomentum<Dimension>& momentum) {
+		os << momentum.momenta[0];
+		for (size_t d = 1U; d < Dimension; ++d)
+		{
+			os << " " << momentum.momenta[d];
+		}
+		return os;
+	}
 }
