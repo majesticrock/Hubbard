@@ -1,7 +1,6 @@
 #pragma once
 #include "../GlobalDefinitions.hpp"
 #include "../Constants.hpp"
-#include "../../../../FermionCommute/sources/WickTerm.hpp"
 #include "../SquareLattice/UsingBroyden.hpp"
 #include "DetailModelConstructor.hpp"
 

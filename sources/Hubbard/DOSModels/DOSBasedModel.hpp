@@ -3,6 +3,7 @@
 #include "../../../../FermionCommute/sources/Coefficient.hpp"
 #include "../DensityOfStates/BaseDOS.hpp"
 #include "../DensityOfStates/Square.hpp"
+#include "../DensityOfStates/DOSIntegrator.hpp"
 #include <algorithm>
 #include <mutex>
 #include <numeric>
@@ -21,7 +22,9 @@ namespace Hubbard {
 	class DOSBasedModel : public BaseModel<DataType>
 	{
 	private:
-		typename DOS::template DOSIntegrator<ComplexParameterVector> _self_consistency_integrator;
+		using _scalar_integrator = typename DOS::Integrator<global_floating_type>;
+
+		typename DOS::Integrator<ComplexParameterVector> _self_consistency_integrator;
 		static std::mutex dos_mutex;
 		constexpr static int NUMBER_OF_PARAMETERS = 8;
 
@@ -136,7 +139,7 @@ namespace Hubbard {
 					});
 			};
 			// Devide by two because the matrix representation already includes gamma and -gamma.
-			return typename DOS::DOSIntegrator<global_floating_type>().integrate_by_value(procedure) / 2;
+			return _scalar_integrator().integrate_by_value(procedure) / 2;
 		};
 
 		inline virtual global_floating_type internalEnergyPerSite() override {
@@ -151,7 +154,7 @@ namespace Hubbard {
 					});
 			};
 			// Devide by two because the matrix representation already includes gamma and -gamma.
-			return typename DOS::DOSIntegrator<global_floating_type>().integrate_by_value(procedure) / 2;
+			return _scalar_integrator().integrate_by_value(procedure) / 2;
 		};
 
 		virtual inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const global_floating_type gamma) const {
@@ -168,26 +171,62 @@ namespace Hubbard {
 		};
 
 		virtual void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) override {
-			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(DOS::values.size(), 1));
+			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * DOS::size(), 1));
 			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
 
-			int count = 0;
-			auto expectationValues = [&](global_floating_type gamma, ComplexParameterVector& result) {
-				this->fillHamiltonian(gamma);
-				this->fillRho();
-				this->setParameterSet(result, gamma);
-
-				for (size_t i = 0U; i < 8U; ++i)
-				{
-					expecs[i](count, 0) = result(i);
-				}
-				++count;
-			};
-			ComplexParameterVector sums{ _self_consistency_integrator.integrate_by_reference(expectationValues) };
-
-			for (size_t i = 0U; i < 8U; ++i)
+			for (size_t i = 0U; i < DOS::size(); ++i)
 			{
-				sum_of_all[i] = sums(i);
+				this->fillHamiltonian(DOS::abscissa_v(i));
+				this->fillRho();
+				// n_up
+				expecs[0](i, 0) = this->get_n_up();
+				// g_up
+				expecs[1](i, 0) = this->get_g_up();
+				// f
+				expecs[2](i, 0) = this->get_f();
+				// eta
+				expecs[3](i, 0) = this->get_eta();
+				// n_down
+				expecs[4](i, 0) = this->get_n_down();
+				// g_down
+				expecs[5](i, 0) = this->get_g_down();
+				// n_up + n_down
+				expecs[6](i, 0) = this->get_n_up_plus_down();
+				// g_up + g_down
+				expecs[7](i, 0) = this->get_g_up_plus_down();
+				for (size_t idx = 0U; idx < 8U; ++idx)
+				{
+					sum_of_all[idx] += expecs[idx](i, 0);
+				}
+				if (abs(this->rho(3, 0)) > 1e-10) {
+					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
+				}
+				// Difference: negative abscissa
+				this->fillHamiltonian(-DOS::abscissa_v(i));
+				this->fillRho();
+				// n_up
+				expecs[0](i + DOS::size(), 0) = this->get_n_up();
+				// g_up
+				expecs[1](i + DOS::size(), 0) = this->get_g_up();
+				// f
+				expecs[2](i + DOS::size(), 0) = this->get_f();
+				// eta
+				expecs[3](i + DOS::size(), 0) = this->get_eta();
+				// n_down
+				expecs[4](i + DOS::size(), 0) = this->get_n_down();
+				// g_down
+				expecs[5](i + DOS::size(), 0) = this->get_g_down();
+				// n_up + n_down
+				expecs[6](i + DOS::size(), 0) = this->get_n_up_plus_down();
+				// g_up + g_down
+				expecs[7](i + DOS::size(), 0) = this->get_g_up_plus_down();
+				for (size_t idx = 0U; idx < 8U; ++idx)
+				{
+					sum_of_all[idx] += expecs[idx](i, 0);
+				}
+				if (abs(this->rho(3, 0)) > 1e-10) {
+					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
+				}
 			}
 		};
 

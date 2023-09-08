@@ -3,7 +3,7 @@
 #include "TermOnSquare.hpp"
 
 namespace Hubbard::Helper {
-	class SquareXP : public XPModes, TermOnSquare
+	class SquareXP : public XPModes, public TermOnSquare
 	{
 	private:
 		inline global_floating_type computeRealTerm(const SymbolicOperators::WickTerm& term, int l, int k) const {

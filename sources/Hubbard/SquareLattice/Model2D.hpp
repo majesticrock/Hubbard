@@ -43,21 +43,21 @@ namespace Hubbard::SquareLattice
 					this->fillRho();
 
 					// n_up
-					expecs[0](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = 1 - this->rho(0, 0).real();
+					expecs[0](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_n_up();
 					// g_up
-					expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = -this->rho(1, 0);
+					expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_g_up();
 					// f
-					expecs[2](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = -this->rho(0, 2);
+					expecs[2](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_f();
 					// eta
-					expecs[3](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = -this->rho(0, 3);
+					expecs[3](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_eta();
 					// n_down
-					expecs[4](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->rho(2, 2).real();
+					expecs[4](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_n_down();
 					// g_down
-					expecs[5](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->rho(2, 3);
+					expecs[5](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_g_down();
 					// n_up + n_down
-					expecs[6](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = 1 - (this->rho(0, 0) - this->rho(2, 2)).real();
+					expecs[6](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_n_up_plus_down();
 					// g_up + g_down
-					expecs[7](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->rho(2, 3) - this->rho(1, 0);
+					expecs[7](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_g_up_plus_down();
 					for (size_t idx = 0U; idx < 8U; ++idx)
 					{
 						sum_of_all[idx] += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);

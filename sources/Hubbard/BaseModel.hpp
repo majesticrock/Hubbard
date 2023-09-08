@@ -109,6 +109,33 @@ namespace Hubbard {
 			//}
 			this->setParameters(F);
 		}
+
+		// Utility
+		inline global_floating_type get_n_up() const {
+			return 1 - this->rho(0, 0).real();
+		};
+		inline global_floating_type get_n_down() const {
+			return this->rho(2, 2).real();
+		};
+		inline global_floating_type get_n_up_plus_down() const {
+			return get_n_up() + get_n_down();
+		};
+		inline complex_prec get_g_up() const {
+			return -this->rho(1, 0);
+		};
+		inline complex_prec get_g_down() const {
+			return this->rho(2, 3);
+		};
+		inline complex_prec get_g_up_plus_down() const {
+			return get_g_up() + get_g_down();
+		};
+		inline complex_prec get_f() const {
+			return -this->rho(0, 2);
+		};
+		inline complex_prec get_eta() const {
+			return -this->rho(0, 3);
+		};
+		
 	public:
 		explicit BaseModel(const ModelParameters& params, int dimension = 0)
 			: model_attributes(params, dimension), temperature(params.temperature), U(params.U), V(params.V)

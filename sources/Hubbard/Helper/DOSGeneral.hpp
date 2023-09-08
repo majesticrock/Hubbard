@@ -1,9 +1,9 @@
 #pragma once
 #include "GeneralBasis.hpp"
-#include "TermOnSquare.hpp"
+#include "TermWithDOS.hpp"
 
 namespace Hubbard::Helper {
-	class SquareGeneral : public GeneralBasis, public TermOnSquare
+	class DOSGeneral : public GeneralBasis, public TermWithDOS
 	{
 	private:
 		virtual void fillBlock(int i, int j) override;
@@ -16,6 +16,6 @@ namespace Hubbard::Helper {
 			return *model;
 		};
 
-		SquareGeneral(Utility::InputFileReader& input) : GeneralBasis(input), TermOnSquare(input) {};
+		DOSGeneral(Utility::InputFileReader& input) : GeneralBasis(input), TermWithDOS(input) {};
 	};
 }

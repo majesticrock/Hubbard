@@ -35,15 +35,16 @@ namespace Hubbard::Helper {
 
 	complex_prec TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
 	{
+		checkTermValidity(term);
+
 		const Eigen::Vector2i l_idx = { x(l), y(l) };
 		const Eigen::Vector2i k_idx = { x(k), y(k) };
 		Eigen::Vector2i q_idx = { 0,0 };
 		std::vector<Eigen::Vector2i> indizes = { l_idx, k_idx, q_idx };
 		Eigen::Vector2i momentum_value, coeff_momentum;
 
-		if (term.coefficients.size() > 1) throw std::invalid_argument("Undefined number of coefficients: " + std::to_string(term.coefficients.size()));
-		if (term.operators.size() == 0) {
-			if (term.coefficients.size() == 1) {
+		if (term.isIdentity()) {
+			if (term.hasSingleCoefficient()) {
 				coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
 				return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 			}
@@ -64,7 +65,7 @@ namespace Hubbard::Helper {
 					sumBuffer *= getExpectationValue(term.operators[i], momentum_value);
 				}
 				coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k', 'q' });
-				if (term.coefficients.size() == 1) {
+				if (term.hasSingleCoefficient()) {
 					sumBuffer *= this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 				}
 				returnBuffer += sumBuffer;
@@ -72,38 +73,34 @@ namespace Hubbard::Helper {
 			return static_cast<global_floating_type>(term.multiplicity) * returnBuffer;
 		};
 
-		if (term.sum_momenta.size() > 0) {
-			if (term.sum_momenta.size() > 1) throw std::invalid_argument("Too many sums: " + term.sum_momenta.size());
-			if (term.operators.size() == 1) {
+		if (term.sum_momenta.size() > 0U) {
+			if (term.isBilinear()) {
 				// bilinear term
-				if (term.sum_momenta.size() > 1) throw std::invalid_argument("Term with more than one momentum summation: " + term.sum_momenta.size());
-				if (term.delta_momenta.size() == 0) throw std::invalid_argument("There is a summation without delta_kl in a bilinear term.");
-				if (term.coefficients.size() == 1) {
-					if (term.coefficients.back().momentum.momentum_list.size() == 0) {
+				if (term.hasSingleCoefficient()) {
+					if (term.coefficients.back().dependsOnMomentum()) {
+						return compute_single_sum();
+					}
+					else {
 						coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
 						return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum)
 							* getSumOfAll(term.operators[0]);
 					}
-					else {
-						return compute_single_sum();
-					}
 				}
 				return static_cast<global_floating_type>(term.multiplicity) * getSumOfAll(term.operators[0]);
 			}
-			if (term.operators.size() == 2) {
+			if (term.isQuartic()) {
 				// quartic term
 				return compute_single_sum();
 			}
-			throw std::invalid_argument("There are more than 2 WickOperators: " + term.operators.size());
 		}
 
 		complex_prec returnBuffer{ 1, 0 };
-		for (size_t i = 0; i < term.operators.size(); i++)
+		for (size_t i = 0U; i < term.operators.size(); ++i)
 		{
 			Eigen::Vector2i momentum_value = computeMomentum(term.operators[i].momentum, indizes, { 'l', 'k' });
 			returnBuffer *= getExpectationValue(term.operators[i], momentum_value);
 		}
-		if (term.coefficients.size() == 1) {
+		if (term.hasSingleCoefficient()) {
 			coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
 			return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}

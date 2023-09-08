@@ -4,7 +4,6 @@
 #include <numeric>
 
 namespace Hubbard::DensityOfStates {
-	std::vector<abscissa_t> Square::abscissa;
 	std::vector<abscissa_t> Square::upper_border_to_abscissa;
 	std::vector<dos_precision> Square::weights;
 

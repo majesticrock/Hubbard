@@ -7,10 +7,10 @@
 #include <boost/math/special_functions/ellint_2.hpp>
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include "../GlobalDefinitions.hpp"
+#include "DOSIntegrator.hpp"
 
 namespace Hubbard::DensityOfStates {
 	typedef boost::multiprecision::number<boost::multiprecision::cpp_bin_float<100>> abscissa_t;
-	using dos_precision = long_double_t;
 
 	_CONST_LONG_FLOATING R_AT_2 = (LONG_PI - 4) / 8;
 	_CONST_LONG_FLOATING R_AT_2_1 = (5 * LONG_PI / 64 - 0.25L);
@@ -45,13 +45,15 @@ namespace Hubbard::DensityOfStates {
 
 	template <class DOS>
 	inline dos_precision computeNorm() {
-		return typename DOS::DOSIntegrator<dos_precision>().integrate_by_value([](dos_precision) -> dos_precision { return 1.L; });
+		
+		return typename DOS::Integrator<dos_precision>().integrate_by_value([](dos_precision) -> dos_precision { return 1.L; });
 	}
 
 	struct BaseDOS {
 		// Contains the values for gamma in (-2, 0) as the the positive part is symmetric.
 		// Open boundaries, as the dos at 0 contains a singularity for d=2
 		static std::vector<dos_precision> values;
+		static std::vector<abscissa_t> abscissa;
 		static dos_precision step;
 		static bool computed;
 		static dos_precision integrateValues();
@@ -59,5 +61,12 @@ namespace Hubbard::DensityOfStates {
 
 		virtual void computeValues() = 0;
 		virtual ~BaseDOS() = default;
+
+		inline static global_floating_type abscissa_v(size_t index) {
+			return static_cast<global_floating_type>(abscissa[index]);
+		};
+		inline static size_t size() noexcept {
+			return values.size();
+		};
 	};
 }
