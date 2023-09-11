@@ -1,5 +1,6 @@
 #pragma once
 #include <Eigen/Dense>
+#include <stddef.h>
 #include "../Utility/Resolvent.hpp"
 #include <boost/math/constants/constants.hpp>
 

@@ -10,6 +10,7 @@
 #include "DOSIntegrator.hpp"
 
 namespace Hubbard::DensityOfStates {
+	using dos_precision = long_double_t;
 	typedef boost::multiprecision::number<boost::multiprecision::cpp_bin_float<100>> abscissa_t;
 
 	_CONST_LONG_FLOATING R_AT_2 = (LONG_PI - 4) / 8;

@@ -13,8 +13,11 @@ namespace Hubbard::Helper {
 		if (term.coefficients.size() > 1U) throw std::invalid_argument("Undefined number of coefficients: " + std::to_string(term.coefficients.size()));
 		if (term.operators.size() > 2U) throw std::invalid_argument("There are more than 2 WickOperators: " + term.operators.size());
 		if (term.sum_momenta.size() > 0U) {
-			if (term.sum_momenta.size() > 1U) throw std::invalid_argument("Too many sums: " + term.sum_momenta.size());
-			if (term.isBilinear() && term.delta_momenta.empty()) throw std::invalid_argument("There is a summation without delta_kl in a bilinear term.");
+			if (!term.hasSingleCoefficient()) throw std::invalid_argument("Too many sums: " + term.sum_momenta.size());
+			if (term.delta_momenta.empty()) throw std::invalid_argument("There is a summation without delta_kl.");
+		}
+		else {
+			if (!term.isBilinear() && !term.isIdentity()) throw std::invalid_argument("A term without a sum can only be bilinear or an identity.");
 		}
 	};
 

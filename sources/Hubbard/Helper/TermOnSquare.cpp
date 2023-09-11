@@ -46,9 +46,9 @@ namespace Hubbard::Helper {
 		if (term.isIdentity()) {
 			if (term.hasSingleCoefficient()) {
 				coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
-				return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
+				return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 			}
-			return static_cast<global_floating_type>(term.multiplicity);
+			return term.getFactor();
 		}
 
 		auto compute_single_sum = [&]() -> complex_prec {
@@ -70,7 +70,7 @@ namespace Hubbard::Helper {
 				}
 				returnBuffer += sumBuffer;
 			}
-			return static_cast<global_floating_type>(term.multiplicity) * returnBuffer;
+			return term.getFactor() * returnBuffer;
 		};
 
 		if (term.sum_momenta.size() > 0U) {
@@ -82,11 +82,10 @@ namespace Hubbard::Helper {
 					}
 					else {
 						coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
-						return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum)
-							* getSumOfAll(term.operators[0]);
+						return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum)	* getSumOfAll(term.operators[0]);
 					}
 				}
-				return static_cast<global_floating_type>(term.multiplicity) * getSumOfAll(term.operators[0]);
+				return term.getFactor() * getSumOfAll(term.operators[0]);
 			}
 			if (term.isQuartic()) {
 				// quartic term
@@ -102,8 +101,8 @@ namespace Hubbard::Helper {
 		}
 		if (term.hasSingleCoefficient()) {
 			coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
-			return term.multiplicity * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
+			return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}
-		return static_cast<global_floating_type>(term.multiplicity) * returnBuffer;
+		return term.getFactor() * returnBuffer;
 	}
 }

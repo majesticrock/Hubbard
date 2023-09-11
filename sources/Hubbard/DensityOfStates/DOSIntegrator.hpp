@@ -1,8 +1,7 @@
 #pragma once
+#include "../GlobalDefinitions.hpp"
 
 namespace Hubbard::DensityOfStates {
-	using dos_precision = long_double_t;
-
 	template <class ResultType, class DOS>
 	class DOSIntegrator {
 	private:
@@ -15,15 +14,15 @@ namespace Hubbard::DensityOfStates {
 		// i.e. F(gamma, result) and expects F to fill result accordingly.
 		template <class UnaryFunction>
 		inline const ResultType& integrate_by_reference(const UnaryFunction& F) {
-			F(static_cast<dos_precision>(DOS::abscissa.front()), buffer);
-			F(static_cast<dos_precision>(-DOS::abscissa.front()), second_buffer);
-			result = DOS::values[0] * static_cast<dos_precision>(DOS::weights[0]) * (buffer + second_buffer);
+			F(static_cast<global_floating_type>(DOS::abscissa.front()), buffer);
+			F(static_cast<global_floating_type>(-DOS::abscissa.front()), second_buffer);
+			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) * (buffer + second_buffer);
 
-			for (size_t i = 1U; i < DOS::values.size(); ++i)
+			for (size_t i = 1U; i < DOS::size(); ++i)
 			{
-				F(static_cast<dos_precision>(DOS::abscissa[i]), buffer);
-				F(static_cast<dos_precision>(-DOS::abscissa.front()), second_buffer);
-				result += DOS::values[i] * static_cast<dos_precision>(DOS::weights[i]) * (buffer + second_buffer);
+				F(static_cast<global_floating_type>(DOS::abscissa[i]), buffer);
+				F(static_cast<global_floating_type>(-DOS::abscissa.front()), second_buffer);
+				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) * (buffer + second_buffer);
 			}
 			return result;
 		};
@@ -31,13 +30,13 @@ namespace Hubbard::DensityOfStates {
 		// This function assumes that F returns its result by value.
 		template <class UnaryFunction>
 		inline const ResultType& integrate_by_value(const UnaryFunction& F) {
-			result = DOS::values[0] * static_cast<dos_precision>(DOS::weights[0]) *
-				(F(static_cast<dos_precision>(DOS::abscissa.front())) + F(static_cast<dos_precision>(-DOS::abscissa.front())));
+			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) *
+				(F(static_cast<global_floating_type>(DOS::abscissa.front())) + F(static_cast<global_floating_type>(-DOS::abscissa.front())));
 
-			for (size_t i = 1U; i < DOS::values.size(); ++i)
+			for (size_t i = 1U; i < DOS::size(); ++i)
 			{
-				result += DOS::values[i] * static_cast<dos_precision>(DOS::weights[i]) *
-					(F(static_cast<dos_precision>(DOS::abscissa[i])) + F(static_cast<dos_precision>(-DOS::abscissa[i])));
+				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) *
+					(F(static_cast<global_floating_type>(DOS::abscissa[i])) + F(static_cast<global_floating_type>(-DOS::abscissa[i])));
 			}
 			return result;
 		};
@@ -46,11 +45,11 @@ namespace Hubbard::DensityOfStates {
 		// Additionally, it assumes that F returns F(gamma) + F(-gamma) by value
 		template <class UnaryFunction>
 		inline const ResultType& integrate_by_index(const UnaryFunction& F) {
-			result = DOS::values[0] * static_cast<dos_precision>(DOS::weights[0]) * F(0U);
+			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) * F(0U);
 
-			for (size_t i = 1U; i < DOS::values.size(); ++i)
+			for (size_t i = 1U; i < DOS::size(); ++i)
 			{
-				result += DOS::values[i] * static_cast<dos_precision>(DOS::weights[i]) * F(i);
+				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) * F(i);
 			}
 			return result;
 		};

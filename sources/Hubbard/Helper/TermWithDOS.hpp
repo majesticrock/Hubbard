@@ -1,6 +1,7 @@
 #pragma once
 #include "DetailModelConstructor.hpp"
 #include "../DOSModels/BroydenDOS.hpp"
+#include <complex>
 
 namespace Hubbard::Helper {
 	using DOS = DensityOfStates::Square;
@@ -27,7 +28,7 @@ namespace Hubbard::Helper {
 			return expecs[index](gamma_idx, 0);
 		};
 
-		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) const {
+		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) {
 			checkTermValidity(term);
 			const global_floating_type gamma{ DOS::abscissa_v(gamma_idx) };
 			const global_floating_type gamma_prime{ DOS::abscissa_v(gamma_prime_idx) };
@@ -42,36 +43,54 @@ namespace Hubbard::Helper {
 
 			if (term.isIdentity()) {
 				if (term.hasSingleCoefficient()) {
-					return term.multiplicity * getCoefficient(gamma);
+					return term.getFactor() * getCoefficient(gamma);
 				}
-				return static_cast<global_floating_type>(term.multiplicity);
+				return term.getFactor();
 			}
 			if (term.sum_momenta.size() > 0U) {
 				if (term.isBilinear()) {
 					// bilinear
-					if (term.hasSingleCoefficient()) {
-						if (term.coefficients.back().momentum.isUsed('q') != -1) {
-							if (term.operators.front().momentum.isUsed('q') == -1) return 0;
-
-							auto _integrate_function = [&](size_t index) -> complex_prec {
-								return DOS::abscissa_v(index) *	
-									(getCoefficientAndExpec(DOS::abscissa_v(index), 0U) - getCoefficientAndExpec(DOS::abscissa_v(2 * index), 0U));
-							};
-							return term.multiplicity * getCoefficient(gamma) * _integrator.integrate_by_index(_integrate_function);
-						}
-						else {
-							return term.multiplicity * getCoefficient(gamma) * getSumOfAll(term.operators[0]);
-						}
+					if (term.coefficients.back().dependsOn('q')) {
+						auto _integrate_lambda = [&](size_t index) -> complex_prec {
+							return DOS::abscissa_v(index)
+								* (getExpectationValue(term.operators[0U], DOS::abscissa_v(index))
+									- getExpectationValue(term.operators[0U], DOS::abscissa_v(2 * index)));
+						};
+						return term.getFactor() * getCoefficient(gamma) * _integrator.integrate_by_index(_integrate_lambda);
 					}
-					else {
-					}
+					return term.getFactor() * getCoefficient(gamma) * getSumOfAll(term.operators.front());
 				}
 				else if (term.isQuartic()) {
 					// quartic
+					int q_dependend = term.whichOperatorDependsOn('q');
+					if (q_dependend < 0) throw std::invalid_argument("Suming q, but no operator depends on q.");
+
+					if (term.coefficients.back().dependsOn('q')) {
+						auto _integrate_lambda = [&](size_t index) -> complex_prec {
+							return DOS::abscissa_v(index)
+								* (getExpectationValue(term.operators[q_dependend], DOS::abscissa_v(index))
+									- getExpectationValue(term.operators[q_dependend], DOS::abscissa_v(2 * index)));
+						};
+						// q_dependend can either be 1 or 0; the other operator always depends solely on k
+						// Hence q_dependend == 0 gives the positions of the k-dependend operator
+						return term.getFactor()
+							* getCoefficientAndExpec(gamma, q_dependend == 0) * _integrator.integrate_by_index(_integrate_lambda);
+					}
+					return term.getFactor()
+						* getCoefficientAndExpec(gamma, q_dependend == 0) * getSumOfAll(term.operators.front());
 				}
 			}
 
-			throw std::runtime_error("Not yet implemented!");
+			if (term.hasSingleCoefficient()) {
+				if (term.coefficients.back().name != "\\epsilon_0") {
+					// This we should be able to choose this as zero?
+					// To be verified
+					return 0;
+				}
+				// Can never be an identity (checked above) and only be bilinear (checked in validity)
+				return term.getFactor() * this->model->computeEpsilon(gamma) * getExpectationValue(term.operators[0U], gamma);
+			}
+			return term.getFactor() * getExpectationValue(term.operators[0U], gamma);
 		};
 
 	public:

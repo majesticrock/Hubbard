@@ -157,15 +157,20 @@ namespace Hubbard {
 			return _scalar_integrator().integrate_by_value(procedure) / 2;
 		};
 
-		virtual inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const global_floating_type gamma) const {
+		inline global_floating_type computeEpsilon(const global_floating_type& gamma) const {
+			return (-2 * gamma - this->chemical_potential);
+		};
+
+		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const global_floating_type& gamma) const {
 			if (coeff.name == "\\epsilon_0") {
-				return (-2 * gamma - this->chemical_potential);
+				if (!coeff.dependsOn('k')) throw std::runtime_error("Epsilon should always be k-dependent!");
+				return computeEpsilon(gamma);
 			}
 			if (coeff.name == "\\frac{U}{N}") {
 				return this->U_OVER_N;
 			}
 			if (coeff.name == "\\tilde{V}") {
-				return this->V_OVER_N * gamma;
+				return this->V_OVER_N * (coeff.dependsOn('k') ? gamma : 1);
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
