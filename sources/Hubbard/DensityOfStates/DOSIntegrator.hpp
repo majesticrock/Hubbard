@@ -10,6 +10,23 @@ namespace Hubbard::DensityOfStates {
 		ResultType second_buffer;
 
 	public:
+		// Assumes that the function values are already saved in order to the vector
+		template <class VectorType>
+		inline const ResultType& integrate_vector(const VectorType& function_values) {
+			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) 
+				* (function_values[0] + function_values[DOS::size()]);
+			//std::cout << function_values[0] << ", " << function_values[DOS::size()] << std::endl;
+			for (size_t i = 1U; i < DOS::size(); ++i)
+			{
+				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) 
+					* (function_values[i] + function_values[i + DOS::size()]);
+
+				//std::cout << function_values[i] << ", " << function_values[i + DOS::size()] << std::endl;
+			}
+			//std::cout << "\n\n";
+			return result;
+		};
+
 		// This function passes the result of F by reference,
 		// i.e. F(gamma, result) and expects F to fill result accordingly.
 		template <class UnaryFunction>

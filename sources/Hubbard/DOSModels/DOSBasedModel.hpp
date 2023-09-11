@@ -179,7 +179,7 @@ namespace Hubbard {
 			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * DOS::size(), 1));
 			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
 
-			for (size_t i = 0U; i < DOS::size(); ++i)
+			for (size_t i = 0U; i < 2 * DOS::size(); ++i)
 			{
 				this->fillHamiltonian(DOS::abscissa_v(i));
 				this->fillRho();
@@ -199,39 +199,14 @@ namespace Hubbard {
 				expecs[6](i, 0) = this->get_n_up_plus_down();
 				// g_up + g_down
 				expecs[7](i, 0) = this->get_g_up_plus_down();
-				for (size_t idx = 0U; idx < 8U; ++idx)
-				{
-					sum_of_all[idx] += expecs[idx](i, 0);
-				}
 				if (abs(this->rho(3, 0)) > 1e-10) {
 					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
 				}
-				// Difference: negative abscissa
-				this->fillHamiltonian(-DOS::abscissa_v(i));
-				this->fillRho();
-				// n_up
-				expecs[0](i + DOS::size(), 0) = this->get_n_up();
-				// g_up
-				expecs[1](i + DOS::size(), 0) = this->get_g_up();
-				// f
-				expecs[2](i + DOS::size(), 0) = this->get_f();
-				// eta
-				expecs[3](i + DOS::size(), 0) = this->get_eta();
-				// n_down
-				expecs[4](i + DOS::size(), 0) = this->get_n_down();
-				// g_down
-				expecs[5](i + DOS::size(), 0) = this->get_g_down();
-				// n_up + n_down
-				expecs[6](i + DOS::size(), 0) = this->get_n_up_plus_down();
-				// g_up + g_down
-				expecs[7](i + DOS::size(), 0) = this->get_g_up_plus_down();
-				for (size_t idx = 0U; idx < 8U; ++idx)
-				{
-					sum_of_all[idx] += expecs[idx](i, 0);
-				}
-				if (abs(this->rho(3, 0)) > 1e-10) {
-					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
-				}
+			}
+			typename DOS::Integrator<complex_prec> integrator;
+			for (size_t i = 0U; i < 8U; ++i)
+			{
+				sum_of_all[i] = integrator.integrate_vector(expecs[i].col(0));
 			}
 		};
 

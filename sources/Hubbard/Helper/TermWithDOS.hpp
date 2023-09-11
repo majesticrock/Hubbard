@@ -37,8 +37,8 @@ namespace Hubbard::Helper {
 				return this->model->computeCoefficient(term.coefficients.back(), x);
 			};
 
-			auto getCoefficientAndExpec = [&](global_floating_type x, size_t expec_pos) {
-				return this->model->computeCoefficient(term.coefficients.back(), x) * getExpectationValue(term.operators[expec_pos], x);
+			auto getCoefficientAndExpec = [&](int x_idx, size_t expec_pos) {
+				return this->model->computeCoefficient(term.coefficients.back(), DOS::abscissa_v(x_idx)) * getExpectationValue(term.operators[expec_pos], x_idx);
 			};
 
 			if (term.isIdentity()) {
@@ -53,8 +53,8 @@ namespace Hubbard::Helper {
 					if (term.coefficients.back().dependsOn('q')) {
 						auto _integrate_lambda = [&](size_t index) -> complex_prec {
 							return DOS::abscissa_v(index)
-								* (getExpectationValue(term.operators[0U], DOS::abscissa_v(index))
-									- getExpectationValue(term.operators[0U], -DOS::abscissa_v(index)));
+								* (getExpectationValue(term.operators[0U], index)
+									- getExpectationValue(term.operators[0U], index + DOS::size()));
 						};
 						return term.getFactor() * getCoefficient(gamma) * _integrator.integrate_by_index(_integrate_lambda);
 					}
@@ -68,16 +68,15 @@ namespace Hubbard::Helper {
 					if (term.coefficients.back().dependsOn('q')) {
 						auto _integrate_lambda = [&](size_t index) -> complex_prec {
 							return DOS::abscissa_v(index)
-								* (getExpectationValue(term.operators[q_dependend], DOS::abscissa_v(index))
-									- getExpectationValue(term.operators[q_dependend], -DOS::abscissa_v(index)));
+								* (getExpectationValue(term.operators[q_dependend], index)
+									- getExpectationValue(term.operators[q_dependend], index + DOS::size()));
 						};
 						// q_dependend can either be 1 or 0; the other operator always depends solely on k
 						// Hence q_dependend == 0 gives the positions of the k-dependend operator
 						return term.getFactor()
-							* getCoefficientAndExpec(gamma, q_dependend == 0) * _integrator.integrate_by_index(_integrate_lambda);
+							* getCoefficientAndExpec(gamma_idx, q_dependend == 0) * _integrator.integrate_by_index(_integrate_lambda);
 					}
-					return term.getFactor()
-						* getCoefficientAndExpec(gamma, q_dependend == 0) * this->getSumOfAll(term.operators.front());
+					return term.getFactor()	* getCoefficientAndExpec(gamma_idx, q_dependend == 0) * this->getSumOfAll(term.operators[q_dependend]);
 				}
 			}
 
@@ -88,9 +87,9 @@ namespace Hubbard::Helper {
 					return 0;
 				}
 				// Can never be an identity (checked above) and only be bilinear (checked in validity)
-				return term.getFactor() * this->model->computeEpsilon(gamma) * getExpectationValue(term.operators[0U], gamma);
+				return term.getFactor() * this->model->computeEpsilon(gamma) * getExpectationValue(term.operators[0U], gamma_idx);
 			}
-			return term.getFactor() * getExpectationValue(term.operators[0U], gamma);
+			return term.getFactor() * getExpectationValue(term.operators[0U], gamma_idx);
 		};
 
 	public:
