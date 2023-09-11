@@ -4,34 +4,34 @@
 #include <complex>
 
 namespace Hubbard::Helper {
-	using DOS = DensityOfStates::Square;
-
+	template <class DOS>
 	class TermWithDOS : protected DetailModelConstructor<DOSModels::BroydenDOS<DOS>>
 	{
 	private:
-		using Integrator = DOS::Integrator<complex_prec>;
+		using Integrator = typename DOS::Integrator<complex_prec>;
 		Integrator _integrator{};
 
 	protected:
 		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, int gamma_idx) const {
-			auto it = wick_map.find(op.type);
-			if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
+			auto it = this->wick_map.find(op.type);
+			if (it == this->wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
 
 			int index = it->second;
 			if (op.type == "g" || op.type == "n") {
-				auto jt = wick_spin_offset.find(op.indizes[0]);
-				if (jt == wick_map.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
+				auto jt = this->wick_spin_offset.find(op.indizes[0]);
+				if (jt == this->wick_map.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
 				index += jt->second;
 			}
 
-			if (op.isDaggered) return std::conj(expecs[index](gamma_idx, 0));
-			return expecs[index](gamma_idx, 0);
+			if (op.isDaggered) return std::conj(this->expecs[index](gamma_idx, 0));
+			return this->expecs[index](gamma_idx, 0);
 		};
 
 		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) {
-			checkTermValidity(term);
 			const global_floating_type gamma{ DOS::abscissa_v(gamma_idx) };
-			const global_floating_type gamma_prime{ DOS::abscissa_v(gamma_prime_idx) };
+			// For now terms that include l (by extend gamma') are excluded.
+			// We expect these terms to be 0.
+			//const global_floating_type gamma_prime{ DOS::abscissa_v(gamma_prime_idx) };
 
 			auto getCoefficient = [&](global_floating_type x) {
 				return this->model->computeCoefficient(term.coefficients.back(), x);
@@ -54,11 +54,11 @@ namespace Hubbard::Helper {
 						auto _integrate_lambda = [&](size_t index) -> complex_prec {
 							return DOS::abscissa_v(index)
 								* (getExpectationValue(term.operators[0U], DOS::abscissa_v(index))
-									- getExpectationValue(term.operators[0U], DOS::abscissa_v(2 * index)));
+									- getExpectationValue(term.operators[0U], -DOS::abscissa_v(index)));
 						};
 						return term.getFactor() * getCoefficient(gamma) * _integrator.integrate_by_index(_integrate_lambda);
 					}
-					return term.getFactor() * getCoefficient(gamma) * getSumOfAll(term.operators.front());
+					return term.getFactor() * getCoefficient(gamma) * this->getSumOfAll(term.operators.front());
 				}
 				else if (term.isQuartic()) {
 					// quartic
@@ -69,7 +69,7 @@ namespace Hubbard::Helper {
 						auto _integrate_lambda = [&](size_t index) -> complex_prec {
 							return DOS::abscissa_v(index)
 								* (getExpectationValue(term.operators[q_dependend], DOS::abscissa_v(index))
-									- getExpectationValue(term.operators[q_dependend], DOS::abscissa_v(2 * index)));
+									- getExpectationValue(term.operators[q_dependend], -DOS::abscissa_v(index)));
 						};
 						// q_dependend can either be 1 or 0; the other operator always depends solely on k
 						// Hence q_dependend == 0 gives the positions of the k-dependend operator
@@ -77,7 +77,7 @@ namespace Hubbard::Helper {
 							* getCoefficientAndExpec(gamma, q_dependend == 0) * _integrator.integrate_by_index(_integrate_lambda);
 					}
 					return term.getFactor()
-						* getCoefficientAndExpec(gamma, q_dependend == 0) * getSumOfAll(term.operators.front());
+						* getCoefficientAndExpec(gamma, q_dependend == 0) * this->getSumOfAll(term.operators.front());
 				}
 			}
 
@@ -94,6 +94,6 @@ namespace Hubbard::Helper {
 		};
 
 	public:
-		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor(input) {};
+		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input) {};
 	};
 }

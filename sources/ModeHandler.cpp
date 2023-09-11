@@ -4,6 +4,7 @@
 #include "Hubbard/Helper/ModeHelper.hpp"
 #include "Hubbard/Helper/SquareGeneral.hpp"
 #include "Hubbard/Helper/SquareXP.hpp"
+#include "Hubbard/Helper/DOSGeneral.hpp"
 #include "Utility/OutputConvenience.hpp"
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
@@ -20,10 +21,21 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 
 	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;
 	if (input.getInt("start_basis_at") == -1) {
-		modeHelper = std::make_unique<Hubbard::Helper::SquareXP>(input);
+		if (input.getBool("use_DOS")) {
+			std::cerr << "XP-basis on DOS is not yet implemented." << std::endl;
+			return;
+		}
+		else {
+			modeHelper = std::make_unique<Hubbard::Helper::SquareXP>(input);
+		}
 	}
 	else {
-		modeHelper = std::make_unique<Hubbard::Helper::SquareGeneral>(input);
+		if (input.getBool("use_DOS")) {
+			modeHelper = std::make_unique<Hubbard::Helper::DOSGeneral>(input);
+		}
+		else {
+			modeHelper = std::make_unique<Hubbard::Helper::SquareGeneral>(input);
+		}
 	}
 
 	totalGapValue = modeHelper->getModel().getTotalGapValue();

@@ -3,7 +3,7 @@
 #include "TermWithDOS.hpp"
 
 namespace Hubbard::Helper {
-	class DOSGeneral : public GeneralBasis, public TermWithDOS
+	class DOSGeneral : public GeneralBasis, public TermWithDOS<DensityOfStates::Square>
 	{
 	private:
 		virtual void fillBlock(int i, int j) override;

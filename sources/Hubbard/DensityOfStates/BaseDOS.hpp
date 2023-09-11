@@ -64,7 +64,7 @@ namespace Hubbard::DensityOfStates {
 		virtual ~BaseDOS() = default;
 
 		inline static global_floating_type abscissa_v(size_t index) {
-			return static_cast<global_floating_type>(abscissa[index]);
+			return static_cast<global_floating_type>(index < abscissa.size() ? abscissa[index] : -abscissa[index - abscissa.size()]);
 		};
 		inline static size_t size() noexcept {
 			return values.size();

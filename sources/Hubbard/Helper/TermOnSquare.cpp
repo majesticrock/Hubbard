@@ -35,8 +35,6 @@ namespace Hubbard::Helper {
 
 	complex_prec TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
 	{
-		checkTermValidity(term);
-
 		const Eigen::Vector2i l_idx = { x(l), y(l) };
 		const Eigen::Vector2i k_idx = { x(k), y(k) };
 		Eigen::Vector2i q_idx = { 0,0 };

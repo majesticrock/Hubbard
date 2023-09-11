@@ -8,10 +8,6 @@ namespace Hubbard::Helper {
 			for (int k = 0; k < Constants::BASIS_SIZE; k++)
 			{
 				if (term.delta_momenta.size() > 0) {
-					if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
-					if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
-					if (term.delta_momenta[0].second.momentum_list.size() != 1) throw std::invalid_argument("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size());
-
 					int l_buf = k;
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 						Eigen::Vector2i l_buf_vec = { x(k), y(k) };
@@ -36,10 +32,6 @@ namespace Hubbard::Helper {
 			for (int k = 0; k < Constants::BASIS_SIZE; k++)
 			{
 				if (term.delta_momenta.size() > 0) {
-					if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
-					if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
-					if (term.delta_momenta[0].second.momentum_list.size() != 1) throw std::invalid_argument("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size());
-
 					int l_buf = k;
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 						Eigen::Vector2i l_buf_vec = { x(k), y(k) };

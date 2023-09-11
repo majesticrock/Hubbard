@@ -86,6 +86,9 @@ namespace Hubbard::Helper {
 			}
 		};
 
+		// Throws an exception if the passed term is not valid or of a type that is not implemented yet,
+		// otherwise it does nothing
+		void checkTermValidity(const SymbolicOperators::WickTerm& term);
 		virtual void fillBlock(int i, int j) = 0;
 	public:
 		ModeHelper(Utility::InputFileReader& input);

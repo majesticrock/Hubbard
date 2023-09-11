@@ -18,6 +18,10 @@ namespace Hubbard::Helper {
 					wicks_M[j * number_of_basis_terms + i].clear();
 					ia >> wicks_M[j * number_of_basis_terms + i];
 					ifs.close();
+
+					for (const auto& term : wicks_M[j * number_of_basis_terms + i]) {
+						checkTermValidity(term);
+					}
 				}
 				{
 					// create an input file stream and a text archive to deserialize the vector
@@ -26,8 +30,31 @@ namespace Hubbard::Helper {
 					wicks_N[j * number_of_basis_terms + i].clear();
 					ia >> wicks_N[j * number_of_basis_terms + i];
 					ifs.close();
+
+					for (const auto& term : wicks_N[j * number_of_basis_terms + i]) {
+						checkTermValidity(term);
+					}
 				}
 			}
+		}
+	}
+
+	void ModeHelper::checkTermValidity(const SymbolicOperators::WickTerm& term)
+	{
+		if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
+		if (term.delta_momenta.size() == 1) {
+			if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
+			if (term.delta_momenta[0].second.momentum_list.size() != 1) throw std::invalid_argument("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size());
+		}
+
+		if (term.coefficients.size() > 1U) throw std::invalid_argument("Undefined number of coefficients: " + std::to_string(term.coefficients.size()));
+		if (term.operators.size() > 2U) throw std::invalid_argument("There are more than 2 WickOperators: " + term.operators.size());
+		if (term.sum_momenta.size() > 0U) {
+			if (!term.hasSingleCoefficient()) throw std::invalid_argument("Too many sums: " + term.sum_momenta.size());
+			if (term.delta_momenta.empty()) throw std::invalid_argument("There is a summation without delta_kl.");
+		}
+		else {
+			if (term.operators.size() > 2U) throw std::invalid_argument("A term without a sum can only be bilinear or an identity.");
 		}
 	}
 
