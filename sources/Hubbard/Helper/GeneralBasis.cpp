@@ -1,5 +1,8 @@
 #include "GeneralBasis.hpp"
 #include <chrono>
+#include "../DensityOfStates/Square.hpp"
+
+using DOS = Hubbard::DensityOfStates::Square;
 
 namespace Hubbard::Helper {
 	void GeneralBasis::fillMatrices()
@@ -22,6 +25,26 @@ namespace Hubbard::Helper {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		fillMatrices();
+		int off = Constants::BASIS_SIZE ;
+		for (size_t k = 0U; k < off; ++k)
+		{
+			for (size_t i = 0U; i < 2; ++i)
+			{
+				for (size_t j = 0U; j < 2; ++j)
+				{
+					std::cout << M(j * off + k, i * off + k).real() << "\t";
+				}
+				std::cout << std::endl;
+			}
+			std::cout << std::endl;
+		}
+
+		if ((M - M.adjoint()).norm() > 1e-12) {
+			throw std::runtime_error("M is not Hermitian!");
+		}
+		if ((N - N.adjoint()).norm() > 1e-12) {
+			throw std::runtime_error("N is not Hermitian!");
+		}
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
@@ -72,11 +95,13 @@ namespace Hubbard::Helper {
 			psis[1](i) = 1;
 			psis[1](Constants::BASIS_SIZE + i) = -1;
 
-			psis[2](4 * Constants::BASIS_SIZE + i) = 1;
-			psis[2](5 * Constants::BASIS_SIZE + i) = 1;
+			if (number_of_basis_terms >= 6) {
+				psis[2](4 * Constants::BASIS_SIZE + i) = 1;
+				psis[2](5 * Constants::BASIS_SIZE + i) = 1;
 
-			psis[3](4 * Constants::BASIS_SIZE + i) = 1;
-			psis[3](5 * Constants::BASIS_SIZE + i) = -1;
+				psis[3](4 * Constants::BASIS_SIZE + i) = 1;
+				psis[3](5 * Constants::BASIS_SIZE + i) = -1;
+			}
 		}
 		for (auto& psi : psis)
 		{

@@ -175,8 +175,8 @@ namespace Hubbard {
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
 
-		virtual void computeExpectationValues(std::vector<MatrixCL>& expecs, std::vector<complex_prec>& sum_of_all) override {
-			expecs = std::vector<MatrixCL>(8, Matrix_L::Zero(2 * DOS::size(), 1));
+		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, std::vector<complex_prec>& sum_of_all) override {
+			expecs = std::vector<ValueArray>(8, ValueArray::Zero(2 * DOS::size(), 1));
 			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
 
 			for (size_t i = 0U; i < 2 * DOS::size(); ++i)
@@ -203,6 +203,7 @@ namespace Hubbard {
 					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
 				}
 			}
+
 			typename DOS::Integrator<complex_prec> integrator;
 			for (size_t i = 0U; i < 8U; ++i)
 			{

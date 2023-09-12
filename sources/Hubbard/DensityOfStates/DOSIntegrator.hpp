@@ -15,15 +15,12 @@ namespace Hubbard::DensityOfStates {
 		inline const ResultType& integrate_vector(const VectorType& function_values) {
 			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) 
 				* (function_values[0] + function_values[DOS::size()]);
-			//std::cout << function_values[0] << ", " << function_values[DOS::size()] << std::endl;
+
 			for (size_t i = 1U; i < DOS::size(); ++i)
 			{
 				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) 
 					* (function_values[i] + function_values[i + DOS::size()]);
-
-				//std::cout << function_values[i] << ", " << function_values[i + DOS::size()] << std::endl;
 			}
-			//std::cout << "\n\n";
 			return result;
 		};
 
@@ -38,7 +35,7 @@ namespace Hubbard::DensityOfStates {
 			for (size_t i = 1U; i < DOS::size(); ++i)
 			{
 				F(static_cast<global_floating_type>(DOS::abscissa[i]), buffer);
-				F(static_cast<global_floating_type>(-DOS::abscissa.front()), second_buffer);
+				F(static_cast<global_floating_type>(-DOS::abscissa[i]), second_buffer);
 				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) * (buffer + second_buffer);
 			}
 			return result;

@@ -10,7 +10,7 @@ namespace Hubbard::Helper {
 	template <class Model>
 	class DetailModelConstructor {
 	protected:
-		std::vector<MatrixCL> expecs{};
+		std::vector<ValueArray> expecs{};
 		std::vector<complex_prec> sum_of_all{};
 		std::unique_ptr<Model> model{};
 
