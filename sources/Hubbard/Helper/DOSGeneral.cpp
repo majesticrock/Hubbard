@@ -31,9 +31,6 @@ namespace Hubbard::Helper {
 						// delta gamma, -gamma'
 						l += (k < DOS::size() ? DOS::size() : -DOS::size());
 					}
-					if (i == 0 && j == 1) {
-						std::cout << k << ",\t" << l << "\t" << computeTerm(term, l, k).real() << "     " << term << std::endl;
-					}
 					M(j * Constants::BASIS_SIZE + l, i * Constants::BASIS_SIZE + k) += computeTerm(term, l, k) * DOS::values_v(k);
 				}
 				// melo by to byt 0

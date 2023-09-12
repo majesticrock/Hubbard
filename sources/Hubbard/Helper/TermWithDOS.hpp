@@ -33,12 +33,22 @@ namespace Hubbard::Helper {
 			// We expect these terms to be 0.
 			//const global_floating_type gamma_prime{ DOS::abscissa_v(gamma_prime_idx) };
 
+			if (!(term.coefficients.empty()) && term.sum_momenta.empty()) {
+				if (term.coefficients.front().name != "\\epsilon_0") {
+					// This we should be able to choose this as zero?
+					// To be verified; idea is that these terms scale with 1/N and N can be set
+					// arbitrarily in the DOS-based formalism
+					return 0;
+				}
+			}
+
 			auto getCoefficient = [&](global_floating_type x) {
 				return this->model->computeCoefficient(term.coefficients.back(), x);
 			};
 
 			auto getCoefficientAndExpec = [&](int x_idx, size_t expec_pos) {
-				return this->model->computeCoefficient(term.coefficients.back(), DOS::abscissa_v(x_idx)) * getExpectationValue(term.operators[expec_pos], x_idx);
+				return this->model->computeCoefficient(term.coefficients.back(), DOS::abscissa_v(x_idx)) 
+					* getExpectationValue(term.operators[expec_pos], x_idx);
 			};
 
 			if (term.isIdentity()) {
@@ -73,8 +83,8 @@ namespace Hubbard::Helper {
 						};
 						// q_dependend can either be 1 or 0; the other operator always depends solely on k
 						// Hence q_dependend == 0 gives the positions of the k-dependend operator
-						return term.getFactor()
-							* getCoefficientAndExpec(gamma_idx, q_dependend == 0) * _integrator.integrate_by_index(_integrate_lambda);
+						return term.getFactor() * getCoefficientAndExpec(gamma_idx, q_dependend == 0)
+							* _integrator.integrate_by_index(_integrate_lambda);
 					}
 					return term.getFactor()	* getCoefficientAndExpec(gamma_idx, q_dependend == 0) * this->getSumOfAll(term.operators[q_dependend]);
 				}
