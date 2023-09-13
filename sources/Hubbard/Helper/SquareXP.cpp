@@ -35,23 +35,19 @@ namespace Hubbard::Helper {
 				for (int k = 0; k < sum_limit; k++)
 				{
 					if (term.delta_momenta.size() > 0) {
-						int l_buf = k;
+						int l{ k };
 						if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
-							Eigen::Vector2i l_buf_vec = { x(k), y(k) };
-							l_buf_vec(0) += Constants::K_DISCRETIZATION;
-							l_buf_vec(1) += Constants::K_DISCRETIZATION;
-							clean_factor_2pi(l_buf_vec);
-							l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
+							l = addQTo(k);
 						}
 
 						if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
-							L(hermitian_offsets[i] + l_buf, antihermitian_offsets[j - 6] + k) += computeRealTerm(term, l_buf, k);
+							L(hermitian_offsets[i] + l, antihermitian_offsets[j - 6] + k) += computeRealTerm(term, l, k);
 						}
 						else {
-							if (l_buf >= Constants::BASIS_SIZE / 2) {
+							if (l >= Constants::BASIS_SIZE / 2) {
 								continue;
 							}
-							L(hermitian_offsets[i] + l_buf, antihermitian_offsets[j - 6] + k) += computeRealTerm(term, l_buf, k);
+							L(hermitian_offsets[i] + l, antihermitian_offsets[j - 6] + k) += computeRealTerm(term, l, k);
 						}
 					}
 					else {
@@ -73,32 +69,28 @@ namespace Hubbard::Helper {
 			for (int k = 0; k < sum_limit; k++)
 			{
 				if (term.delta_momenta.size() > 0) {
-					int l_buf = k;
+					int l{ k };
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
-						Eigen::Vector2i l_buf_vec = { x(k), y(k) };
-						l_buf_vec(0) += Constants::K_DISCRETIZATION;
-						l_buf_vec(1) += Constants::K_DISCRETIZATION;
-						clean_factor_2pi(l_buf_vec);
-						l_buf = l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
+						l = addQTo(k);
 					}
 
 					if (std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()) {
 						if (i < 6) {
-							K_plus(hermitian_offsets[i] + l_buf, hermitian_offsets[j] + k) += computeRealTerm(term, l_buf, k);
+							K_plus(hermitian_offsets[i] + l, hermitian_offsets[j] + k) += computeRealTerm(term, l, k);
 						}
 						else {
-							K_minus(antihermitian_offsets[i - 6] + l_buf, antihermitian_offsets[j - 6] + k) += computeRealTerm(term, l_buf, k);
+							K_minus(antihermitian_offsets[i - 6] + l, antihermitian_offsets[j - 6] + k) += computeRealTerm(term, l, k);
 						}
 					}
 					else {
-						if (l_buf >= Constants::BASIS_SIZE / 2) {
+						if (l >= Constants::BASIS_SIZE / 2) {
 							continue;
 						}
 						if (i < 6) {
-							K_plus(hermitian_offsets[i] + l_buf, hermitian_offsets[j] + k) += computeRealTerm(term, l_buf, k);
+							K_plus(hermitian_offsets[i] + l, hermitian_offsets[j] + k) += computeRealTerm(term, l, k);
 						}
 						else {
-							K_minus(antihermitian_offsets[i - 6] + l_buf, antihermitian_offsets[j - 6] + k) += computeRealTerm(term, l_buf, k);
+							K_minus(antihermitian_offsets[i - 6] + l, antihermitian_offsets[j - 6] + k) += computeRealTerm(term, l, k);
 						}
 					}
 				}

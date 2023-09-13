@@ -27,19 +27,19 @@ namespace Hubbard::Helper {
 		std::cout << std::resetiosflags(std::cout.flags());
 		fillMatrices();
 		std::cout << std::endl;
-		//int off = Constants::BASIS_SIZE ;
-		//for (size_t k = 0U; k < off; ++k)
-		//{
-		//	for (size_t i = 0U; i < 2; ++i)
-		//	{
-		//		for (size_t j = 0U; j < 2; ++j)
-		//		{
-		//			std::cout << M(j * off + k, i * off + k).real() << "\t";
-		//		}
-		//		std::cout << std::endl;
-		//	}
-		//	std::cout << std::endl;
-		//}
+		for (size_t k = 0U; k < Constants::BASIS_SIZE; ++k)
+		{
+			std::cout << k << ":\n";
+			for (size_t i = 0U; i < number_of_basis_terms; ++i)
+			{
+				for (size_t j = 0U; j < number_of_basis_terms; ++j)
+				{
+					std::cout << M(j + k * number_of_basis_terms, i + k * number_of_basis_terms).real() << "\t";
+				}
+				std::cout << std::endl;
+			}
+			std::cout << std::endl;
+		}
 
 		if ((M - M.adjoint()).norm() > 1e-12) {
 			throw std::runtime_error("M is not Hermitian!");

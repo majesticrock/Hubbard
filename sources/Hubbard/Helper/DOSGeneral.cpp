@@ -14,7 +14,7 @@ namespace Hubbard::Helper {
 						// delta gamma, -gamma'
 						l += (k < DOS::size() ? DOS::size() : -DOS::size());
 					}
-					N(j * Constants::BASIS_SIZE + l, i * Constants::BASIS_SIZE + k) += computeTerm(term, l, k) * DOS::values_v(k);
+					N(j + l * number_of_basis_terms, i + k * number_of_basis_terms) += computeTerm(term, l, k) * DOS::values_v(k);
 				}
 				// melo by to byt 0
 			}
@@ -38,7 +38,7 @@ namespace Hubbard::Helper {
 						// delta gamma, -gamma'
 						l += (k < DOS::size() ? DOS::size() : -DOS::size());
 					}
-					M(j * Constants::BASIS_SIZE + l, i * Constants::BASIS_SIZE + k) += computeTerm(term, l, k) * DOS::values_v(k);
+					M(j + l * number_of_basis_terms, i + k * number_of_basis_terms) += computeTerm(term, l, k) * DOS::values_v(k);
 				}
 				// melo by to byt 0
 			}
