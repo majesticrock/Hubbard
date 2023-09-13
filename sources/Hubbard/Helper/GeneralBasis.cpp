@@ -24,20 +24,22 @@ namespace Hubbard::Helper {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
+		std::cout << std::resetiosflags(std::cout.flags());
 		fillMatrices();
-		int off = Constants::BASIS_SIZE ;
-		for (size_t k = 0U; k < off; ++k)
-		{
-			for (size_t i = 0U; i < 2; ++i)
-			{
-				for (size_t j = 0U; j < 2; ++j)
-				{
-					std::cout << M(j * off + k, i * off + k).real() << "\t";
-				}
-				std::cout << std::endl;
-			}
-			std::cout << std::endl;
-		}
+		std::cout << std::endl;
+		//int off = Constants::BASIS_SIZE ;
+		//for (size_t k = 0U; k < off; ++k)
+		//{
+		//	for (size_t i = 0U; i < 2; ++i)
+		//	{
+		//		for (size_t j = 0U; j < 2; ++j)
+		//		{
+		//			std::cout << M(j * off + k, i * off + k).real() << "\t";
+		//		}
+		//		std::cout << std::endl;
+		//	}
+		//	std::cout << std::endl;
+		//}
 
 		if ((M - M.adjoint()).norm() > 1e-12) {
 			throw std::runtime_error("M is not Hermitian!");

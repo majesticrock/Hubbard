@@ -170,7 +170,11 @@ namespace Hubbard {
 				return this->U_OVER_N;
 			}
 			if (coeff.name == "\\tilde{V}") {
-				return this->V_OVER_N * (coeff.dependsOn('k') ? gamma : 1);
+				if(coeff.dependsOnMomentum()){
+					return this->V_OVER_N * (coeff.dependsOn('k') ? 0.5 * gamma : 1);
+				} else {
+					return DOS::DIMENSION * this->V_OVER_N;
+				}
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
@@ -216,20 +220,16 @@ namespace Hubbard {
 		{
 			reciever.reserve(4 * Constants::BASIS_SIZE + 4);
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
-			const global_floating_type step{ (2. * DOS::DIMENSION) / Constants::BASIS_SIZE };
+			const global_floating_type step{ DOS::LOWER_BORDER / Constants::BASIS_SIZE };
 
 			for(int g = -Constants::BASIS_SIZE; g <= Constants::BASIS_SIZE; ++g)
 			{
 				this->fillHamiltonian(g * step);
 				solver.compute(this->hamilton, false);
-				reciever.push_back(solver.eigenvalues()(0));
 
-				for (int i = 1; i < 4; i++)
+				for (int i = 0; i < 4; i++)
 				{
-					if (abs(solver.eigenvalues()(0) + solver.eigenvalues()(i)) > 1e-8) {
-						reciever.push_back(solver.eigenvalues()(i));
-						break;
-					}
+					reciever.push_back(solver.eigenvalues()(i));
 				}
 			}
 		};

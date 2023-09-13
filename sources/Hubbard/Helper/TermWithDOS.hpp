@@ -23,8 +23,18 @@ namespace Hubbard::Helper {
 				index += jt->second;
 			}
 
-			if (op.isDaggered) return std::conj(this->expecs[index](gamma_idx, 0));
-			return this->expecs[index](gamma_idx, 0);
+			auto offset = [&op, &gamma_idx]() -> int {
+				if(op.momentum.add_Q){
+					if(gamma_idx < DOS::size()){
+						return DOS::size();
+					}
+					return -DOS::size();
+				}
+				return 0;
+			};
+
+			if (op.isDaggered) return std::conj(this->expecs[index](gamma_idx + offset(), 0));
+			return this->expecs[index](gamma_idx + offset(), 0);
 		};
 
 		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) {
@@ -43,6 +53,9 @@ namespace Hubbard::Helper {
 			}
 
 			auto getCoefficient = [&](global_floating_type x) {
+				if(term.coefficients.back().momentum.add_Q){
+					return this->model->computeCoefficient(term.coefficients.back(), -x);
+				}
 				return this->model->computeCoefficient(term.coefficients.back(), x);
 			};
 
@@ -97,7 +110,7 @@ namespace Hubbard::Helper {
 					return 0;
 				}
 				// Can never be an identity (checked above) and only be bilinear (checked in validity)
-				return term.getFactor() * this->model->computeEpsilon(gamma) * getExpectationValue(term.operators[0U], gamma_idx);
+				return term.getFactor() * getCoefficient(gamma) * getExpectationValue(term.operators[0U], gamma_idx);
 			}
 			return term.getFactor() * getExpectationValue(term.operators[0U], gamma_idx);
 		};

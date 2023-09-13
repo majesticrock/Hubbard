@@ -82,7 +82,9 @@ namespace Utility {
 		{
 			writeComments(out, comments);
 			out << std::scientific << std::setprecision(10);
-			appendLine(data, out);
+			for(const auto& dat : data){
+				out << dat << "\n";
+			}
 		};
 
 		void saveData(const std::vector<std::vector<data_type>>& data, outstream_type& out,

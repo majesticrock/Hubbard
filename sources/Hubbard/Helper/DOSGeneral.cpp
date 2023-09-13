@@ -2,7 +2,6 @@
 
 namespace Hubbard::Helper {
 	using DOS = DensityOfStates::Square;
-
 	void DOSGeneral::fillBlock(int i, int j)
 	{
 		// fill N
@@ -23,6 +22,14 @@ namespace Hubbard::Helper {
 
 		// fill M
 		for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
+			//if (term.delta_momenta.size() > 0 && term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
+			//	auto buf = computeTerm(term, DOS::size() - 1, 2 * DOS::size() - 1).real();
+			//	static int counter;
+			//	if(std::abs(buf) > 1e-12){
+			//		std::cout << "$" << counter++ << " || " << term << " = " << buf << "$\n" << std::endl;
+			//	}
+			//}
+
 			for (int k = 0; k < Constants::BASIS_SIZE; ++k)
 			{
 				if (term.delta_momenta.size() > 0) {

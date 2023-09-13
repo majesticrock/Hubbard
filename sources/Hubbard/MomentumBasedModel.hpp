@@ -4,6 +4,14 @@
 #include "NumericalMomentum.hpp"
 
 namespace Hubbard {
+	inline int addQTo(int k){
+		Eigen::Vector2i l_buf_vec = { x(k), y(k) };
+		l_buf_vec(0) += Constants::K_DISCRETIZATION;
+		l_buf_vec(1) += Constants::K_DISCRETIZATION;
+		clean_factor_2pi(l_buf_vec);
+		return l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
+	};
+
 	template <typename DataType, size_t Dimension>
 	class MomentumBasedModel : public BaseModel<DataType>
 	{
