@@ -5,8 +5,6 @@
 
 namespace Hubbard::DensityOfStates {
 	std::vector<abscissa_t> Square::upper_border_to_abscissa;
-	std::vector<dos_precision> Square::weights;
-
 	dos_precision Square::b_minus_a_halved;
 
 #ifdef _BOOST_PRECISION

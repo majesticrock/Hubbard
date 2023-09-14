@@ -55,6 +55,7 @@ namespace Hubbard::DensityOfStates {
 		// Open boundaries, as the dos at 0 contains a singularity for d=2
 		static std::vector<dos_precision> values;
 		static std::vector<abscissa_t> abscissa;
+		static std::vector<dos_precision> weights;
 		static dos_precision step;
 		static bool computed;
 		static dos_precision integrateValues();
@@ -67,7 +68,10 @@ namespace Hubbard::DensityOfStates {
 			return static_cast<global_floating_type>(index < abscissa.size() ? abscissa[index] : -abscissa[index - abscissa.size()]);
 		};
 		inline static global_floating_type values_v(size_t index) {
-			return static_cast<global_floating_type>(index < abscissa.size() ? values[index] : values[index - abscissa.size()]);
+			return static_cast<global_floating_type>(index < values.size() ? values[index] : values[index - values.size()]);
+		};
+		inline static global_floating_type weights_v(size_t index) {
+			return static_cast<global_floating_type>(index < weights.size() ? weights[index] : weights[index - weights.size()]);
 		};
 		inline static size_t size() noexcept {
 			return values.size();

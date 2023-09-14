@@ -158,6 +158,9 @@ namespace Hubbard::Helper {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
+		std::cout << "Dimension of kernel of M: " << M.fullPivLu().kernel().cols() << std::endl;
+		std::cout << "Dimension of kernel of N: " << N.fullPivLu().kernel().cols() << std::endl;
+
 		constexpr int NUMBER_OF_GREENSFUNCTIONS = 4;
 		/*
 		* 0 - SC Higgs

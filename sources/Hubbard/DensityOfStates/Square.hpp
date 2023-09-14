@@ -4,7 +4,6 @@
 namespace Hubbard::DensityOfStates {
 	struct Square : public BaseDOS {
 		static std::vector<abscissa_t> upper_border_to_abscissa;
-		static std::vector<dos_precision> weights;
 		static dos_precision b_minus_a_halved;
 
 		static constexpr double LOWER_BORDER = -2;

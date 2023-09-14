@@ -13,8 +13,6 @@ namespace Hubbard::DensityOfStates {
 	using std::asin;
 
 	std::vector<abscissa_t> SimpleCubic::upper_border_to_abscissa;
-	std::vector<dos_precision> SimpleCubic::weights;
-
 	dos_precision SimpleCubic::b_minus_a_halved;
 
 	using _internal_precision = dos_precision;

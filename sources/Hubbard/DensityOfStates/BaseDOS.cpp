@@ -5,6 +5,7 @@
 namespace Hubbard::DensityOfStates {
 	std::vector<dos_precision> BaseDOS::values;
 	std::vector<abscissa_t> BaseDOS::abscissa;
+	std::vector<dos_precision> BaseDOS::weights;
 	bool BaseDOS::computed = false;
 	dos_precision BaseDOS::step = 0;
 
