@@ -14,7 +14,7 @@ namespace Hubbard::Helper {
 						// delta gamma, -gamma'
 						l += (k < DOS::size() ? DOS::size() : -DOS::size());
 					}
-					N(j + l * number_of_basis_terms, i + k * number_of_basis_terms) += computeTerm(term, l, k) * DOS::values_v(k);
+					N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k);// *DOS::values_v(k);
 				}
 				// melo by to byt 0
 			}
@@ -23,10 +23,11 @@ namespace Hubbard::Helper {
 		// fill M
 		for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
 			//if (term.delta_momenta.size() > 0 && term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
-			//	auto buf = computeTerm(term, DOS::size() - 1, 2 * DOS::size() - 1).real();
+			//	int pos = 0;
+			//	auto buf = computeTerm(term, pos, pos + DOS::size()).real();
 			//	static int counter;
 			//	if(std::abs(buf) > 1e-12){
-			//		std::cout << "$" << counter++ << " || " << term << " = " << buf << "$\n" << std::endl;
+			//		std::cout << "$" << counter++ << " " << DOS::abscissa_v(pos) << " || " << term << " = " << buf << "$\n" << std::endl;
 			//	}
 			//}
 
@@ -38,7 +39,7 @@ namespace Hubbard::Helper {
 						// delta gamma, -gamma'
 						l += (k < DOS::size() ? DOS::size() : -DOS::size());
 					}
-					M(j + l * number_of_basis_terms, i + k * number_of_basis_terms) += computeTerm(term, l, k) * DOS::values_v(k);
+					M(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k);// * DOS::values_v(k);
 				}
 				// melo by to byt 0
 			}

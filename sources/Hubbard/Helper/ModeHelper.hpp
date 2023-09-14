@@ -90,6 +90,7 @@ namespace Hubbard::Helper {
 		// otherwise it does nothing
 		void checkTermValidity(const SymbolicOperators::WickTerm& term);
 		virtual void fillBlock(int i, int j) = 0;
+
 	public:
 		ModeHelper(Utility::InputFileReader& input);
 		virtual ~ModeHelper() = default;

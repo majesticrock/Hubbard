@@ -1,6 +1,7 @@
 #include "GeneralBasis.hpp"
 #include <chrono>
 #include "../DensityOfStates/Square.hpp"
+#include "../MomentumIndexUtility.hpp"
 
 using DOS = Hubbard::DensityOfStates::Square;
 
@@ -20,26 +21,102 @@ namespace Hubbard::Helper {
 		}
 	}
 
+	void GeneralBasis::printM(int i, int j) const
+	{
+		if (std::abs(M(j, i)) < 1e-12) {
+			std::cout << 0 << "\t";
+		}
+		else {
+			std::cout << M(j, i).real() << "\t";
+		}
+	}
+
+	void GeneralBasis::printMomentumBlocks() const
+	{
+		std::cout << std::fixed << std::setprecision(4) << std::endl;
+
+		for (int l = 0; l < Constants::K_DISCRETIZATION; l++)
+		{
+			for (int k = 0; k < Constants::K_DISCRETIZATION; ++k)
+			{
+				int idx = l * Constants::K_DISCRETIZATION + k;
+				int jdx = addQTo(idx);
+				std::cout << idx << ": " << gammaFromIndex(idx) << "\n";
+
+				for (size_t i = 0U; i < number_of_basis_terms; ++i)
+				{
+					for (size_t j = 0U; j < number_of_basis_terms; ++j)
+					{
+						printM(j + idx * number_of_basis_terms, i + idx * number_of_basis_terms);
+					}
+					for (size_t j = 0U; j < number_of_basis_terms; ++j)
+					{
+						printM(j + jdx * number_of_basis_terms, i + idx * number_of_basis_terms);
+					}
+					std::cout << std::endl;
+				}
+				for (size_t i = 0U; i < number_of_basis_terms; ++i)
+				{
+					for (size_t j = 0U; j < number_of_basis_terms; ++j)
+					{
+						printM(j + idx * number_of_basis_terms, i + jdx * number_of_basis_terms);
+					}
+					for (size_t j = 0U; j < number_of_basis_terms; ++j)
+					{
+						printM(j + jdx * number_of_basis_terms, i + jdx * number_of_basis_terms);
+					}
+					std::cout << std::endl;
+				}
+
+				std::cout << std::endl;
+			}
+		}
+	}
+
+	void GeneralBasis::printDOSBlocks() const
+	{
+		std::cout << std::fixed << std::setprecision(4) << std::endl;
+
+		for (size_t k = 0U; k < Constants::BASIS_SIZE / 2; ++k)
+		{
+			std::cout << k << ": " << DOS::abscissa_v(k) << "\n";
+			for (size_t i = 0U; i < number_of_basis_terms; ++i)
+			{
+				for (size_t j = 0U; j < number_of_basis_terms; ++j)
+				{
+					printM(j + k * number_of_basis_terms, i + k * number_of_basis_terms);
+				}
+				for (size_t j = 0U; j < number_of_basis_terms; ++j)
+				{
+					printM(j + (k + Constants::BASIS_SIZE / 2) * number_of_basis_terms, i + k * number_of_basis_terms);
+				}
+				std::cout << std::endl;
+			}
+			for (size_t i = 0U; i < number_of_basis_terms; ++i)
+			{
+				for (size_t j = 0U; j < number_of_basis_terms; ++j)
+				{
+					printM(j + k * number_of_basis_terms, i + (k + Constants::BASIS_SIZE / 2) * number_of_basis_terms);
+				}
+				for (size_t j = 0U; j < number_of_basis_terms; ++j)
+				{
+					printM(j + (k + Constants::BASIS_SIZE / 2) * number_of_basis_terms, i + (k + Constants::BASIS_SIZE / 2) * number_of_basis_terms);
+				}
+				std::cout << std::endl;
+			}
+			std::cout << std::endl;
+		}
+	}
+
 	std::vector<Resolvent_L> GeneralBasis::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		std::cout << std::resetiosflags(std::cout.flags());
 		fillMatrices();
-		std::cout << std::endl;
-		for (size_t k = 0U; k < Constants::BASIS_SIZE; ++k)
-		{
-			std::cout << k << ":\n";
-			for (size_t i = 0U; i < number_of_basis_terms; ++i)
-			{
-				for (size_t j = 0U; j < number_of_basis_terms; ++j)
-				{
-					std::cout << M(j + k * number_of_basis_terms, i + k * number_of_basis_terms).real() << "\t";
-				}
-				std::cout << std::endl;
-			}
-			std::cout << std::endl;
-		}
+
+		//printDOSBlocks();
+		//printMomentumBlocks();
 
 		if ((M - M.adjoint()).norm() > 1e-12) {
 			throw std::runtime_error("M is not Hermitian!");
@@ -89,20 +166,20 @@ namespace Hubbard::Helper {
 		* 3 - AFM
 		*/
 		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
-		for (int i = 0; i < Constants::BASIS_SIZE; i++)
+		for (Eigen::Index i = 0; i < Constants::BASIS_SIZE; i++)
 		{
-			psis[0](i) = 1;
-			psis[0](Constants::BASIS_SIZE + i) = 1;
+			psis[0](i* number_of_basis_terms) = 1; // f
+			psis[0](i* number_of_basis_terms + 1) = 1; // f^+
 
-			psis[1](i) = 1;
-			psis[1](Constants::BASIS_SIZE + i) = -1;
+			psis[1](i* number_of_basis_terms) = 1; // f
+			psis[1](i* number_of_basis_terms + 1) = -1; // f^+
 
 			if (number_of_basis_terms >= 6) {
-				psis[2](4 * Constants::BASIS_SIZE + i) = 1;
-				psis[2](5 * Constants::BASIS_SIZE + i) = 1;
+				psis[2](i* number_of_basis_terms + 4) = 1; // g_up
+				psis[2](i* number_of_basis_terms + 5) = 1; // g_down
 
-				psis[3](4 * Constants::BASIS_SIZE + i) = 1;
-				psis[3](5 * Constants::BASIS_SIZE + i) = -1;
+				psis[3](i* number_of_basis_terms + 4) = 1; // g_up
+				psis[3](i* number_of_basis_terms + 5) = -1; // g_down
 			}
 		}
 		for (auto& psi : psis)
@@ -110,7 +187,7 @@ namespace Hubbard::Helper {
 			psi.normalize();
 		}
 
-		std::vector<Resolvent_L> resolvents { 3 * NUMBER_OF_GREENSFUNCTIONS };
+		std::vector<Resolvent_L> resolvents{ 3 * NUMBER_OF_GREENSFUNCTIONS };
 
 #pragma omp parallel for
 		for (int i = 0; i < NUMBER_OF_GREENSFUNCTIONS; i++)

@@ -8,6 +8,11 @@ namespace Hubbard::Helper {
 		MatrixCL M, N;
 
 		virtual void fillMatrices() override;
+
+		//Debug functions
+		void printM(int i, int j) const;
+		void printMomentumBlocks() const;
+		void printDOSBlocks() const;
 	public:
 		GeneralBasis(Utility::InputFileReader& input) : ModeHelper(input) { };
 
