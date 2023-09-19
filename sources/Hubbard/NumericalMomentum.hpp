@@ -1,3 +1,4 @@
+#pragma once
 #include <iterator>
 #include <numeric>
 #include <array>
@@ -100,7 +101,7 @@ namespace Hubbard {
 		inline void _increment() {
 			static_assert(_d < Dimension, "Call to increment in NumericalMomentum provides a too high dimension.");
 			if (++k[_d] >= Constants::K_DISCRETIZATION) {
-				k[_d] = -Constants::K_DISCRETIZATION;
+				if constexpr (_d + 1 < Dimension) k[_d] = -Constants::K_DISCRETIZATION;
 				if constexpr (_d + 1 < Dimension) {
 					_increment<_d + 1>();
 				}
@@ -117,5 +118,5 @@ namespace Hubbard {
 			os << " " << momentum.momenta[d];
 		}
 		return os;
-	}
+	};
 }

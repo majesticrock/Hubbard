@@ -76,5 +76,7 @@ namespace Hubbard::DensityOfStates {
 		inline static size_t size() noexcept {
 			return values.size();
 		};
+
+		static void printValuesAndAbscissa();
 	};
 }

@@ -17,7 +17,6 @@ namespace Hubbard::Helper {
 		};
 
 		DOSGeneral(Utility::InputFileReader& input) : GeneralBasis(input), TermWithDOS(input) {
-			Constants::BASIS_SIZE = 2 * DensityOfStates::Square::size();
 			this->TOTAL_BASIS = this->number_of_basis_terms * Constants::BASIS_SIZE;
 		};
 	};

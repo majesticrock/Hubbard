@@ -99,7 +99,7 @@ namespace Hubbard {
 				this->fillHamiltonian(gamma);
 				this->fillRho();
 				this->setParameterSet(result, gamma);
-			};
+				};
 
 			complex_F = _self_consistency_integrator.integrate_by_reference(expectationValues);
 
@@ -137,7 +137,7 @@ namespace Hubbard {
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
 						return (occ > 1e-12 ? current - occ * log(occ) : current);
 					});
-			};
+				};
 			// Devide by two because the matrix representation already includes gamma and -gamma.
 			return _scalar_integrator().integrate_by_value(procedure) / 2;
 		};
@@ -152,27 +152,26 @@ namespace Hubbard {
 					[this](global_floating_type current, global_floating_type toAdd) {
 						return current + toAdd * BaseModel<DataType>::fermi_dirac(toAdd);
 					});
-			};
+				};
 			// Devide by two because the matrix representation already includes gamma and -gamma.
 			return _scalar_integrator().integrate_by_value(procedure) / 2;
 		};
 
-		inline global_floating_type computeEpsilon(const global_floating_type& gamma) const {
-			return (-2 * gamma - this->chemical_potential);
-		};
-
-		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const global_floating_type& gamma) const {
+		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const global_floating_type& gamma, const global_floating_type& gamma_prime = -128) const {
 			if (coeff.name == "\\epsilon_0") {
-				if (!coeff.dependsOn('k')) throw std::runtime_error("Epsilon should always be k-dependent!");
-				return computeEpsilon(gamma);
+				if (!coeff.dependsOn('k')) throw std::runtime_error("Epsilon should always be k-dependent.");
+				if (coeff.momentum.momentum_list.size() > 1U) throw std::runtime_error("Epsilon depends on more than k.");
+				return ((coeff.momentum.add_Q ? 2 * gamma : -2 * gamma) - this->chemical_potential);
 			}
 			if (coeff.name == "\\frac{U}{N}") {
 				return this->U_OVER_N;
 			}
 			if (coeff.name == "\\tilde{V}") {
-				if(coeff.dependsOnMomentum()){
-					return this->V_OVER_N * (coeff.dependsOn('k') ? 0.5 * gamma : 1);
-				} else {
+				if (coeff.momentum.add_Q) throw std::runtime_error("V includes Q, this should not occur.");
+				if (coeff.dependsOnMomentum()) {
+					return this->V_OVER_N * (coeff.dependsOnTwoMomenta() ? (gamma * gamma_prime / DOS::DIMENSION) : gamma);
+				}
+				else {
 					return DOS::DIMENSION * this->V_OVER_N;
 				}
 			}
@@ -222,7 +221,7 @@ namespace Hubbard {
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			const global_floating_type step{ DOS::LOWER_BORDER / Constants::BASIS_SIZE };
 
-			for(int g = -Constants::BASIS_SIZE; g <= Constants::BASIS_SIZE; ++g)
+			for (int g = -Constants::BASIS_SIZE; g <= Constants::BASIS_SIZE; ++g)
 			{
 				this->fillHamiltonian(g * step);
 				solver.compute(this->hamilton, false);

@@ -21,4 +21,12 @@ namespace Hubbard::DensityOfStates {
 		}
 		std::cout << std::endl;
 	}
+	void BaseDOS::printValuesAndAbscissa()
+	{
+		for (size_t i = 0U; i < values.size(); ++i)
+		{
+			std::cout << abscissa[i] << "; " << values[i] << std::endl;
+		}
+		std::cout << std::endl;
+	}
 }

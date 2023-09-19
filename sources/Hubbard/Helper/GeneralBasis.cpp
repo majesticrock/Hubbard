@@ -115,8 +115,12 @@ namespace Hubbard::Helper {
 		std::cout << std::resetiosflags(std::cout.flags());
 		fillMatrices();
 
-		//printDOSBlocks();
-		//printMomentumBlocks();
+		//if(this->usingDOS){
+		//	printDOSBlocks();
+		//}
+		//else {
+		//	printMomentumBlocks();
+		//}
 
 		if ((M - M.adjoint()).norm() > 1e-12) {
 			throw std::runtime_error("M is not Hermitian!");
@@ -171,18 +175,18 @@ namespace Hubbard::Helper {
 		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
 		for (Eigen::Index i = 0; i < Constants::BASIS_SIZE; i++)
 		{
-			psis[0](i* number_of_basis_terms) = 1; // f
-			psis[0](i* number_of_basis_terms + 1) = 1; // f^+
+			psis[0](i* number_of_basis_terms) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
+			psis[0](i* number_of_basis_terms + 1) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f^+
 
-			psis[1](i* number_of_basis_terms) = 1; // f
-			psis[1](i* number_of_basis_terms + 1) = -1; // f^+
+			psis[1](i* number_of_basis_terms) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
+			psis[1](i* number_of_basis_terms + 1) = 1;//this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // f^+
 
 			if (number_of_basis_terms >= 6) {
-				psis[2](i* number_of_basis_terms + 4) = 1; // g_up
-				psis[2](i* number_of_basis_terms + 5) = 1; // g_down
+				psis[2](i* number_of_basis_terms + 4) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
+				psis[2](i* number_of_basis_terms + 5) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_down
 
-				psis[3](i* number_of_basis_terms + 4) = 1; // g_up
-				psis[3](i* number_of_basis_terms + 5) = -1; // g_down
+				psis[3](i* number_of_basis_terms + 4) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
+				psis[3](i* number_of_basis_terms + 5) = 1;//this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // g_down
 			}
 		}
 		for (auto& psi : psis)

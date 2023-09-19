@@ -36,6 +36,8 @@ namespace Hubbard::Helper {
 		int number_of_basis_terms{};
 		int start_basis_at{};
 
+		bool usingDOS{};
+
 		/////////////
 		// methods //
 		/////////////

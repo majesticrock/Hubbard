@@ -54,12 +54,13 @@ namespace Hubbard::Helper {
 			if (term.delta_momenta.empty()) throw std::invalid_argument("There is a summation without delta_kl.");
 		}
 		else {
-			if (term.operators.size() > 2U) throw std::invalid_argument("A term without a sum can only be bilinear or an identity.");
+			if (term.operators.size() > 2U) throw std::invalid_argument("A term without a sum can only be bilinear, quartic or an identity.");
 		}
 	}
 
 	ModeHelper::ModeHelper(Utility::InputFileReader& input)
-		: number_of_basis_terms{ input.getInt("number_of_basis_terms") }, start_basis_at{ input.getInt("start_basis_at") }
+		: number_of_basis_terms{ input.getInt("number_of_basis_terms") }, start_basis_at{ input.getInt("start_basis_at") },
+		usingDOS(input.getBool("use_DOS"))
 	{
 		if (start_basis_at < 0) {
 			// We investigate the special x-p-basis
