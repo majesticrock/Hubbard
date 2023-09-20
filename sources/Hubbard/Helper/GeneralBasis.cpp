@@ -1,5 +1,6 @@
 #include "GeneralBasis.hpp"
 #include <chrono>
+#include <algorithm>
 #include "../DensityOfStates/Square.hpp"
 #include "../MomentumIndexUtility.hpp"
 
@@ -137,6 +138,8 @@ namespace Hubbard::Helper {
 		Eigen::SelfAdjointEigenSolver<MatrixCL> M_solver(M);
 		Vector_L& evs_M = const_cast<Vector_L&>(M_solver.eigenvalues());
 		applyMatrixOperation<OPERATION_NONE>(evs_M);
+		std::cout << "dim(kern(M)) = " << std::count_if(evs_M.begin(), evs_M.end(), [](const global_floating_type& value){ return abs(value) < 1e-16; }) << std::endl;
+		std::cout << "dim(kern(N)) = " << N.fullPivLu().kernel().cols() << std::endl;
 
 		auto bufferMatrix = N * M_solver.eigenvectors();
 		MatrixCL n_hacek = bufferMatrix
@@ -162,9 +165,6 @@ namespace Hubbard::Helper {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
-		std::cout << "Dimension of kernel of M: " << M.fullPivLu().kernel().cols() << std::endl;
-		std::cout << "Dimension of kernel of N: " << N.fullPivLu().kernel().cols() << std::endl;
-
 		constexpr int NUMBER_OF_GREENSFUNCTIONS = 4;
 		/*
 		* 0 - SC Higgs
@@ -179,14 +179,14 @@ namespace Hubbard::Helper {
 			psis[0](i* number_of_basis_terms + 1) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f^+
 
 			psis[1](i* number_of_basis_terms) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
-			psis[1](i* number_of_basis_terms + 1) = 1;//this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // f^+
+			psis[1](i* number_of_basis_terms + 1) = -1;//this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // f^+
 
 			if (number_of_basis_terms >= 6) {
 				psis[2](i* number_of_basis_terms + 4) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
 				psis[2](i* number_of_basis_terms + 5) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_down
 
 				psis[3](i* number_of_basis_terms + 4) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
-				psis[3](i* number_of_basis_terms + 5) = 1;//this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // g_down
+				psis[3](i* number_of_basis_terms + 5) = -1;//this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // g_down
 			}
 		}
 		for (auto& psi : psis)

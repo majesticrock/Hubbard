@@ -30,9 +30,9 @@ namespace Hubbard::SquareLattice
 		template<typename StartingValuesDataType>
 		Model2D(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues) : MomentumBasedModel<DataType, 2>(_params, startingValues) { };
 
-		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, std::vector<complex_prec>& sum_of_all) override {
+		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override {
 			expecs = std::vector<ValueArray>(8U, ValueArray::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
-			sum_of_all = std::vector<complex_prec>(8U, complex_prec{});
+			sum_of_all = ValueArray::Zero(8, 1);
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
@@ -60,7 +60,7 @@ namespace Hubbard::SquareLattice
 					expecs[7](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_g_up_plus_down();
 					for (size_t idx = 0U; idx < 8U; ++idx)
 					{
-						sum_of_all[idx] += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
+						sum_of_all(idx, 0) += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
 					}
 
 					if (abs(this->rho(3, 0)) > 1e-10) {

@@ -158,7 +158,7 @@ namespace Hubbard {
 		// saves all one particle energies to reciever
 		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) = 0;
 
-		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, std::vector<complex_prec>& sum_of_all) = 0;
+		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) = 0;
 
 		inline auto getTotalGapValue() const {
 			return this->model_attributes.getTotalGapValue();

@@ -19,11 +19,10 @@
 
 using namespace Hubbard;
 
-int Constants::K_DISCRETIZATION = 100;
-int Constants::BASIS_SIZE = 10000;
-global_floating_type Constants::PI_DIV_DISCRETIZATION = 0.03141;
-
-std::vector<std::string> Constants::option_list = { "T", "U", "V" };
+int Constants::K_DISCRETIZATION = -1;
+int Constants::BASIS_SIZE = -1;
+int Constants::HALF_BASIS = -1;
+global_floating_type Constants::PI_DIV_DISCRETIZATION = -1;
 
 int main(int argc, char** argv)
 {
@@ -49,9 +48,7 @@ int main(int argc, char** argv)
 		std::cout << "Using parameter file " << argv[1] << std::endl;
 	}
 	Utility::InputFileReader input(argv[1]);
-	Constants::K_DISCRETIZATION = input.getInt("k_discretization");
-	Constants::BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
-	Constants::PI_DIV_DISCRETIZATION = BASE_PI / Constants::K_DISCRETIZATION;
+	Constants::setDiscretization(input.getInt("k_discretization"));
 
 	if (input.getString("compute_what") == "test") {
 		TestHandler test(input, rank, numberOfRanks);

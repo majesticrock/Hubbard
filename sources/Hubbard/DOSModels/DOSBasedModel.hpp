@@ -157,7 +157,7 @@ namespace Hubbard {
 			return _scalar_integrator().integrate_by_value(procedure) / 2;
 		};
 
-		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const global_floating_type& gamma, const global_floating_type& gamma_prime = -128) const {
+		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const global_floating_type& gamma) const {
 			if (coeff.name == "\\epsilon_0") {
 				if (!coeff.dependsOn('k')) throw std::runtime_error("Epsilon should always be k-dependent.");
 				if (coeff.momentum.momentum_list.size() > 1U) throw std::runtime_error("Epsilon depends on more than k.");
@@ -169,7 +169,7 @@ namespace Hubbard {
 			if (coeff.name == "\\tilde{V}") {
 				if (coeff.momentum.add_Q) throw std::runtime_error("V includes Q, this should not occur.");
 				if (coeff.dependsOnMomentum()) {
-					return this->V_OVER_N * (coeff.dependsOnTwoMomenta() ? (gamma * gamma_prime / DOS::DIMENSION) : gamma);
+					return this->V_OVER_N * (coeff.dependsOnTwoMomenta() ? (gamma / DOS::DIMENSION) : gamma);
 				}
 				else {
 					return DOS::DIMENSION * this->V_OVER_N;
@@ -178,13 +178,14 @@ namespace Hubbard {
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
 
-		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, std::vector<complex_prec>& sum_of_all) override {
-			expecs = std::vector<ValueArray>(8, ValueArray::Zero(2 * DOS::size(), 1));
-			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
+		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override {
+			expecs = std::vector<ValueArray>(8U, ValueArray::Zero(Constants::BASIS_SIZE, 1));
+			sum_of_all = ValueArray::Zero(8, 2);
 
-			for (size_t i = 0U; i < 2 * DOS::size(); ++i)
+			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
-				this->fillHamiltonian(DOS::abscissa_v(i));
+				global_floating_type gamma = DOS::abscissa_v(i);//(Constants::HALF_BASIS - i) * DOS::LOWER_BORDER / Constants::BASIS_SIZE;
+				this->fillHamiltonian(gamma);
 				this->fillRho();
 				// n_up
 				expecs[0](i, 0) = this->get_n_up();
@@ -206,12 +207,34 @@ namespace Hubbard {
 					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
 				}
 			}
+			
+			auto func_sum = [this](const global_floating_type& gamma) {
+				this->fillHamiltonian(gamma);
+				this->fillRho();
+				ValueArray ret = ValueArray::Zero(8, 2);
+				ret(0, 0) = this->get_n_up();
+				ret(1, 0) = this->get_g_up();
+				ret(2, 0) = this->get_f();
+				ret(3, 0) = this->get_eta();
+				ret(4, 0) = this->get_n_down();
+				ret(5, 0) = this->get_g_down();
+				ret(6, 0) = this->get_n_up_plus_down();
+				ret(7, 0) = this->get_g_up_plus_down();
 
-			typename DOS::Integrator<complex_prec> integrator;
-			for (size_t i = 0U; i < 8U; ++i)
-			{
-				sum_of_all[i] = integrator.integrate_vector(expecs[i].col(0));
-			}
+				ret(0, 1) = gamma * this->get_n_up();
+				ret(1, 1) = gamma * this->get_g_up();
+				ret(2, 1) = gamma * this->get_f();
+				ret(3, 1) = gamma * this->get_eta();
+				ret(4, 1) = gamma * this->get_n_down();
+				ret(5, 1) = gamma * this->get_g_down();
+				ret(6, 1) = gamma * this->get_n_up_plus_down();
+				ret(7, 1) = gamma * this->get_g_up_plus_down();
+
+				return ret;
+			};
+
+			typename DOS::Integrator<ValueArray> integrator;
+			sum_of_all = integrator.integrate_by_value(func_sum);
 		};
 
 		// saves all one particle energies to reciever

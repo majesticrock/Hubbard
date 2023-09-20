@@ -59,9 +59,9 @@ namespace Hubbard::ChainLattice
 		Model1D(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
 			: MomentumBasedModel<DataType, 1>(_params, startingValues) {};
 
-		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, std::vector<complex_prec>& sum_of_all) override {
+		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override {
 			expecs = std::vector<ValueArray>(8, ValueArray::Zero(2 * Constants::K_DISCRETIZATION, 1));
-			sum_of_all = std::vector<complex_prec>(8, complex_prec{});
+			sum_of_all = ValueArray::Zero(8, 1);
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
@@ -87,7 +87,7 @@ namespace Hubbard::ChainLattice
 				expecs[7](k + Constants::K_DISCRETIZATION, 0) = this->get_g_up_plus_down();
 				for (int idx = 0; idx < 8; idx++)
 				{
-					sum_of_all[idx] += expecs[idx](k + Constants::K_DISCRETIZATION, 0);
+					sum_of_all(idx, 0) += expecs[idx](k + Constants::K_DISCRETIZATION, 0);
 				}
 
 				if (abs(this->rho(3, 0)) > 1e-10) {

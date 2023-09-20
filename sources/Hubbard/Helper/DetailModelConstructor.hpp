@@ -11,13 +11,13 @@ namespace Hubbard::Helper {
 	class DetailModelConstructor {
 	protected:
 		std::vector<ValueArray> expecs{};
-		std::vector<complex_prec> sum_of_all{};
+		ValueArray sum_of_all;
 		std::unique_ptr<Model> model{};
 
 		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
 		const std::map<std::string, int> wick_spin_offset = { {"\\uparrow", 0}, {"\\downarrow", 4}, {"\\sigma", 6} };
 
-		inline complex_prec getSumOfAll(const SymbolicOperators::WickOperator& op) const {
+		inline complex_prec getSumOfAll(const SymbolicOperators::WickOperator& op, int cos_modulation=0) const {
 			auto it = wick_map.find(op.type);
 			if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
 
@@ -28,8 +28,8 @@ namespace Hubbard::Helper {
 				index += jt->second;
 			}
 
-			if (op.isDaggered) return std::conj(sum_of_all[index]);
-			return sum_of_all[index];
+			if (op.isDaggered) return std::conj(sum_of_all(index, cos_modulation));
+			return sum_of_all(index, cos_modulation);
 		};
 
 	public:
@@ -41,7 +41,6 @@ namespace Hubbard::Helper {
 				0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
 			model = std::make_unique<Model>(modelParameters);
-
 			model->computePhases().print();
 			model->computeExpectationValues(expecs, sum_of_all);
 		}

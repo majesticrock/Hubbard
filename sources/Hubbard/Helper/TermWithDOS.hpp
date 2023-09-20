@@ -12,6 +12,9 @@ namespace Hubbard::Helper {
 		using Integrator = typename DOS::Integrator<complex_prec>;
 		Integrator _integrator{};
 
+		// The non-summing terms (except for the epsilon terms) are proportioal to 1/#lattice sites
+		// This number is probably arbitrary in the DOS-description so we will fix it to a value that works
+		const double N_DIV{};
 	protected:
 		std::vector<global_floating_type> approximate_dos;
 
@@ -28,10 +31,10 @@ namespace Hubbard::Helper {
 
 			auto offset = [&op, &gamma_idx]() -> int {
 				if (op.momentum.add_Q) {
-					if (gamma_idx < DOS::size()) {
-						return DOS::size();
+					if (gamma_idx < Constants::HALF_BASIS) {
+						return Constants::HALF_BASIS;
 					}
-					return -DOS::size();
+					return -Constants::HALF_BASIS;
 				}
 				return 0;
 				};
@@ -41,59 +44,40 @@ namespace Hubbard::Helper {
 		};
 
 		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) {
-			const global_floating_type& gamma{ DOS::abscissa_v(gamma_idx) };
-			const global_floating_type& gamma_prime{ DOS::abscissa_v(gamma_prime_idx) };
+			const global_floating_type& gamma{ this->approximate_dos[gamma_idx] };
+			const global_floating_type& gamma_prime{ this->approximate_dos[gamma_prime_idx] };
 
-			auto getCoefficient = [&](const global_floating_type& x, const global_floating_type& y = -128) {
-				return term.getFactor() * this->model->computeCoefficient(term.getFirstCoefficient(), x, y);
+			auto getCoefficient = [&]() {
+				if(term.getFirstCoefficient().dependsOn('l')){
+					return term.getFactor() * gamma_prime * this->model->computeCoefficient(term.getFirstCoefficient(), gamma);
+				}
+				return term.getFactor() * this->model->computeCoefficient(term.getFirstCoefficient(), gamma);
 				};
 
-			auto getCoefficientAndExpec = [&](int x_idx, size_t expec_pos, const global_floating_type& y = -128) {
-				return getCoefficient(DOS::abscissa_v(x_idx), y) * getExpectationValue(term.operators[expec_pos], x_idx);
+			auto getCoefficientAndExpec = [&](size_t expec_pos) {
+				return getCoefficient() * getExpectationValue(term.operators[expec_pos], gamma_idx);
 				};
-
-			// The non-summing terms (except for the epsilon terms) are proportioal to 1/#lattice sites
-			// This number is probably arbitrary in the DOS-description so we will fix it to a value that works
-			const double N_DIV = 1. / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 
 			if (term.isIdentity()) {
 				if (term.hasSingleCoefficient()) {
 					if (term.getFirstCoefficient().name == "\\epsilon_0") {
-						return getCoefficient(gamma);
+						return getCoefficient();
 					}
-					return getCoefficient(gamma, gamma_prime) * N_DIV;
+					return getCoefficient() * N_DIV;
 				}
 				return term.getFactor();
 			}
 			if (term.sum_momenta.size() > 0U) {
 				if (term.isBilinear()) {
 					// bilinear
-					if (term.getFirstCoefficient().dependsOn('q')) {
-						auto _integrate_lambda = [&](size_t index) -> complex_prec {
-							return getCoefficient(gamma, DOS::abscissa_v(index))
-								* (getExpectationValue(term.operators[0U], index)
-									- getExpectationValue(term.operators[0U], index + DOS::size()));
-							};
-						return _integrator.integrate_by_index(_integrate_lambda);
-					}
-					return getCoefficient(gamma) * this->getSumOfAll(term.operators.front());
+					return getCoefficient() * this->getSumOfAll(term.operators.front(), term.getFirstCoefficient().dependsOn('q'));
 				}
 				else if (term.isQuartic()) {
 					// quartic
 					int q_dependend = term.whichOperatorDependsOn('q');
 					if (q_dependend < 0) throw std::invalid_argument("Suming q, but no operator depends on q.");
 
-					if (term.getFirstCoefficient().dependsOn('q')) {
-						auto _integrate_lambda = [&](size_t index) -> complex_prec {
-							return getCoefficientAndExpec(gamma_idx, q_dependend == 0, DOS::abscissa_v(index))
-								* (getExpectationValue(term.operators[q_dependend], index)
-									- getExpectationValue(term.operators[q_dependend], index + DOS::size()));
-							};
-						// q_dependend can either be 1 or 0; the other operator always depends solely on k
-						// Hence q_dependend == 0 gives the positions of the k-dependend operator
-						return _integrator.integrate_by_index(_integrate_lambda);
-					}
-					return getCoefficientAndExpec(gamma_idx, q_dependend == 0) * this->getSumOfAll(term.operators[q_dependend]);
+					return getCoefficientAndExpec(q_dependend == 0) * this->getSumOfAll(term.operators[q_dependend], term.getFirstCoefficient().dependsOn('q'));
 				}
 			}
 
@@ -110,18 +94,18 @@ namespace Hubbard::Helper {
 						* getExpectationValue(term.operators[l_dependend], gamma_prime_idx);
 				}
 				if (term.getFirstCoefficient().name == "\\epsilon_0") {
-					return ret * getCoefficient(gamma);
+					return ret * getCoefficient();
 				}
 				else if (term.getFirstCoefficient().dependsOnMomentum()) {
 					if (term.getFirstCoefficient().dependsOn('l') && term.getFirstCoefficient().dependsOn('k')) {
-						return getCoefficient(gamma, gamma_prime) * ret * N_DIV;
+						return getCoefficient() * ret * N_DIV;
 					}
 					else {
 						throw std::runtime_error("Coefficient without sum does not contain both k and l.");
 					}
 				}
 				else {
-					return ret * getCoefficient(gamma) * N_DIV;
+					return ret * getCoefficient() * N_DIV;
 				}
 			}
 			return term.getFactor() * getExpectationValue(term.operators[0U], gamma_idx);
@@ -129,16 +113,21 @@ namespace Hubbard::Helper {
 
 	public:
 		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input),
-			 approximate_dos(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION)
+			N_DIV(0), //4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION
+			approximate_dos(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION)
 		{
-			Constants::BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
-
-			NumericalMomentum<DOS::DIMENSION> ks;
-			do {
-				// Irgendeine Zahl zwischen 0 und BASIS_SIZE
-				approximate_dos[static_cast<int>(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * Constants::BASIS_SIZE)] += 1;
-				std::cout << ks << std::endl;
-			} while (ks.iterateFullBZ());
+			//Constants::BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
+			//NumericalMomentum<DOS::DIMENSION> ks;
+			//do {
+			//	// Irgendeine Zahl zwischen 0 und BASIS_SIZE
+			//	approximate_dos[static_cast<int>(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * Constants::BASIS_SIZE)] += 1;
+			//} while (ks.iterateFullBZ());
+			this->approximate_dos.resize(DOS::size());
+			for (size_t i = 0; i < DOS::size(); i++)
+			{
+				this->approximate_dos[i] = DOS::values_v(i);
+			}
+			
 		};
 	};
 }
