@@ -29,18 +29,15 @@ namespace Hubbard::Helper {
 				index += jt->second;
 			}
 
-			auto offset = [&op, &gamma_idx]() -> int {
+			auto offset = [&op, &gamma_idx, this]() -> int {
 				if (op.momentum.add_Q) {
-					if (gamma_idx < Constants::HALF_BASIS) {
-						return Constants::HALF_BASIS;
-					}
-					return -Constants::HALF_BASIS;
+					return this->model->shiftByQ(gamma_idx);
 				}
-				return 0;
+				return gamma_idx;
 				};
 
-			if (op.isDaggered) return std::conj(this->expecs[index](gamma_idx + offset(), 0));
-			return this->expecs[index](gamma_idx + offset(), 0);
+			if (op.isDaggered) return std::conj(this->expecs[index](offset(), 0));
+			return this->expecs[index](offset(), 0);
 		};
 
 		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) {

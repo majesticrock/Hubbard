@@ -135,7 +135,9 @@ namespace Hubbard::Helper {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
+		std::cout << M.cols() << "  " << M.rows() << std::endl;
 		Eigen::SelfAdjointEigenSolver<MatrixCL> M_solver(M);
+		std::cout << M.cols() << "  " << M.rows() << std::endl;
 		Vector_L& evs_M = const_cast<Vector_L&>(M_solver.eigenvalues());
 		applyMatrixOperation<OPERATION_NONE>(evs_M);
 		std::cout << "dim(kern(M)) = " << std::count_if(evs_M.begin(), evs_M.end(), [](const global_floating_type& value){ return abs(value) < 1e-16; }) << std::endl;

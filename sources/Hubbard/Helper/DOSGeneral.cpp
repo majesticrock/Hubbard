@@ -1,7 +1,6 @@
 #include "DOSGeneral.hpp"
 
 namespace Hubbard::Helper {
-	using DOS = DensityOfStates::Square;
 	void DOSGeneral::fillBlock(int i, int j)
 	{
 		// fill N
@@ -12,17 +11,17 @@ namespace Hubbard::Helper {
 					int l{ k };
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 						// delta gamma, -gamma'
-						l += (k < Constants::HALF_BASIS ? Constants::HALF_BASIS : -Constants::HALF_BASIS);
+						l = this->model->shiftByQ(k);
 					}
-					N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) * this->approximate_dos[k];
+					N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) ;//* this->approximate_dos[k];
 				}
-				else {
-					for (int l = 0; l < Constants::BASIS_SIZE; ++l)
-					{
-						N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) 
-							* this->approximate_dos[k] * this->approximate_dos[l];
-					}
-				}
+				//else {
+				//	for (int l = 0; l < Constants::BASIS_SIZE; ++l)
+				//	{
+				//		N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) 
+				//			* this->approximate_dos[k] * this->approximate_dos[l];
+				//	}
+				//}
 			}
 		}
 
@@ -43,9 +42,9 @@ namespace Hubbard::Helper {
 					int l{ k };
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 						// delta gamma, -gamma'
-						l += (k < Constants::HALF_BASIS ? Constants::HALF_BASIS : -Constants::HALF_BASIS);
+						l = this->model->shiftByQ(k);
 					}
-					M(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) * this->approximate_dos[k];
+					M(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) ;//* this->approximate_dos[k];
 				}
 				else {
 					//for (int l = 0; l < Constants::BASIS_SIZE; ++l)

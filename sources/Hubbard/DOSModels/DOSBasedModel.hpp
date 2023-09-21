@@ -17,6 +17,7 @@
 #define GAMMA_OCCUPATION_UP this->model_attributes[6]
 #define GAMMA_OCCUPATION_DOWN this->model_attributes[7]
 
+//#define _EXACT_DOS
 namespace Hubbard {
 	template <typename DataType, class DOS>
 	class DOSBasedModel : public BaseModel<DataType>
@@ -52,7 +53,11 @@ namespace Hubbard {
 					DOS dos;
 					dos.computeValues();
 					std::cout << "1 - DOS-Norm = " << std::scientific << 1. - DensityOfStates::computeNorm<DOS>() << std::endl;
+#ifdef _EXACT_DOS
 					Constants::setBasis(2U * DOS::size());
+#else
+					Constants::BASIS_SIZE += 1;
+#endif
 				}
 			}
 		};
@@ -180,7 +185,19 @@ namespace Hubbard {
 		};
 
 		inline global_floating_type getGammaFromIndex(int gamma_idx) const {
+#ifdef _EXACT_DOS
 			return DOS::abscissa_v(gamma_idx);
+#else
+			return 2 * (Constants::HALF_BASIS - gamma_idx) * DOS::LOWER_BORDER / (Constants::BASIS_SIZE - 1);
+#endif
+		};
+
+		inline int shiftByQ(int k) const {
+#ifdef _EXACT_DOS
+			return k + (k < Constants::HALF_BASIS ? Constants::HALF_BASIS : -Constants::HALF_BASIS);
+#else
+			return (-k + 2 * Constants::HALF_BASIS);
+#endif
 		};
 
 		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override {
@@ -189,7 +206,8 @@ namespace Hubbard {
 
 			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
-				global_floating_type gamma = this->getGammaFromIndex(i);//(Constants::HALF_BASIS - i) * DOS::LOWER_BORDER / Constants::BASIS_SIZE;
+				global_floating_type gamma = this->getGammaFromIndex(i);
+
 				this->fillHamiltonian(gamma);
 				this->fillRho();
 				// n_up
