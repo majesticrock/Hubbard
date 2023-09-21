@@ -52,6 +52,7 @@ namespace Hubbard {
 					DOS dos;
 					dos.computeValues();
 					std::cout << "1 - DOS-Norm = " << std::scientific << 1. - DensityOfStates::computeNorm<DOS>() << std::endl;
+					Constants::setBasis(2U * DOS::size());
 				}
 			}
 		};
@@ -178,13 +179,17 @@ namespace Hubbard {
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
 		};
 
+		inline global_floating_type getGammaFromIndex(int gamma_idx) const {
+			return DOS::abscissa_v(gamma_idx);
+		};
+
 		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override {
 			expecs = std::vector<ValueArray>(8U, ValueArray::Zero(Constants::BASIS_SIZE, 1));
 			sum_of_all = ValueArray::Zero(8, 2);
 
 			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
-				global_floating_type gamma = DOS::abscissa_v(i);//(Constants::HALF_BASIS - i) * DOS::LOWER_BORDER / Constants::BASIS_SIZE;
+				global_floating_type gamma = this->getGammaFromIndex(i);//(Constants::HALF_BASIS - i) * DOS::LOWER_BORDER / Constants::BASIS_SIZE;
 				this->fillHamiltonian(gamma);
 				this->fillRho();
 				// n_up

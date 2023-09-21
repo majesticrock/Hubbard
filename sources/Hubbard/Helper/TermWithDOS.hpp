@@ -44,12 +44,12 @@ namespace Hubbard::Helper {
 		};
 
 		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) {
-			const global_floating_type& gamma{ this->approximate_dos[gamma_idx] };
-			const global_floating_type& gamma_prime{ this->approximate_dos[gamma_prime_idx] };
+			const global_floating_type& gamma{ this->model->getGammaFromIndex(gamma_idx) };
+			const global_floating_type& gamma_prime{ this->model->getGammaFromIndex(gamma_prime_idx) };
 
 			auto getCoefficient = [&]() {
 				if(term.getFirstCoefficient().dependsOn('l')){
-					return term.getFactor() * gamma_prime * this->model->computeCoefficient(term.getFirstCoefficient(), gamma);
+					return gamma_prime * term.getFactor() * this->model->computeCoefficient(term.getFirstCoefficient(), gamma);
 				}
 				return term.getFactor() * this->model->computeCoefficient(term.getFirstCoefficient(), gamma);
 				};
@@ -114,16 +114,15 @@ namespace Hubbard::Helper {
 	public:
 		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input),
 			N_DIV(0), //4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION
-			approximate_dos(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION)
+			approximate_dos(Constants::BASIS_SIZE)
 		{
-			//Constants::BASIS_SIZE = 4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION;
 			//NumericalMomentum<DOS::DIMENSION> ks;
 			//do {
 			//	// Irgendeine Zahl zwischen 0 und BASIS_SIZE
 			//	approximate_dos[static_cast<int>(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * Constants::BASIS_SIZE)] += 1;
 			//} while (ks.iterateFullBZ());
-			this->approximate_dos.resize(DOS::size());
-			for (size_t i = 0; i < DOS::size(); i++)
+
+			for (size_t i = 0; i < Constants::BASIS_SIZE; i++)
 			{
 				this->approximate_dos[i] = DOS::values_v(i);
 			}
