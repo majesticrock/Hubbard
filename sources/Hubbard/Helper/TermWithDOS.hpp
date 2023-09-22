@@ -3,6 +3,7 @@
 #include "../DOSModels/BroydenDOS.hpp"
 #include "../NumericalMomentum.hpp"
 #include <complex>
+#include <cmath>
 
 namespace Hubbard::Helper {
 	template <class DOS>
@@ -14,7 +15,7 @@ namespace Hubbard::Helper {
 
 		// The non-summing terms (except for the epsilon terms) are proportioal to 1/#lattice sites
 		// This number is probably arbitrary in the DOS-description so we will fix it to a value that works
-		const double N_DIV{};
+		double N_DIV{};
 	protected:
 		std::vector<global_floating_type> approximate_dos;
 
@@ -35,7 +36,7 @@ namespace Hubbard::Helper {
 				}
 				return gamma_idx;
 				};
-
+			
 			if (op.isDaggered) return std::conj(this->expecs[index](offset(), 0));
 			return this->expecs[index](offset(), 0);
 		};
@@ -93,37 +94,48 @@ namespace Hubbard::Helper {
 				if (term.getFirstCoefficient().name == "\\epsilon_0") {
 					return ret * getCoefficient();
 				}
-				else if (term.getFirstCoefficient().dependsOnMomentum()) {
-					if (term.getFirstCoefficient().dependsOn('l') && term.getFirstCoefficient().dependsOn('k')) {
-						return getCoefficient() * ret * N_DIV;
-					}
-					else {
-						throw std::runtime_error("Coefficient without sum does not contain both k and l.");
-					}
-				}
-				else {
-					return ret * getCoefficient() * N_DIV;
-				}
+				return ret * getCoefficient() * N_DIV;
 			}
+
 			return term.getFactor() * getExpectationValue(term.operators[0U], gamma_idx);
 		};
 
 	public:
 		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input),
 			N_DIV(0), //4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION
-			approximate_dos(Constants::BASIS_SIZE)
+			approximate_dos(Constants::BASIS_SIZE, 0.0)
 		{
-			//NumericalMomentum<DOS::DIMENSION> ks;
-			//do {
-			//	// Irgendeine Zahl zwischen 0 und BASIS_SIZE
-			//	approximate_dos[static_cast<int>(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * Constants::BASIS_SIZE)] += 1;
-			//} while (ks.iterateFullBZ());
-
-			for (size_t i = 0; i < Constants::BASIS_SIZE; i++)
+#ifdef _EXACT_DOS
+			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
 			{
-				this->approximate_dos[i] = DOS::values_v(i);
+				approximate_dos[i] = DOS::values_v(i);
 			}
-			
+#else
+			constexpr int faktor = 500;
+			Constants::K_DISCRETIZATION *= faktor;
+			Constants::PI_DIV_DISCRETIZATION /= faktor;
+			N_DIV = 1. / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+
+			NumericalMomentum<DOS::DIMENSION> ks;
+			do {
+				//std::cout << ks.gamma() << "\t" << 0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * (Constants::BASIS_SIZE - 1) << std::endl;
+				// Irgendeine Zahl zwischen 0 und BASIS_SIZE
+				approximate_dos.at(std::round(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * (Constants::BASIS_SIZE - 1))) += 1;
+			} while (ks.iterateFullBZ());
+			for (int i = 0U; i < Constants::HALF_BASIS; ++i)
+			{
+				approximate_dos[i] += approximate_dos[Constants::BASIS_SIZE - 1 - i];
+				approximate_dos[i] *= 0.5;
+				approximate_dos[Constants::BASIS_SIZE - 1 - i] = approximate_dos[i];
+			}
+			for (auto& value : this->approximate_dos)
+			{
+				value *= N_DIV;
+			}
+
+			Constants::K_DISCRETIZATION /= faktor;
+			Constants::PI_DIV_DISCRETIZATION *= faktor;
+#endif
 		};
 	};
 }

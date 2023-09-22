@@ -29,7 +29,7 @@ OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))
 
 all: build build/main 
 
-debug: CXXFLAGS += -g
+debug: CXXFLAGS += -g -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment
 debug: build build/main
 
 build/main: $(OBJS) | build

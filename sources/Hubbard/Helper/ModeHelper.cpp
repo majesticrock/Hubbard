@@ -75,7 +75,7 @@ namespace Hubbard::Helper {
 		else {
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * this->number_of_basis_terms;
 		}
-
+		
 		loadWick("../commutators/wick_");
 	}
 }

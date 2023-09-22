@@ -135,12 +135,10 @@ namespace Hubbard::Helper {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
 
-		std::cout << M.cols() << "  " << M.rows() << std::endl;
 		Eigen::SelfAdjointEigenSolver<MatrixCL> M_solver(M);
-		std::cout << M.cols() << "  " << M.rows() << std::endl;
 		Vector_L& evs_M = const_cast<Vector_L&>(M_solver.eigenvalues());
 		applyMatrixOperation<OPERATION_NONE>(evs_M);
-		std::cout << "dim(kern(M)) = " << std::count_if(evs_M.begin(), evs_M.end(), [](const global_floating_type& value){ return abs(value) < 1e-16; }) << std::endl;
+		std::cout << "dim(kern(M)) = " << std::count_if(evs_M.begin(), evs_M.end(), [](const global_floating_type& value) { return abs(value) < 1e-16; }) << std::endl;
 		std::cout << "dim(kern(N)) = " << N.fullPivLu().kernel().cols() << std::endl;
 
 		auto bufferMatrix = N * M_solver.eigenvectors();
@@ -177,19 +175,35 @@ namespace Hubbard::Helper {
 		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
 		for (Eigen::Index i = 0; i < Constants::BASIS_SIZE; i++)
 		{
-			psis[0](i* number_of_basis_terms) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
-			psis[0](i* number_of_basis_terms + 1) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f^+
+#ifdef _EXACT_DOS
+			psis[0](i* number_of_basis_terms) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
+			psis[0](i* number_of_basis_terms + 1) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f^+
 
-			psis[1](i* number_of_basis_terms) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
-			psis[1](i* number_of_basis_terms + 1) = -1;//this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // f^+
+			psis[1](i* number_of_basis_terms) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
+			psis[1](i* number_of_basis_terms + 1) = this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // f^+
 
 			if (number_of_basis_terms >= 6) {
-				psis[2](i* number_of_basis_terms + 4) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
-				psis[2](i* number_of_basis_terms + 5) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_down
+				psis[2](i* number_of_basis_terms + 4) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
+				psis[2](i* number_of_basis_terms + 5) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_down
 
-				psis[3](i* number_of_basis_terms + 4) = 1;//this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
-				psis[3](i* number_of_basis_terms + 5) = -1;//this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // g_down
+				psis[3](i* number_of_basis_terms + 4) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
+				psis[3](i* number_of_basis_terms + 5) = this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // g_down
 			}
+#else
+			psis[0](i* number_of_basis_terms) = 1;
+			psis[0](i* number_of_basis_terms + 1) = 1;
+
+			psis[1](i* number_of_basis_terms) = 1;
+			psis[1](i* number_of_basis_terms + 1) = -1;
+
+			if (number_of_basis_terms >= 6) {
+				psis[2](i* number_of_basis_terms + 4) = 1;
+				psis[2](i* number_of_basis_terms + 5) = 1;
+
+				psis[3](i* number_of_basis_terms + 4) = 1;
+				psis[3](i* number_of_basis_terms + 5) = -1;
+			}
+#endif
 		}
 		for (auto& psi : psis)
 		{
@@ -219,5 +233,5 @@ namespace Hubbard::Helper {
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
 		return resolvents;
+		}
 	}
-}

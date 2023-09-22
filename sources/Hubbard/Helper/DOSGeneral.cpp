@@ -13,15 +13,15 @@ namespace Hubbard::Helper {
 						// delta gamma, -gamma'
 						l = this->model->shiftByQ(k);
 					}
-					N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) ;//* this->approximate_dos[k];
+					N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) * this->approximate_dos[k];
 				}
-				//else {
-				//	for (int l = 0; l < Constants::BASIS_SIZE; ++l)
-				//	{
-				//		N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) 
-				//			* this->approximate_dos[k] * this->approximate_dos[l];
-				//	}
-				//}
+				else {
+					for (int l = 0; l < Constants::BASIS_SIZE; ++l)
+					{
+						N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k)
+							* this->approximate_dos[k] * this->approximate_dos[l];
+					}
+				}
 			}
 		}
 
@@ -35,7 +35,6 @@ namespace Hubbard::Helper {
 			//		std::cout << "$" << counter++ << " " << DOS::abscissa_v(pos) << " || " << term << " = " << buf << "$\n" << std::endl;
 			//	}
 			//}
-
 			for (int k = 0; k < Constants::BASIS_SIZE; ++k)
 			{
 				if (term.delta_momenta.size() > 0) {
@@ -44,14 +43,14 @@ namespace Hubbard::Helper {
 						// delta gamma, -gamma'
 						l = this->model->shiftByQ(k);
 					}
-					M(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) ;//* this->approximate_dos[k];
+					M(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) * this->approximate_dos[k];
 				}
 				else {
-					//for (int l = 0; l < Constants::BASIS_SIZE; ++l)
-					//{
-					//	M(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) 
-					//		* this->approximate_dos[k] * this->approximate_dos[l];
-					//}
+					for (int l = 0; l < Constants::BASIS_SIZE; ++l)
+					{
+						M(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k)
+							* this->approximate_dos[k] * this->approximate_dos[l];
+					}
 				}
 			}
 		}

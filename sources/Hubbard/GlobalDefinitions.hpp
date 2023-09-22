@@ -11,9 +11,11 @@
 #define SQUARE_QUAD_CUT_OFF -30
 #define SC_QUAD_CUT_OFF -15
 #else
-#define SQUARE_QUAD_CUT_OFF -13
+#define SQUARE_QUAD_CUT_OFF -14
 #define SC_QUAD_CUT_OFF -13
 #endif
+
+#define _EXACT_DOS
 
 #include <cmath>
 #include <complex>

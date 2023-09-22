@@ -17,7 +17,6 @@
 #define GAMMA_OCCUPATION_UP this->model_attributes[6]
 #define GAMMA_OCCUPATION_DOWN this->model_attributes[7]
 
-//#define _EXACT_DOS
 namespace Hubbard {
 	template <typename DataType, class DOS>
 	class DOSBasedModel : public BaseModel<DataType>
