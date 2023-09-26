@@ -72,7 +72,10 @@ namespace Hubbard {
 	typedef Eigen::Vector<complex_prec, Eigen::Dynamic> VectorCL;
 	typedef Eigen::Array<complex_prec, Eigen::Dynamic, Eigen::Dynamic> ValueArray;
 	using SpinorMatrix = MatrixCL;
-	typedef Utility::Resolvent<global_floating_type> Resolvent_L;
+
+	using ResolventReal = Utility::Resolvent<global_floating_type, false>;
+	using ResolventComplex = Utility::Resolvent<global_floating_type, true>;
+	using ResolventReturnData = Utility::ResolventDataWrapper<global_floating_type>;
 
 	template <int vector_size = Eigen::Dynamic>
 	void printAsRow(Eigen::Vector<global_floating_type, vector_size>& printer) {

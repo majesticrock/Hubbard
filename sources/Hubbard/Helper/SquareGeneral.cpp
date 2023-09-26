@@ -12,17 +12,17 @@ namespace Hubbard::Helper {
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 						l = addQTo(k);
 					}
-					N(j + l * number_of_basis_terms, i + k * number_of_basis_terms) += computeTerm(term, l, k);
+					N(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l);
 				}
 				else {
 					for (int l = 0; l < Constants::BASIS_SIZE; l++)
 					{
-						N(j + l * number_of_basis_terms, i + k * number_of_basis_terms) += computeTerm(term, l, k);
+						N(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l);
 					}
 				}
 			}
 		}
-		
+
 		// fill M
 		for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
 			//if (term.delta_momenta.size() > 0 && term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
@@ -36,7 +36,7 @@ namespace Hubbard::Helper {
 			//		}
 			//	}
 			//}
-			
+
 			for (int k = 0; k < Constants::BASIS_SIZE; k++)
 			{
 				if (term.delta_momenta.size() > 0) {
@@ -44,12 +44,12 @@ namespace Hubbard::Helper {
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 						l = addQTo(k);
 					}
-					M(j + l * number_of_basis_terms, i + k * number_of_basis_terms) += computeTerm(term, l, k);
+					M(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l);
 				}
 				else {
 					for (int l = 0; l < Constants::BASIS_SIZE; l++)
 					{
-						M(j + l * number_of_basis_terms, i + k * number_of_basis_terms) += computeTerm(term, l, k);
+						M(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l);
 					}
 				}
 			}

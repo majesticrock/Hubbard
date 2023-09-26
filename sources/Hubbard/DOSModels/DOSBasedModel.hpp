@@ -229,7 +229,7 @@ namespace Hubbard {
 					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
 				}
 			}
-			
+
 			auto func_sum = [this](const global_floating_type& gamma) {
 				this->fillHamiltonian(gamma);
 				this->fillRho();
@@ -253,7 +253,7 @@ namespace Hubbard {
 				ret(7, 1) = gamma * this->get_g_up_plus_down();
 
 				return ret;
-			};
+				};
 
 			typename DOS::Integrator<ValueArray> integrator;
 			sum_of_all = integrator.integrate_by_value(func_sum);

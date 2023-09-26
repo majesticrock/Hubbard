@@ -3,13 +3,38 @@
 #define assertm(exp, msg) assert(((void)msg, exp))
 
 #include "OutputConvenience.hpp"
+#include <type_traits>
 #include <Eigen/Dense>
+#include <cmath>
 
 namespace Utility {
+	using std::abs;
+
 	template <typename T>
 	struct ResolventData {
 		std::vector<T> a_i;
 		std::vector<T> b_i;
+	};
+
+	template<class RealType>
+	struct ResolventDataWrapper {
+		typedef ResolventData<RealType> resolvent_data;
+		std::vector<resolvent_data> data;
+		size_t noEigenvalueChangeAt{};
+
+		void push_back(resolvent_data&& data_point) {
+			data.push_back(std::move(data_point));
+		};
+		void push_back(const resolvent_data& data_point) {
+			data.push_back(data_point);
+		};
+		// Prints the computed data to <filename>
+		// Asummes that the data has been computed before...
+		void writeDataToFile(const std::string& filename) const
+		{
+			std::cout << "Total Lanczos iterations: " << data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
+			saveData(data, filename + ".dat.gz");
+		};
 	};
 
 	template <typename T>
@@ -39,35 +64,37 @@ namespace Utility {
 	};
 
 	// choose the floating point precision, i.e. float, double or long double
-	template <typename T>
+	template <class RealType, bool isComplex>
 	class Resolvent
 	{
 	private:
-		typedef Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> matrix_T;
-		typedef Eigen::Vector<T, Eigen::Dynamic> vector_T;
-		typedef Eigen::Vector<std::complex<T>, Eigen::Dynamic> vector_cT;
-		typedef Eigen::Matrix<std::complex<T>, Eigen::Dynamic, Eigen::Dynamic> matrix_cT;
+		using ComputationType = std::conditional_t<isComplex, std::complex<RealType>, RealType>;
 
-		vector_cT startingState;
-		typedef ResolventData<T> resolvent_data;
-		std::vector<resolvent_data> data;
-		size_t noEigenvalueChangeAt;
+		typedef Eigen::Matrix<ComputationType, Eigen::Dynamic, Eigen::Dynamic> matrix_t;
+		typedef Eigen::Vector<ComputationType, Eigen::Dynamic> vector_t;
+		typedef Eigen::Vector<RealType, Eigen::Dynamic> RealVector;
+
+		typedef ResolventData<RealType> resolvent_data;
+
+		vector_t startingState;
+		ResolventDataWrapper<RealType> data;
 	public:
 		// Sets the starting state
-		inline void setStartingState(const vector_cT& state) {
+		inline void setStartingState(const vector_t& state) {
 			this->startingState = state;
 		};
-		const vector_cT& getStartingState() const {
+		const vector_t& getStartingState() const {
 			return this->startingState;
 		}
-		Resolvent(const vector_cT& _StargingState) : startingState(_StargingState), noEigenvalueChangeAt(0) {};
-		Resolvent() : noEigenvalueChangeAt(0) {};
+		Resolvent(const vector_t& _StargingState) : startingState(_StargingState) {};
+		Resolvent() {};
 
 		// Computes the resolvent's parameters a_i and b_i
-		void compute(const matrix_T& toSolve, const matrix_T& symplectic, int maxIter, T errorMargin = 1e-10)
+		// Symplectic needs to be atleast positive semidefinite!
+		void compute(const matrix_t& toSolve, const matrix_t& symplectic, int maxIter, double errorMargin = 1e-10)
 		{
 			size_t matrixSize = toSolve.rows();
-			matrix_T identity(matrixSize, matrixSize);
+			matrix_t identity(matrixSize, matrixSize);
 			identity.setIdentity();
 
 			if (toSolve.rows() != toSolve.cols()) {
@@ -75,134 +102,53 @@ namespace Utility {
 				throw;
 			}
 
-			vector_T currentSolution(matrixSize); // corresponds to |q_(i+1)>
+			vector_t currentSolution(matrixSize); // corresponds to |q_(i+1)>
 			// First filling
-			std::vector<vector_T> basisVectors;
-			vector_T first = vector_T::Zero(matrixSize); // corresponds to |q_0>
-			vector_T second = this->startingState.real().template cast<T>(); // corresponds to |q_1>
+			std::vector<vector_t> basisVectors;
+			vector_t first = vector_t::Zero(matrixSize); // corresponds to |q_0>
+			vector_t second = this->startingState; // corresponds to |q_1>
 			resolvent_data res;
-			res.b_i.push_back(second.dot(symplectic * second));
-
-			second /= sqrt(res.b_i.back());
-			basisVectors.push_back(first);
-			basisVectors.push_back(second);
-
-			std::vector<T> deltas, gammas;
-			gammas.push_back(1);
-
-			vector_T eigenDelta(1);
-			vector_T eigenGamma(1);
-
-			Eigen::SelfAdjointEigenSolver<matrix_T> diagonalize;
-			vector_T diagonal; //stores the diagonal elements in a vector
-			T oldEigenValue = 0, newEigenValue = 0;
-			size_t position = 0U;
-			size_t iterNum = 0U;
-			bool goOn = true;
-			vector_T buffer;
-			while (goOn) {
-				// algorithm
-				buffer = toSolve * basisVectors.back();
-				deltas.push_back(basisVectors.back().dot(symplectic * buffer));
-				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
-				T norm_squared = currentSolution.dot(symplectic * currentSolution);
-				assertm(norm_squared > 0, ("Norm in loop is complex!" + to_string(norm_squared)));
-
-				gammas.push_back(sqrt(norm_squared));
-				basisVectors.push_back(currentSolution / gammas.back());
-				iterNum++;
-
-				// construct the tridiagonal matrix, diagonalize it and find the lowest eigenvalue
-				eigenDelta.conservativeResize(iterNum);
-				eigenGamma.conservativeResize(iterNum - 1);
-				eigenDelta(iterNum - 1) = deltas[iterNum - 1];
-				if (iterNum > 1) {
-					eigenGamma(iterNum - 2) = gammas[iterNum - 1];
-				}
-				diagonalize.computeFromTridiagonal(eigenDelta, eigenGamma, 0);
-				diagonal = diagonalize.eigenvalues().real();
-
-				if (diagonalize.eigenvalues().imag().norm() > 1e-8) {
-					std::cerr << "Atleast one eigenvalue is complex!" << std::endl;
-				}
-				position = findSmallestValue(diagonal);
-				newEigenValue = diagonal(position);
-
-				// breaking conditions
-				if (iterNum >= maxIter) {
-					goOn = false;
-				}
-				if (iterNum >= toSolve.rows()) {
-					goOn = false;
-				}
-				if (abs(gammas.back()) < 1e-7) {
-					goOn = false;
-				}
-				if (oldEigenValue != 0.0) {
-					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
-						//goOn = false;
-						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
-					}
-				}
-				oldEigenValue = newEigenValue;
+			ComputationType norm_buffer = second.dot(symplectic * second);
+			if constexpr (isComplex) {
+				assertm(abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
 			}
-			for (long i = 0; i < deltas.size(); i++)
-			{
-				res.a_i.push_back(deltas[i]);
-				res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
-			}
-			data.push_back(res);
-		};
-
-		// Same as compute, but for complex matrices
-		void compute_complex(const matrix_cT& toSolve, const matrix_cT& symplectic, int maxIter, T errorMargin = 1e-10)
-		{
-			size_t matrixSize = toSolve.rows();
-			matrix_cT identity(matrixSize, matrixSize);
-			identity.setIdentity();
-
-			if (toSolve.rows() != toSolve.cols()) {
-				std::cerr << "Matrix is not square!" << std::endl;
-				throw;
-			}
-
-			vector_cT currentSolution(matrixSize); // corresponds to |q_(i+1)>
-			// First filling
-			std::vector<vector_cT> basisVectors;
-			vector_cT first = vector_cT::Zero(matrixSize); // corresponds to |q_0>
-			vector_cT second = this->startingState.template cast<std::complex<T>>(); // corresponds to |q_1>
-			resolvent_data res;
-			auto norm_buffer = second.dot(symplectic * second);
-			assertm(abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
 			res.b_i.push_back(abs(norm_buffer));
 
 			second /= sqrt(res.b_i.back());
 			basisVectors.push_back(first);
 			basisVectors.push_back(second);
 
-			std::vector<T> deltas, gammas;
+			std::vector<RealType> deltas, gammas;
 			gammas.push_back(1);
 
-			vector_T eigenDelta(1);
-			vector_T eigenGamma(1);
+			RealVector eigenDelta(1);
+			RealVector eigenGamma(1);
 
-			Eigen::SelfAdjointEigenSolver<matrix_cT> diagonalize;
-			vector_T diagonal; //stores the diagonal elements in a vector
-			T oldEigenValue = 0., newEigenValue = 0.;
-			size_t position = 0U;
-			size_t iterNum = 0U;
+			Eigen::SelfAdjointEigenSolver<matrix_t> diagonalize;
+			RealVector diagonal; //stores the diagonal elements in a vector
+			RealType oldEigenValue{};
+			RealType newEigenValue{};
+			size_t position{};
+			size_t iterNum{};
 			bool goOn = true;
-			vector_cT buffer;
+			vector_t buffer;
 			while (goOn) {
 				// algorithm
 				buffer = toSolve * basisVectors.back();
 				norm_buffer = basisVectors.back().dot(symplectic * buffer);
-				assertm(abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
-				deltas.push_back(norm_buffer.real());
+				if constexpr (isComplex) {
+					assertm(abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
+					deltas.push_back(norm_buffer.real());
+				}
+				else {
+					deltas.push_back(norm_buffer);
+				}
 
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 				norm_buffer = sqrt(currentSolution.dot(symplectic * currentSolution));
-				assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
+				if constexpr (isComplex) {
+					assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
+				}
 				gammas.push_back(abs(norm_buffer));
 				basisVectors.push_back(currentSolution / gammas.back());
 
@@ -216,11 +162,8 @@ namespace Utility {
 					eigenGamma(iterNum - 2) = gammas[iterNum - 1];
 				}
 				diagonalize.computeFromTridiagonal(eigenDelta, eigenGamma, 0);
-				diagonal = diagonalize.eigenvalues().real();
+				diagonal = diagonalize.eigenvalues();
 
-				if (diagonalize.eigenvalues().imag().norm() > 1e-8) {
-					std::cerr << "Atleast one eigenvalue is complex!" << std::endl;
-				}
 				position = findSmallestValue(diagonal);
 				newEigenValue = diagonal(position);
 
@@ -237,7 +180,7 @@ namespace Utility {
 				if (oldEigenValue != 0.0) {
 					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
-						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+						if (!data.noEigenvalueChangeAt) data.noEigenvalueChangeAt = iterNum;
 					}
 				}
 				oldEigenValue = newEigenValue;
@@ -247,14 +190,14 @@ namespace Utility {
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1]);
 			}
-			data.push_back(res);
+			data.push_back(std::move(res));
 		};
 
 		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
-		void compute(const matrix_T& toSolve, int maxIter, T errorMargin = 1e-10)
+		void compute(const matrix_t& toSolve, int maxIter, double errorMargin = 1e-10)
 		{
 			size_t matrixSize = toSolve.rows();
-			matrix_T identity(matrixSize, matrixSize);
+			matrix_t identity(matrixSize, matrixSize);
 			identity.setIdentity();
 
 			if (toSolve.rows() != toSolve.cols()) {
@@ -262,11 +205,11 @@ namespace Utility {
 				throw;
 			}
 
-			vector_T currentSolution(matrixSize); // corresponds to |q_(i+1)>
+			vector_t currentSolution(matrixSize); // corresponds to |q_(i+1)>
 			// First filling
-			std::vector<vector_T> basisVectors;
-			vector_T first = vector_T::Zero(matrixSize); // corresponds to |q_0>
-			vector_T second = this->startingState.real(); // corresponds to |q_1>
+			std::vector<vector_t> basisVectors;
+			vector_t first = vector_t::Zero(matrixSize); // corresponds to |q_0>
+			vector_t second = this->startingState; // corresponds to |q_1>
 			resolvent_data res;
 			res.b_i.push_back(second.squaredNorm());
 
@@ -274,27 +217,32 @@ namespace Utility {
 			basisVectors.push_back(first);
 			basisVectors.push_back(second);
 
-			std::vector<T> deltas, gammas;
+			std::vector<RealType> deltas, gammas;
 			gammas.push_back(1);
 
-			vector_T eigenDelta(1);
-			vector_T eigenGamma(1);
+			RealVector eigenDelta(1);
+			RealVector eigenGamma(1);
 
-			Eigen::SelfAdjointEigenSolver<matrix_T> diagonalize;
-			vector_T diagonal; //stores the diagonal elements in a vector
-			T oldEigenValue = 0, newEigenValue = 0;
-			size_t position = 0U;
-			size_t iterNum = 0U;
+			Eigen::SelfAdjointEigenSolver<matrix_t> diagonalize;
+			RealVector diagonal; //stores the diagonal elements in a vector
+			RealType oldEigenValue{};
+			RealType newEigenValue{};
+			size_t position{};
+			size_t iterNum{};
 			bool goOn = true;
-			vector_T buffer;
+			vector_t buffer;
 			while (goOn) {
 				// algorithm
 				buffer = toSolve * basisVectors.back();
-				deltas.push_back(basisVectors.back().dot(buffer));
+				if constexpr (isComplex) {
+					// This has to be real, as <x|H|x> is always real if H=H^+
+					deltas.push_back(basisVectors.back().dot(buffer).real());
+				}
+				else {
+					deltas.push_back(basisVectors.back().dot(buffer));
+				}
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
-				T norm_squared = currentSolution.squaredNorm();
-
-				gammas.push_back(sqrt(norm_squared));
+				gammas.push_back(currentSolution.norm());
 				basisVectors.push_back(currentSolution / gammas.back());
 				iterNum++;
 
@@ -306,11 +254,8 @@ namespace Utility {
 					eigenGamma(iterNum - 2) = gammas[iterNum - 1];
 				}
 				diagonalize.computeFromTridiagonal(eigenDelta, eigenGamma, 0);
-				diagonal = diagonalize.eigenvalues().real();
+				diagonal = diagonalize.eigenvalues();
 
-				if (diagonalize.eigenvalues().imag().norm() > 1e-8) {
-					std::cerr << "Atleast one eigenvalue is complex!" << std::endl;
-				}
 				position = findSmallestValue(diagonal);
 				newEigenValue = diagonal(position);
 
@@ -327,7 +272,7 @@ namespace Utility {
 				if (oldEigenValue != 0.0) {
 					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
-						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+						if (!data.noEigenvalueChangeAt) data.noEigenvalueChangeAt = iterNum;
 					}
 				}
 				oldEigenValue = newEigenValue;
@@ -337,14 +282,14 @@ namespace Utility {
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
 			}
-			data.push_back(res);
+			data.push_back(std::move(res));
 		};
 
 		// Computes the resolvent directly from M and N. This might be more stable for complex matrices
-		void computeFromNM(const matrix_cT& toSolve, const matrix_cT& symplectic, const matrix_cT& N, int maxIter, T errorMargin = 1e-10)
+		void computeFromNM(const matrix_t& toSolve, const matrix_t& symplectic, const matrix_t& N, int maxIter, double errorMargin = 1e-10)
 		{
 			auto matrixSize = toSolve.rows();
-			matrix_cT identity(matrixSize, matrixSize);
+			matrix_t identity(matrixSize, matrixSize);
 			identity.setIdentity();
 
 			if (toSolve.rows() != toSolve.cols()) {
@@ -352,43 +297,53 @@ namespace Utility {
 				throw;
 			}
 
-			vector_cT currentSolution(matrixSize); // corresponds to |q_(i+1)>
+			vector_t currentSolution(matrixSize); // corresponds to |q_(i+1)>
 			// First filling
-			std::vector<vector_cT> basisVectors;
-			vector_cT first = vector_cT::Zero(matrixSize); // corresponds to |q_0>
-			vector_cT second = this->startingState.template cast<std::complex<T>>(); // corresponds to |q_1>
+			std::vector<vector_t> basisVectors;
+			vector_t first = vector_t::Zero(matrixSize); // corresponds to |q_0>
+			vector_t second = this->startingState; // corresponds to |q_1>
 			resolvent_data res;
-			auto norm_buffer = second.dot(symplectic * second);
-			assertm(abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
+			ComputationType norm_buffer = second.dot(symplectic * second);
+			if constexpr (isComplex) {
+				assertm(abs(norm_buffer.imag()) < 1e-6, "First norm is complex! ");
+			}
 			res.b_i.push_back(abs(norm_buffer));
 
 			second /= sqrt(res.b_i.back());
 			basisVectors.push_back(first);
 			basisVectors.push_back(second);
 
-			std::vector<T> deltas, gammas;
+			std::vector<RealType> deltas, gammas;
 			gammas.push_back(1);
 
-			vector_T eigenDelta(1);
-			vector_T eigenGamma(1);
+			RealVector eigenDelta(1);
+			RealVector eigenGamma(1);
 
-			Eigen::SelfAdjointEigenSolver<matrix_cT> diagonalize;
-			vector_T diagonal; //stores the diagonal elements in a vector
-			T oldEigenValue = 0, newEigenValue = 0;
-			size_t position = 0U;
-			size_t iterNum = 0U;
+			Eigen::SelfAdjointEigenSolver<matrix_t> diagonalize;
+			RealVector diagonal; //stores the diagonal elements in a vector
+			RealType oldEigenValue{};
+			RealType newEigenValue{};
+			size_t position{};
+			size_t  iterNum{};
 			bool goOn = true;
-			vector_cT buffer;
+			vector_t buffer;
 			while (goOn) {
 				// algorithm
 				buffer = toSolve * basisVectors.back();
 				norm_buffer = basisVectors.back().dot(N * basisVectors.back());
-				assertm(abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
-				deltas.push_back(norm_buffer.real());
+				if constexpr (isComplex) {
+					assertm(abs(norm_buffer.imag()) < 1e-6, "First norm in loop is complex!");
+					deltas.push_back(norm_buffer.real());
+				}
+				else {
+					deltas.push_back(norm_buffer);
+				}
 
 				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
 				norm_buffer = sqrt(currentSolution.dot(symplectic * currentSolution));
-				assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
+				if constexpr (isComplex) {
+					assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
+				}
 				gammas.push_back(abs(norm_buffer));
 				basisVectors.push_back(currentSolution / gammas.back());
 
@@ -402,11 +357,8 @@ namespace Utility {
 					eigenGamma(iterNum - 2) = gammas[iterNum - 1];
 				}
 				diagonalize.computeFromTridiagonal(eigenDelta, eigenGamma, 0);
-				diagonal = diagonalize.eigenvalues().real();
+				diagonal = diagonalize.eigenvalues();
 
-				if (diagonalize.eigenvalues().imag().norm() > 1e-8) {
-					std::cerr << "Atleast one eigenvalue is complex!" << std::endl;
-				}
 				position = findSmallestValue(diagonal);
 				newEigenValue = diagonal(position);
 
@@ -423,7 +375,7 @@ namespace Utility {
 				if (oldEigenValue != 0.0) {
 					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
 						//goOn = false;
-						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
+						if (!data.noEigenvalueChangeAt) data.noEigenvalueChangeAt = iterNum;
 					}
 				}
 				oldEigenValue = newEigenValue;
@@ -433,106 +385,18 @@ namespace Utility {
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1]);
 			}
-			data.push_back(res);
+			data.push_back(std::move(res));
 		};
 
-		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
-		void compute(const matrix_cT& toSolve, int maxIter, T errorMargin = 1e-10)
-		{
-			size_t matrixSize = toSolve.rows();
-			matrix_T identity(matrixSize, matrixSize);
-			identity.setIdentity();
-
-			if (toSolve.rows() != toSolve.cols()) {
-				std::cerr << "Matrix is not square!" << std::endl;
-				throw;
-			}
-
-			vector_cT currentSolution(matrixSize); // corresponds to |q_(i+1)>
-			// First filling
-			std::vector<vector_cT> basisVectors;
-			vector_cT first = vector_cT::Zero(matrixSize); // corresponds to |q_0>
-			vector_cT second = this->startingState; // corresponds to |q_1>
-			resolvent_data res;
-			res.b_i.push_back(second.squaredNorm());
-
-			second /= sqrt(res.b_i.back());
-			basisVectors.push_back(first);
-			basisVectors.push_back(second);
-
-			std::vector<T> deltas, gammas;
-			gammas.push_back(1);
-
-			vector_T eigenDelta(1);
-			vector_T eigenGamma(1);
-
-			Eigen::SelfAdjointEigenSolver<matrix_cT> diagonalize;
-			vector_T diagonal; //stores the diagonal elements in a vector
-			T oldEigenValue = 0, newEigenValue = 0;
-			size_t position = 0U;
-			size_t iterNum = 0U;
-			bool goOn = true;
-			vector_cT buffer;
-			while (goOn) {
-				// algorithm
-				buffer = toSolve * basisVectors.back();
-				// This has to be real, as <x|H|x> is always real if H=H^+
-				deltas.push_back(basisVectors.back().dot(buffer).real());
-				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
-				T norm_squared = currentSolution.squaredNorm();
-
-				gammas.push_back(sqrt(norm_squared));
-				basisVectors.push_back(currentSolution / gammas.back());
-				iterNum++;
-
-				// construct the tridiagonal matrix, diagonalize it and find the lowest eigenvalue
-				eigenDelta.conservativeResize(iterNum);
-				eigenGamma.conservativeResize(iterNum - 1);
-				eigenDelta(iterNum - 1) = deltas[iterNum - 1];
-				if (iterNum > 1) {
-					eigenGamma(iterNum - 2) = gammas[iterNum - 1];
-				}
-				diagonalize.computeFromTridiagonal(eigenDelta, eigenGamma, 0);
-				diagonal = diagonalize.eigenvalues().real();
-
-				if (diagonalize.eigenvalues().imag().norm() > 1e-8) {
-					std::cerr << "Atleast one eigenvalue is complex!" << std::endl;
-				}
-				position = findSmallestValue(diagonal);
-				newEigenValue = diagonal(position);
-
-				// breaking conditions
-				if (iterNum >= maxIter) {
-					goOn = false;
-				}
-				if (iterNum >= toSolve.rows()) {
-					goOn = false;
-				}
-				if (abs(gammas.back()) < 1e-7) {
-					goOn = false;
-				}
-				if (oldEigenValue != 0.0) {
-					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
-						//goOn = false;
-						if (!noEigenvalueChangeAt) noEigenvalueChangeAt = iterNum;
-					}
-				}
-				oldEigenValue = newEigenValue;
-			}
-			for (long i = 0; i < deltas.size(); i++)
-			{
-				res.a_i.push_back(deltas[i]);
-				res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
-			}
-			data.push_back(res);
+		const ResolventDataWrapper<RealType>& getData() const {
+			return data;
 		};
 
 		// Prints the computed data to <filename>
 		// Asummes that the data has been computed before...
 		void writeDataToFile(const std::string& filename) const
 		{
-			std::cout << "Total Lanczos iterations: " << data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
-			saveData(data, filename + ".dat.gz");
+			data.writeDataToFile(filename);
 		};
 	};
 }

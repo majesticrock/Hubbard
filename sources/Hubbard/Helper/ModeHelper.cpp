@@ -56,9 +56,9 @@ namespace Hubbard::Helper {
 		else {
 			if (term.operators.size() > 2U) throw std::invalid_argument("A term without a sum can only be bilinear, quartic or an identity.");
 		}
-		if(!(term.coefficients.empty())){
-			if(term.getFirstCoefficient().dependsOnMomentum()){
-				if(!(term.getFirstCoefficient().dependsOn('k'))) throw std::invalid_argument("Each momentum dependent term should have a k-depedance.");
+		if (!(term.coefficients.empty())) {
+			if (term.getFirstCoefficient().dependsOnMomentum()) {
+				if (!(term.getFirstCoefficient().dependsOn('k'))) throw std::invalid_argument("Each momentum dependent term should have a k-depedance.");
 			}
 		}
 	}
@@ -75,7 +75,7 @@ namespace Hubbard::Helper {
 		else {
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * this->number_of_basis_terms;
 		}
-		
+
 		loadWick("../commutators/wick_");
 	}
 }

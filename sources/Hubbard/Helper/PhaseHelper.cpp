@@ -227,7 +227,7 @@ namespace Hubbard::Helper {
 		}
 		else {
 			auto model_ptr{ getModelType(mp) };
-			ModelAttributes<global_floating_type> result{model_ptr->computePhases()};
+			ModelAttributes<global_floating_type> result{ model_ptr->computePhases() };
 
 			if (mp.U < 0 || mp.V < 0) return result;
 			// Remember: [0] returns the cdw and [1] the afm gap

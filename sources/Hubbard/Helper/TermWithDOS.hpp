@@ -36,7 +36,7 @@ namespace Hubbard::Helper {
 				}
 				return gamma_idx;
 				};
-			
+
 			if (op.isDaggered) return std::conj(this->expecs[index](offset(), 0));
 			return this->expecs[index](offset(), 0);
 		};
@@ -46,7 +46,7 @@ namespace Hubbard::Helper {
 			const global_floating_type& gamma_prime{ this->model->getGammaFromIndex(gamma_prime_idx) };
 
 			auto getCoefficient = [&]() {
-				if(term.getFirstCoefficient().dependsOn('l')){
+				if (term.getFirstCoefficient().dependsOn('l')) {
 					return gamma_prime * term.getFactor() * this->model->computeCoefficient(term.getFirstCoefficient(), gamma);
 				}
 				return term.getFactor() * this->model->computeCoefficient(term.getFirstCoefficient(), gamma);
@@ -106,12 +106,13 @@ namespace Hubbard::Helper {
 			approximate_dos(Constants::BASIS_SIZE, 0.0)
 		{
 #ifdef _EXACT_DOS
+			N_DIV = 1. / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
 			{
 				approximate_dos[i] = DOS::values_v(i);
 			}
 #else
-			constexpr int faktor = 500;
+			constexpr int faktor = 20;
 			Constants::K_DISCRETIZATION *= faktor;
 			Constants::PI_DIV_DISCRETIZATION /= faktor;
 			N_DIV = 1. / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);

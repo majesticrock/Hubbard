@@ -16,7 +16,7 @@ namespace Hubbard {
 					return _params.U * exp(0.5 * log(36.)) * exp(-2. / (0.288731210720569176L * std::abs(_params.U)));
 				}
 				return 0.0;
-			};
+				};
 			this->selfconsistency_values[0] = guess() + std::abs(_params.V);
 			this->selfconsistency_values[1] = guess() + std::abs(_params.V);
 			this->selfconsistency_values[2] = guess() + std::abs(_params.V);
@@ -46,7 +46,7 @@ namespace Hubbard {
 					return std::abs(_params.U) * 4. * exp(-2 * 3.1415926L / sqrt(std::abs(_params.U)));
 				}
 				return 0.0;
-			};
+				};
 			this->selfconsistency_values[0] = guess() + std::abs(_params.V);
 			this->selfconsistency_values[1] = guess() + std::abs(_params.V);
 			this->selfconsistency_values[2] = guess() + std::abs(_params.V);

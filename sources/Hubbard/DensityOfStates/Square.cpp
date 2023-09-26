@@ -18,10 +18,10 @@ namespace Hubbard::DensityOfStates {
 			one_minus_gamma *= 0.5;
 			return (LONG_1_PI * LONG_1_PI)
 				* boost::math::ellint_1((gamma < 0.25 ? sqrt(1 - gamma * gamma) : sqrt(one_minus_gamma * (1 + gamma)))).convert_to<dos_precision>();
-		};
+			};
 
 		tanh_sinh_helper<abscissa_t, dos_precision> tsh{ 0, 2 };
-		tanh_sinh_helper<abscissa_t, dos_precision>::SaveTo buffer_vectors{ &abscissa, & upper_border_to_abscissa, & weights, & values};
+		tanh_sinh_helper<abscissa_t, dos_precision>::SaveTo buffer_vectors{ &abscissa, &upper_border_to_abscissa, &weights, &values };
 		dos_precision old_integral{ tsh.initial_filling<SQUARE_QUAD_CUT_OFF>(compute_DOS, buffer_vectors) };
 
 		dos_precision new_integral{};

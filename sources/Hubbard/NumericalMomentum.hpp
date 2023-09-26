@@ -48,7 +48,7 @@ namespace Hubbard {
 			{
 				momenta[d] = momentum(d);
 			}
-		}; 
+		};
 		explicit NumericalMomentum(Eigen::Vector<global_floating_type, Dimension>&& momentum) {
 			for (size_t d = 0U; d < Dimension; ++d)
 			{

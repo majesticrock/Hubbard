@@ -33,7 +33,7 @@ namespace Hubbard::Helper {
 		return buffer;
 	}
 
-	complex_prec TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const
+	complex_prec TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, int k, int l) const
 	{
 		const Eigen::Vector2i l_idx = { x(l), y(l) };
 		const Eigen::Vector2i k_idx = { x(k), y(k) };
@@ -69,7 +69,7 @@ namespace Hubbard::Helper {
 				returnBuffer += sumBuffer;
 			}
 			return term.getFactor() * returnBuffer;
-		};
+			};
 
 		if (term.sum_momenta.size() > 0U) {
 			if (term.isBilinear()) {
@@ -80,7 +80,7 @@ namespace Hubbard::Helper {
 					}
 					else {
 						coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, { 'l', 'k' });
-						return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum)	* getSumOfAll(term.operators[0]);
+						return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * getSumOfAll(term.operators[0]);
 					}
 				}
 				return term.getFactor() * getSumOfAll(term.operators[0]);

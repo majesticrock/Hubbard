@@ -23,7 +23,7 @@ const std::string BASE_FOLDER = "../../data/phases/";
 void PhaseHandler::execute(Utility::InputFileReader& input) const
 {
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	std::vector<double> model_params{input.getDoubleList("model_parameters")};
+	std::vector<double> model_params{ input.getDoubleList("model_parameters") };
 	// Setup the number of steps
 	int GLOBAL_IT_STEPS = input.getInt("global_iterator_steps");
 	int FIRST_IT_STEPS = GLOBAL_IT_STEPS / numberOfRanks;

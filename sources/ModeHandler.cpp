@@ -17,7 +17,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	std::vector<data_vector> reciever;
 	data_vector oneParticleEnergies;
 	Hubbard::global_floating_type totalGapValue;
-	std::vector<Hubbard::Resolvent_L> resolvents;
+	std::vector<Hubbard::ResolventReturnData> resolvents;
 
 	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;
 	if (input.getInt("start_basis_at") == -1) {

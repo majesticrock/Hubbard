@@ -109,7 +109,7 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	std::vector<Resolvent_L> GeneralBasis::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) {
+	std::vector<ResolventReturnData> GeneralBasis::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
@@ -213,7 +213,7 @@ namespace Hubbard::Helper {
 			psi.normalize();
 		}
 
-		std::vector<Resolvent_L> resolvents{ 3 * NUMBER_OF_GREENSFUNCTIONS };
+		std::vector<ResolventComplex> resolvents{ 3 * NUMBER_OF_GREENSFUNCTIONS };
 
 #pragma omp parallel for
 		for (int i = 0; i < NUMBER_OF_GREENSFUNCTIONS; i++)
@@ -228,13 +228,19 @@ namespace Hubbard::Helper {
 #pragma omp parallel for
 		for (int i = 0; i < 3 * NUMBER_OF_GREENSFUNCTIONS; i++)
 		{
-			resolvents[i].compute(M, 2 * Constants::K_DISCRETIZATION);
+			resolvents[i].compute(M, this->usingDOS ? 50 : 2 * Constants::K_DISCRETIZATION);
 		}
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for resolventes: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-		return resolvents;
+		std::vector<ResolventReturnData> ret;
+		ret.reserve(resolvents.size());
+		for (const auto& re : resolvents)
+		{
+			ret.push_back(re.getData());
 		}
+		return ret;
 	}
+}

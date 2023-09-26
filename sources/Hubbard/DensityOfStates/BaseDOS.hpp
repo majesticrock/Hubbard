@@ -46,7 +46,6 @@ namespace Hubbard::DensityOfStates {
 
 	template <class DOS>
 	inline dos_precision computeNorm() {
-		
 		return typename DOS::Integrator<dos_precision>().integrate_by_value([](dos_precision) -> dos_precision { return 1.L; });
 	}
 

@@ -49,7 +49,7 @@ namespace Hubbard::DensityOfStates {
 
 		auto integrand = [gamma](abscissa_t phi) {
 			return asin(phi) * derivative_R(phi + gamma);
-		};
+			};
 
 		ret -= static_cast<_internal_precision>(boost::math::quadrature::gauss_kronrod<abscissa_t, 30>::integrate(integrand, lower_bound, upper_bound, 10, 1e-12));
 		return ret;
@@ -72,7 +72,7 @@ namespace Hubbard::DensityOfStates {
 
 		auto integrand = [gamma](abscissa_t phi) {
 			return log(0.25 * (gamma + phi) * (gamma + phi)) / sqrt_1_minus_x_squared(phi);
-		};
+			};
 		boost::math::quadrature::tanh_sinh<abscissa_t> integrator;
 		return 0.5 * static_cast<_internal_precision>(integrator.integrate(integrand, lower_bound, upper_bound));
 	}
@@ -90,7 +90,7 @@ namespace Hubbard::DensityOfStates {
 		step = std::ldexp(1, -1);
 		auto compute_DOS = [](abscissa_t gamma, abscissa_t one_minus_gamma) -> dos_precision {
 			return static_cast<dos_precision>(boost::math::pow<3>(LONG_1_PI) * (I_1(gamma) - I_2(gamma)));
-		};
+			};
 
 		constexpr double borders[2][2] = { {0, 1},{1, 3} };
 
@@ -102,7 +102,7 @@ namespace Hubbard::DensityOfStates {
 			decltype(values) buf_values;
 
 			tanh_sinh_helper<abscissa_t, dos_precision> tsh{ borders[i][0], borders[i][1] };
-			tanh_sinh_helper<abscissa_t, dos_precision>::SaveTo buffer_vectors{ &buf_abscissa, & buf_upper_border_to_abscissa, & buf_weights, & buf_values};
+			tanh_sinh_helper<abscissa_t, dos_precision>::SaveTo buffer_vectors{ &buf_abscissa, &buf_upper_border_to_abscissa, &buf_weights, &buf_values };
 			dos_precision old_integral{ tsh.initial_filling<SC_QUAD_CUT_OFF>(compute_DOS, buffer_vectors) };
 
 			dos_precision new_integral{};

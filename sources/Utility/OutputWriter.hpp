@@ -82,7 +82,7 @@ namespace Utility {
 		{
 			writeComments(out, comments);
 			out << std::scientific << std::setprecision(10);
-			for(const auto& dat : data){
+			for (const auto& dat : data) {
 				out << dat << "\n";
 			}
 		};

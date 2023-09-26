@@ -20,8 +20,8 @@ namespace Hubbard::SquareLattice {
 		{
 			model_attributes[i] = global_floating_type{};
 		}
-		model_attributes[16] = (I + global_floating_type{0.5})* static_cast<global_floating_type>(V);
-		model_attributes[17] = (I + global_floating_type{0.5})* static_cast<global_floating_type>(V);
+		model_attributes[16] = (I + global_floating_type{ 0.5 }) * static_cast<global_floating_type>(V);
+		model_attributes[17] = (I + global_floating_type{ 0.5 }) * static_cast<global_floating_type>(V);
 	}
 	void SquareTripletPairing::fillHamiltonian(const NumericalMomentum<2>& k_values)
 	{

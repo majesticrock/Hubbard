@@ -18,7 +18,7 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	std::vector<Resolvent_L> XPModes::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever)
+	std::vector<ResolventReturnData> XPModes::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever)
 	{
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
@@ -194,20 +194,20 @@ namespace Hubbard::Helper {
 			end_in = std::chrono::steady_clock::now();
 			std::cout << "Time for computing solver_matrix: "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
-		}; // end lambda
+			}; // end lambda
 
 		begin = std::chrono::steady_clock::now();
 
-		std::vector<Resolvent_L> resolvents{};
+		std::vector<ResolventReal> resolvents{};
 		resolvents.reserve(6);
 
 		for (size_t i = 0; i < 2; i++)
 		{
 			// It is going to compute the anti-Hermitian first
 			compute_solver_matrix(i, 1 - i);
-			resolvents.push_back(Resolvent_L(startingState_SC[i]));
-			resolvents.push_back(Resolvent_L(startingState_CDW[i]));
-			resolvents.push_back(Resolvent_L(startingState_AFM[i]));
+			resolvents.push_back(ResolventReal(startingState_SC[i]));
+			resolvents.push_back(ResolventReal(startingState_CDW[i]));
+			resolvents.push_back(ResolventReal(startingState_AFM[i]));
 #pragma omp parallel sections
 			{
 #pragma omp section
@@ -229,6 +229,12 @@ namespace Hubbard::Helper {
 		std::cout << "Time for resolvents: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-		return resolvents;
+		std::vector<ResolventReturnData> ret;
+		ret.reserve(resolvents.size());
+		for (const auto& re : resolvents)
+		{
+			ret.push_back(re.getData());
+		}
+		return ret;
 	}
 }

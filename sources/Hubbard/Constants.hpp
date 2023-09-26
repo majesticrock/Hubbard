@@ -12,12 +12,12 @@ namespace Hubbard {
 
 		const std::vector<std::string> option_list{ "T", "U", "V" };
 
-		inline void setBasis(int setTo){
+		inline void setBasis(int setTo) {
 			BASIS_SIZE = setTo;
 			HALF_BASIS = setTo / 2;
 		};
 
-		inline void setDiscretization(int setTo) 
+		inline void setDiscretization(int setTo)
 		{
 			K_DISCRETIZATION = setTo;
 			PI_DIV_DISCRETIZATION = BASE_PI / setTo;

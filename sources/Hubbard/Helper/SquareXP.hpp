@@ -17,7 +17,7 @@ namespace Hubbard::Helper {
 		virtual void fillBlock(int i, int j) override;
 
 	public:
-		virtual const BaseModel<global_floating_type>& getModel() const override { 
+		virtual const BaseModel<global_floating_type>& getModel() const override {
 			return *model;
 		};
 		virtual BaseModel<global_floating_type>& getModel() override {
@@ -27,4 +27,3 @@ namespace Hubbard::Helper {
 		SquareXP(Utility::InputFileReader& input) : XPModes(input), TermOnSquare(input) {};
 	};
 }
-

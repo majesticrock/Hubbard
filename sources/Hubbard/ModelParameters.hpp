@@ -16,7 +16,7 @@ namespace Hubbard {
 		void init();
 		void incrementer(std::string& s, const double step);
 	public:
-		double temperature{-1};
+		double temperature{ -1 };
 		double U{ -1 };
 		double V{ -1 };
 

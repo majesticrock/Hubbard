@@ -13,12 +13,12 @@ namespace Hubbard::Helper {
 						// delta gamma, -gamma'
 						l = this->model->shiftByQ(k);
 					}
-					N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) * this->approximate_dos[k]* this->approximate_dos[k];
+					N(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l) * this->approximate_dos[k] * this->approximate_dos[k];
 				}
 				else {
 					for (int l = 0; l < Constants::BASIS_SIZE; ++l)
 					{
-						N(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) * this->approximate_dos[k] * this->approximate_dos[l];
+						N(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l) * this->approximate_dos[k] * this->approximate_dos[l];
 					}
 				}
 			}
@@ -42,12 +42,12 @@ namespace Hubbard::Helper {
 						// delta gamma, -gamma'
 						l = this->model->shiftByQ(k);
 					}
-					M(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) * this->approximate_dos[k] * this->approximate_dos[k];
+					M(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l) * this->approximate_dos[k] * this->approximate_dos[k];
 				}
 				else {
 					for (int l = 0; l < Constants::BASIS_SIZE; ++l)
 					{
-						M(j + k * number_of_basis_terms, i + l * number_of_basis_terms) += computeTerm(term, l, k) * this->approximate_dos[k] * this->approximate_dos[l];
+						M(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l) * this->approximate_dos[k] * this->approximate_dos[l];
 					}
 				}
 			}

@@ -145,7 +145,7 @@ namespace Hubbard {
 				str.erase(str.find_last_not_of('.') + 1, std::string::npos);
 				return str;
 			}
-		};
+			};
 
 		std::string ret = "T=" + improved_string(temperature);
 		ret += "/U=" + improved_string(U);

@@ -16,6 +16,7 @@
 #include "TestHandler.hpp"
 #include "PhaseHandler.hpp"
 #include "ModeHandler.hpp"
+#include <Eigen/Dense>
 
 using namespace Hubbard;
 
@@ -38,7 +39,6 @@ int main(int argc, char** argv)
 	int rank, numberOfRanks;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &numberOfRanks);
-
 #else
 	int rank = 0;
 	int numberOfRanks = 1;
@@ -46,7 +46,7 @@ int main(int argc, char** argv)
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	if (rank == 0) {
 		std::cout << "Using parameter file " << argv[1] << std::endl;
-	}
+}
 	Utility::InputFileReader input(argv[1]);
 	Constants::setDiscretization(input.getInt("k_discretization"));
 

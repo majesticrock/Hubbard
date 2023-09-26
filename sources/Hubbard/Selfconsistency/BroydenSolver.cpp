@@ -8,7 +8,7 @@ namespace Hubbard::Selfconsistency {
 
 		std::function<void(const ParameterVector&, ParameterVector&)> func = [&](const ParameterVector& x, ParameterVector& F) {
 			_model->iterationStep(x, F);
-		};
+			};
 
 		ParameterVector x0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
 		std::copy(_attr->begin(), _attr->end(), x0.begin());

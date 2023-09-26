@@ -135,7 +135,7 @@ namespace Hubbard {
 		inline complex_prec get_eta() const {
 			return -this->rho(0, 3);
 		};
-		
+
 	public:
 		explicit BaseModel(const ModelParameters& params, int dimension = 0)
 			: model_attributes(params, dimension), temperature(params.temperature), U(params.U), V(params.V)

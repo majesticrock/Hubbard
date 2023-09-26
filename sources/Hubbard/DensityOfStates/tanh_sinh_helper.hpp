@@ -103,7 +103,7 @@ namespace Hubbard::DensityOfStates {
 				} while (abs(save_to.values->back() * static_cast<FinalType>(save_to.weights->back())) > boost::math::pow<cut_off>(10)
 					|| abs(save_to.weights->back()) > 1e-8);
 				return k - 1;
-			};
+				};
 
 			_min_k = -fill_vectors(0, false);
 
