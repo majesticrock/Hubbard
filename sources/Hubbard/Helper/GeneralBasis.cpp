@@ -123,6 +123,7 @@ namespace Hubbard::Helper {
 		//	printMomentumBlocks();
 		//}
 
+		std::cout << "M-m^+ = " << (M - M.adjoint()).norm() << std::endl;
 		if ((M - M.adjoint()).norm() > 1e-12) {
 			throw std::runtime_error("M is not Hermitian!");
 		}
@@ -134,6 +135,8 @@ namespace Hubbard::Helper {
 		std::cout << "Time for filling of M and N: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 		begin = std::chrono::steady_clock::now();
+		
+		SpinorMatrix buffer_M = M;
 
 		Eigen::SelfAdjointEigenSolver<MatrixCL> M_solver(M);
 		Vector_L& evs_M = const_cast<Vector_L&>(M_solver.eigenvalues());
@@ -176,7 +179,7 @@ namespace Hubbard::Helper {
 		* 3 - AFM
 		*/
 		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
-		for (Eigen::Index i = 0; i < Constants::BASIS_SIZE; i++)
+		for (int i = 0; i < Constants::BASIS_SIZE; i++)
 		{
 #ifdef _EXACT_DOS
 			psis[0](i* number_of_basis_terms) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
@@ -211,6 +214,7 @@ namespace Hubbard::Helper {
 		for (auto& psi : psis)
 		{
 			psi.normalize();
+			std::cout << psi.dot(buffer_M * psi) << std::endl;
 		}
 
 		std::vector<ResolventComplex> resolvents{ 3 * NUMBER_OF_GREENSFUNCTIONS };

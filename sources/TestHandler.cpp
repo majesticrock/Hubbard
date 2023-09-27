@@ -37,7 +37,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 		model3.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
 	}
-
+	Constants::setDiscretization(input.getInt("k_discretization"));
 	//test_b = std::chrono::steady_clock::now();
 	//DensityOfStates::SimpleCubic sc_dos;
 	//sc_dos.computeValues();

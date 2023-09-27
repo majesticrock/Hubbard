@@ -56,7 +56,7 @@ namespace Hubbard::Helper {
 			for (size_t i = 0; i < evs.size(); i++)
 			{
 				if (evs(i) < -SALT) {
-					std::cerr << "M:   " << evs(i) << std::endl;
+					std::cerr << std::scientific << "M:   " << evs(i) << std::endl;
 					throw std::invalid_argument("Matrix is not positive!  " + to_string(evs(i)));
 				}
 				if (evs(i) < SALT) {

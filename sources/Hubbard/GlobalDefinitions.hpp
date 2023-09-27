@@ -15,7 +15,7 @@
 #define SC_QUAD_CUT_OFF -13
 #endif
 
-#define _EXACT_DOS
+//#define _EXACT_DOS
 
 #include <cmath>
 #include <complex>
