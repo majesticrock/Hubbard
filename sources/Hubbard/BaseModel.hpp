@@ -172,5 +172,9 @@ namespace Hubbard {
 		inline std::string parametersAsTriplet() const {
 			return ("[T U V] = [" + to_string(temperature) + " " + to_string(U) + " " + to_string(V) + "]");
 		}
+
+		inline const ModelAttributes<DataType>& getAttributes() const {
+			return this->model_attributes;
+		}
 	};
 }

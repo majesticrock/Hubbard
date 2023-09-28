@@ -6,6 +6,7 @@
 #include "Hubbard/Helper/SquareXP.hpp"
 #include "Hubbard/Helper/DOSGeneral.hpp"
 #include "Utility/OutputConvenience.hpp"
+#include "Hubbard/DOSModels/BroydenDOS.hpp"
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
 const std::string BASE_FOLDER = "../../data/modes/";
@@ -31,6 +32,20 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	}
 	else {
 		if (input.getBool("use_DOS")) {
+			/*std::vector<double> model_params = input.getDoubleList("model_parameters");
+			Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
+				0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
+
+			Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::Square> dos_model(modelParameters);
+			auto attributes = dos_model.computePhases();
+			attributes.print();
+			
+			Hubbard::Constants::setDiscretization(input.getInt("k_discretization"));
+
+			auto momentum_ptr = std::make_unique<Hubbard::SquareLattice::UsingBroyden>(modelParameters, attributes);
+			momentum_ptr->getAttributes().print();
+			modeHelper = std::make_unique<Hubbard::Helper::SquareGeneral>(input, std::move(momentum_ptr));*/
+
 			modeHelper = std::make_unique<Hubbard::Helper::DOSGeneral>(input);
 		}
 		else {

@@ -43,6 +43,11 @@ namespace Hubbard::Helper {
 			model = std::make_unique<Model>(modelParameters);
 			model->computePhases().print();
 			model->computeExpectationValues(expecs, sum_of_all);
-		}
+		};
+
+		DetailModelConstructor(std::unique_ptr<Model>&& model_ptr) : model{std::move(model_ptr)} 
+		{
+			model->computeExpectationValues(expecs, sum_of_all);
+		};
 	};
 }

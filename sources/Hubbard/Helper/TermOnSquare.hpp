@@ -17,5 +17,6 @@ namespace Hubbard::Helper {
 
 	public:
 		TermOnSquare(Utility::InputFileReader& input) : DetailModelConstructor(input) {};
+		TermOnSquare(std::unique_ptr<Hubbard::SquareLattice::UsingBroyden>&& model_ptr) : DetailModelConstructor(std::move(model_ptr)) {};
 	};
 }

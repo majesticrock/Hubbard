@@ -15,9 +15,9 @@ namespace Hubbard::Helper {
 
 		// The non-summing terms (except for the epsilon terms) are proportioal to 1/#lattice sites
 		// This number is probably arbitrary in the DOS-description so we will fix it to a value that works
-		double N_DIV{};
 	protected:
 		std::vector<global_floating_type> approximate_dos;
+		double N_DIV{};
 
 		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, int gamma_idx) const {
 			auto it = this->wick_map.find(op.type);
@@ -102,20 +102,19 @@ namespace Hubbard::Helper {
 
 	public:
 		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input),
-			N_DIV(0), //4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION
-			approximate_dos(Constants::BASIS_SIZE, 0.0)
+			approximate_dos(Constants::BASIS_SIZE, 0.0),
+			N_DIV(0) //4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION
 		{
 #ifdef _EXACT_DOS
 			N_DIV = 1. / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
 			{
-				approximate_dos[i] = DOS::values_v(i);
+				approximate_dos[i] = DOS::values_v(i) * DOS::weights_v(i);
 			}
 #else
 			constexpr int faktor = 20;
 			Constants::K_DISCRETIZATION *= faktor;
 			Constants::PI_DIV_DISCRETIZATION /= faktor;
-			N_DIV = 1. / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 
 			NumericalMomentum<DOS::DIMENSION> ks;
 			do {
@@ -129,6 +128,7 @@ namespace Hubbard::Helper {
 				approximate_dos[i] *= 0.5;
 				approximate_dos[Constants::BASIS_SIZE - 1 - i] = approximate_dos[i];
 			}
+			N_DIV = 1. / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 			for (auto& value : this->approximate_dos)
 			{
 				value *= N_DIV * Constants::BASIS_SIZE;
@@ -136,6 +136,7 @@ namespace Hubbard::Helper {
 
 			Constants::K_DISCRETIZATION /= faktor;
 			Constants::PI_DIV_DISCRETIZATION *= faktor;
+			N_DIV = 1;
 #endif
 		};
 	};

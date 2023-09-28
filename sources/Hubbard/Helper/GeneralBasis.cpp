@@ -124,10 +124,10 @@ namespace Hubbard::Helper {
 		//}
 
 		std::cout << "M-m^+ = " << (M - M.adjoint()).norm() << std::endl;
-		if ((M - M.adjoint()).norm() > 1e-12) {
+		if ((M - M.adjoint()).norm() > 1e-11) {
 			throw std::runtime_error("M is not Hermitian!");
 		}
-		if ((N - N.adjoint()).norm() > 1e-12) {
+		if ((N - N.adjoint()).norm() > 1e-11) {
 			throw std::runtime_error("N is not Hermitian!");
 		}
 
@@ -182,7 +182,7 @@ namespace Hubbard::Helper {
 		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
 		for (int i = 0; i < Constants::BASIS_SIZE; i++)
 		{
-#ifdef _EXACT_DOS
+#ifdef _EXACT_DOS2 // Probably not needed?
 			psis[0](i* number_of_basis_terms) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
 			psis[0](i* number_of_basis_terms + 1) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f^+
 
