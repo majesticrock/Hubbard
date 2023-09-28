@@ -131,7 +131,7 @@ namespace Hubbard::Helper {
 			}
 			for (auto& value : this->approximate_dos)
 			{
-				value *= N_DIV;// * Constants::BASIS_SIZE;
+				value *= N_DIV * Constants::BASIS_SIZE;
 			}
 
 			Constants::K_DISCRETIZATION /= faktor;

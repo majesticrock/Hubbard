@@ -163,6 +163,7 @@ namespace Hubbard::Helper {
 		M = n_hacek * M_solver.eigenvectors() * evs_M.asDiagonal() * M_solver.eigenvectors().adjoint() * n_hacek;
 		// Starting here N is the extra matrix that defines |a> (n s hackem N)
 		N.applyOnTheLeft(n_hacek);
+
 		// Starting here h_hacek is its own inverse (defining |b>)
 		n_hacek = norm_solver.eigenvectors() * evs_norm.asDiagonal() * norm_solver.eigenvectors().adjoint();
 
