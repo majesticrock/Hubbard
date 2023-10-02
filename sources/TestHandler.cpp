@@ -27,7 +27,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	std::chrono::steady_clock::time_point test_e;
 
 	//------------------------------------------------------------//
-	if (input.getString("lattice_type") == "square") {
+	/*if (input.getString("lattice_type") == "square") {
 		DOSModels::BroydenDOS<Square> model3(modelParameters);
 		model3.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
@@ -36,15 +36,30 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 		DOSModels::BroydenDOS<SimpleCubic> model3(modelParameters);
 		model3.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
-	}
+	}*/
 	Constants::setDiscretization(input.getInt("k_discretization"));
 	//test_b = std::chrono::steady_clock::now();
-	//DensityOfStates::SimpleCubic sc_dos;
-	//sc_dos.computeValues();
-	//Utility::saveData(sc_dos.values, "../../data/3d_dos.dat.gz");
-	//DensityOfStates::Square square_dos;
-	//square_dos.computeValues();
-	//Utility::saveData(square_dos.values, "../../data/2d_dos.dat.gz");
+	{
+		DensityOfStates::SimpleCubic sc_dos;
+		sc_dos.computeValues();
+		std::vector<Hubbard::DensityOfStates::dos_precision> abscissa(sc_dos.values.size());
+		for (size_t i = 0U; i < abscissa.size(); ++i)
+		{
+			abscissa[i] = sc_dos.abscissa[i].convert_to<Hubbard::DensityOfStates::dos_precision>();
+		}
+		Utility::saveData(abscissa, sc_dos.values, "../../data/3d_dos.dat.gz");
+	}
+	{
+		DensityOfStates::Square square_dos;
+		square_dos.computeValues();
+		std::vector<Hubbard::DensityOfStates::dos_precision> abscissa(square_dos.values.size());
+		std::cout << square_dos.size() << "   " << square_dos.values.size() << "   " << square_dos.abscissa.size() << std::endl;
+		for (size_t i = 0U; i < abscissa.size(); ++i)
+		{
+			abscissa[i] = square_dos.abscissa[i].convert_to<Hubbard::DensityOfStates::dos_precision>();
+		}
+		Utility::saveData(abscissa, square_dos.values, "../../data/2d_dos.dat.gz");
+	}
 
 	test_e = std::chrono::steady_clock::now();
 	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;

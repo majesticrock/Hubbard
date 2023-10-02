@@ -4,8 +4,6 @@
 #include "../DensityOfStates/Square.hpp"
 #include "../MomentumIndexUtility.hpp"
 
-using DOS = Hubbard::DensityOfStates::Square;
-
 namespace Hubbard::Helper {
 	void GeneralBasis::fillMatrices()
 	{
@@ -80,7 +78,6 @@ namespace Hubbard::Helper {
 
 		for (size_t k = 0U; k < Constants::BASIS_SIZE / 2; ++k)
 		{
-			std::cout << k << ": " << DOS::abscissa_v(k) << "\n";
 			for (size_t i = 0U; i < number_of_basis_terms; ++i)
 			{
 				for (size_t j = 0U; j < number_of_basis_terms; ++j)
@@ -113,18 +110,8 @@ namespace Hubbard::Helper {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
-		std::cout << std::resetiosflags(std::cout.flags());
 		fillMatrices();
 
-		//if(this->usingDOS){
-		//	printDOSBlocks();
-		//}
-		//else {
-		//	printMomentumBlocks();
-		//}
-		//M /= Constants::BASIS_SIZE;
-		//N /= Constants::BASIS_SIZE;
-		std::cout << "M-M^+ = " << (M - M.adjoint()).norm() << std::endl;
 		if ((M - M.adjoint()).norm() > 1e-11) {
 			throw std::runtime_error("M is not Hermitian!");
 		}
@@ -181,21 +168,6 @@ namespace Hubbard::Helper {
 		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
 		for (int i = 0; i < Constants::BASIS_SIZE; i++)
 		{
-#ifdef _EXACT_DOS2 // Probably not needed?
-			psis[0](i* number_of_basis_terms) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
-			psis[0](i* number_of_basis_terms + 1) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f^+
-
-			psis[1](i* number_of_basis_terms) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // f
-			psis[1](i* number_of_basis_terms + 1) = this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // f^+
-
-			if (number_of_basis_terms >= 6) {
-				psis[2](i* number_of_basis_terms + 4) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
-				psis[2](i* number_of_basis_terms + 5) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_down
-
-				psis[3](i* number_of_basis_terms + 4) = this->usingDOS ? sqrt(DOS::weights_v(i)) : 1; // g_up
-				psis[3](i* number_of_basis_terms + 5) = this->usingDOS ? -sqrt(DOS::weights_v(i)) : -1; // g_down
-			}
-#else
 			psis[0](i* number_of_basis_terms) = 1;
 			psis[0](i* number_of_basis_terms + 1) = 1;
 
@@ -209,7 +181,6 @@ namespace Hubbard::Helper {
 				psis[3](i* number_of_basis_terms + 4) = 1;
 				psis[3](i* number_of_basis_terms + 5) = -1;
 			}
-#endif
 		}
 		for (auto& psi : psis)
 		{
@@ -245,5 +216,5 @@ namespace Hubbard::Helper {
 			ret.push_back(re.getData());
 		}
 		return ret;
+		}
 	}
-}

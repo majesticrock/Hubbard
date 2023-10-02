@@ -60,6 +60,7 @@ namespace Hubbard::DensityOfStates {
 		static dos_precision integrateValues();
 		static void printValues();
 
+		static void clearAll();
 		virtual void computeValues() = 0;
 		virtual ~BaseDOS() = default;
 

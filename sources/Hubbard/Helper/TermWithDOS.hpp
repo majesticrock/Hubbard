@@ -17,7 +17,6 @@ namespace Hubbard::Helper {
 		// This number is probably arbitrary in the DOS-description so we will fix it to a value that works
 	protected:
 		std::vector<global_floating_type> approximate_dos;
-		double N_DIV{};
 
 		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, int gamma_idx) const {
 			auto it = this->wick_map.find(op.type);
@@ -58,10 +57,7 @@ namespace Hubbard::Helper {
 
 			if (term.isIdentity()) {
 				if (term.hasSingleCoefficient()) {
-					if (term.getFirstCoefficient().name == "\\epsilon_0") {
-						return getCoefficient();
-					}
-					return getCoefficient() * N_DIV;
+					return getCoefficient();
 				}
 				return term.getFactor();
 			}
@@ -91,10 +87,7 @@ namespace Hubbard::Helper {
 					ret = getExpectationValue(term.operators[l_dependend == 0], gamma_idx)
 						* getExpectationValue(term.operators[l_dependend], gamma_prime_idx);
 				}
-				if (term.getFirstCoefficient().name == "\\epsilon_0") {
-					return ret * getCoefficient();
-				}
-				return ret * getCoefficient() * N_DIV;
+				return ret * getCoefficient();
 			}
 
 			return term.getFactor() * getExpectationValue(term.operators[0U], gamma_idx);
@@ -102,11 +95,9 @@ namespace Hubbard::Helper {
 
 	public:
 		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input),
-			approximate_dos(Constants::BASIS_SIZE, 0.0),
-			N_DIV(0) //4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION
+			approximate_dos(Constants::BASIS_SIZE, 0.0)
 		{
 #ifdef _EXACT_DOS
-			N_DIV = 1. / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
 			{
 				approximate_dos[i] = DOS::values_v(i) * DOS::weights_v(i);
@@ -128,15 +119,13 @@ namespace Hubbard::Helper {
 				approximate_dos[i] *= 0.5;
 				approximate_dos[Constants::BASIS_SIZE - 1 - i] = approximate_dos[i];
 			}
-			N_DIV = 1. / (4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 			for (auto& value : this->approximate_dos)
 			{
-				value *= N_DIV * Constants::BASIS_SIZE;
+				value *= ((double) Constants::BASIS_SIZE) / (4. * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 			}
 
 			Constants::K_DISCRETIZATION /= faktor;
 			Constants::PI_DIV_DISCRETIZATION *= faktor;
-			N_DIV = 1;
 #endif
 		};
 	};

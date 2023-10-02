@@ -53,10 +53,6 @@ namespace Hubbard::DensityOfStates {
 
 		ret -= static_cast<_internal_precision>(boost::math::quadrature::gauss_kronrod<abscissa_t, 30>::integrate(integrand, lower_bound, upper_bound, 10, 1e-12));
 		return ret;
-
-		//boost::math::quadrature::tanh_sinh<abscissa_t> integrator;
-		//ret -= static_cast<_internal_precision>(integrator.integrate(integrand, lower_bound, upper_bound));
-		return ret;
 	}
 
 	inline _internal_precision I_2(abscissa_t gamma) {
@@ -67,8 +63,6 @@ namespace Hubbard::DensityOfStates {
 		}
 		const abscissa_t lower_bound{ std::max(abscissa_t{ -1 }, abscissa_t{ -2 } - gamma) };
 		const abscissa_t upper_bound{ std::min(abscissa_t{ 1 }, abscissa_t{ 2 } - gamma) };
-
-		//std::cout << "Bounds: " << gamma << "   -   " << lower_bound << "  " << upper_bound << std::endl;
 
 		auto integrand = [gamma](abscissa_t phi) {
 			return log(0.25 * (gamma + phi) * (gamma + phi)) / sqrt_1_minus_x_squared(phi);
@@ -87,6 +81,7 @@ namespace Hubbard::DensityOfStates {
 #endif
 	void SimpleCubic::computeValues()
 	{
+		clearAll();
 		step = std::ldexp(1, -1);
 		auto compute_DOS = [](abscissa_t gamma, abscissa_t one_minus_gamma) -> dos_precision {
 			return static_cast<dos_precision>(boost::math::pow<3>(LONG_1_PI) * (I_1(gamma) - I_2(gamma)));

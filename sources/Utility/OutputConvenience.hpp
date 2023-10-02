@@ -90,6 +90,13 @@ namespace Utility {
 		}
 	}
 
+	template <typename data_type>
+	void saveData(const std::vector<data_type>& first, const std::vector<data_type>& second, const std::string& filename,
+		const std::vector<std::string>& comments = std::vector<std::string>())
+	{
+		saveData(std::vector<std::vector<data_type>>{ first, second }, filename, comments);
+	};
+
 	// This function assumes that the number of elements of <data> is divisible by linebreak
 	template <typename data_type>
 	void saveData(const std::vector<data_type>& data, size_t linebreak, const std::string& filename,
@@ -184,6 +191,13 @@ namespace Utility {
 		else {
 			std::cerr << "Could not open output filestream for file: " << filename << std::endl;
 		}
+	};
+
+	template <typename data_type>
+	void saveData(const std::vector<data_type>& first, const std::vector<data_type>& second, const std::string& filename,
+		const std::vector<std::string>& comments = std::vector<std::string>())
+	{
+		saveData(std::vector<std::vector<data_type>>{ first, second }, filename, comments);
 	};
 #endif // End not using boost
 }

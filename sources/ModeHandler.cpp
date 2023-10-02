@@ -73,10 +73,10 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 				names = { "phase_SC", "phase_CDW", "phase_AFM", "higgs_SC", "higgs_CDW", "higgs_AFM" };
 			}
 			else {
-				names = { "higgs_sc_a", "higgs_sc_a+b", "higgs_sc_a+ib",
-					"phase_sc_a", "phase_sc_a+b", "phase_sc_a+ib",
-					"cdw_a", "cdw_a+b", "cdw_a+ib",
-					"afm_a", "afm_a+b", "afm_a+ib" };
+				names = { "higgs_SC_a", "higgs_SC_a+b", "higgs_SC_a+ib",
+					"phase_SC_a", "phase_SC_a+b", "phase_SC_a+ib",
+					"CDW_a", "CDW_a+b", "CDW_a+ib",
+					"AFM_a", "AFM_a+b", "AFM_a+ib" };
 			}
 
 			for (size_t i = 0; i < resolvents.size(); i++)

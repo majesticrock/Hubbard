@@ -12,6 +12,7 @@ namespace Hubbard::DensityOfStates {
 #endif
 	void Square::computeValues()
 	{
+		clearAll();
 		step = std::ldexp(1, -1);
 		auto compute_DOS = [](abscissa_t gamma, abscissa_t one_minus_gamma) -> dos_precision {
 			gamma *= 0.5;
