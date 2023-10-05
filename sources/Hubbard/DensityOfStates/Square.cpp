@@ -7,6 +7,10 @@ namespace Hubbard::DensityOfStates {
 	std::vector<abscissa_t> Square::upper_border_to_abscissa;
 	dos_precision Square::b_minus_a_halved;
 
+	global_floating_type Square::computeValue(const global_floating_type& gamma){
+		return (LONG_1_PI * LONG_1_PI) * boost::math::ellint_1(sqrt(1 - gamma * gamma));
+	};
+
 #ifdef _BOOST_PRECISION
 #pragma omp declare reduction(+:dos_precision:omp_out+=omp_in)
 #endif
@@ -49,7 +53,7 @@ namespace Hubbard::DensityOfStates {
 			old_integral = new_integral;
 		}
 
-		std::cout << "Exit after " << tsh.level() << " levels with error = " << abs(0.5 - new_integral) << std::endl;
+		std::cout << "Square: Exit after " << tsh.level() << " levels with error = " << abs(0.5 - new_integral) << std::endl;
 		std::cout << "Total amount of values = " << values.size() << std::endl;
 
 		computed = true;

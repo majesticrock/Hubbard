@@ -13,6 +13,7 @@ namespace Hubbard::DensityOfStates {
 		inline static size_t n_abscissa() noexcept {
 			return abscissa.size();
 		};
+		static global_floating_type computeValue(const global_floating_type& gamma);
 		virtual void computeValues() override;
 
 		template <class T>

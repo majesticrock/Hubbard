@@ -71,6 +71,10 @@ namespace Hubbard::DensityOfStates {
 		return 0.5 * static_cast<_internal_precision>(integrator.integrate(integrand, lower_bound, upper_bound));
 	}
 
+	global_floating_type SimpleCubic::computeValue(const global_floating_type& gamma) {
+		return boost::math::pow<3>(LONG_1_PI) * (I_1(gamma) - I_2(gamma));
+	}
+
 	template <class T>
 	inline auto append_vectors(std::vector<T>& a, const std::vector<T>& b) {
 		return a.insert(a.end(), b.begin(), b.end());
@@ -124,7 +128,7 @@ namespace Hubbard::DensityOfStates {
 				old_integral = new_integral;
 			}
 
-			std::cout << "Exit after " << tsh.level() << " levels with error = " << error << std::endl;
+			std::cout << "Simple cubic: Exit after " << tsh.level() << " levels with error = " << error << std::endl;
 			std::cout << "Total amount of values = " << buf_values.size() << std::endl;
 			if (i == 0) {
 				abscissa = std::move(buf_abscissa);

@@ -98,12 +98,14 @@ namespace Hubbard::Helper {
 			approximate_dos(Constants::BASIS_SIZE, 0.0)
 		{
 #ifdef _EXACT_DOS
-			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
+			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
-				approximate_dos[i] = DOS::values_v(i) * DOS::weights_v(i);
+				approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));//DOS::values_v(i) * DOS::weights_v(i);
+				std::cout << this->model->getGammaFromIndex(i) << "  " << approximate_dos[i] << std::endl;
 			}
+			
 #else
-			constexpr int faktor = 20;
+			constexpr int faktor = 200;
 			Constants::K_DISCRETIZATION *= faktor;
 			Constants::PI_DIV_DISCRETIZATION /= faktor;
 
@@ -113,7 +115,7 @@ namespace Hubbard::Helper {
 				// Irgendeine Zahl zwischen 0 und BASIS_SIZE
 				approximate_dos.at(std::round(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * (Constants::BASIS_SIZE - 1))) += 1;
 			} while (ks.iterateFullBZ());
-			for (int i = 0U; i < Constants::HALF_BASIS; ++i)
+			for (int i = 0; i < Constants::HALF_BASIS; ++i)
 			{
 				approximate_dos[i] += approximate_dos[Constants::BASIS_SIZE - 1 - i];
 				approximate_dos[i] *= 0.5;

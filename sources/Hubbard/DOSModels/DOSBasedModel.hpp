@@ -53,7 +53,7 @@ namespace Hubbard {
 					dos.computeValues();
 					std::cout << "1 - DOS-Norm = " << std::scientific << 1. - DensityOfStates::computeNorm<DOS>() << std::endl;
 #ifdef _EXACT_DOS
-					Constants::setBasis(2U * DOS::size());
+					//Constants::setBasis(2U * DOS::size());
 #else
 					Constants::BASIS_SIZE += 1;
 #endif
@@ -185,7 +185,8 @@ namespace Hubbard {
 
 		inline global_floating_type getGammaFromIndex(int gamma_idx) const {
 #ifdef _EXACT_DOS
-			return DOS::abscissa_v(gamma_idx);
+			return (Constants::HALF_BASIS - gamma_idx - 0.5) * DOS::LOWER_BORDER / Constants::BASIS_SIZE;  
+			//return DOS::abscissa_v(gamma_idx);
 #else
 			return 2 * (Constants::HALF_BASIS - gamma_idx) * DOS::LOWER_BORDER / (Constants::BASIS_SIZE - 1);
 #endif
@@ -193,7 +194,8 @@ namespace Hubbard {
 
 		inline int shiftByQ(int k) const {
 #ifdef _EXACT_DOS
-			return k + (k < Constants::HALF_BASIS ? Constants::HALF_BASIS : -Constants::HALF_BASIS);
+			return (-k + 2 * Constants::HALF_BASIS - 1);
+			//return k + (k < Constants::HALF_BASIS ? Constants::HALF_BASIS : -Constants::HALF_BASIS);
 #else
 			return (-k + 2 * Constants::HALF_BASIS);
 #endif
