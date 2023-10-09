@@ -45,7 +45,7 @@ namespace Hubbard::Helper {
 			model->computeExpectationValues(expecs, sum_of_all);
 		};
 
-		DetailModelConstructor(std::unique_ptr<Model>&& model_ptr) : model{std::move(model_ptr)} 
+		DetailModelConstructor(std::unique_ptr<Model>&& model_ptr) : model{ std::move(model_ptr) }
 		{
 			model->computeExpectationValues(expecs, sum_of_all);
 		};

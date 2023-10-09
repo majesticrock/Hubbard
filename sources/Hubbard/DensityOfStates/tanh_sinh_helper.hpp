@@ -85,7 +85,7 @@ namespace Hubbard::DensityOfStates {
 			return _level;
 		};
 
-		template< int cut_off, class UnaryFunction>
+		template <int cut_off, class UnaryFunction>
 		FinalType initial_filling(const UnaryFunction& dos, SaveTo& save_to) {
 			FinalType integral{};
 			auto fill_vectors = [&](int k, bool sign) {
@@ -116,7 +116,7 @@ namespace Hubbard::DensityOfStates {
 			return integral * _half_distance;
 		};
 
-		template<class UnaryFunction>
+		template <class UnaryFunction>
 		inline void compute_step(const UnaryFunction& dos, int k, SaveTo& save_to) {
 			const RealType sinhx = sinh((k + _min_k) * _step);
 			save_to.abscissa->at(k) = compute_abscissa(sinhx);

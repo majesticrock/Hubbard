@@ -23,13 +23,13 @@ namespace Hubbard::DensityOfStates {
 
 	// Computes sqrt(1 - x^2)
 	template <class RealType>
-	inline RealType sqrt_1_minus_x_squared(RealType x) {
+	inline RealType sqrt_1_minus_x_squared(const RealType& x) {
 		return sqrt((1 - x) * (1 + x));
 	}
 	// Use this overload for better results, if |x| is close to 1
 	// However, you need to provide an accurate reprensantion of 1+/-x yourself.
 	template <class RealType>
-	inline RealType sqrt_1_minus_x_squared(RealType x, RealType one_minus_x) {
+	inline RealType sqrt_1_minus_x_squared(const RealType& x, const RealType& one_minus_x) {
 		return (x < 0.25 ? sqrt(1 - x * x) : sqrt(one_minus_x * (1 + x)));
 	}
 

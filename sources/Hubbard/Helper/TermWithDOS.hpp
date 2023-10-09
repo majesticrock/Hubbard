@@ -103,17 +103,16 @@ namespace Hubbard::Helper {
 				approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));//DOS::values_v(i) * DOS::weights_v(i);
 				std::cout << this->model->getGammaFromIndex(i) << "  " << approximate_dos[i] << std::endl;
 			}
-			
 #else
-			constexpr int faktor = 200;
+			constexpr int faktor = 50;
 			Constants::K_DISCRETIZATION *= faktor;
 			Constants::PI_DIV_DISCRETIZATION /= faktor;
 
 			NumericalMomentum<DOS::DIMENSION> ks;
 			do {
-				//std::cout << ks.gamma() << "\t" << 0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * (Constants::BASIS_SIZE - 1) << std::endl;
 				// Irgendeine Zahl zwischen 0 und BASIS_SIZE
 				approximate_dos.at(std::round(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * (Constants::BASIS_SIZE - 1))) += 1;
+				
 			} while (ks.iterateFullBZ());
 			for (int i = 0; i < Constants::HALF_BASIS; ++i)
 			{
@@ -123,7 +122,8 @@ namespace Hubbard::Helper {
 			}
 			for (auto& value : this->approximate_dos)
 			{
-				value *= ((double) Constants::BASIS_SIZE) / (4. * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+				value *= ((double)Constants::BASIS_SIZE) / boost::math::pow<DOS::DIMENSION>(2. * Constants::BASIS_SIZE);
+				std::cout << value << std::endl;
 			}
 
 			Constants::K_DISCRETIZATION /= faktor;

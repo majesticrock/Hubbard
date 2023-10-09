@@ -7,6 +7,8 @@
 #include "Hubbard/Helper/DOSGeneral.hpp"
 #include "Utility/OutputConvenience.hpp"
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
+#include "Hubbard/DensityOfStates/Square.hpp"
+#include "Hubbard/DensityOfStates/SimpleCubic.hpp"
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
 const std::string BASE_FOLDER = "../../data/modes/";
@@ -32,21 +34,15 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	}
 	else {
 		if (input.getBool("use_DOS")) {
-			/*std::vector<double> model_params = input.getDoubleList("model_parameters");
-			Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
-				0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
-
-			Hubbard::DOSModels::BroydenDOS<Hubbard::DensityOfStates::Square> dos_model(modelParameters);
-			auto attributes = dos_model.computePhases();
-			attributes.print();
-			
-			Hubbard::Constants::setDiscretization(input.getInt("k_discretization"));
-
-			auto momentum_ptr = std::make_unique<Hubbard::SquareLattice::UsingBroyden>(modelParameters, attributes);
-			momentum_ptr->getAttributes().print();
-			modeHelper = std::make_unique<Hubbard::Helper::SquareGeneral>(input, std::move(momentum_ptr));*/
-
-			modeHelper = std::make_unique<Hubbard::Helper::DOSGeneral>(input);
+			if (input.getString("lattice_type") == "square") {
+				modeHelper = std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::Square>>(input);
+			}
+			else if (input.getString("lattice_type") == "cube") {
+				modeHelper = std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::SimpleCubic>>(input);
+			}
+			else {
+				throw std::runtime_error("Could not find lattice_type: " + input.getString("lattice_type"));
+			}
 		}
 		else {
 			modeHelper = std::make_unique<Hubbard::Helper::SquareGeneral>(input);
@@ -63,11 +59,15 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
 		std::vector<std::string> comments;
+		comments.push_back("Used DOS: " + input.getString("use_DOS"));
+		comments.push_back("Discretization: " + input.getString("k_discretization"));
+		comments.push_back("Lattice type: " + input.getString("lattice_type"));
 		comments.push_back("Total Gap=" + to_string(totalGapValue));
+
 		if (!(reciever.empty())) {
 			Utility::saveData(reciever, BASE_FOLDER + output_folder + ".dat.gz", comments);
 		}
-		if (resolvents.size() > 0) {
+		if (resolvents.size() > 0U) {
 			std::vector<std::string> names;
 			if (input.getInt("start_basis_at") == -1) {
 				names = { "phase_SC", "phase_CDW", "phase_AFM", "higgs_SC", "higgs_CDW", "higgs_AFM" };
@@ -79,7 +79,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 					"AFM_a", "AFM_a+b", "AFM_a+ib" };
 			}
 
-			for (size_t i = 0; i < resolvents.size(); i++)
+			for (size_t i = 0U; i < resolvents.size(); ++i)
 			{
 				resolvents[i].writeDataToFile(BASE_FOLDER + output_folder + "resolvent_" + names[i]);
 			}
@@ -87,7 +87,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		else {
 			std::cout << "Resolvent returned an empty vector." << std::endl;
 		}
-		comments.pop_back();
+
 		Utility::saveData(oneParticleEnergies, BASE_FOLDER + output_folder + "one_particle.dat.gz", comments);
 	}
 }

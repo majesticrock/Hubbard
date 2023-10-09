@@ -21,8 +21,6 @@ namespace Hubbard {
 		{
 			K_DISCRETIZATION = setTo;
 			PI_DIV_DISCRETIZATION = BASE_PI / setTo;
-
-			setBasis(4 * setTo * setTo);
 		};
 	}
 }

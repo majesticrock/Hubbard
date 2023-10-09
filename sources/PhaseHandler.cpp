@@ -78,6 +78,10 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 		comments.push_back(input.getString("global_iterator_type") + "_MIN=" + std::to_string(GLOBAL_IT_LIMS[0])
 			+ "   " + input.getString("global_iterator_type") + "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
+		comments.push_back("Used DOS: " + input.getString("use_DOS"));
+		comments.push_back("Discretization: " + input.getString("k_discretization"));
+		comments.push_back("Lattice type: " + input.getString("lattice_type"));
+
 		std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;
 		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
@@ -161,5 +165,5 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 				Utility::saveData(buffer, BASE_FOLDER + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
 			}
 		}
+		}
 	}
-}

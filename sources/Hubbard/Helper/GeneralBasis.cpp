@@ -1,7 +1,6 @@
 #include "GeneralBasis.hpp"
 #include <chrono>
 #include <algorithm>
-#include "../DensityOfStates/Square.hpp"
 #include "../MomentumIndexUtility.hpp"
 
 namespace Hubbard::Helper {
@@ -216,5 +215,5 @@ namespace Hubbard::Helper {
 			ret.push_back(re.getData());
 		}
 		return ret;
-		}
 	}
+}

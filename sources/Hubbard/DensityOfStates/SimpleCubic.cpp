@@ -7,6 +7,7 @@
 #include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 #include "tanh_sinh_helper.hpp"
+#include "../../Utility/FunctionTime.hpp"
 
 namespace Hubbard::DensityOfStates {
 	using std::log;
@@ -26,7 +27,7 @@ namespace Hubbard::DensityOfStates {
 		return static_cast<_internal_precision>(boost::math::ellint_1(sqrt_1_minus_x_squared(x)) + 0.5 * log(x * x));
 	}
 
-	inline _internal_precision derivative_R(abscissa_t x) {
+	inline _internal_precision derivative_R(const abscissa_t& x) {
 		// Special, analytically known cases:
 		if (abs(x) < CUT_OFF) {
 			return 0.0;
@@ -42,12 +43,12 @@ namespace Hubbard::DensityOfStates {
 		return static_cast<_internal_precision>((x * x * (1 - boost::math::ellint_1(ALPHA)) + 4 * (boost::math::ellint_2(ALPHA) - 1)) / (x * (x + 2) * (x - 2)));
 	}
 
-	inline _internal_precision I_1(abscissa_t gamma) {
+	inline _internal_precision I_1(const abscissa_t& gamma) {
 		const abscissa_t lower_bound{ std::max(abscissa_t{ -1 }, abscissa_t{ -2 } - gamma) };
 		const abscissa_t upper_bound{ std::min(abscissa_t{ 1 }, abscissa_t{ 2 } - gamma) };
 		_internal_precision ret = static_cast<_internal_precision>(asin(upper_bound) * R(upper_bound + gamma) - asin(lower_bound) * R(lower_bound + gamma));
 
-		auto integrand = [gamma](abscissa_t phi) {
+		auto integrand = [&gamma](const abscissa_t& phi) {
 			return asin(phi) * derivative_R(phi + gamma);
 			};
 
@@ -55,19 +56,19 @@ namespace Hubbard::DensityOfStates {
 		return ret;
 	}
 
-	inline _internal_precision I_2(abscissa_t gamma) {
+	inline _internal_precision I_2(const _internal_precision& gamma) {
 		// For some magical reason this integral is constant for gamma in [-1, 1]
 		// I_2 = -pi * ln(4)
 		if (gamma >= -1 && gamma <= 1) {
 			return (-LONG_PI * LOG_4);
 		}
-		const abscissa_t lower_bound{ std::max(abscissa_t{ -1 }, abscissa_t{ -2 } - gamma) };
-		const abscissa_t upper_bound{ std::min(abscissa_t{ 1 }, abscissa_t{ 2 } - gamma) };
+		const _internal_precision lower_bound{ std::max(_internal_precision{ -1 }, _internal_precision{ -2 } - gamma) };
+		const _internal_precision upper_bound{ std::min(_internal_precision{ 1 }, _internal_precision{ 2 } - gamma) };
 
-		auto integrand = [gamma](abscissa_t phi) {
+		auto integrand = [&gamma](const _internal_precision& phi) {
 			return log(0.25 * (gamma + phi) * (gamma + phi)) / sqrt_1_minus_x_squared(phi);
 			};
-		boost::math::quadrature::tanh_sinh<abscissa_t> integrator;
+		boost::math::quadrature::tanh_sinh<_internal_precision> integrator;
 		return 0.5 * static_cast<_internal_precision>(integrator.integrate(integrand, lower_bound, upper_bound));
 	}
 
@@ -85,10 +86,11 @@ namespace Hubbard::DensityOfStates {
 #endif
 	void SimpleCubic::computeValues()
 	{
+		typedef tanh_sinh_helper<abscissa_t, dos_precision> tanh_sinh;
 		clearAll();
 		step = std::ldexp(1, -1);
 		auto compute_DOS = [](abscissa_t gamma, abscissa_t one_minus_gamma) -> dos_precision {
-			return static_cast<dos_precision>(boost::math::pow<3>(LONG_1_PI) * (I_1(gamma) - I_2(gamma)));
+			return static_cast<dos_precision>(boost::math::pow<3>(LONG_1_PI) * (I_1(gamma) - I_2(gamma.convert_to<_internal_precision>())));
 			};
 
 		constexpr double borders[2][2] = { {0, 1},{1, 3} };
@@ -100,9 +102,12 @@ namespace Hubbard::DensityOfStates {
 			decltype(weights) buf_weights;
 			decltype(values) buf_values;
 
-			tanh_sinh_helper<abscissa_t, dos_precision> tsh{ borders[i][0], borders[i][1] };
-			tanh_sinh_helper<abscissa_t, dos_precision>::SaveTo buffer_vectors{ &buf_abscissa, &buf_upper_border_to_abscissa, &buf_weights, &buf_values };
-			dos_precision old_integral{ tsh.initial_filling<SC_QUAD_CUT_OFF>(compute_DOS, buffer_vectors) };
+			tanh_sinh tsh{ borders[i][0], borders[i][1] };
+			tanh_sinh::SaveTo buffer_vectors{ &buf_abscissa, &buf_upper_border_to_abscissa, &buf_weights, &buf_values };
+
+			dos_precision old_integral{
+				tsh.initial_filling<SC_QUAD_CUT_OFF>(compute_DOS, buffer_vectors)
+			};
 
 			dos_precision new_integral{};
 			dos_precision error{ 100.0 };

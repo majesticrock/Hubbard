@@ -46,9 +46,18 @@ int main(int argc, char** argv)
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	if (rank == 0) {
 		std::cout << "Using parameter file " << argv[1] << std::endl;
-}
+	}
 	Utility::InputFileReader input(argv[1]);
 	Constants::setDiscretization(input.getInt("k_discretization"));
+	if (input.getString("lattice_type") == "square") {
+		Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+	}
+	else if (input.getString("lattice_type") == "cube") {
+		Constants::setBasis(8 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+	}
+	else {
+		Constants::setBasis(2 * Constants::K_DISCRETIZATION);
+	}
 
 	if (input.getString("compute_what") == "test") {
 		TestHandler test(input, rank, numberOfRanks);

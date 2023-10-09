@@ -3,6 +3,7 @@
 #include "../../../../FermionCommute/sources/Coefficient.hpp"
 #include "../DensityOfStates/BaseDOS.hpp"
 #include "../DensityOfStates/Square.hpp"
+#include "../DensityOfStates/SimpleCubic.hpp"
 #include "../DensityOfStates/DOSIntegrator.hpp"
 #include <algorithm>
 #include <mutex>
@@ -185,7 +186,7 @@ namespace Hubbard {
 
 		inline global_floating_type getGammaFromIndex(int gamma_idx) const {
 #ifdef _EXACT_DOS
-			return (Constants::HALF_BASIS - gamma_idx - 0.5) * DOS::LOWER_BORDER / Constants::BASIS_SIZE;  
+			return (Constants::HALF_BASIS - gamma_idx - 0.5) * DOS::LOWER_BORDER / Constants::BASIS_SIZE;
 			//return DOS::abscissa_v(gamma_idx);
 #else
 			return 2 * (Constants::HALF_BASIS - gamma_idx) * DOS::LOWER_BORDER / (Constants::BASIS_SIZE - 1);
