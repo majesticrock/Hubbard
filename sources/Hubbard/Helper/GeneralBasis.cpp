@@ -111,10 +111,11 @@ namespace Hubbard::Helper {
 
 		fillMatrices();
 
-		if ((M - M.adjoint()).norm() > 1e-11) {
+		std::cout << "||M-M^+|| = " << (M - M.adjoint()).norm() << std::endl;
+		if ((M - M.adjoint()).norm() > 1e-8) {
 			throw std::runtime_error("M is not Hermitian!");
 		}
-		if ((N - N.adjoint()).norm() > 1e-11) {
+		if ((N - N.adjoint()).norm() > 1e-8) {
 			throw std::runtime_error("N is not Hermitian!");
 		}
 

@@ -8,6 +8,7 @@ namespace Hubbard::DensityOfStates {
 
 		static constexpr double LOWER_BORDER = -2;
 		static constexpr int DIMENSION = 2;
+		static constexpr int COORDINATION_NUMBER = 4;
 
 		inline static size_t n_abscissa() noexcept {
 			return abscissa.size();

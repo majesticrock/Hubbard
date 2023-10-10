@@ -17,6 +17,7 @@ namespace Hubbard::Helper {
 		// This number is probably arbitrary in the DOS-description so we will fix it to a value that works
 	protected:
 		std::vector<global_floating_type> approximate_dos;
+		double INV_GAMMA_DISC = Constants::BASIS_SIZE / (-2.0 * DOS::LOWER_BORDER);
 
 		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, int gamma_idx) const {
 			auto it = this->wick_map.find(op.type);
@@ -104,30 +105,37 @@ namespace Hubbard::Helper {
 				std::cout << this->model->getGammaFromIndex(i) << "  " << approximate_dos[i] << std::endl;
 			}
 #else
-			constexpr int faktor = 50;
-			Constants::K_DISCRETIZATION *= faktor;
-			Constants::PI_DIV_DISCRETIZATION /= faktor;
+			if constexpr (DOS::DIMENSION == 2) {
+				constexpr int faktor = 50;
+				Constants::K_DISCRETIZATION *= faktor;
+				Constants::PI_DIV_DISCRETIZATION /= faktor;
 
-			NumericalMomentum<DOS::DIMENSION> ks;
-			do {
-				// Irgendeine Zahl zwischen 0 und BASIS_SIZE
-				approximate_dos.at(std::round(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * (Constants::BASIS_SIZE - 1))) += 1;
-				
-			} while (ks.iterateFullBZ());
-			for (int i = 0; i < Constants::HALF_BASIS; ++i)
-			{
-				approximate_dos[i] += approximate_dos[Constants::BASIS_SIZE - 1 - i];
-				approximate_dos[i] *= 0.5;
-				approximate_dos[Constants::BASIS_SIZE - 1 - i] = approximate_dos[i];
-			}
-			for (auto& value : this->approximate_dos)
-			{
-				value *= ((double)Constants::BASIS_SIZE) / boost::math::pow<DOS::DIMENSION>(2. * Constants::BASIS_SIZE);
-				std::cout << value << std::endl;
-			}
+				NumericalMomentum<DOS::DIMENSION> ks;
+				do {
+					// Irgendeine Zahl zwischen 0 und BASIS_SIZE
+					approximate_dos.at(std::round(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * (Constants::BASIS_SIZE - 1))) += 1;
 
-			Constants::K_DISCRETIZATION /= faktor;
-			Constants::PI_DIV_DISCRETIZATION *= faktor;
+				} while (ks.iterateFullBZ());
+				for (int i = 0; i < Constants::HALF_BASIS; ++i)
+				{
+					approximate_dos[i] += approximate_dos[Constants::BASIS_SIZE - 1 - i];
+					approximate_dos[i] *= 0.5;
+					approximate_dos[Constants::BASIS_SIZE - 1 - i] = approximate_dos[i];
+				}
+				for (auto& value : this->approximate_dos)
+				{
+					value *= INV_GAMMA_DISC / boost::math::pow<DOS::DIMENSION>(2. * Constants::K_DISCRETIZATION);
+				}
+
+				Constants::K_DISCRETIZATION /= faktor;
+				Constants::PI_DIV_DISCRETIZATION *= faktor;
+			}
+			else {
+				for (int i = 0; i < Constants::BASIS_SIZE; ++i)
+				{
+					approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
+				}
+			}
 #endif
 		};
 	};

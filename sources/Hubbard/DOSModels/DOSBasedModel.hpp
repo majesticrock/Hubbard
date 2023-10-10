@@ -31,12 +31,12 @@ namespace Hubbard {
 
 		void init() {
 			this->model_attributes[4] = 0.;
-			DELTA_CDW = 0.;
+			//DELTA_CDW = 0.;
 			// The "1/N"-part is handled in the integration method
 			this->V_OVER_N = this->V;
 			this->U_OVER_N = this->U;
 			this->parameterCoefficients = {
-				(0.5 * this->U_OVER_N - 4. * this->V_OVER_N), // CDW
+				(0.5 * this->U_OVER_N - DOS::COORDINATION_NUMBER * this->V_OVER_N), // CDW
 				0.5 * this->U_OVER_N, // AFM
 				this->U_OVER_N, // SC
 				this->V_OVER_N, // Gamma SC
@@ -45,6 +45,7 @@ namespace Hubbard {
 				this->V_OVER_N, // Occupation Up
 				this->V_OVER_N, // Occupation Down
 			};
+			
 
 			if (!DOS::computed) {
 				std::lock_guard<std::mutex> guard(dos_mutex);
@@ -64,7 +65,11 @@ namespace Hubbard {
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
-		inline void fillHamiltonian(const global_floating_type gamma) {
+		virtual void computeChemicalPotential() override {
+			this->chemical_potential = 0.5 * this->U + DOS::COORDINATION_NUMBER * this->V;
+		};
+
+		inline void fillHamiltonian(const global_floating_type& gamma) {
 			this->hamilton.fill(global_floating_type{});
 
 			this->hamilton(0, 1) = DELTA_CDW - DELTA_AFM;;
@@ -89,10 +94,10 @@ namespace Hubbard {
 			F(0) = -ONE_HALF * (this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real(); // CDW
 			F(1) = -ONE_HALF * (this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real(); // AFM
 			F(2) = -ONE_HALF * (this->rho(0, 2) + this->rho(1, 3)); // SC
-			F(3) = -ONE_HALF * gamma * (this->rho(0, 2) - this->rho(1, 3)); // Gamma SC
+			F(3) = -(ONE_HALF * 2.0 / DOS::DIMENSION) * gamma * (this->rho(0, 2) - this->rho(1, 3)); // Gamma SC
 			F(5) = -ONE_HALF * (this->rho(0, 3) + this->rho(1, 2)); // Eta
-			F(6) = -ONE_HALF * gamma * (this->rho(0, 0) - this->rho(1, 1)).real(); // Gamma Occupation Up
-			F(7) = +ONE_HALF * gamma * (this->rho(2, 2) - this->rho(3, 3)).real(); // Gamma Occupation Down
+			F(6) = -(ONE_HALF * 2.0 / DOS::DIMENSION) * gamma * (this->rho(0, 0) - this->rho(1, 1)).real(); // Gamma Occupation Up
+			F(7) = +(ONE_HALF * 2.0 / DOS::DIMENSION) * gamma * (this->rho(2, 2) - this->rho(3, 3)).real(); // Gamma Occupation Down
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
@@ -175,10 +180,10 @@ namespace Hubbard {
 			if (coeff.name == "\\tilde{V}") {
 				if (coeff.momentum.add_Q) throw std::runtime_error("V includes Q, this should not occur.");
 				if (coeff.dependsOnMomentum()) {
-					return this->V_OVER_N * (coeff.dependsOnTwoMomenta() ? (gamma / DOS::DIMENSION) : gamma);
+					return  this->V_OVER_N * (coeff.dependsOnTwoMomenta() ? (gamma / DOS::DIMENSION) : gamma);
 				}
 				else {
-					return DOS::DIMENSION * this->V_OVER_N;
+					return 2 * this->V_OVER_N;
 				}
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));

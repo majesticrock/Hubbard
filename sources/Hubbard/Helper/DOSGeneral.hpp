@@ -26,7 +26,7 @@ namespace Hubbard::Helper {
 						for (int l = 0; l < Constants::BASIS_SIZE; ++l)
 						{
 							N(i + k * number_of_basis_terms, j + l * number_of_basis_terms)
-								+= this->computeTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / Constants::BASIS_SIZE);
+								+= this->computeTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
 						}
 					}
 				}
@@ -49,7 +49,7 @@ namespace Hubbard::Helper {
 						for (int l = 0; l < Constants::BASIS_SIZE; ++l)
 						{
 							M(i + k * number_of_basis_terms, j + l * number_of_basis_terms)
-								+= this->computeTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / Constants::BASIS_SIZE);
+								+= this->computeTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
 						}
 					}
 				}

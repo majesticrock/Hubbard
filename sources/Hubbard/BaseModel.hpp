@@ -77,7 +77,7 @@ namespace Hubbard {
 
 		size_t SPINOR_SIZE{ 4U };
 
-		inline virtual void computeChemicalPotential() {
+		virtual void computeChemicalPotential() {
 			this->chemical_potential = 0.5 * U + 4 * V;
 		};
 
