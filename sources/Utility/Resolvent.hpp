@@ -33,6 +33,10 @@ namespace Utility {
 		void writeDataToFile(const std::string& filename) const
 		{
 			std::cout << "Total Lanczos iterations: " << data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
+			for (const auto& res_data : data) {
+				if (checkDataForNaN(res_data.a_i)) std::cerr << "Resolvent a_i" << std::endl;
+				if (checkDataForNaN(res_data.b_i)) std::cerr << "Resolvent b_i" << std::endl;
+			}
 			saveData(data, filename + ".dat.gz");
 		};
 	};

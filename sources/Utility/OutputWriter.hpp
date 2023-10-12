@@ -4,6 +4,7 @@
 #include <vector>
 #include <ctime>
 #include <cmath>
+#include <iostream>
 
 namespace Utility {
 	// Casts a floating point number to a std::string with desired precision n
@@ -41,19 +42,24 @@ namespace Utility {
 		return { buf, std::strftime(buf, sizeof(buf), fmt.c_str(), &bt) };
 	}
 
+	// Checks whether the vector data contains any NaNs. Only defines if data_type is float, double or long double
+	template <typename data_type>
+	inline bool checkDataForNaN(const std::vector<data_type>& data) {
+		static_assert(std::is_floating_point_v<data_type>);
+		for (const auto& value : data) {
+			if (std::isnan(value)) {
+				std::cerr << "Atleast one of your data points is NaN!" << std::endl;
+				return true;
+			}
+		}
+		return false;
+	};
+
 	// data_type is a type that overloads the << operator - e.g. float or double, but custom types are allowed too
 	// outstream_type is a type of output stream, e.g. std::ofstream or std::ostringstream
 	template <typename data_type, typename outstream_type>
 	class OutputWriter {
 	public:
-		inline bool checkDataForNaN(const std::vector<data_type>& data) const{
-			for (const auto& value : data) {
-				if (std::isnan(data_type)) {
-					std::cerr << "Atleast one of your data points is NaN!" << std::endl;
-					break;
-				}
-			}
-		};
 		// Writes the current time stamp and comments to the file
 		// If the latter is not provided only the time stamp is written
 		void writeComments(outstream_type& out, const std::vector<std::string>& comments = std::vector<std::string>()) const
@@ -68,7 +74,9 @@ namespace Utility {
 		// Appends a line consisting of <data> to <out>
 		void appendLine(const std::vector<data_type>& data, outstream_type& out) const
 		{
-			checkDataForNaN(data);
+			if constexpr (std::is_floating_point_v<data_type>) {
+				checkDataForNaN(data);
+			}
 			for (int i = 0; i < data.size(); i++)
 			{
 				out << data[i];
@@ -90,7 +98,9 @@ namespace Utility {
 		void saveData(const std::vector<data_type>& data, outstream_type& out,
 			const std::vector<std::string>& comments = std::vector<std::string>()) const
 		{
-			checkDataForNaN(data);
+			if constexpr (std::is_floating_point_v<data_type>) {
+				checkDataForNaN(data);
+			}
 			writeComments(out, comments);
 			out << std::scientific << std::setprecision(10);
 			for (const auto& dat : data) {
