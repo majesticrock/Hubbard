@@ -5,6 +5,7 @@
 #include "Hubbard/Helper/SquareGeneral.hpp"
 #include "Hubbard/Helper/SquareXP.hpp"
 #include "Hubbard/Helper/DOSGeneral.hpp"
+#include "Hubbard/Helper/DOS_XP.hpp"
 #include "Utility/OutputConvenience.hpp"
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
 #include "Hubbard/DensityOfStates/Square.hpp"
@@ -25,8 +26,15 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;
 	if (input.getInt("start_basis_at") == -1) {
 		if (input.getBool("use_DOS")) {
-			std::cerr << "XP-basis on DOS is not yet implemented." << std::endl;
-			return;
+			if (input.getString("lattice_type") == "square") {
+				modeHelper = std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::Square>>(input);
+			}
+			else if (input.getString("lattice_type") == "cube") {
+				modeHelper = std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::SimpleCubic>>(input);
+			}
+			else {
+				throw std::runtime_error("Could not find lattice_type: " + input.getString("lattice_type"));
+			}
 		}
 		else {
 			modeHelper = std::make_unique<Hubbard::Helper::SquareXP>(input);

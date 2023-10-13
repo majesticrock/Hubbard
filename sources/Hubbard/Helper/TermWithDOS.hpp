@@ -41,7 +41,7 @@ namespace Hubbard::Helper {
 			return this->expecs[index](offset(), 0);
 		};
 
-		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) {
+		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) const {
 			const global_floating_type& gamma{ this->model->getGammaFromIndex(gamma_idx) };
 			const global_floating_type& gamma_prime{ this->model->getGammaFromIndex(gamma_prime_idx) };
 
