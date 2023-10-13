@@ -25,7 +25,7 @@ namespace Hubbard::Helper {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		fillMatrices();
-		std::cout << K_minus << std::endl;
+		
 		{
 			for (size_t i = 0U; i < L.rows(); ++i)
 			{
@@ -73,9 +73,9 @@ namespace Hubbard::Helper {
 		Vector_L startingState_SC[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_CDW[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_AFM[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
-		for (int j = 0; j < 2; j++)
+		for (int j = 0; j < 2; ++j)
 		{
-			for (size_t i = 0; i < Constants::BASIS_SIZE; i++)
+			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
 			{
 				startingState_SC[j](i) = 1;
 				startingState_CDW[j](2 * Constants::BASIS_SIZE + i) = 1;
@@ -198,7 +198,7 @@ namespace Hubbard::Helper {
 		std::vector<ResolventReal> resolvents{};
 		resolvents.reserve(6);
 
-		for (size_t i = 0; i < 2; i++)
+		for (size_t i = 0U; i < 2U; ++i)
 		{
 			// It is going to compute the anti-Hermitian first
 			compute_solver_matrix(i, 1 - i);

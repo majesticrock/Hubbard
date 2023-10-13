@@ -11,9 +11,10 @@ namespace Hubbard::Helper {
 		{
 			for (int j = 0; j < number_of_basis_terms; j++)
 			{
+				const std::string suffix = std::to_string(j + name_offset) + "_" + std::to_string(i + name_offset) + ".txt";
 				{
 					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "M_" + std::to_string(j + name_offset) + "_" + std::to_string(i + name_offset) + ".txt");
+					std::ifstream ifs(filename + "M_" + suffix);
 					boost::archive::text_iarchive ia(ifs);
 					wicks_M[j * number_of_basis_terms + i].clear();
 					ia >> wicks_M[j * number_of_basis_terms + i];
@@ -25,7 +26,7 @@ namespace Hubbard::Helper {
 				}
 				{
 					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "N_" + std::to_string(j + name_offset) + "_" + std::to_string(i + name_offset) + ".txt");
+					std::ifstream ifs(filename + "N_" + suffix);
 					boost::archive::text_iarchive ia(ifs);
 					wicks_N[j * number_of_basis_terms + i].clear();
 					ia >> wicks_N[j * number_of_basis_terms + i];
