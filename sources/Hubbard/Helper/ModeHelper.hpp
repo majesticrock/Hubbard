@@ -24,7 +24,7 @@ namespace Hubbard::Helper {
 		* 7 - g_up + g_down
 		*/
 
-		static constexpr double SQRT_SALT = 5e-5;
+		static constexpr double SQRT_SALT = 1e-5;
 		static constexpr double SALT = SQRT_SALT * SQRT_SALT;
 		static constexpr double ERROR_MARGIN = 1e-10;
 

@@ -7,7 +7,7 @@ namespace Hubbard::Helper {
 		for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
 			for (int k = 0; k < Constants::BASIS_SIZE; k++)
 			{
-				if (term.delta_momenta.size() > 0) {
+				if (term.delta_momenta.size() > 0U) {
 					int l{ k };
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 						l = addQTo(k);
@@ -27,7 +27,7 @@ namespace Hubbard::Helper {
 		for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
 			for (int k = 0; k < Constants::BASIS_SIZE; k++)
 			{
-				if (term.delta_momenta.size() > 0) {
+				if (term.delta_momenta.size() > 0U) {
 					int l{ k };
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 						l = addQTo(k);

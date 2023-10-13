@@ -9,9 +9,10 @@ namespace Hubbard::Helper {
 		K_minus = Matrix_L::Zero(3 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
 		L = Matrix_L::Zero(5 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
 		//#pragma omp parallel for
-		for (int i = 0; i < number_of_basis_terms; i++)
+
+		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
-			for (int j = 0; j < number_of_basis_terms; j++)
+			for (int j = 0; j < number_of_basis_terms; ++j)
 			{
 				fillBlock(i, j);
 			}
@@ -24,7 +25,7 @@ namespace Hubbard::Helper {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		fillMatrices();
-
+		std::cout << K_minus << std::endl;
 		{
 			for (size_t i = 0U; i < L.rows(); ++i)
 			{

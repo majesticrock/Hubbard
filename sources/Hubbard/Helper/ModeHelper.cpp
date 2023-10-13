@@ -67,7 +67,7 @@ namespace Hubbard::Helper {
 		: number_of_basis_terms{ input.getInt("number_of_basis_terms") }, start_basis_at{ input.getInt("start_basis_at") },
 		usingDOS(input.getBool("use_DOS"))
 	{
-		if (start_basis_at < 0) {
+		if (this->start_basis_at < 0) {
 			// We investigate the special x-p-basis
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * 8;
 			this->number_of_basis_terms = 10;

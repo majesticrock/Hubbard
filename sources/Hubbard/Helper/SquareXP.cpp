@@ -7,11 +7,11 @@ namespace Hubbard::Helper {
 		constexpr std::array<int, 4> cdw_basis_positions{ 2,3,8,9 };
 		const int hermitian_offsets[6] = {
 			0,									Constants::BASIS_SIZE,
-			(3 * Constants::BASIS_SIZE) / 2,				2 * Constants::BASIS_SIZE,
-			3 * Constants::BASIS_SIZE,						4 * Constants::BASIS_SIZE
+			(3 * Constants::BASIS_SIZE) / 2,	2 * Constants::BASIS_SIZE,
+			3 * Constants::BASIS_SIZE,			4 * Constants::BASIS_SIZE
 		};
 		const int antihermitian_offsets[4] = {
-			0,						Constants::BASIS_SIZE,
+			0,									Constants::BASIS_SIZE,
 			(3 * Constants::BASIS_SIZE) / 2,	2 * Constants::BASIS_SIZE
 		};
 
@@ -22,7 +22,7 @@ namespace Hubbard::Helper {
 
 		// L
 		if (i < 6 && j > 5) {
-			for (const auto& term : wicks_N[number_of_basis_terms * i + j]) {
+			for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
 				for (int k = 0; k < sum_limit; ++k)
 				{
 					if (term.delta_momenta.size() > 0) {
@@ -56,10 +56,10 @@ namespace Hubbard::Helper {
 		if (i < 6 && j > 5) return;
 		if (j < 6 && i > 5) return;
 
-		for (const auto& term : wicks_M[number_of_basis_terms * i + j]) {
+		for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
 			for (int k = 0; k < sum_limit; ++k)
 			{
-				if (term.delta_momenta.size() > 0) {
+				if (term.delta_momenta.size() > 0U) {
 					int l{ k };
 					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 						l = addQTo(k);
