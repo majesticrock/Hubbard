@@ -76,6 +76,7 @@ namespace Hubbard::Helper {
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * this->number_of_basis_terms;
 		}
 
-		loadWick("../commutators/wick_");
+		const std::string prefix = this->start_basis_at < 0 ? "XP_" : "";
+		loadWick("../commutators/" + prefix + "wick_");
 	}
 }

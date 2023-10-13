@@ -26,18 +26,18 @@ namespace Hubbard::Helper {
 		fillMatrices();
 
 		{
-			for (size_t i = 0; i < L.rows(); i++)
+			for (size_t i = 0U; i < L.rows(); ++i)
 			{
-				for (size_t j = 0; j < L.cols(); j++)
+				for (size_t j = 0U; j < L.cols(); ++j)
 				{
 					if (abs(L(i, j)) < SALT) {
 						L(i, j) = 0;
 					}
 				}
 			}
-			for (size_t i = 0; i < K_plus.rows(); i++)
+			for (size_t i = 0U; i < K_plus.rows(); ++i)
 			{
-				for (size_t j = 0; j < K_plus.cols(); j++)
+				for (size_t j = 0U; j < K_plus.cols(); ++j)
 				{
 					if (abs(K_plus(i, j)) < SALT) {
 						K_plus(i, j) = 0;
@@ -49,9 +49,9 @@ namespace Hubbard::Helper {
 					}
 				}
 			}
-			for (size_t i = 0; i < K_minus.rows(); i++)
+			for (size_t i = 0U; i < K_minus.rows(); ++i)
 			{
-				for (size_t j = 0; j < K_minus.cols(); j++)
+				for (size_t j = 0U; j < K_minus.cols(); ++j)
 				{
 					if (abs(K_minus(i, j)) < SALT) {
 						K_minus(i, j) = 0;
@@ -120,10 +120,6 @@ namespace Hubbard::Helper {
 			{
 				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
 				k_solver[1].compute(K_minus);
-
-				std::cout << "K_- recon:    "
-					<< (k_solver[1].eigenvectors() * k_solver[1].eigenvalues().asDiagonal() * k_solver[1].eigenvectors().adjoint()
-						- K_minus).norm() << std::endl;
 
 				global_floating_type tol{ k_solver[1].eigenvalues().norm() * ERROR_MARGIN };
 				if (k_solver[1].info() == Eigen::Success && (k_solver[1].eigenvalues().array() >= -tol).all()) {
