@@ -50,10 +50,10 @@ namespace Hubbard {
 			this->selfconsistency_values[0] = guess() + std::abs(_params.V);
 			this->selfconsistency_values[1] = guess() + std::abs(_params.V);
 			this->selfconsistency_values[2] = guess() + std::abs(_params.V);
-			if (_params.U > 0) {
+			if (_params.U >= 0) {
 				this->selfconsistency_values[2] = 0.;
 			}
-			else {
+			if (_params.U <= 0) {
 				this->selfconsistency_values[1] = 0.;
 			}
 			if (_params.V > 0) {
@@ -74,10 +74,10 @@ namespace Hubbard {
 			this->selfconsistency_values[0] = (abs(_params.U) + _params.V) * 0.5 + 0.1;
 			this->selfconsistency_values[1] = abs(_params.U) * 0.5 + 0.1;
 			this->selfconsistency_values[2] = abs(_params.U) * 0.5 + 0.1;
-			if (_params.U > 0) {
+			if (_params.U >= 0) {
 				this->selfconsistency_values[2] = 0.;
 			}
-			else {
+			if (_params.U <= 0) {
 				this->selfconsistency_values[1] = 0.;
 			}
 			if (_params.V > 0) {

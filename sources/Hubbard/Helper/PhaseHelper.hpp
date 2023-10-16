@@ -83,5 +83,6 @@ namespace Hubbard::Helper {
 
 		void compute_crude(std::vector<data_vector>& data_mapper);
 		void findSingleBoundary(const std::vector<data_vector>& origin, data_vector& recieve_data, int value_index);
+		void coexistence_AFM_CDW(std::vector<data_vector>& recieve_data);
 	};
 }

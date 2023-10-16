@@ -209,15 +209,15 @@ namespace Hubbard::Helper {
 			{
 #pragma omp section
 				{
-					resolvents[3 * i].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
+					resolvents[3 * i].compute(solver_matrix, this->usingDOS ? 50 : 2 * Constants::K_DISCRETIZATION);
 				}
 #pragma omp section
 				{
-					resolvents[3 * i + 1].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
+					resolvents[3 * i + 1].compute(solver_matrix, this->usingDOS ? 50 : 2 * Constants::K_DISCRETIZATION);
 				}
 #pragma omp section
 				{
-					resolvents[3 * i + 2].compute(solver_matrix, 2 * Constants::K_DISCRETIZATION);
+					resolvents[3 * i + 2].compute(solver_matrix, this->usingDOS ? 50 : 2 * Constants::K_DISCRETIZATION);
 				}
 			}
 		}

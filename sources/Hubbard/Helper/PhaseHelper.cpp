@@ -306,9 +306,9 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		while (plaqs.size() > 0 && plaqs.begin()->size() > 5e-4) {
+		while (plaqs.size() > 0U && plaqs.begin()->size() > 5e-4) {
 			std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
-			const auto N_PLAQUETTES = plaqs.size();
+			const size_t N_PLAQUETTES = plaqs.size();
 
 			const int n_omp_threads = omp_get_num_threads();
 			std::vector<std::vector<Plaquette>> buffer(n_omp_threads);
@@ -348,6 +348,80 @@ namespace Hubbard::Helper {
 		for (const auto& p : plaqs) {
 			recieve_data.push_back(p.getCenterFirst());
 			recieve_data.push_back(p.getCenterSecond());
+		}
+	}
+
+	void PhaseHelper::coexistence_AFM_CDW(std::vector<data_vector>& recieve_data) {
+		double begin_at = FIRST_IT_MIN < 0 ? 0 : FIRST_IT_MIN;
+		if (FIRST_IT_MAX <= begin_at) {
+			std::cerr << "To obtain the AFM-CDW crossover region, give a max for U > " << begin_at << "!" << std::endl;
+			return;
+		}
+		
+		if (recieve_data.size() < 3U || recieve_data.at(0).size() < FIRST_IT_STEPS) {
+			std::cerr << "You are calling coexistence_AFM_CDW() with an empty data reciever!" << std::endl;
+			recieve_data.resize(3, data_vector(FIRST_IT_STEPS));
+		}
+		auto base_U = [&begin_at, this](int it) -> double {
+			return begin_at + ((FIRST_IT_MAX - begin_at) * it) / FIRST_IT_STEPS;
+			};
+		auto base_V = [](double U) -> double {
+			return 4 * U;
+			};
+
+		constexpr double PRECISION = 1e-5;
+		constexpr double EPSILON = 1e-12;
+		for(int i = 0; i < FIRST_IT_STEPS; ++i){
+			ModelParameters local{ modelParameters };
+			const double U = base_U(i);
+			recieve_data[0][i] = U;
+			local.setGlobalIteratorExact(U);
+			local.setSecondIteratorExact(base_V(U));
+
+			ModelAttributes<global_floating_type> base_gap{ computeDataPoint(local) };
+			base_gap[0] = sqrt(base_gap[0] * base_gap[0] + base_gap[1] * base_gap[1]);
+			base_gap[1] = 0;
+
+			double a{base_V(U)};
+			double b{a - 1};
+			ModelAttributes<global_floating_type> gap_a{base_gap};
+			ModelAttributes<global_floating_type> gap_b{base_gap};
+
+			while(b - a > PRECISION){
+				local.setSecondIteratorExact(base_V(b));
+				gap_b = getModelType(local, gap_a)->computePhases();
+
+				if(std::abs(gap_b[0] > EPSILON)){
+					gap_a = gap_b;
+					a = b;
+					b -= 1;
+				}
+				else{
+					b = 0.5 * (b + a);
+				}
+			}
+			recieve_data[1][i] = 0.5 * (a + b);
+			
+			base_gap[1] = base_gap[0];
+			base_gap[0] = 0;
+
+			a = base_V(U);
+			b = a + 1;
+			gap_a = base_gap;
+			while(b - a > PRECISION){
+				local.setSecondIteratorExact(base_V(b));
+				gap_b = getModelType(local, gap_a)->computePhases();
+
+				if(std::abs(gap_b[1] > EPSILON)){
+					gap_a = gap_b;
+					a = b;
+					b += 1;
+				}
+				else{
+					b = 0.5 * (b + a);
+				}
+			}
+			recieve_data[2][i] = 0.5 * (a + b);
 		}
 	}
 }

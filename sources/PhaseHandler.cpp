@@ -43,7 +43,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 	int SECOND_IT_STEPS = input.getInt("second_iterator_steps");
 	double SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
 
-	for (int i = 0; i < Hubbard::Constants::option_list.size(); i++)
+	for (size_t i = 0U; i < Hubbard::Constants::option_list.size(); ++i)
 	{
 		if (input.getString("second_iterator_type") == Hubbard::Constants::option_list[i]) {
 			SECOND_IT_MIN = model_params[i];
@@ -51,11 +51,14 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 	}
 
 	std::vector<data_vector> local_data(NUMBER_OF_PARAMETERS, data_vector(FIRST_IT_STEPS * SECOND_IT_STEPS));
-
 	Hubbard::Helper::PhaseHelper phaseHelper(input, rank, numberOfRanks);
 	phaseHelper.compute_crude(local_data);
 
+	std::vector<data_vector> local_coexitence_data(3, data_vector(FIRST_IT_STEPS));
+	phaseHelper.coexistence_AFM_CDW(local_coexitence_data);
+
 	std::vector<data_vector> recieve_data(NUMBER_OF_PARAMETERS, data_vector(GLOBAL_IT_STEPS * SECOND_IT_STEPS));
+	std::vector<data_vector> recieve_coexitence_data(3, data_vector(GLOBAL_IT_STEPS));
 
 #ifndef _NO_MPI
 	for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
@@ -63,10 +66,17 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 		MPI_Allgather(local_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE,
 			recieve_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE, MPI_COMM_WORLD);
 	}
+	for (size_t i = 0U; i < 3; ++i){
+		MPI_Gather(local_coexitence_data[i].data(), FIRST_IT_STEPS, MPI_DOUBLE, 
+			recieve_coexitence_data[i].data(), FIRST_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	}
 #else
 	for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
 	{
 		recieve_data[i] = local_data[i];
+	}
+	for (size_t i = 0U; i < 3; ++i){
+		recieve_coexitence_data[i] = local_coexitence_data[i];
 	}
 #endif
 	std::string output_folder{ getOutputFolder(input) };
@@ -91,6 +101,8 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 		Utility::saveData(recieve_data[3], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "gamma_sc.dat.gz", comments);
 		Utility::saveData(recieve_data[4], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "xi_sc.dat.gz", comments);
 		Utility::saveData(recieve_data[5], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "eta.dat.gz", comments);
+
+		Utility::saveData(recieve_coexitence_data, BASE_FOLDER + output_folder + "coexistence_afm_cdw.dat.gz", comments);
 
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 		std::cout << "Crude computation time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
