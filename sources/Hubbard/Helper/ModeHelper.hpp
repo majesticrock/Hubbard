@@ -24,7 +24,7 @@ namespace Hubbard::Helper {
 		* 7 - g_up + g_down
 		*/
 
-		static constexpr double SQRT_SALT = 1e-5;
+		static constexpr double SQRT_SALT = 1e-6;
 		static constexpr double SALT = SQRT_SALT * SQRT_SALT;
 		static constexpr double ERROR_MARGIN = 1e-10;
 
@@ -55,11 +55,11 @@ namespace Hubbard::Helper {
 		void applyMatrixOperation(Vector_L& evs) const {
 			for (size_t i = 0; i < evs.size(); i++)
 			{
-				if (evs(i) < -SALT) {
+				if (evs(i) < -(SALT * evs.size())) {
 					std::cerr << std::scientific << "M:   " << evs(i) << std::endl;
 					throw std::invalid_argument("Matrix is not positive!  " + to_string(evs(i)));
 				}
-				if (evs(i) < SALT) {
+				if (evs(i) < SALT * evs.size()) {
 #ifdef _PSEUDO_INVERSE
 					evs(i) = 0;
 #else
