@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Hubbard/ModelParameters.hpp"
 #include "Hubbard/SquareLattice/UsingBroyden.hpp"
+#include "Hubbard/SquareLattice/HubbardCDW.hpp"
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
@@ -27,17 +28,31 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	std::chrono::steady_clock::time_point test_e;
 
 	//------------------------------------------------------------//
-	/*if (input.getString("lattice_type") == "square") {
-		DOSModels::BroydenDOS<Square> model3(modelParameters);
-		model3.computePhases({ false, true }).print();
-		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
+	if(input.getBool("use_DOS")) {
+		if (input.getString("lattice_type") == "square") {
+			DOSModels::BroydenDOS<Square> model(modelParameters);
+			model.computePhases({ true, true }).print();
+			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
+		}
+		else if (input.getString("lattice_type") == "cube") {
+			DOSModels::BroydenDOS<SimpleCubic> model(modelParameters);
+			model.computePhases({ true, true }).print();
+			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
+		}
+	} 
+	else {
+		Constants::setDiscretization(input.getInt("k_discretization"));
+		Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+
+		SquareLattice::HubbardCDW model(modelParameters);
+		model.computePhases({ false, true }).print();
+		std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
+		std::cout << "\n\n\n";
+		SquareLattice::UsingBroyden model2(modelParameters);
+		test_b = std::chrono::steady_clock::now();
+		model2.computePhases({ true, true }).print();
+		std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
 	}
-	else if (input.getString("lattice_type") == "cube") {
-		DOSModels::BroydenDOS<SimpleCubic> model3(modelParameters);
-		model3.computePhases({ false, true }).print();
-		std::cout << "Free energy = " << model3.freeEnergyPerSite() << std::endl;
-	}*/
-	Constants::setDiscretization(input.getInt("k_discretization"));
 	//test_b = std::chrono::steady_clock::now();
 	//{
 	//	DensityOfStates::SimpleCubic sc_dos;
@@ -65,23 +80,6 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	//std::cout << "\n\n" << std::endl;
 
 	//------------------------------------------------------------//
-
-	//SquareLattice::HubbardCDW model(modelParameters);
-	//model.computePhases({false, true}).print();
-	//std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
-	//
-	//test_e = std::chrono::steady_clock::now();
-	//std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
-	//std::cout << "\n\n" << std::endl;
-
-	//return _DEFAULT_EXIT;
-	//------------------------------------------------------------//
-
-	SquareLattice::UsingBroyden model2(modelParameters);
-	test_b = std::chrono::steady_clock::now();
-	model2.computePhases({ true, true }).print();
-	std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
-
 	test_e = std::chrono::steady_clock::now();
 	std::cout << "Total runtime = " << std::chrono::duration_cast<std::chrono::milliseconds>(test_e - test_b).count() << "[ms]" << std::endl;
 }
