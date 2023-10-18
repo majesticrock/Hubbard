@@ -355,7 +355,7 @@ namespace Hubbard::Helper {
 	void PhaseHelper::coexistence_AFM_CDW(std::vector<data_vector>& recieve_data) {
 		if (recieve_data.size() < 3U || recieve_data.at(0).size() < FIRST_IT_STEPS) {
 			std::cerr << "You are calling coexistence_AFM_CDW() with an empty data reciever!" << std::endl;
-			recieve_data.resize(3, data_vector(FIRST_IT_STEPS));
+			recieve_data.resize(3U, data_vector(FIRST_IT_STEPS));
 		}
 
 		auto base_U = [this](int it) -> double {
@@ -393,7 +393,7 @@ namespace Hubbard::Helper {
 			ModelAttributes<global_floating_type> gap_b{base_gap};
 
 			while(b - a > PRECISION){
-				local.setSecondIteratorExact(base_V(b));
+				local.setSecondIteratorExact(b);
 				gap_b = getModelType(local, gap_a)->computePhases();
 
 				if(std::abs(gap_b[0] > EPSILON)){
@@ -416,7 +416,7 @@ namespace Hubbard::Helper {
 			b = a + h;
 			gap_a = base_gap;
 			while(b - a > PRECISION){
-				local.setSecondIteratorExact(base_V(b));
+				local.setSecondIteratorExact(b);
 				gap_b = getModelType(local, gap_a)->computePhases();
 
 				if(std::abs(gap_b[1] > EPSILON)){
