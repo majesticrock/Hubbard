@@ -129,6 +129,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 			phaseHelper.findSingleBoundary(recieve_data, local[i], i);
 			sizes[i] = local[i].size();
 		}
+
 		std::vector<data_vector> recieve_boundaries(NUMBER_OF_GAP_VALUES);
 		if (rank == 0) {
 			for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
@@ -136,6 +137,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 				all_sizes[i].resize(numberOfRanks);
 			}
 		}
+
 #ifndef _NO_MPI
 		for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 		{
@@ -186,5 +188,5 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 				Utility::saveData(buffer, BASE_FOLDER + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
 			}
 		}
-		}
 	}
+}

@@ -11,6 +11,7 @@
 #include "../Constants.hpp"
 #include <omp.h>
 #include <limits>
+#include <mutex>
 
 namespace Hubbard::Helper {
 	using Constants::option_list;
@@ -311,7 +312,7 @@ namespace Hubbard::Helper {
 			std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
 			const size_t N_PLAQUETTES = plaqs.size();
 
-			const int n_omp_threads = omp_get_num_threads();
+			const unsigned int n_omp_threads = omp_get_max_threads();
 			std::vector<std::vector<Plaquette>> buffer(n_omp_threads);
 			// omp wants a signed type, so it shall get one
 #pragma omp parallel for
@@ -326,7 +327,7 @@ namespace Hubbard::Helper {
 			}
 			plaqs.clear();
 			bool removal = false;
-			if (totalSize > 80U) {
+			if (totalSize > 100U) {
 				totalSize /= 2;
 				removal = true;
 			}
@@ -336,7 +337,7 @@ namespace Hubbard::Helper {
 				if (removal) {
 					for (size_t i = 0U; i < vec.size(); i += 2U)
 					{
-						plaqs.push_back(vec[i]);
+						plaqs.push_back(std::move(vec[i]));
 					}
 				}
 				else {
@@ -366,7 +367,7 @@ namespace Hubbard::Helper {
 			};
 
 		constexpr double PRECISION = 1e-5;
-		constexpr double EPSILON = 1e-12;
+		constexpr double EPSILON = 1e-10;
 		for(int i = 0; i < FIRST_IT_STEPS; ++i){
 			ModelParameters local{ modelParameters };
 			const double U = base_U(i);
@@ -392,11 +393,10 @@ namespace Hubbard::Helper {
 			ModelAttributes<global_floating_type> gap_a{base_gap};
 			ModelAttributes<global_floating_type> gap_b{base_gap};
 
-			while(b - a > PRECISION){
+			while(a - b > PRECISION){
 				local.setSecondIteratorExact(b);
 				gap_b = getModelType(local, gap_a)->computePhases();
-
-				if(std::abs(gap_b[0] > EPSILON)){
+				if(std::abs(gap_b[0]) > EPSILON){
 					gap_a = gap_b;
 					a = b;
 					b -= h;
@@ -418,8 +418,8 @@ namespace Hubbard::Helper {
 			while(b - a > PRECISION){
 				local.setSecondIteratorExact(b);
 				gap_b = getModelType(local, gap_a)->computePhases();
-
-				if(std::abs(gap_b[1] > EPSILON)){
+				std::cout << "U=" << U << ": " << a << ", " << b << ": " << gap_a[1] << ", " << gap_b[1] << std::endl;
+				if(std::abs(gap_b[1]) > EPSILON){
 					gap_a = gap_b;
 					a = b;
 					b += h;
