@@ -51,14 +51,13 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 	}
 
 	std::vector<data_vector> local_data(NUMBER_OF_PARAMETERS, data_vector(FIRST_IT_STEPS * SECOND_IT_STEPS));
+	std::vector<data_vector> recieve_data(NUMBER_OF_PARAMETERS, data_vector(GLOBAL_IT_STEPS * SECOND_IT_STEPS));
 	Hubbard::Helper::PhaseHelper phaseHelper(input, rank, numberOfRanks);
 	phaseHelper.compute_crude(local_data);
 
 	std::vector<data_vector> local_coexitence_data(3, data_vector(FIRST_IT_STEPS));
-	phaseHelper.coexistence_AFM_CDW(local_coexitence_data);
-
-	std::vector<data_vector> recieve_data(NUMBER_OF_PARAMETERS, data_vector(GLOBAL_IT_STEPS * SECOND_IT_STEPS));
 	std::vector<data_vector> recieve_coexitence_data(3, data_vector(GLOBAL_IT_STEPS));
+	phaseHelper.coexistence_AFM_CDW(local_coexitence_data);
 
 #ifndef _NO_MPI
 	for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
@@ -101,7 +100,17 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 		Utility::saveData(recieve_data[3], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "gamma_sc.dat.gz", comments);
 		Utility::saveData(recieve_data[4], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "xi_sc.dat.gz", comments);
 		Utility::saveData(recieve_data[5], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "eta.dat.gz", comments);
-
+		
+		// We saved those data points, where there is no afm/cdw phase as nan and we remove them now
+		for(auto& vec : recieve_coexitence_data){
+			for(auto it = vec.begin(); it != vec.end();){
+				if(std::isnan(*it)){
+					it = vec.erase(it);
+				} else {
+					++it;
+				}
+			}
+		}
 		Utility::saveData(recieve_coexitence_data, BASE_FOLDER + output_folder + "coexistence_afm_cdw.dat.gz", comments);
 
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

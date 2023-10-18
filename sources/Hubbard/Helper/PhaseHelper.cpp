@@ -10,6 +10,7 @@
 #include "../Selfconsistency/IterativeSolver.hpp"
 #include "../Constants.hpp"
 #include <omp.h>
+#include <limits>
 
 namespace Hubbard::Helper {
 	using Constants::option_list;
@@ -352,18 +353,13 @@ namespace Hubbard::Helper {
 	}
 
 	void PhaseHelper::coexistence_AFM_CDW(std::vector<data_vector>& recieve_data) {
-		double begin_at = FIRST_IT_MIN < 0 ? 0 : FIRST_IT_MIN;
-		if (FIRST_IT_MAX <= begin_at) {
-			std::cerr << "To obtain the AFM-CDW crossover region, give a max for U > " << begin_at << "!" << std::endl;
-			return;
-		}
-		
 		if (recieve_data.size() < 3U || recieve_data.at(0).size() < FIRST_IT_STEPS) {
 			std::cerr << "You are calling coexistence_AFM_CDW() with an empty data reciever!" << std::endl;
 			recieve_data.resize(3, data_vector(FIRST_IT_STEPS));
 		}
-		auto base_U = [&begin_at, this](int it) -> double {
-			return begin_at + ((FIRST_IT_MAX - begin_at) * it) / FIRST_IT_STEPS;
+
+		auto base_U = [this](int it) -> double {
+			return FIRST_IT_MIN + ((FIRST_IT_MAX - FIRST_IT_MIN) * it) / FIRST_IT_STEPS;
 			};
 		auto base_V = [](double U) -> double {
 			return 4 * U;
@@ -382,8 +378,17 @@ namespace Hubbard::Helper {
 			base_gap[0] = sqrt(base_gap[0] * base_gap[0] + base_gap[1] * base_gap[1]);
 			base_gap[1] = 0;
 
+			// If there is no cdw nor afm order, we save NaN to the array and remove it later
+			if(std::abs(base_gap[0]) < EPSILON){
+				recieve_data[0][i] = std::numeric_limits<double>::quiet_NaN();
+				recieve_data[1][i] = std::numeric_limits<double>::quiet_NaN();
+				recieve_data[2][i] = std::numeric_limits<double>::quiet_NaN();
+				continue;
+			}
+
+			double h{1};
 			double a{base_V(U)};
-			double b{a - 1};
+			double b{a - h};
 			ModelAttributes<global_floating_type> gap_a{base_gap};
 			ModelAttributes<global_floating_type> gap_b{base_gap};
 
@@ -394,10 +399,11 @@ namespace Hubbard::Helper {
 				if(std::abs(gap_b[0] > EPSILON)){
 					gap_a = gap_b;
 					a = b;
-					b -= 1;
+					b -= h;
 				}
 				else{
 					b = 0.5 * (b + a);
+					h *= 0.5;
 				}
 			}
 			recieve_data[1][i] = 0.5 * (a + b);
@@ -405,8 +411,9 @@ namespace Hubbard::Helper {
 			base_gap[1] = base_gap[0];
 			base_gap[0] = 0;
 
+			h = 1;
 			a = base_V(U);
-			b = a + 1;
+			b = a + h;
 			gap_a = base_gap;
 			while(b - a > PRECISION){
 				local.setSecondIteratorExact(base_V(b));
@@ -415,10 +422,11 @@ namespace Hubbard::Helper {
 				if(std::abs(gap_b[1] > EPSILON)){
 					gap_a = gap_b;
 					a = b;
-					b += 1;
+					b += h;
 				}
 				else{
 					b = 0.5 * (b + a);
+					h *= 0.5;
 				}
 			}
 			recieve_data[2][i] = 0.5 * (a + b);
