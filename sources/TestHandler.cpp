@@ -28,9 +28,10 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	std::chrono::steady_clock::time_point test_e;
 
 	//------------------------------------------------------------//
-	if(input.getBool("use_DOS")) {
+	ModelAttributes<global_floating_type> startingValues{ 0., 1., 0., 0., 0., 0., 0.1,  0.1 };
+	if (input.getBool("use_DOS")) {
 		if (input.getString("lattice_type") == "square") {
-			DOSModels::BroydenDOS<Square> model(modelParameters);
+			DOSModels::BroydenDOS<Square> model(modelParameters, startingValues);
 			model.computePhases({ true, true }).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 		}
@@ -39,7 +40,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 			model.computePhases({ true, true }).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 		}
-	} 
+	}
 	else {
 		Constants::setDiscretization(input.getInt("k_discretization"));
 		Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);

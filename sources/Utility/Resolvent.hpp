@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <Eigen/Dense>
 #include <cmath>
+#include <optional>
 
 namespace Utility {
 	using std::abs;
@@ -30,14 +31,19 @@ namespace Utility {
 		};
 		// Prints the computed data to <filename>
 		// Asummes that the data has been computed before...
-		void writeDataToFile(const std::string& filename) const
+		void writeDataToFile(const std::string& filename, const std::optional<std::vector<std::string>>& comments = std::nullopt) const
 		{
 			std::cout << "Total Lanczos iterations: " << data[0].a_i.size() << "   Point of no change at: " << noEigenvalueChangeAt << std::endl;
 			for (const auto& res_data : data) {
 				if (checkDataForNaN(res_data.a_i)) std::cerr << "Resolvent a_i" << std::endl;
 				if (checkDataForNaN(res_data.b_i)) std::cerr << "Resolvent b_i" << std::endl;
 			}
-			saveData(data, filename + ".dat.gz");
+			if (comments.has_value()) {
+				saveData(data, filename + ".dat.gz", comments.value());
+			}
+			else {
+				saveData(data, filename + ".dat.gz");
+			}
 		};
 	};
 

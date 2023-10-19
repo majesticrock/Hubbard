@@ -368,7 +368,7 @@ namespace Hubbard::Helper {
 
 		constexpr double PRECISION = 1e-5;
 		constexpr double EPSILON = 1e-10;
-		for(int i = 0; i < FIRST_IT_STEPS; ++i){
+		for (int i = 0; i < FIRST_IT_STEPS; ++i) {
 			ModelParameters local{ modelParameters };
 			const double U = base_U(i);
 			recieve_data[0][i] = U;
@@ -380,34 +380,34 @@ namespace Hubbard::Helper {
 			base_gap[1] = 0;
 
 			// If there is no cdw nor afm order, we save NaN to the array and remove it later
-			if(std::abs(base_gap[0]) < EPSILON){
+			if (std::abs(base_gap[0]) < EPSILON) {
 				recieve_data[0][i] = std::numeric_limits<double>::quiet_NaN();
 				recieve_data[1][i] = std::numeric_limits<double>::quiet_NaN();
 				recieve_data[2][i] = std::numeric_limits<double>::quiet_NaN();
 				continue;
 			}
 
-			double h{1};
-			double a{base_V(U)};
-			double b{a - h};
-			ModelAttributes<global_floating_type> gap_a{base_gap};
-			ModelAttributes<global_floating_type> gap_b{base_gap};
+			double h{ 1 };
+			double a{ base_V(U) };
+			double b{ a - h };
+			ModelAttributes<global_floating_type> gap_a{ base_gap };
+			ModelAttributes<global_floating_type> gap_b{ base_gap };
 
-			while(a - b > PRECISION){
+			while (a - b > PRECISION) {
 				local.setSecondIteratorExact(b);
 				gap_b = getModelType(local, gap_a)->computePhases();
-				if(std::abs(gap_b[0]) > EPSILON){
+				if (std::abs(gap_b[0]) > EPSILON) {
 					gap_a = gap_b;
 					a = b;
 					b -= h;
 				}
-				else{
+				else {
 					b = 0.5 * (b + a);
 					h *= 0.5;
 				}
 			}
 			recieve_data[1][i] = 0.5 * (a + b);
-			
+
 			base_gap[1] = base_gap[0];
 			base_gap[0] = 0;
 
@@ -415,16 +415,16 @@ namespace Hubbard::Helper {
 			a = base_V(U);
 			b = a + h;
 			gap_a = base_gap;
-			while(b - a > PRECISION){
+			while (b - a > PRECISION) {
 				local.setSecondIteratorExact(b);
 				gap_b = getModelType(local, gap_a)->computePhases();
 				std::cout << "U=" << U << ": " << a << ", " << b << ": " << gap_a[1] << ", " << gap_b[1] << std::endl;
-				if(std::abs(gap_b[1]) > EPSILON){
+				if (std::abs(gap_b[1]) > EPSILON) {
 					gap_a = gap_b;
 					a = b;
 					b += h;
 				}
-				else{
+				else {
 					b = 0.5 * (b + a);
 					h *= 0.5;
 				}

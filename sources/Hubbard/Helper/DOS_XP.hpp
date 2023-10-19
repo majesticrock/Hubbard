@@ -47,13 +47,13 @@ namespace Hubbard::Helper {
 								continue;
 							}
 
-							L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l) 
+							L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l)
 								+= computeRealTerm(term, k, l) * this->approximate_dos[k];
 						}
 						else {
 							for (int l = 0; l < inner_sum_limit; l++)
 							{
-								L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l) 
+								L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l)
 									+= computeRealTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
 							}
 						}
@@ -79,11 +79,11 @@ namespace Hubbard::Helper {
 						}
 
 						if (i < 6) {
-							K_plus(hermitian_offsets[i] + k, hermitian_offsets[j] + l) 
+							K_plus(hermitian_offsets[i] + k, hermitian_offsets[j] + l)
 								+= computeRealTerm(term, k, l) * this->approximate_dos[k];
 						}
 						else {
-							K_minus(antihermitian_offsets[i - 6] + k, antihermitian_offsets[j - 6] + l) 
+							K_minus(antihermitian_offsets[i - 6] + k, antihermitian_offsets[j - 6] + l)
 								+= computeRealTerm(term, k, l) * this->approximate_dos[k];
 						}
 					}
@@ -91,11 +91,11 @@ namespace Hubbard::Helper {
 						for (int l = 0; l < inner_sum_limit; ++l)
 						{
 							if (i < 6) {
-								K_plus(hermitian_offsets[i] + k, hermitian_offsets[j] + l) 
+								K_plus(hermitian_offsets[i] + k, hermitian_offsets[j] + l)
 									+= computeRealTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
 							}
 							else {
-								K_minus(antihermitian_offsets[i - 6] + k, antihermitian_offsets[j - 6] + l) 
+								K_minus(antihermitian_offsets[i - 6] + k, antihermitian_offsets[j - 6] + l)
 									+= computeRealTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
 							}
 						}

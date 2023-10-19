@@ -70,7 +70,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		comments.push_back("Used DOS: " + input.getString("use_DOS"));
 		comments.push_back("Discretization: " + input.getString("k_discretization"));
 		comments.push_back("Lattice type: " + input.getString("lattice_type"));
-		comments.push_back("Total Gap=" + to_string(totalGapValue));
+		comments.push_back("Total Gap: " + to_string(totalGapValue));
 
 		if (!(reciever.empty())) {
 			Utility::saveData(reciever, BASE_FOLDER + output_folder + ".dat.gz", comments);
@@ -89,7 +89,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 
 			for (size_t i = 0U; i < resolvents.size(); ++i)
 			{
-				resolvents[i].writeDataToFile(BASE_FOLDER + output_folder + "resolvent_" + names[i]);
+				resolvents[i].writeDataToFile(BASE_FOLDER + output_folder + "resolvent_" + names[i], comments);
 			}
 		}
 		else {

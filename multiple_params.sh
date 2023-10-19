@@ -1,6 +1,6 @@
 #!/bin/bash
 
-make
+make -j
 
 # Define the name of the input file
 input_file="params/for_auto.txt"

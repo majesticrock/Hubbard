@@ -114,7 +114,6 @@ namespace Hubbard::Helper {
 				do {
 					// Irgendeine Zahl zwischen 0 und BASIS_SIZE
 					approximate_dos.at(std::round(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * (Constants::BASIS_SIZE - 1))) += 1;
-
 				} while (ks.iterateFullBZ());
 				for (int i = 0; i < Constants::HALF_BASIS; ++i)
 				{

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <initializer_list>
 
 namespace Hubbard {
 	template <typename DataType>
@@ -110,6 +111,7 @@ namespace Hubbard {
 
 		~ModelAttributes() = default;
 		ModelAttributes() = default;
+		ModelAttributes(std::initializer_list<DataType> i_list) : selfconsistency_values(i_list) {};
 		ModelAttributes(ModelAttributes&& other) = default;
 		ModelAttributes& operator=(const ModelAttributes& other) = default;
 		ModelAttributes& operator=(ModelAttributes&& other) = default;
@@ -217,8 +219,16 @@ namespace Hubbard {
 
 		// Returns the total gap value sqrt(sc^2 + cdw^2)
 		inline global_floating_type getTotalGapValue() const {
-			return sqrt(abs(selfconsistency_values[0]) * abs(selfconsistency_values[0])
-				+ abs(selfconsistency_values[2]) * abs(selfconsistency_values[2]));
+			if constexpr (Utility::is_complex<decltype(selfconsistency_values[0])>()) {
+				return sqrt(std::conj(selfconsistency_values[0]) * selfconsistency_values[0]
+					+ std::conj(selfconsistency_values[1]) * selfconsistency_values[1]
+					+ std::conj(selfconsistency_values[2]) * selfconsistency_values[2]);
+			}
+			else {
+				return sqrt(selfconsistency_values[0] * selfconsistency_values[0]
+					+ selfconsistency_values[1] * selfconsistency_values[1]
+					+ selfconsistency_values[2] * selfconsistency_values[2]);
+			}
 		};
 
 		inline bool isFinite(size_t i, double epsilon = 1e-12) const {

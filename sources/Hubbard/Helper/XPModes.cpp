@@ -25,7 +25,7 @@ namespace Hubbard::Helper {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		fillMatrices();
-		
+
 		{
 			for (size_t i = 0U; i < L.rows(); ++i)
 			{

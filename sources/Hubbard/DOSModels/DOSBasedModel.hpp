@@ -45,7 +45,6 @@ namespace Hubbard {
 				this->V_OVER_N, // Occupation Up
 				this->V_OVER_N, // Occupation Down
 			};
-			
 
 			if (!DOS::computed) {
 				std::lock_guard<std::mutex> guard(dos_mutex);

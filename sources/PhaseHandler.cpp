@@ -65,8 +65,8 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 		MPI_Allgather(local_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE,
 			recieve_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE, MPI_COMM_WORLD);
 	}
-	for (size_t i = 0U; i < 3; ++i){
-		MPI_Gather(local_coexitence_data[i].data(), FIRST_IT_STEPS, MPI_DOUBLE, 
+	for (size_t i = 0U; i < 3; ++i) {
+		MPI_Gather(local_coexitence_data[i].data(), FIRST_IT_STEPS, MPI_DOUBLE,
 			recieve_coexitence_data[i].data(), FIRST_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	}
 #else
@@ -74,7 +74,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 	{
 		recieve_data[i] = local_data[i];
 	}
-	for (size_t i = 0U; i < 3; ++i){
+	for (size_t i = 0U; i < 3; ++i) {
 		recieve_coexitence_data[i] = local_coexitence_data[i];
 	}
 #endif
@@ -100,13 +100,14 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 		Utility::saveData(recieve_data[3], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "gamma_sc.dat.gz", comments);
 		Utility::saveData(recieve_data[4], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "xi_sc.dat.gz", comments);
 		Utility::saveData(recieve_data[5], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "eta.dat.gz", comments);
-		
+
 		// We saved those data points, where there is no afm/cdw phase as nan and we remove them now
-		for(auto& vec : recieve_coexitence_data){
-			for(auto it = vec.begin(); it != vec.end();){
-				if(std::isnan(*it)){
+		for (auto& vec : recieve_coexitence_data) {
+			for (auto it = vec.begin(); it != vec.end();) {
+				if (std::isnan(*it)) {
 					it = vec.erase(it);
-				} else {
+				}
+				else {
 					++it;
 				}
 			}

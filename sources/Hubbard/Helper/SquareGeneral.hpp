@@ -17,7 +17,7 @@ namespace Hubbard::Helper {
 		};
 
 		SquareGeneral(Utility::InputFileReader& input) : GeneralBasis(input), TermOnSquare(input) {};
-		SquareGeneral(Utility::InputFileReader& input, std::unique_ptr<Hubbard::SquareLattice::UsingBroyden>&& model_ptr) 
+		SquareGeneral(Utility::InputFileReader& input, std::unique_ptr<Hubbard::SquareLattice::UsingBroyden>&& model_ptr)
 			: GeneralBasis(input), TermOnSquare(std::move(model_ptr)) {};
 	};
 }
