@@ -22,8 +22,8 @@ namespace Utility::NumericalSolver::Roots {
 			// You may play around with EPS_X and EPS_F to your desire
 			// EPS_X is the minimum distance between x_i and x_i+1
 			// EPS_F is the minimum f(x)
-			constexpr long double EPS_F = 1e-30;//std::numeric_limits<long double>::epsilon();
-			constexpr long double EPS_X = 1e-30;//std::numeric_limits<long double>::epsilon();
+			constexpr double EPS_F = std::numeric_limits<double>::epsilon();
+			constexpr double EPS_X = std::numeric_limits<double>::epsilon();
 			RealType diff_x{ 100 };
 			RealType diff_F{ 100 };
 			int iter_num{};

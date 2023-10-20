@@ -30,10 +30,12 @@ namespace Hubbard {
 		bool printAll{ false };
 		bool convergenceWarning{ true };
 
-		PhaseDebuggingPolicy() = default;
-		PhaseDebuggingPolicy(bool _printAll, bool _convergenceWarning)
+		constexpr PhaseDebuggingPolicy() = default;
+		constexpr PhaseDebuggingPolicy(bool _printAll, bool _convergenceWarning)
 			: printAll{ _printAll }, convergenceWarning(_convergenceWarning) {};
 	};
+	constexpr PhaseDebuggingPolicy WarnNoConvergence{ false, true };
+	constexpr PhaseDebuggingPolicy NoWarning{ false, false };
 
 #ifdef _BOOST_PRECISION
 #define _NO_MPI

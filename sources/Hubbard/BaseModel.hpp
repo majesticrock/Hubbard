@@ -58,12 +58,6 @@ namespace Hubbard {
 				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
 			}
 		};
-		inline void setParameters_direct(ParameterVector& F) {
-			for (size_t i = 0U; i < F.size(); ++i)
-			{
-				this->model_attributes[i] = F(i);
-			}
-		};
 
 	protected:
 		ModelAttributes<DataType> model_attributes;

@@ -28,10 +28,10 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	std::chrono::steady_clock::time_point test_e;
 
 	//------------------------------------------------------------//
-	ModelAttributes<global_floating_type> startingValues{ 0., 1., 0., 0., 0., 0., 0.1,  0.1 };
+	//ModelAttributes<global_floating_type> startingValues{ 0., 1., 0., 0., 0., 0., 0.1,  0.1 };
 	if (input.getBool("use_DOS")) {
 		if (input.getString("lattice_type") == "square") {
-			DOSModels::BroydenDOS<Square> model(modelParameters, startingValues);
+			DOSModels::BroydenDOS<Square> model(modelParameters);//, startingValues);
 			model.computePhases({ true, true }).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 		}

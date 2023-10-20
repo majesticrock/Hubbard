@@ -77,7 +77,8 @@ namespace Hubbard::Helper {
 
 		std::unique_ptr<BaseModel<global_floating_type>> getModelType(const ModelParameters& mp, std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt);
 
-		ModelAttributes<global_floating_type> computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt);
+		ModelAttributes<global_floating_type> computeDataPoint(const ModelParameters& mp, 
+			std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt, PhaseDebuggingPolicy debug_messages = WarnNoConvergence);
 	public:
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);
 

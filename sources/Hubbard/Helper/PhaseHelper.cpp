@@ -56,27 +56,27 @@ namespace Hubbard::Helper {
 
 		mp.setGlobalIteratorExact(this->upperFirst);
 		mp.setSecondIteratorExact(centerSecond);
-		new_attributes[0] = parent->computeDataPoint(mp, averageParameters);
+		new_attributes[0] = parent->computeDataPoint(mp, averageParameters, NoWarning);
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
 		mp.setSecondIteratorExact(this->lowerSecond);
-		new_attributes[1] = parent->computeDataPoint(mp, averageParameters);
+		new_attributes[1] = parent->computeDataPoint(mp, averageParameters, NoWarning);
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
 		mp.setSecondIteratorExact(centerSecond);
-		new_attributes[2] = parent->computeDataPoint(mp, averageParameters);
+		new_attributes[2] = parent->computeDataPoint(mp, averageParameters, NoWarning);
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
 		mp.setSecondIteratorExact(this->upperSecond);
-		new_attributes[3] = parent->computeDataPoint(mp, averageParameters);
+		new_attributes[3] = parent->computeDataPoint(mp, averageParameters, NoWarning);
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(this->lowerFirst);
 		mp.setSecondIteratorExact(centerSecond);
-		new_attributes[4] = parent->computeDataPoint(mp, averageParameters);
+		new_attributes[4] = parent->computeDataPoint(mp, averageParameters, NoWarning);
 
 		for (const auto& new_attr : new_attributes)
 		{
@@ -223,13 +223,14 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	ModelAttributes<global_floating_type> PhaseHelper::computeDataPoint(const ModelParameters& mp, std::optional<ModelAttributes<global_floating_type>> startingValues /*= std::nullopt*/) {
+	ModelAttributes<global_floating_type> PhaseHelper::computeDataPoint(const ModelParameters& mp, 
+		std::optional<ModelAttributes<global_floating_type>> startingValues /*= std::nullopt*/, PhaseDebuggingPolicy debug_messages /*= WarnNoConvergence*/) {
 		if (startingValues.has_value()) {
-			return getModelType(mp, startingValues)->computePhases();
+			return getModelType(mp, startingValues)->computePhases(debug_messages);
 		}
 		else {
 			auto model_ptr{ getModelType(mp) };
-			ModelAttributes<global_floating_type> result{ model_ptr->computePhases() };
+			ModelAttributes<global_floating_type> result{ model_ptr->computePhases(debug_messages) };
 
 			if (mp.U < 0 || mp.V < 0) return result;
 			// Remember: [0] returns the cdw and [1] the afm gap
@@ -245,7 +246,7 @@ namespace Hubbard::Helper {
 				}
 
 				auto model_copy_ptr = getModelType(mp, copy);
-				copy = model_copy_ptr->computePhases({ false, false });
+				copy = model_copy_ptr->computePhases(NoWarning);
 				if (copy.converged) {
 					if (model_copy_ptr->freeEnergyPerSite() < model_ptr->freeEnergyPerSite()) {
 						return copy;
@@ -395,7 +396,7 @@ namespace Hubbard::Helper {
 
 			while (a - b > PRECISION) {
 				local.setSecondIteratorExact(b);
-				gap_b = getModelType(local, gap_a)->computePhases();
+				gap_b = getModelType(local, gap_a)->computePhases(NoWarning);
 				if (std::abs(gap_b[0]) > EPSILON) {
 					gap_a = gap_b;
 					a = b;
@@ -417,8 +418,7 @@ namespace Hubbard::Helper {
 			gap_a = base_gap;
 			while (b - a > PRECISION) {
 				local.setSecondIteratorExact(b);
-				gap_b = getModelType(local, gap_a)->computePhases();
-				std::cout << "U=" << U << ": " << a << ", " << b << ": " << gap_a[1] << ", " << gap_b[1] << std::endl;
+				gap_b = getModelType(local, gap_a)->computePhases(NoWarning);
 				if (std::abs(gap_b[1]) > EPSILON) {
 					gap_a = gap_b;
 					a = b;
