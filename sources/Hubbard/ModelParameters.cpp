@@ -124,6 +124,10 @@ namespace Hubbard {
 	{
 		std::cout << global_iterator_type << " = " << getGlobal();
 	}
+	void ModelParameters::printSecond() const
+	{
+		std::cout << second_iterator_type << " = " << getSecond();
+	}
 	void ModelParameters::printParameters() const
 	{
 		std::cout << "[T U V] = [ " << temperature << " " << U << " " << V << " ]" << std::endl;

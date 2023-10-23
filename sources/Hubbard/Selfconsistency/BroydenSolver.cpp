@@ -4,7 +4,7 @@
 namespace Hubbard::Selfconsistency {
 	ModelAttributes<global_floating_type> BroydenSolver::computePhases(const PhaseDebuggingPolicy& debugPolicy)
 	{
-		procedureIterative(debugPolicy, _MaxPreBroydenIterations, 1e-16);
+		procedureIterative(debugPolicy, _MaxPreBroydenIterations, 1e-12);
 
 		std::function<void(const ParameterVector&, ParameterVector&)> func = [&](const ParameterVector& x, ParameterVector& F) {
 			_model->iterationStep(x, F);
@@ -16,7 +16,7 @@ namespace Hubbard::Selfconsistency {
 
 		if (!broyden_solver.compute(func, x0, 400)) {
 			if (debugPolicy.convergenceWarning) {
-				std::cerr << "No convergence for " << _model->parametersAsTriplet() << std::endl;
+				std::cerr << std::fixed << std::setprecision(8) << "No convergence for " << _model->parametersAsTriplet() << std::endl;
 			}
 			_attr->reset();
 		}

@@ -291,4 +291,12 @@ namespace Hubbard {
 	inline ModelAttributes<DataType> operator/(ModelAttributes<DataType> lhs, RealType rhs) {
 		return lhs /= rhs;
 	};
+
+	template <typename DataType>
+	inline std::ostream& operator<<(std::ostream& os, ModelAttributes<DataType> const& attributes) {
+		for (const auto& value : attributes) {
+			os << value << "  ";
+		}
+		return os;
+	};
 }

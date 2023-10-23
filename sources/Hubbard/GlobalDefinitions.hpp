@@ -36,6 +36,7 @@ namespace Hubbard {
 	};
 	constexpr PhaseDebuggingPolicy WarnNoConvergence{ false, true };
 	constexpr PhaseDebuggingPolicy NoWarning{ false, false };
+	constexpr PhaseDebuggingPolicy PrintSteps{ true, true };
 
 #ifdef _BOOST_PRECISION
 #define _NO_MPI
@@ -66,6 +67,7 @@ namespace Hubbard {
 	_CONST_LONG_FLOATING LOG_4 = 2 * boost::math::constants::ln_two<long_double_t>(); // ln(4) = 2 ln(2)
 	_CONST_FLOATING ONE_HALF = 0.5L;
 	_CONST_FLOATING BASE_PI = boost::math::constants::pi<global_floating_type>(); // pi
+	_CONST_FLOATING ONE_OVER_SQRT_2 = boost::math::constants::one_div_root_two<global_floating_type>(); // 1 / sqrt(2);
 
 	typedef Eigen::Matrix<global_floating_type, Eigen::Dynamic, Eigen::Dynamic> Matrix_L;
 	typedef Eigen::Vector<global_floating_type, Eigen::Dynamic> Vector_L;

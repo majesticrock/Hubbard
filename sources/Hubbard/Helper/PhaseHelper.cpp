@@ -1,4 +1,5 @@
 #include "PhaseHelper.hpp"
+#include "Plaquette.hpp"
 #include "../SquareLattice/HubbardCDW.hpp"
 #include "../SquareLattice/UsingBroyden.hpp"
 #include "../ChainLattice/ChainTripletPairing.hpp"
@@ -12,115 +13,10 @@
 #include <omp.h>
 #include <limits>
 #include <mutex>
+#include <algorithm>
 
 namespace Hubbard::Helper {
 	using Constants::option_list;
-
-	void PhaseHelper::Plaquette::devidePlaquette(std::vector<PhaseHelper::Plaquette>& appendTo) {
-		/*
-		*			x---A---x
-		*			|   |   |
-		*			| 0 | 1 |
-		*			|   |   |
-		*			B---C---D
-		*			|   |   |
-		*			| 2 | 3 |
-		*			|   |   |
-		*	  . 	x---E---x
-		*	 /|\
-		*     |
-		*   First / Second ->
-		*
-		*	New values are at the position ABCDE (01234 as indizes)
-		*/
-
-		ModelParameters mp{ parent->modelParameters };
-		const double centerFirst{ this->getCenterFirst() };
-		const double centerSecond{ this->getCenterSecond() };
-		ModelAttributes<global_floating_type> averageParameters{ this->attributes[0] };
-		int finiteCount = averageParameters.isOrdered() ? 1 : 0;
-		for (const auto& attr : this->attributes)
-		{
-			if (attr.isOrdered()) {
-				++finiteCount;
-				averageParameters += attr;
-			}
-		}
-		if (finiteCount != 0) {
-			averageParameters /= finiteCount;
-		}
-		else {
-			averageParameters = ModelAttributes<global_floating_type>(mp);
-		}
-		std::array<ModelAttributes<global_floating_type>, 5> new_attributes;
-
-		mp.setGlobalIteratorExact(this->upperFirst);
-		mp.setSecondIteratorExact(centerSecond);
-		new_attributes[0] = parent->computeDataPoint(mp, averageParameters, NoWarning);
-
-		mp = parent->modelParameters;
-		mp.setGlobalIteratorExact(centerFirst);
-		mp.setSecondIteratorExact(this->lowerSecond);
-		new_attributes[1] = parent->computeDataPoint(mp, averageParameters, NoWarning);
-
-		mp = parent->modelParameters;
-		mp.setGlobalIteratorExact(centerFirst);
-		mp.setSecondIteratorExact(centerSecond);
-		new_attributes[2] = parent->computeDataPoint(mp, averageParameters, NoWarning);
-
-		mp = parent->modelParameters;
-		mp.setGlobalIteratorExact(centerFirst);
-		mp.setSecondIteratorExact(this->upperSecond);
-		new_attributes[3] = parent->computeDataPoint(mp, averageParameters, NoWarning);
-
-		mp = parent->modelParameters;
-		mp.setGlobalIteratorExact(this->lowerFirst);
-		mp.setSecondIteratorExact(centerSecond);
-		new_attributes[4] = parent->computeDataPoint(mp, averageParameters, NoWarning);
-
-		for (const auto& new_attr : new_attributes)
-		{
-			if (!new_attr.converged) {
-				averageParameters.print();
-			}
-		}
-
-		// Upper left
-		Plaquette new_plaq = *this;
-		new_plaq.attributes = { this->attributes[0], new_attributes[0], new_attributes[1], new_attributes[2] };
-		if (new_plaq.containsPhaseBoundary()) {
-			new_plaq.lowerFirst = centerFirst;
-			new_plaq.upperSecond = centerSecond;
-			appendTo.push_back(new_plaq);
-		}
-
-		// Upper right
-		new_plaq = *this;
-		new_plaq.attributes = { new_attributes[0], this->attributes[1], new_attributes[2], new_attributes[3] };
-		if (new_plaq.containsPhaseBoundary()) {
-			new_plaq.lowerFirst = centerFirst;
-			new_plaq.lowerSecond = centerSecond;
-			appendTo.push_back(new_plaq);
-		}
-
-		// Lower left
-		new_plaq = *this;
-		new_plaq.attributes = { new_attributes[1], new_attributes[2], this->attributes[2], new_attributes[4] };
-		if (new_plaq.containsPhaseBoundary()) {
-			new_plaq.upperFirst = centerFirst;
-			new_plaq.upperSecond = centerSecond;
-			appendTo.push_back(new_plaq);
-		}
-
-		// Lower right
-		new_plaq = *this;
-		new_plaq.attributes = { new_attributes[2], new_attributes[3], new_attributes[4], this->attributes[3] };
-		if (new_plaq.containsPhaseBoundary()) {
-			new_plaq.upperFirst = centerFirst;
-			new_plaq.lowerSecond = centerSecond;
-			appendTo.push_back(new_plaq);
-		}
-	}
 
 	PhaseHelper::PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks)
 		: rank(_rank), numberOfRanks(_nRanks), use_broyden(input.getBool("use_broyden"))
@@ -223,42 +119,44 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	ModelAttributes<global_floating_type> PhaseHelper::computeDataPoint(const ModelParameters& mp, 
-		std::optional<ModelAttributes<global_floating_type>> startingValues /*= std::nullopt*/, PhaseDebuggingPolicy debug_messages /*= WarnNoConvergence*/) {
-		if (startingValues.has_value()) {
-			return getModelType(mp, startingValues)->computePhases(debug_messages);
-		}
-		else {
-			auto model_ptr{ getModelType(mp) };
-			ModelAttributes<global_floating_type> result{ model_ptr->computePhases(debug_messages) };
+	ModelAttributes<global_floating_type> PhaseHelper::computeDataPoint(const ModelParameters& mp,
+		std::optional<ModelAttributes<global_floating_type>> startingValues /*= std::nullopt*/, PhaseDebuggingPolicy debug_messages /*= WarnNoConvergence*/)
+	{
+		auto model_ptr{ getModelType(mp, startingValues) };
+		ModelAttributes<global_floating_type> result{ model_ptr->computePhases(debug_messages) };
 
-			if (mp.U < 0 || mp.V < 0) return result;
-			// Remember: [0] returns the cdw and [1] the afm gap
-			if (abs(result[0]) > 1e-12 || abs(result[1]) > 1e-12) {
-				ModelAttributes<global_floating_type> copy{ result };
-				if (abs(result[0]) > 1e-12) {
-					copy[1] = result[0];
-					copy[0] = 0;
-				}
-				else {
-					copy[0] = result[1];
-					copy[1] = 0;
-				}
-
-				auto model_copy_ptr = getModelType(mp, copy);
-				copy = model_copy_ptr->computePhases(NoWarning);
-				if (copy.converged) {
-					if (model_copy_ptr->freeEnergyPerSite() < model_ptr->freeEnergyPerSite()) {
-						return copy;
-					}
-				}
+		if (mp.U < 0 || mp.V < 0) return result;
+		// Remember: [0] returns the cdw and [1] the afm gap
+		if (abs(result[0]) > 1e-12 || abs(result[1]) > 1e-12) {
+			ModelAttributes<global_floating_type> copy{ result };
+			if (abs(result[0]) > 1e-12) {
+				copy[1] = result[0];
+				copy[0] = 0;
+			}
+			else {
+				copy[0] = result[1];
+				copy[1] = 0;
 			}
 
-			return result;
+			auto model_copy_ptr = getModelType(mp, copy);
+			copy = model_copy_ptr->computePhases(NoWarning);
+			if (copy.converged) {
+				if (model_copy_ptr->freeEnergyPerSite() < model_ptr->freeEnergyPerSite()) {
+					return copy;
+				}
+			}
 		}
+		return result;
 	}
 
-	void PhaseHelper::compute_crude(std::vector<data_vector>& data_mapper) {
+	ModelAttributes<global_floating_type> PhaseHelper::computeDataPoint_No_AFM_CDW_Fix(const ModelParameters& mp,
+		std::optional<ModelAttributes<global_floating_type>> startingValues, PhaseDebuggingPolicy debug_messages)
+	{
+		return getModelType(mp, startingValues)->computePhases(debug_messages);
+	}
+
+	void PhaseHelper::compute_crude(std::vector<data_vector>& data_mapper)
+	{
 		size_t NUMBER_OF_GAP_VALUES = data_mapper.size();
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
 		{
@@ -309,7 +207,7 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		while (plaqs.size() > 0U && plaqs.begin()->size() > 5e-4) {
+		while (plaqs.size() > 0U && plaqs.begin()->size() > 5e-5) {
 			std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
 			const size_t N_PLAQUETTES = plaqs.size();
 
@@ -327,22 +225,31 @@ namespace Hubbard::Helper {
 				totalSize += vec.size();
 			}
 			plaqs.clear();
-			bool removal = false;
-			if (totalSize > 100U) {
-				totalSize /= 2;
-				removal = true;
-			}
 			plaqs.reserve(totalSize);
 			for (const auto& vec : buffer)
 			{
-				if (removal) {
-					for (size_t i = 0U; i < vec.size(); i += 2U)
-					{
-						plaqs.push_back(std::move(vec[i]));
-					}
+				plaqs.insert(plaqs.end(), vec.begin(), vec.end());
+			}
+
+			std::sort(plaqs.begin(), plaqs.end(), [](Plaquette const& a, Plaquette const& b) {
+				if (a.lowerFirst < b.lowerFirst) {
+					return true;
 				}
 				else {
-					plaqs.insert(plaqs.end(), vec.begin(), vec.end());
+					if (a.lowerFirst > b.lowerFirst) {
+						return false;
+					}
+					// If equal sort by second
+					return a.lowerSecond < b.lowerSecond;
+				}
+				});
+
+			if (totalSize > (8 * this->FIRST_IT_STEPS > 200 ? 8 * this->FIRST_IT_STEPS : 200)) {
+				// remove every second element
+				const int offset = plaqs.size() % 2 == 0 ? 0 : 1;
+				for (auto it = plaqs.begin() + offset; it != plaqs.end(); ++it)
+				{
+					it = plaqs.erase(it);
 				}
 			}
 		}
@@ -364,10 +271,10 @@ namespace Hubbard::Helper {
 			return FIRST_IT_MIN + ((FIRST_IT_MAX - FIRST_IT_MIN) * it) / FIRST_IT_STEPS;
 			};
 		auto base_V = [](double U) -> double {
-			return 4 * U;
+			return 0.25 * U;
 			};
 
-		constexpr double PRECISION = 1e-5;
+		constexpr double PRECISION = 1e-6;
 		constexpr double EPSILON = 1e-10;
 		for (int i = 0; i < FIRST_IT_STEPS; ++i) {
 			ModelParameters local{ modelParameters };
@@ -377,7 +284,7 @@ namespace Hubbard::Helper {
 			local.setSecondIteratorExact(base_V(U));
 
 			ModelAttributes<global_floating_type> base_gap{ computeDataPoint(local) };
-			base_gap[0] = sqrt(base_gap[0] * base_gap[0] + base_gap[1] * base_gap[1]);
+			base_gap[0] = ONE_OVER_SQRT_2 * sqrt(base_gap[0] * base_gap[0] + base_gap[1] * base_gap[1]);
 			base_gap[1] = 0;
 
 			// If there is no cdw nor afm order, we save NaN to the array and remove it later
@@ -388,17 +295,15 @@ namespace Hubbard::Helper {
 				continue;
 			}
 
-			double h{ 1 };
+			double h{ 0.5 };
 			double a{ base_V(U) };
 			double b{ a - h };
-			ModelAttributes<global_floating_type> gap_a{ base_gap };
 			ModelAttributes<global_floating_type> gap_b{ base_gap };
 
 			while (a - b > PRECISION) {
 				local.setSecondIteratorExact(b);
-				gap_b = getModelType(local, gap_a)->computePhases(NoWarning);
+				gap_b = computeDataPoint_No_AFM_CDW_Fix(local, base_gap, NoWarning);
 				if (std::abs(gap_b[0]) > EPSILON) {
-					gap_a = gap_b;
 					a = b;
 					b -= h;
 				}
@@ -411,16 +316,13 @@ namespace Hubbard::Helper {
 
 			base_gap[1] = base_gap[0];
 			base_gap[0] = 0;
-
-			h = 1;
+			h = 0.5;
 			a = base_V(U);
 			b = a + h;
-			gap_a = base_gap;
 			while (b - a > PRECISION) {
 				local.setSecondIteratorExact(b);
-				gap_b = getModelType(local, gap_a)->computePhases(NoWarning);
+				gap_b = computeDataPoint_No_AFM_CDW_Fix(local, base_gap, NoWarning);
 				if (std::abs(gap_b[1]) > EPSILON) {
-					gap_a = gap_b;
 					a = b;
 					b += h;
 				}

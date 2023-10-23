@@ -66,6 +66,7 @@ namespace Hubbard {
 			setGlobalIterator(0);
 		};
 		void printGlobal() const;
+		void printSecond() const;
 		void printParameters() const;
 		std::string getFolderName() const;
 	};
