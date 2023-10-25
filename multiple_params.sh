@@ -12,6 +12,9 @@ TOKEN="model_parameters"
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+n_mpi=1
+n_omp=$(($(nproc)/(2*$n_mpi)))
+
 for NEW_VALUE in "${NEW_VALUES[@]}"; do
   # Loop through each line in the config file
   while read line; do
@@ -31,6 +34,6 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
   done < params/params_auto.config
   
   # Execute the program
-  mpirun -n 1 ./build/main params/params_auto.config 2> >(while read line; do echo -e "${RED}$line${NC}"; done)
+  mpirun -n $n_mpi --map-by node:PE=$n_omp --bind-to core ./build/main params/params_auto.config 2> >(while read line; do echo -e "${RED}$line${NC}"; done)
   wait
 done

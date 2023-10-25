@@ -1,2 +1,4 @@
 make -j16
-mpirun -n 1 --map-by node:PE=8 --bind-to core ./build/main params/params_test.config
+n_mpi=1
+n_omp=$(($(nproc)/(2*$n_mpi)))
+mpirun -n $n_mpi --map-by node:PE=$n_omp --bind-to core ./build/main params/params_test.config
