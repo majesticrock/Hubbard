@@ -5,7 +5,7 @@
 
 ## Mandatory:
 #SBATCH --job-name=V_neg
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_V.txt    ## File for stdout & stderr
+#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_V_neg.txt    ## File for stdout & stderr
 #SBATCH --time=12:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=mpi       ## choose queue
 

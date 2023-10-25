@@ -5,11 +5,11 @@
 
 ## Mandatory:
 #SBATCH --job-name=U_neg
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_U.txt    ## File for stdout & stderr
+#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_U_neg.txt    ## File for stdout & stderr
 #SBATCH --time=12:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=mpi       ## choose queue
 
-#SBATCH --ntasks=80             ## sets number of total mpi processes
+#SBATCH --ntasks=160             ## sets number of total mpi processes
 #SBATCH --tasks-per-node=10    ## mpi processes spawned per node
 #SBATCH --cpus-per-task=4       ## logical cores used per mpi process: should be 1, except if you want to combine OpenMP with$
 
