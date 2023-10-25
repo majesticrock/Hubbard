@@ -27,16 +27,19 @@ SRCS=$(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMM
 
 OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))
 
-all: build build/main 
+all: sources/SymbolicOperators build build/main 
 
 debug: CXXFLAGS += -g -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment
 debug: build build/main
 
-build/main: $(OBJS) | build
+build/main: $(OBJS) | build 
 	$(CXX) $(INCLUDEFLAGS) -o build/main $(OBJS) $(CXXFLAGS) $(LDLIBS)
 
 build/%.o: sources/%.cpp# sources/%.hpp
 	$(CXX) $(INCLUDEFLAGS) $< -o $@ -c $(CXXFLAGS)
+
+sources/SymbolicOperators:
+	ln -s ../../FermionCommute/sources sources/SymbolicOperators
 
 build:
 	mkdir -p build
@@ -47,8 +50,7 @@ build:
 	mkdir -p build/Hubbard/ChainLattice
 	mkdir -p build/Hubbard/DensityOfStates
 	mkdir -p build/Utility
-	mkdir -p ../FermionCommute/build
-	ln -s ../../FermionCommute/build build/SymbolicOperators
+	mkdir -p build/SymbolicOperators
 
 clean:
 	rm -rf build
