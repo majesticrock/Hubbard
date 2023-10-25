@@ -153,8 +153,7 @@ namespace Hubbard {
 
 		std::string ret = "T=" + improved_string(temperature);
 		ret += "/U=" + improved_string(U);
-		ret += "_V=" + improved_string(V);
-
+		ret += "/V=" + improved_string(V);
 		ret += "/";
 		return ret;
 	}
