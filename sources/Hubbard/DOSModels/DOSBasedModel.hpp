@@ -273,7 +273,7 @@ namespace Hubbard {
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			const global_floating_type step{ DOS::LOWER_BORDER / Constants::BASIS_SIZE };
 
-			for (int g = -Constants::BASIS_SIZE; g <= Constants::BASIS_SIZE; ++g)
+			for (int g = 0; g <= Constants::BASIS_SIZE; ++g)
 			{
 				this->fillHamiltonian(g * step);
 				solver.compute(this->hamilton, false);
@@ -283,6 +283,8 @@ namespace Hubbard {
 					reciever.push_back(solver.eigenvalues()(i));
 				}
 			}
+
+			std::sort(reciever.begin(), reciever.end());
 		};
 	};
 

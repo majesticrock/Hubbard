@@ -11,7 +11,7 @@
 
 #SBATCH --ntasks=1             ## sets number of total mpi processes
 #SBATCH --tasks-per-node=1    ## mpi processes spawned per node
-#SBATCH --cpus-per-task=8       ## logical cores used per mpi process: should be 1, except if you want to combine OpenMP with$
+#SBATCH --cpus-per-task=16       ## logical cores used per mpi process: should be 1, except if you want to combine OpenMP with$
 
 #SBATCH --mem=196gb               ## sets maximum allowed memory per node
 ##SBATCH --mem-per-cpu=100mb    ## sets maximum allowed memory per mpi process
@@ -32,7 +32,7 @@ date
 echo "--- START ---"
 
 ## execute binary using mpirun on the allocated computation resource; the number of cores is $
-mpirun -n 1 ./build/main params/params_modes.config
+mpirun ./build/main params/params_modes.config
 
 echo "--- END ---"
 date

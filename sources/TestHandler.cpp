@@ -34,6 +34,18 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 			DOSModels::BroydenDOS<Square> model(modelParameters, startingValues);
 			model.computePhases({ true, true }).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
+
+			std::vector<double> buf;
+			model.getAllEnergies(buf);
+			double gap = model.getTotalGapValue();
+			int c = 0;
+			for (auto& i : buf)
+			{
+				if (++c % 10 == 0) {
+					std::cout << std::endl;
+				}
+				std::cout << i - gap << " ";
+			}
 		}
 		else if (input.getString("lattice_type") == "cube") {
 			DOSModels::BroydenDOS<SimpleCubic> model(modelParameters);
