@@ -231,7 +231,7 @@ namespace Hubbard {
 			}
 		};
 
-		inline bool isFinite(size_t i, double epsilon = 1e-12) const {
+		inline bool isFinite(const size_t i, const double epsilon = 1e-12) const {
 			return (abs(selfconsistency_values[i]) > epsilon);
 		}
 		inline void print() const {

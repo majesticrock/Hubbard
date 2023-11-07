@@ -127,9 +127,9 @@ namespace Hubbard::Helper {
 
 		if (mp.U < 0 || mp.V < 0) return result;
 		// Remember: [0] returns the cdw and [1] the afm gap
-		if (abs(result[0]) > 1e-12 || abs(result[1]) > 1e-12) {
+		if (result.isFinite(0) || result.isFinite(1)) {
 			ModelAttributes<global_floating_type> copy{ result };
-			if (abs(result[0]) > 1e-12) {
+			if (result.isFinite(0)) {
 				copy[1] = result[0];
 				copy[0] = 0;
 			}

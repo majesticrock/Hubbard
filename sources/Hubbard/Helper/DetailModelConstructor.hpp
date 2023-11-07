@@ -41,7 +41,30 @@ namespace Hubbard::Helper {
 				0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
 			model = std::make_unique<Model>(modelParameters);
-			model->computePhases().print();
+			ModelAttributes<global_floating_type> result = model->computePhases();
+
+			if(model_params[1] > 0 && model_params[2] > 0){ // only for U>0 and V>0
+				if (result.isFinite(0) || result.isFinite(1)) {
+					decltype(result) copy{ result };
+					if (result.isFinite(0)) {
+						copy[1] = result[0];
+						copy[0] = 0;
+					}
+					else {
+						copy[0] = result[1];
+						copy[1] = 0;
+					}
+
+					decltype(model) model_copy_ptr = std::make_unique<Model>(modelParameters, copy);
+					copy = model_copy_ptr->computePhases(NoWarning);
+					if (copy.converged) {
+						if (model_copy_ptr->freeEnergyPerSite() <= model->freeEnergyPerSite()) {
+							model = std::move(model_copy_ptr);
+						}
+					}
+				}
+			}
+			model->getAttributes().print();
 			model->computeExpectationValues(expecs, sum_of_all);
 		};
 
