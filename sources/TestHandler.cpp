@@ -28,24 +28,15 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	std::chrono::steady_clock::time_point test_e;
 
 	//------------------------------------------------------------//
-	ModelAttributes<global_floating_type> startingValues{ 0., 1., 0., 0., 0., 0., 0.1,  0.1 };
+	ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1 };
 	if (input.getBool("use_DOS")) {
 		if (input.getString("lattice_type") == "square") {
 			DOSModels::BroydenDOS<Square> model(modelParameters, startingValues);
 			model.computePhases({ true, true }).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 
-			std::vector<double> buf;
-			model.getAllEnergies(buf);
-			double gap = model.getTotalGapValue();
-			int c = 0;
-			for (auto& i : buf)
-			{
-				if (++c % 10 == 0) {
-					std::cout << std::endl;
-				}
-				std::cout << i - gap << " ";
-			}
+			Square::writeToBinaryFile("test.bin");
+			Square::loadFromBinaryFile("test.bin");
 		}
 		else if (input.getString("lattice_type") == "cube") {
 			DOSModels::BroydenDOS<SimpleCubic> model(modelParameters);

@@ -132,7 +132,11 @@ namespace Hubbard::Helper {
 			else {
 				for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 				{
-					approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
+					if(abs(this->model->getGammaFromIndex(i)) + DOS::LOWER_BORDER < 1e-12){
+						approximate_dos[i] = 0;
+					} else {
+						approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
+					}
 				}
 			}
 #endif

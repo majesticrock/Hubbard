@@ -56,7 +56,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 			modeHelper = std::make_unique<Hubbard::Helper::SquareGeneral>(input);
 		}
 	}
-
+	
 	totalGapValue = modeHelper->getModel().getTotalGapValue();
 	modeHelper->getModel().getAllEnergies(oneParticleEnergies);
 	resolvents = modeHelper->computeCollectiveModes(reciever);

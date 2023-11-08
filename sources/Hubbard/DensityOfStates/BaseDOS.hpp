@@ -78,5 +78,8 @@ namespace Hubbard::DensityOfStates {
 		};
 
 		static void printValuesAndAbscissa();
+
+		static void writeToBinaryFile(const std::string& filename);
+		static bool loadFromBinaryFile(const std::string& filename);
 	};
 }

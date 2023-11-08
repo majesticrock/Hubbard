@@ -103,6 +103,7 @@ namespace Hubbard::Helper {
 				} // end k-loop
 			} // end term-loop
 		}
+		
 	public:
 		virtual const BaseModel<global_floating_type>& getModel() const override {
 			return *(this->model);
