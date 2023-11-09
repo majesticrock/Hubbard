@@ -8,8 +8,11 @@
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 #include "tanh_sinh_helper.hpp"
 #include "../../Utility/FunctionTime.hpp"
+#include <filesystem>
 
 namespace Hubbard::DensityOfStates {
+	const std::string DATA_FILE_NAME{ "build/dos_simple_cubic.bin" };
+
 	using std::log;
 	using std::asin;
 
@@ -86,8 +89,19 @@ namespace Hubbard::DensityOfStates {
 #endif
 	void SimpleCubic::computeValues()
 	{
-		typedef tanh_sinh_helper<abscissa_t, dos_precision> tanh_sinh;
 		clearAll();
+		if (std::filesystem::exists(DATA_FILE_NAME)) {
+			if (loadFromBinaryFile(DATA_FILE_NAME)) {
+				return;
+			}
+			else {
+				// We end up here if something went wrong while loading
+				// In this case we want a fresh computation
+				clearAll();
+			}
+		}
+
+		typedef tanh_sinh_helper<abscissa_t, dos_precision> tanh_sinh;
 		step = std::ldexp(1, -1);
 		auto compute_DOS = [](abscissa_t gamma, abscissa_t one_minus_gamma) -> dos_precision {
 			return static_cast<dos_precision>(boost::math::pow<3>(LONG_1_PI) * (I_1(gamma) - I_2(gamma.convert_to<_internal_precision>())));
@@ -150,5 +164,6 @@ namespace Hubbard::DensityOfStates {
 		}
 
 		computed = true;
+		writeToBinaryFile(DATA_FILE_NAME);
 	}
 }

@@ -2,8 +2,11 @@
 #include "tanh_sinh_helper.hpp"
 #include "../Constants.hpp"
 #include <numeric>
+#include <filesystem>
 
 namespace Hubbard::DensityOfStates {
+	const std::string DATA_FILE_NAME{ "build/dos_square.bin" };
+
 	std::vector<abscissa_t> Square::upper_border_to_abscissa;
 	dos_precision Square::b_minus_a_halved;
 
@@ -17,6 +20,17 @@ namespace Hubbard::DensityOfStates {
 	void Square::computeValues()
 	{
 		clearAll();
+		if (std::filesystem::exists(DATA_FILE_NAME)) {
+			if (loadFromBinaryFile(DATA_FILE_NAME)) {
+				return;
+			}
+			else {
+				// We end up here if something went wrong while loading
+				// In this case we want a fresh computation
+				clearAll();
+			}
+		}
+
 		step = std::ldexp(1, -1);
 		auto compute_DOS = [](abscissa_t gamma, abscissa_t one_minus_gamma) -> dos_precision {
 			gamma *= 0.5;
@@ -57,5 +71,6 @@ namespace Hubbard::DensityOfStates {
 		std::cout << "Total amount of values = " << values.size() << std::endl;
 
 		computed = true;
+		writeToBinaryFile(DATA_FILE_NAME);
 	}
 }
