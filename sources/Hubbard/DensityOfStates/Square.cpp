@@ -5,7 +5,7 @@
 #include <filesystem>
 
 namespace Hubbard::DensityOfStates {
-	const std::string DATA_FILE_NAME{ "build/dos_square.bin" };
+	const std::string DATA_FILE_NAME{ "../../data/dos_square.bin" };
 
 	std::vector<abscissa_t> Square::upper_border_to_abscissa;
 	dos_precision Square::b_minus_a_halved;

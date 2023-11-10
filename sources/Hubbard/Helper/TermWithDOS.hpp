@@ -4,6 +4,8 @@
 #include "../NumericalMomentum.hpp"
 #include <complex>
 #include <cmath>
+#include <filesystem>
+#include "../../Utility/BinaryIO.hpp"
 
 namespace Hubbard::Helper {
 	template <class DOS>
@@ -98,13 +100,18 @@ namespace Hubbard::Helper {
 		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input),
 			approximate_dos(Constants::BASIS_SIZE, 0.0)
 		{
-#ifdef _EXACT_DOS
-			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
-			{
-				approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));//DOS::values_v(i) * DOS::weights_v(i);
-				std::cout << this->model->getGammaFromIndex(i) << "  " << approximate_dos[i] << std::endl;
+			const std::string filename = "../../data/approx_dos_dim_" + std::to_string(DOS::DIMENSION) + "_disc_" + std::to_string(Constants::BASIS_SIZE) + ".bin";
+			if (std::filesystem::exists(filename)) {
+				std::ifstream reader = Utility::BinaryIO::readSerializedVector(approximate_dos, filename);
+				if (reader.good()) {
+					return;
+				}
+				else {
+					std::cerr << "An error occurred while reading the approximate dos data." << std::endl;
+				}
 			}
-#else
+
+			std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 			if constexpr (DOS::DIMENSION == 2) {
 				constexpr int faktor = 50;
 				Constants::K_DISCRETIZATION *= faktor;
@@ -132,14 +139,19 @@ namespace Hubbard::Helper {
 			else {
 				for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 				{
-					if(abs(this->model->getGammaFromIndex(i)) + DOS::LOWER_BORDER < 1e-12){
-						approximate_dos[i] = 0;
-					} else {
+					if (abs(abs(this->model->getGammaFromIndex(i)) + DOS::LOWER_BORDER) < 1e-12) {
+						approximate_dos[i] = 0.5 * DOS::computeValue(DOS::LOWER_BORDER * (1. - 2. / Constants::BASIS_SIZE));
+					}
+					else {
 						approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
 					}
 				}
 			}
-#endif
+
+			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+			std::cout << "Computed DOS for iEoM in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+
+			Utility::BinaryIO::serializeVector(approximate_dos, filename);
 		};
 	};
 }

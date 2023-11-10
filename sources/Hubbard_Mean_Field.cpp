@@ -49,16 +49,20 @@ int main(int argc, char** argv)
 	}
 	Utility::InputFileReader input(argv[1]);
 	Constants::setDiscretization(input.getInt("k_discretization"));
-	if (input.getString("lattice_type") == "square") {
-		Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
-	}
-	else if (input.getString("lattice_type") == "cube") {
-		Constants::setBasis(8 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+	if (input.getBool("use_DOS")) {
+		Constants::setBasis(Constants::K_DISCRETIZATION);
 	}
 	else {
-		Constants::setBasis(2 * Constants::K_DISCRETIZATION);
+		if (input.getString("lattice_type") == "square") {
+			Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+		}
+		else if (input.getString("lattice_type") == "cube") {
+			Constants::setBasis(8 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+		}
+		else {
+			Constants::setBasis(2 * Constants::K_DISCRETIZATION);
+		}
 	}
-
 	if (input.getString("compute_what") == "test") {
 		TestHandler test(input, rank, numberOfRanks);
 		test.execute(input);

@@ -206,7 +206,7 @@ namespace Utility {
 		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
 		void compute(const matrix_t& toSolve, int maxIter, double errorMargin = 1e-10)
 		{
-			size_t matrixSize = toSolve.rows();
+			const size_t matrixSize = toSolve.rows();
 			matrix_t identity(matrixSize, matrixSize);
 			identity.setIdentity();
 
@@ -241,6 +241,7 @@ namespace Utility {
 			size_t iterNum{};
 			bool goOn = true;
 			vector_t buffer;
+
 			while (goOn) {
 				// algorithm
 				buffer = toSolve * basisVectors.back();

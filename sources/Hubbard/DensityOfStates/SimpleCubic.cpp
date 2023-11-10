@@ -11,7 +11,7 @@
 #include <filesystem>
 
 namespace Hubbard::DensityOfStates {
-	const std::string DATA_FILE_NAME{ "build/dos_simple_cubic.bin" };
+	const std::string DATA_FILE_NAME{ "../../data/dos_simple_cubic.bin" };
 
 	using std::log;
 	using std::asin;

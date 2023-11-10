@@ -25,7 +25,6 @@ namespace Hubbard::Helper {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		fillMatrices();
-
 		{
 			for (size_t i = 0U; i < L.rows(); ++i)
 			{
@@ -205,6 +204,7 @@ namespace Hubbard::Helper {
 			resolvents.push_back(ResolventReal(startingState_SC[i]));
 			resolvents.push_back(ResolventReal(startingState_CDW[i]));
 			resolvents.push_back(ResolventReal(startingState_AFM[i]));
+
 #pragma omp parallel sections
 			{
 #pragma omp section
