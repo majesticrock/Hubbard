@@ -23,7 +23,7 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
 
     if [[ "$TOKEN_NAME" == "$TOKEN" ]]; then
       # replace the value with the new one
-      sed "s/$TOKEN_NAME $TOKEN_VALUE/$TOKEN_NAME $NEW_VALUE/" params/auto.config > auto_generated/$NEW_NAME.config
+      sed "s/$TOKEN_NAME $TOKEN_VALUE/$TOKEN_NAME $NEW_VALUE/" params/cluster.config > auto_generated/$NEW_NAME.config
       break
     fi
   done < params/auto.config
