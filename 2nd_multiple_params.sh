@@ -28,12 +28,12 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
     
     if [[ "$TOKEN_NAME" == "$TOKEN" ]]; then
       # replace the value with the new one
-      sed -i "s/$TOKEN_NAME $TOKEN_VALUE/$TOKEN_NAME $NEW_VALUE/" params/params_auto_2.config
+      sed -i "s/$TOKEN_NAME $TOKEN_VALUE/$TOKEN_NAME $NEW_VALUE/" params/auto_2.config
       break
     fi
-  done < params/params_auto_2.config
+  done < params/auto_2.config
   
   # Execute the program
-  mpirun -n $n_mpi --map-by node:PE=$n_omp --bind-to core ./build/main params/params_auto_2.config 2> >(while read line; do echo -e "${RED}$line${NC}"; done)
+  mpirun -n $n_mpi --map-by node:PE=$n_omp --bind-to core ./build/main params/auto_2.config 2> >(while read line; do echo -e "${RED}$line${NC}"; done)
   wait
 done
