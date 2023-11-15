@@ -197,6 +197,13 @@ namespace Hubbard::Helper {
 		std::vector<ResolventReal> resolvents{};
 		resolvents.reserve(6);
 
+		int LANCZOS_ITERATION_NUMBER;
+		if (this->usingDOS) {
+			LANCZOS_ITERATION_NUMBER = Constants::K_DISCRETIZATION > 1000 ? 50 : 100;
+		} else {
+			LANCZOS_ITERATION_NUMBER = 2 * Constants::K_DISCRETIZATION;
+		}
+
 		for (size_t i = 0U; i < 2U; ++i)
 		{
 			// It is going to compute the anti-Hermitian first
@@ -209,15 +216,15 @@ namespace Hubbard::Helper {
 			{
 #pragma omp section
 				{
-					resolvents[3 * i].compute(solver_matrix, this->usingDOS ? 50 : 2 * Constants::K_DISCRETIZATION);
+					resolvents[3 * i].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
 #pragma omp section
 				{
-					resolvents[3 * i + 1].compute(solver_matrix, this->usingDOS ? 50 : 2 * Constants::K_DISCRETIZATION);
+					resolvents[3 * i + 1].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
 #pragma omp section
 				{
-					resolvents[3 * i + 2].compute(solver_matrix, this->usingDOS ? 50 : 2 * Constants::K_DISCRETIZATION);
+					resolvents[3 * i + 2].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
 			}
 		}
