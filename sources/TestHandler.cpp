@@ -7,7 +7,7 @@
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
-#include <Eigen/Sparse>
+//#include <Eigen/Sparse>
 
 using namespace Hubbard::DensityOfStates;
 using namespace Hubbard;
@@ -28,8 +28,8 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 	std::chrono::steady_clock::time_point test_e;
 
-	int size = 5000;
-	double sparsityPercentage = 0.1;  // 10% sparsity
+	/*int size = 5000;
+	double sparsityPercentage = 0.4;
 
 	// Create a random symmetric matrix
 	Eigen::MatrixXd denseMatrix = Eigen::MatrixXd::Random(size, size);
@@ -61,7 +61,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 
 	std::cout << d_solver.eigenvalues().norm() << "\t" << s_solver.eigenvalues().norm() << std::endl;
 
-	return;
+	return;*/
 
 	//------------------------------------------------------------//
 	ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1 };

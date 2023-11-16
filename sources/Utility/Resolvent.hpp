@@ -104,8 +104,6 @@ namespace Utility {
 		void compute(const matrix_t& toSolve, const matrix_t& symplectic, int maxIter, double errorMargin = 1e-10)
 		{
 			size_t matrixSize = toSolve.rows();
-			matrix_t identity(matrixSize, matrixSize);
-			identity.setIdentity();
 
 			if (toSolve.rows() != toSolve.cols()) {
 				std::cerr << "Matrix is not square!" << std::endl;
@@ -207,8 +205,6 @@ namespace Utility {
 		void compute(const matrix_t& toSolve, int maxIter, double errorMargin = 1e-10)
 		{
 			const size_t matrixSize = toSolve.rows();
-			matrix_t identity(matrixSize, matrixSize);
-			identity.setIdentity();
 
 			if (toSolve.rows() != toSolve.cols()) {
 				std::cerr << "Matrix is not square!" << std::endl;
@@ -302,8 +298,6 @@ namespace Utility {
 		void computeFromNM(const matrix_t& toSolve, const matrix_t& symplectic, const matrix_t& N, int maxIter, double errorMargin = 1e-10)
 		{
 			auto matrixSize = toSolve.rows();
-			matrix_t identity(matrixSize, matrixSize);
-			identity.setIdentity();
 
 			if (toSolve.rows() != toSolve.cols()) {
 				std::cerr << "Matrix is not square!" << std::endl;

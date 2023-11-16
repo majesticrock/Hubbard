@@ -8,7 +8,6 @@ namespace Hubbard::Helper {
 		K_plus = Matrix_L::Zero(5 * Constants::BASIS_SIZE, 5 * Constants::BASIS_SIZE);
 		K_minus = Matrix_L::Zero(3 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
 		L = Matrix_L::Zero(5 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
-		//#pragma omp parallel for
 
 		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
@@ -25,45 +24,18 @@ namespace Hubbard::Helper {
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		fillMatrices();
-		{
-			for (size_t i = 0U; i < L.rows(); ++i)
-			{
-				for (size_t j = 0U; j < L.cols(); ++j)
-				{
-					if (abs(L(i, j)) < SALT) {
-						L(i, j) = 0;
-					}
-				}
-			}
-			for (size_t i = 0U; i < K_plus.rows(); ++i)
-			{
-				for (size_t j = 0U; j < K_plus.cols(); ++j)
-				{
-					if (abs(K_plus(i, j)) < SALT) {
-						K_plus(i, j) = 0;
-					}
-					if (abs(K_plus(i, j) - K_plus(j, i)) > ERROR_MARGIN) {
-						std::cerr << std::scientific << std::setprecision(12) << abs(K_plus(i, j) - K_plus(j, i)) << std::endl;
-						throw std::invalid_argument("K_+ is not hermitian: " + to_string(K_plus(i, j))
-							+ " || " + to_string(K_plus(j, i)) + "\t\tPosition: " + to_string(i) + ", " + to_string(j));
-					}
-				}
-			}
-			for (size_t i = 0U; i < K_minus.rows(); ++i)
-			{
-				for (size_t j = 0U; j < K_minus.cols(); ++j)
-				{
-					if (abs(K_minus(i, j)) < SALT) {
-						K_minus(i, j) = 0;
-					}
-					if (abs(K_minus(i, j) - K_minus(j, i)) > ERROR_MARGIN) {
-						std::cerr << std::scientific << std::setprecision(12) << abs(K_minus(i, j) - K_minus(j, i)) << std::endl;
-						throw std::invalid_argument("K_- is not hermitian: " + to_string(K_minus(i, j))
-							+ " || " + to_string(K_minus(j, i)) + "\t\tPosition: " + to_string(i) + ", " + to_string(j));
-					}
-				}
-			}
-		}
+
+		if((K_plus - K_plus.adjoint()).norm() > ERROR_MARGIN * K_plus.rows() * K_plus.cols() )
+			throw std::invalid_argument("K_+ is not hermitian: " + to_string( (K_plus - K_plus.adjoint()).norm() ));
+		if((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols() )
+			throw std::invalid_argument("K_+ is not hermitian: " + to_string( (K_minus - K_minus.adjoint()).norm() ));
+
+		auto setZero = [](global_floating_type val){
+			return (abs(val) < 1e-12 ? 0 : val);
+			};
+		L = L.array().unaryExpr(setZero);
+		K_plus = K_plus.array().unaryExpr(setZero);
+		K_minus = K_minus.array().unaryExpr(setZero);
 
 		end = std::chrono::steady_clock::now();
 		std::cout << "Time for filling of M and N: "
@@ -140,6 +112,26 @@ namespace Hubbard::Helper {
 			}
 		}
 
+		for (int k = 0; k < 2; ++k){
+			auto mat = k_solver[k].eigenvectors();
+			int zero_count = 0;
+			int exact_zero = 0;
+			int total_size = mat.rows() * mat.cols();
+			for	(int i = 0; i < mat.rows(); ++i){
+				for(int j = 0; j < mat.cols(); ++j){
+					if (std::abs(mat(i,j)) < 1e-15 * mat.col(j).lpNorm<Eigen::Infinity>()){
+						++zero_count;
+					}
+					if (std::abs(mat(i,j)) == 0){
+						++exact_zero;
+					}
+				}
+			}
+
+			std::cout << k << ":   " << zero_count << " / " << total_size << " = " << ((double) zero_count) / ((double) total_size) << std::endl;
+			std::cout << k << ":   " << exact_zero << " / " << total_size << " = " << ((double) exact_zero) / ((double) total_size) << std::endl;
+		}
+
 		/* plus(minus)_index indicates whether the upper left block is for the
 		* Hermitian or the anti-Hermitian operators.
 		* The default is that the upper left block contains the Hermtian operators,
@@ -186,7 +178,7 @@ namespace Hubbard::Helper {
 
 			begin_in = std::chrono::steady_clock::now();
 			buffer_matrix = N_new * k_solver[plus_index].eigenvectors();
-			solver_matrix = (buffer_matrix * k_solver[plus_index].eigenvalues().asDiagonal() * buffer_matrix.adjoint());
+			solver_matrix = (buffer_matrix * k_solver[plus_index].eigenvalues().asDiagonal() * buffer_matrix.adjoint()).array().unaryExpr(setZero);
 			end_in = std::chrono::steady_clock::now();
 			std::cout << "Time for computing solver_matrix: "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
@@ -199,7 +191,7 @@ namespace Hubbard::Helper {
 
 		int LANCZOS_ITERATION_NUMBER;
 		if (this->usingDOS) {
-			LANCZOS_ITERATION_NUMBER = Constants::K_DISCRETIZATION < 1000 ? 150 : 150;
+			LANCZOS_ITERATION_NUMBER = 150;
 		} else {
 			LANCZOS_ITERATION_NUMBER = 2 * Constants::K_DISCRETIZATION;
 		}

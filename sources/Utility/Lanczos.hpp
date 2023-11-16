@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <Eigen/Sparse>
 #include <iostream>
 
 namespace Utility {
@@ -11,7 +10,6 @@ namespace Utility {
 		private:
 			typedef Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> matrix_T;
 			typedef Eigen::Vector<T, Eigen::Dynamic> vector_T;
-			typedef Eigen::SparseMatrix<T> sparse_T;
 
 			vector_T startingState;
 			vector_T eigenDelta;
