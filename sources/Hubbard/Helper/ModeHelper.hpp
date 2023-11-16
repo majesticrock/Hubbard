@@ -24,7 +24,7 @@ namespace Hubbard::Helper {
 		* 7 - g_up + g_down
 		*/
 
-		static constexpr double SQRT_SALT = 1e-5;
+		static constexpr double SQRT_SALT = 1e-6;
 		static constexpr double SALT = SQRT_SALT * SQRT_SALT;
 		static constexpr double ERROR_MARGIN = 1e-10;
 
@@ -53,36 +53,36 @@ namespace Hubbard::Helper {
 		*/
 		template<int option>
 		void applyMatrixOperation(Vector_L& evs) const {
-			for (size_t i = 0; i < evs.size(); i++)
+			for (auto& ev : evs)
 			{
-				if (evs(i) < -(SALT * evs.size())) {
-					std::cerr << std::scientific << "M:   " << evs(i) << std::endl;
-					throw std::invalid_argument("Matrix is not positive!  " + to_string(evs(i)));
+				if (ev < -(SALT * evs.size())) {
+					std::cerr << std::scientific << "M:   " << ev << std::endl;
+					throw std::invalid_argument("Matrix is not positive!  " + to_string(ev));
 				}
-				if (evs(i) < SALT * evs.size()) {
+				if (ev < SALT * evs.size()) {
 #ifdef _PSEUDO_INVERSE
-					evs(i) = 0;
+					ev = 0;
 #else
 					if constexpr (option == 1) {
-						evs(i) = (1. / SALT);
+						ev = (1. / SALT);
 					}
 					else if constexpr (option == 2) {
-						evs(i) = SQRT_SALT;
+						ev = SQRT_SALT;
 					}
 					else if constexpr (option == 3) {
-						evs(i) = (1. / SQRT_SALT);
+						ev = (1. / SQRT_SALT);
 					}
 #endif
 				}
 				else {
 					if constexpr (option == 1) {
-						evs(i) = 1. / evs(i);
+						ev = 1. / ev;
 					}
 					else if constexpr (option == 2) {
-						evs(i) = sqrt(evs(i));
+						ev = sqrt(ev);
 					}
 					else if constexpr (option == 3) {
-						evs(i) = 1. / sqrt(evs(i));
+						ev = 1. / sqrt(ev);
 					}
 				}
 			}

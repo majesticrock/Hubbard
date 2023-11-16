@@ -53,7 +53,7 @@ namespace Utility {
 		for (const auto& elem : data.a_i) {
 			os << elem << " ";
 		}
-		os << "0 \n";
+		os << "\n";
 		for (const auto& elem : data.b_i) {
 			os << elem << " ";
 		}
@@ -154,7 +154,7 @@ namespace Utility {
 					deltas.push_back(norm_buffer);
 				}
 
-				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
+				currentSolution = (buffer - (deltas.back() * basisVectors.back())) - (gammas.back() * basisVectors[iterNum]);
 				norm_buffer = sqrt(currentSolution.dot(symplectic * currentSolution));
 				if constexpr (isComplex) {
 					assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
@@ -162,7 +162,7 @@ namespace Utility {
 				gammas.push_back(abs(norm_buffer));
 				basisVectors.push_back(currentSolution / gammas.back());
 
-				iterNum++;
+				++iterNum;
 
 				// construct tridiagonal matrix, diagonalize it and find the lowest eigenvalue
 				eigenDelta.conservativeResize(iterNum);
@@ -252,10 +252,10 @@ namespace Utility {
 				else {
 					deltas.push_back(basisVectors.back().dot(buffer));
 				}
-				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
+				currentSolution = (buffer - (deltas.back() * basisVectors.back())) - (gammas.back() * basisVectors[iterNum]);
 				gammas.push_back(currentSolution.norm());
 				basisVectors.push_back(currentSolution / gammas.back());
-				iterNum++;
+				++iterNum;
 
 				// construct the tridiagonal matrix, diagonalize it and find the lowest eigenvalue
 				eigenDelta.conservativeResize(iterNum);
@@ -288,11 +288,13 @@ namespace Utility {
 				}
 				oldEigenValue = newEigenValue;
 			}
-			for (long i = 0; i < deltas.size(); i++)
+			for (size_t i = 0U; i < deltas.size(); ++i)
 			{
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
 			}
+			// The last b is irrelevant, it does not really exist; it's an artifact of the algorithm
+			res.b_i.pop_back();
 			data.push_back(std::move(res));
 		};
 
@@ -350,7 +352,7 @@ namespace Utility {
 					deltas.push_back(norm_buffer);
 				}
 
-				currentSolution = (buffer - ((deltas.back() * identity) * basisVectors.back())) - (gammas.back() * basisVectors.at(iterNum));
+				currentSolution = (buffer - (deltas.back() * basisVectors.back())) - (gammas.back() * basisVectors[iterNum]);
 				norm_buffer = sqrt(currentSolution.dot(symplectic * currentSolution));
 				if constexpr (isComplex) {
 					assertm(abs(norm_buffer.imag()) < 1e-6, "Second norm in loop is complex!");
@@ -358,7 +360,7 @@ namespace Utility {
 				gammas.push_back(abs(norm_buffer));
 				basisVectors.push_back(currentSolution / gammas.back());
 
-				iterNum++;
+				++iterNum;
 
 				// construct tridiagonal matrix, diagonalize it and find the lowest eigenvalue
 				eigenDelta.conservativeResize(iterNum);
@@ -391,7 +393,7 @@ namespace Utility {
 				}
 				oldEigenValue = newEigenValue;
 			}
-			for (long i = 0; i < deltas.size(); i++)
+			for (size_t i = 0U; i < deltas.size(); ++i)
 			{
 				res.a_i.push_back(deltas[i]);
 				res.b_i.push_back(gammas[i + 1]);

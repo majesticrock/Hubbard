@@ -12,7 +12,7 @@
 #define SC_QUAD_CUT_OFF -15
 #else
 #define SQUARE_QUAD_CUT_OFF -14
-#define SC_QUAD_CUT_OFF -13
+#define SC_QUAD_CUT_OFF -12
 #endif
 
 // Does not quite work yet - but the equally spaced variant is just fine 

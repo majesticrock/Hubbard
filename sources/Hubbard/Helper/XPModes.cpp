@@ -199,10 +199,11 @@ namespace Hubbard::Helper {
 
 		int LANCZOS_ITERATION_NUMBER;
 		if (this->usingDOS) {
-			LANCZOS_ITERATION_NUMBER = Constants::K_DISCRETIZATION > 1000 ? 50 : 100;
+			LANCZOS_ITERATION_NUMBER = Constants::K_DISCRETIZATION < 1000 ? 150 : 150;
 		} else {
 			LANCZOS_ITERATION_NUMBER = 2 * Constants::K_DISCRETIZATION;
 		}
+
 
 		for (size_t i = 0U; i < 2U; ++i)
 		{
