@@ -26,7 +26,7 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
       sed "s/$TOKEN_NAME $TOKEN_VALUE/$TOKEN_NAME $NEW_VALUE/" params/cluster.config > auto_generated/$NEW_NAME.config
       break
     fi
-  done < params/auto.config
+  done < params/cluster.config
   cp slurm/modes.slurm auto_generated/$NEW_NAME.slurm
   sed -i "s|#SBATCH --job-name=modes|#SBATCH --job-name=$NEW_NAME|" auto_generated/$NEW_NAME.slurm
   sed -i "s|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output_$NEW_NAME.txt|" auto_generated/$NEW_NAME.slurm
