@@ -68,12 +68,12 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	if (input.getBool("use_DOS")) {
 		if (input.getString("lattice_type") == "square") {
 			DOSModels::BroydenDOS<Square> model(modelParameters, startingValues);
-			model.computePhases( WarnNoConvergence ).print();
+			model.computePhases(WarnNoConvergence).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 		}
 		else if (input.getString("lattice_type") == "cube") {
 			DOSModels::BroydenDOS<SimpleCubic> model(modelParameters);
-			model.computePhases( WarnNoConvergence ).print();
+			model.computePhases(WarnNoConvergence).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 		}
 	}

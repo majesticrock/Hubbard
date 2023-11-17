@@ -43,7 +43,7 @@ namespace Hubbard::Helper {
 			model = std::make_unique<Model>(modelParameters);
 			ModelAttributes<global_floating_type> result = model->computePhases();
 
-			if(model_params[1] > 0 && model_params[2] > 0){ // only for U>0 and V>0
+			if (model_params[1] > 0 && model_params[2] > 0) { // only for U>0 and V>0
 				if (result.isFinite(0) || result.isFinite(1)) {
 					decltype(result) copy{ result };
 					if (result.isFinite(0)) {

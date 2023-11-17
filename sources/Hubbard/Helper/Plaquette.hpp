@@ -54,4 +54,3 @@ namespace Hubbard::Helper {
 		void devidePlaquette(std::vector<Plaquette>& appendTo);
 	};
 }
-

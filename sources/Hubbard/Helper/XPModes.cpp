@@ -25,12 +25,12 @@ namespace Hubbard::Helper {
 
 		fillMatrices();
 
-		if((K_plus - K_plus.adjoint()).norm() > ERROR_MARGIN * K_plus.rows() * K_plus.cols() )
-			throw std::invalid_argument("K_+ is not hermitian: " + to_string( (K_plus - K_plus.adjoint()).norm() ));
-		if((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols() )
-			throw std::invalid_argument("K_+ is not hermitian: " + to_string( (K_minus - K_minus.adjoint()).norm() ));
+		if ((K_plus - K_plus.adjoint()).norm() > ERROR_MARGIN * K_plus.rows() * K_plus.cols())
+			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_plus - K_plus.adjoint()).norm()));
+		if ((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols())
+			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
 
-		auto setZero = [](global_floating_type val){
+		auto setZero = [](global_floating_type val) {
 			return (abs(val) < 1e-12 ? 0 : val);
 			};
 		L = L.array().unaryExpr(setZero);
@@ -112,24 +112,24 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		for (int k = 0; k < 2; ++k){
+		for (int k = 0; k < 2; ++k) {
 			auto mat = k_solver[k].eigenvectors();
 			int zero_count = 0;
 			int exact_zero = 0;
 			int total_size = mat.rows() * mat.cols();
-			for	(int i = 0; i < mat.rows(); ++i){
-				for(int j = 0; j < mat.cols(); ++j){
-					if (std::abs(mat(i,j)) < 1e-15 * mat.col(j).lpNorm<Eigen::Infinity>()){
+			for (int i = 0; i < mat.rows(); ++i) {
+				for (int j = 0; j < mat.cols(); ++j) {
+					if (std::abs(mat(i, j)) < 1e-15 * mat.col(j).lpNorm<Eigen::Infinity>()) {
 						++zero_count;
 					}
-					if (std::abs(mat(i,j)) == 0){
+					if (std::abs(mat(i, j)) == 0) {
 						++exact_zero;
 					}
 				}
 			}
 
-			std::cout << k << ":   " << zero_count << " / " << total_size << " = " << ((double) zero_count) / ((double) total_size) << std::endl;
-			std::cout << k << ":   " << exact_zero << " / " << total_size << " = " << ((double) exact_zero) / ((double) total_size) << std::endl;
+			std::cout << k << ":   " << zero_count << " / " << total_size << " = " << ((double)zero_count) / ((double)total_size) << std::endl;
+			std::cout << k << ":   " << exact_zero << " / " << total_size << " = " << ((double)exact_zero) / ((double)total_size) << std::endl;
 		}
 
 		/* plus(minus)_index indicates whether the upper left block is for the
@@ -192,10 +192,10 @@ namespace Hubbard::Helper {
 		int LANCZOS_ITERATION_NUMBER;
 		if (this->usingDOS) {
 			LANCZOS_ITERATION_NUMBER = 150;
-		} else {
+		}
+		else {
 			LANCZOS_ITERATION_NUMBER = 2 * Constants::K_DISCRETIZATION;
 		}
-
 
 		for (size_t i = 0U; i < 2U; ++i)
 		{

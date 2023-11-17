@@ -28,7 +28,7 @@ namespace Hubbard::Helper {
 
 		std::unique_ptr<BaseModel<global_floating_type>> getModelType(const ModelParameters& mp, std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt);
 
-		ModelAttributes<global_floating_type> computeDataPoint(const ModelParameters& mp, 
+		ModelAttributes<global_floating_type> computeDataPoint(const ModelParameters& mp,
 			std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt, PhaseDebuggingPolicy debug_messages = WarnNoConvergence);
 		ModelAttributes<global_floating_type> computeDataPoint_No_AFM_CDW_Fix(const ModelParameters& mp,
 			std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt, PhaseDebuggingPolicy debug_messages = WarnNoConvergence);
