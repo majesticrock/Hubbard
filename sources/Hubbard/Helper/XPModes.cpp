@@ -112,26 +112,6 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		for (int k = 0; k < 2; ++k) {
-			auto mat = k_solver[k].eigenvectors();
-			int zero_count = 0;
-			int exact_zero = 0;
-			int total_size = mat.rows() * mat.cols();
-			for (int i = 0; i < mat.rows(); ++i) {
-				for (int j = 0; j < mat.cols(); ++j) {
-					if (std::abs(mat(i, j)) < 1e-15 * mat.col(j).lpNorm<Eigen::Infinity>()) {
-						++zero_count;
-					}
-					if (std::abs(mat(i, j)) == 0) {
-						++exact_zero;
-					}
-				}
-			}
-
-			std::cout << k << ":   " << zero_count << " / " << total_size << " = " << ((double)zero_count) / ((double)total_size) << std::endl;
-			std::cout << k << ":   " << exact_zero << " / " << total_size << " = " << ((double)exact_zero) / ((double)total_size) << std::endl;
-		}
-
 		/* plus(minus)_index indicates whether the upper left block is for the
 		* Hermitian or the anti-Hermitian operators.
 		* The default is that the upper left block contains the Hermtian operators,
