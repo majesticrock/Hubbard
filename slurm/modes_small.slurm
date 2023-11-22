@@ -17,7 +17,7 @@
 ##SBATCH --mem-per-cpu=100mb    ## sets maximum allowed memory per mpi process
 
 #SBATCH --mail-user=joshua.althueser@tu-dortmund.de     ## replace mail by personal mail address
-#SBATCH --mail-type=END ## most relevant options: NONE, BEGIN, END, FAIL
+#SBATCH --mail-type=FAIL ## most relevant options: NONE, BEGIN, END, FAIL
 
 ## Optional:
 #SBATCH --hint=nomultithread    ## deactivate Hyperthreading (recommended); for Hyperthreading comment out this line
