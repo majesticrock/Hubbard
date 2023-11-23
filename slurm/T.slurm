@@ -6,7 +6,7 @@
 ## Mandatory:
 #SBATCH --job-name=T
 #SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_T.txt    ## File for stdout & stderr
-#SBATCH --time=12:00:00         ## maximum runtime; hours:minutes:seconds
+#SBATCH --time=24:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=mpi       ## choose queue
 
 #SBATCH --ntasks=80             ## sets number of total mpi processes
