@@ -100,14 +100,19 @@ namespace Hubbard::Helper {
 		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input),
 			approximate_dos(Constants::BASIS_SIZE, 0.0)
 		{
+			auto dos_norm = [this]() -> global_floating_type {
+				return (- 2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE) * std::reduce(approximate_dos.begin(), approximate_dos.end(), global_floating_type{});
+				};
+
 			const std::string filename = "../../data/approx_dos_dim_" + std::to_string(DOS::DIMENSION) + "_disc_" + std::to_string(Constants::BASIS_SIZE) + ".bin";
 			if (std::filesystem::exists(filename)) {
 				std::ifstream reader = Utility::BinaryIO::readSerializedVector(approximate_dos, filename);
-				if (reader.good()) {
+				if (reader.good() && std::abs(dos_norm() - 1.) < 1e-7) {
 					return;
 				}
 				else {
 					std::cerr << "An error occurred while reading the approximate dos data." << std::endl;
+					std::cerr << "Approximate DOS norm = " << std::scientific << std::setprecision(8) << dos_norm() << std::endl;
 				}
 			}
 
@@ -139,12 +144,17 @@ namespace Hubbard::Helper {
 			else {
 				for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 				{
-					if (abs(abs(this->model->getGammaFromIndex(i)) + DOS::LOWER_BORDER) < 1e-12) {
-						approximate_dos[i] = 0.5 * DOS::computeValue(DOS::LOWER_BORDER * (1. - 2. / Constants::BASIS_SIZE));
+					if (i == 0 || i == Constants::BASIS_SIZE - 1) {
+						approximate_dos[i] = 0.25 * DOS::computeValue(this->model->getGammaFromIndex(1));
 					}
 					else {
 						approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
 					}
+				}
+				global_floating_type inverse_norm = 1. / dos_norm();
+				for (auto& value : approximate_dos)
+				{
+					value *= inverse_norm;
 				}
 			}
 

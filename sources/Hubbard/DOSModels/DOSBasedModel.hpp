@@ -182,7 +182,7 @@ namespace Hubbard {
 					return  this->V_OVER_N * (coeff.dependsOnTwoMomenta() ? (gamma / DOS::DIMENSION) : gamma);
 				}
 				else {
-					return 2 * this->V_OVER_N;
+					return DOS::DIMENSION * this->V_OVER_N;
 				}
 			}
 			throw(std::invalid_argument("Could not find the coefficient: " + coeff.name));
@@ -212,7 +212,7 @@ namespace Hubbard {
 
 			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
-				global_floating_type gamma = this->getGammaFromIndex(i);
+				const global_floating_type gamma = this->getGammaFromIndex(i);
 
 				this->fillHamiltonian(gamma);
 				this->fillRho();
