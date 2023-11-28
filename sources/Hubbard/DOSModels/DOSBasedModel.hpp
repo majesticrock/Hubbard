@@ -45,6 +45,7 @@ namespace Hubbard {
 				this->V_OVER_N, // Occupation Up
 				this->V_OVER_N, // Occupation Down
 			};
+			this->computeChemicalPotential();
 
 			if (!DOS::computed) {
 				std::lock_guard<std::mutex> guard(dos_mutex);
