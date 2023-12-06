@@ -3,6 +3,7 @@
 #define assertm(exp, msg) assert(((void)msg, exp))
 
 #include "OutputConvenience.hpp"
+#include "GramSchmidt.hpp"
 #include <type_traits>
 #include <Eigen/Dense>
 #include <cmath>
@@ -394,6 +395,103 @@ namespace Utility {
 			}
 			data.push_back(std::move(res));
 		};
+		
+		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
+		// Additionally, this function orthogonalizes the Krylov basis each step
+		void computeWithReorthogonalization(const matrix_t& toSolve, int maxIter, double errorMargin = 1e-10)
+		{
+			const size_t matrixSize = toSolve.rows();
+
+			if (toSolve.rows() != toSolve.cols()) {
+				std::cerr << "Matrix is not square!" << std::endl;
+				throw;
+			}
+
+			vector_t currentSolution(matrixSize); // corresponds to |q_(i+1)>
+			// First filling
+			std::vector<vector_t> basisVectors;
+			vector_t second = this->startingState; // corresponds to |q_1>
+			resolvent_data res;
+			res.b_i.push_back(second.squaredNorm());
+
+			second /= sqrt(res.b_i.back());
+			basisVectors.push_back(second);
+
+			std::vector<RealType> deltas, gammas;
+			gammas.push_back(1);
+
+			RealVector eigenDelta(1);
+			RealVector eigenGamma(1);
+
+			Eigen::SelfAdjointEigenSolver<matrix_t> diagonalize;
+			RealVector diagonal; //stores the diagonal elements in a vector
+			RealType oldEigenValue{};
+			RealType newEigenValue{};
+			size_t position{};
+			size_t iterNum{};
+			bool goOn = true;
+			vector_t buffer;
+
+			while (goOn) {
+				// algorithm
+				buffer = toSolve * basisVectors.back();
+				if constexpr (isComplex) {
+					// This has to be real, as <x|H|x> is always real if H=H^+
+					deltas.push_back(basisVectors.back().dot(buffer).real());
+				}
+				else {
+					deltas.push_back(basisVectors.back().dot(buffer));
+				}
+				if (iterNum > 0U) {
+					currentSolution = (buffer - (deltas.back() * basisVectors.back())) - (gammas.back() * basisVectors[iterNum]);
+				} else {
+					currentSolution = (buffer - (deltas.back() * basisVectors.back()));
+				}
+				GramSchmidt<ComputationType>::orthogonalizeSingleVector(currentSolution, basisVectors);
+				gammas.push_back(currentSolution.norm());
+				basisVectors.push_back(currentSolution / gammas.back());
+				++iterNum;
+
+				// construct the tridiagonal matrix, diagonalize it and find the lowest eigenvalue
+				eigenDelta.conservativeResize(iterNum);
+				eigenGamma.conservativeResize(iterNum - 1);
+				eigenDelta(iterNum - 1) = deltas[iterNum - 1];
+				if (iterNum > 1) {
+					eigenGamma(iterNum - 2) = gammas[iterNum - 1];
+				}
+				diagonalize.computeFromTridiagonal(eigenDelta, eigenGamma, 0);
+				diagonal = diagonalize.eigenvalues();
+
+				position = findSmallestValue(diagonal);
+				newEigenValue = diagonal(position);
+
+				// breaking conditions
+				if (iterNum >= maxIter) {
+					goOn = false;
+				}
+				if (iterNum >= toSolve.rows()) {
+					goOn = false;
+				}
+				if (abs(gammas.back()) < 1e-7) {
+					goOn = false;
+				}
+				if (oldEigenValue != 0.0) {
+					if (abs(newEigenValue - oldEigenValue) / abs(oldEigenValue) < errorMargin) {
+						//goOn = false;
+						if (!data.noEigenvalueChangeAt) data.noEigenvalueChangeAt = iterNum;
+					}
+				}
+				oldEigenValue = newEigenValue;
+			}
+			for (size_t i = 0U; i < deltas.size(); ++i)
+			{
+				res.a_i.push_back(deltas[i]);
+				res.b_i.push_back(gammas[i + 1] * gammas[i + 1]);
+			}
+			// The last b is irrelevant, it does not really exist; it's an artifact of the algorithm
+			res.b_i.pop_back();
+			data.push_back(std::move(res));
+		};
 
 		const ResolventDataWrapper<RealType>& getData() const {
 			return data;
@@ -406,4 +504,6 @@ namespace Utility {
 			data.writeDataToFile(filename);
 		};
 	};
+
+
 }

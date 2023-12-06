@@ -7,6 +7,7 @@
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
+#include "Utility/GramSchmidt.hpp"
 //#include <Eigen/Sparse>
 
 using namespace Hubbard::DensityOfStates;

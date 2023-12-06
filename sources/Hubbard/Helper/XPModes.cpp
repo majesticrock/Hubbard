@@ -189,15 +189,15 @@ namespace Hubbard::Helper {
 			{
 #pragma omp section
 				{
-					resolvents[3 * i].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
+					resolvents[3 * i].computeWithReorthogonalization(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
 #pragma omp section
 				{
-					resolvents[3 * i + 1].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
+					resolvents[3 * i + 1].computeWithReorthogonalization(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
 #pragma omp section
 				{
-					resolvents[3 * i + 2].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
+					resolvents[3 * i + 2].computeWithReorthogonalization(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
 			}
 		}
