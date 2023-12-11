@@ -165,26 +165,23 @@ namespace Hubbard::Helper {
 		* 2 - CDW
 		* 3 - AFM
 		*/
+		const global_floating_type norm_factor = 1. / sqrt((global_floating_type)Constants::BASIS_SIZE);
 		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
 		for (int i = 0; i < Constants::BASIS_SIZE; i++)
 		{
-			psis[0](i* number_of_basis_terms) = 1;
-			psis[0](i* number_of_basis_terms + 1) = 1;
+			psis[0](i* number_of_basis_terms) = norm_factor;
+			psis[0](i* number_of_basis_terms + 1) = norm_factor;
 
-			psis[1](i* number_of_basis_terms) = 1;
-			psis[1](i* number_of_basis_terms + 1) = -1;
+			psis[1](i* number_of_basis_terms) = norm_factor;
+			psis[1](i* number_of_basis_terms + 1) = -norm_factor;
 
 			if (number_of_basis_terms >= 6) {
-				psis[2](i* number_of_basis_terms + 4) = 1;
-				psis[2](i* number_of_basis_terms + 5) = 1;
+				psis[2](i* number_of_basis_terms + 4) = norm_factor;
+				psis[2](i* number_of_basis_terms + 5) = norm_factor;
 
-				psis[3](i* number_of_basis_terms + 4) = 1;
-				psis[3](i* number_of_basis_terms + 5) = -1;
+				psis[3](i* number_of_basis_terms + 4) = norm_factor;
+				psis[3](i* number_of_basis_terms + 5) = -norm_factor;
 			}
-		}
-		for (auto& psi : psis)
-		{
-			psi.normalize();
 		}
 
 		std::vector<ResolventComplex> resolvents{ 3 * NUMBER_OF_GREENSFUNCTIONS };

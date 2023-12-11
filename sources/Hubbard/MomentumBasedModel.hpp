@@ -107,5 +107,32 @@ namespace Hubbard {
 			} while (ks.iterateHalfBZ());
 			return energy / Constants::BASIS_SIZE;
 		};
+
+		global_floating_type higgs_summ_rule() {
+			global_floating_type occ_sum{};
+			global_floating_type occ_squared{};
+			global_floating_type f{};
+			global_floating_type f_squared{};
+
+			NumericalMomentum<Dimension> ks;
+			do {
+				this->fillHamiltonian(ks);
+				this->fillRho();
+
+				occ_sum += this->get_n_down();
+				occ_squared += this->get_n_down() * this->get_n_down();
+				f += this->get_f().real();
+				f_squared += this->get_f().real() * this->get_f().real();
+			} while (ks.iterateFullBZ());
+			occ_sum /= Constants::BASIS_SIZE * Constants::BASIS_SIZE;
+			occ_squared /= Constants::BASIS_SIZE * Constants::BASIS_SIZE;
+			f_squared /= Constants::BASIS_SIZE * Constants::BASIS_SIZE;
+			f *= f;
+			f /= Constants::BASIS_SIZE * Constants::BASIS_SIZE;
+
+			std::cout << f << "   " << occ_sum << "   " << occ_squared << "   " << f_squared << std::endl;
+
+			return f + 1 - 2 * (occ_sum - occ_squared + f_squared);
+		};
 	};
 }

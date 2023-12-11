@@ -82,14 +82,12 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 		Constants::setDiscretization(input.getInt("k_discretization"));
 		Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 
-		//SquareLattice::HubbardCDW model(modelParameters, startingValues);
-		//model.computePhases({ false, true }).print();
-		//std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
-		//std::cout << "\n\n\n";
 		SquareLattice::UsingBroyden model2(modelParameters, startingValues);
 		test_b = std::chrono::steady_clock::now();
 		model2.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
+
+		std::cout << model2.higgs_summ_rule() << std::endl;;
 	}
 	//test_b = std::chrono::steady_clock::now();
 	//{

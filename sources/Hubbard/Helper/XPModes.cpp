@@ -44,19 +44,24 @@ namespace Hubbard::Helper {
 		Vector_L startingState_SC[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_CDW[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_AFM[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
+		if (this->usingDOS) {
+			//Constants::BASIS_SIZE / (-2.0 * DOS::LOWER_BORDER);
+		}
+		const double norm_constant = sqrt(1. / ((double)Constants::BASIS_SIZE));
 		for (int j = 0; j < 2; ++j)
 		{
 			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
 			{
-				startingState_SC[j](i) = 1;
-				startingState_CDW[j](2 * Constants::BASIS_SIZE + i) = 1;
-				startingState_AFM[j](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? 1 : -1;
+				startingState_SC[j](i) = norm_constant;
+				startingState_CDW[j](2 * Constants::BASIS_SIZE + i) = norm_constant;
+				startingState_AFM[j](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? norm_constant : -norm_constant;
 			}
-			startingState_SC[j].normalize();
-			startingState_CDW[j].normalize();
-			startingState_AFM[j].normalize();
+			//startingState_SC[j].normalize();
+			//startingState_CDW[j].normalize();
+			//startingState_AFM[j].normalize();
+			//startingState_SC[j](0) = 1;
 		}
-
+		
 		// M_new = K_plus
 		Matrix_L solver_matrix;
 		Eigen::SelfAdjointEigenSolver<Matrix_L> k_solver[2];
