@@ -117,6 +117,12 @@ namespace Hubbard {
 		inline global_floating_type get_n_down() const {
 			return this->rho(2, 2).real();
 		};
+		inline global_floating_type get_n_up_Q() const {
+			return 1 - this->rho(1, 1).real();
+		};
+		inline global_floating_type get_n_down_Q() const {
+			return this->rho(3, 3).real();
+		};
 		inline global_floating_type get_n_up_plus_down() const {
 			return get_n_up() + get_n_down();
 		};
@@ -131,6 +137,9 @@ namespace Hubbard {
 		};
 		inline complex_prec get_f() const {
 			return -this->rho(0, 2);
+		};
+		inline complex_prec get_f_Q() const {
+			return -this->rho(1, 3);
 		};
 		inline complex_prec get_eta() const {
 			return -this->rho(0, 3);

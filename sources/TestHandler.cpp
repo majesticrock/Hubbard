@@ -71,11 +71,13 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 			DOSModels::BroydenDOS<Square> model(modelParameters, startingValues);
 			model.computePhases(WarnNoConvergence).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
+			std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
 		}
 		else if (input.getString("lattice_type") == "cube") {
 			DOSModels::BroydenDOS<SimpleCubic> model(modelParameters);
 			model.computePhases(WarnNoConvergence).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
+			std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
 		}
 	}
 	else {
@@ -87,7 +89,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 		model2.computePhases({ false, true }).print();
 		std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
 
-		std::cout << model2.higgs_summ_rule() << std::endl;;
+		std::cout << "Sum rule: " << model2.cdw_in_sc_sum_rule() << std::endl;
 	}
 	//test_b = std::chrono::steady_clock::now();
 	//{

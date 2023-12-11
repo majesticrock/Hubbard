@@ -287,6 +287,49 @@ namespace Hubbard {
 
 			std::sort(reciever.begin(), reciever.end());
 		};
+
+		global_floating_type higgs_sum_rule() {
+			auto compute_values = [this](global_floating_type gamma) {
+				Eigen::Vector4d values = Eigen::Vector4d::Zero();
+
+				this->fillHamiltonian(gamma);
+				this->fillRho();
+
+				values(0) = this->get_f().real(); // f
+				values(1) = this->get_n_down(); // n
+				values(2) = this->get_n_down() * this->get_n_down(); // n^2
+				values(3) = this->get_f().real() * this->get_f().real(); // f^2
+
+				return values;
+				};
+
+			typename DOS::Integrator<Eigen::Vector4d> integ;
+			Eigen::Vector4d res = integ.integrate_by_value(compute_values);
+			res(0) *= 4 * res(0);
+
+			std::cout << res(0) << "   " << res(1) << "   " << res(2) << "   " << res(3) << std::endl;
+			return 1 - 2 * (res(1) - res(2) + res(3));
+		};
+
+		global_floating_type cdw_in_sc_sum_rule() {
+			auto compute_values = [this](global_floating_type gamma) {
+				Eigen::Vector2d values = Eigen::Vector2d::Zero();
+
+				this->fillHamiltonian(gamma);
+				this->fillRho();
+
+				values(0) = this->get_f().real() * this->get_f_Q().real(); // f_k * f_k+q 
+				values(1) = this->get_n_down() * this->get_n_down_Q(); // n_k * n_k+q
+
+				return values;
+				};
+
+			typename DOS::Integrator<Eigen::Vector2d> integ;
+			Eigen::Vector2d res = integ.integrate_by_value(compute_values);
+
+			std::cout << res(0) << "   " << res(1) << std::endl;
+			return 1 + 2 * (res(0) - res(1));
+		};
 	};
 
 	template <typename DataType, class DOS>
