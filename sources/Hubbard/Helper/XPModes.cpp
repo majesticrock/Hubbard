@@ -44,10 +44,10 @@ namespace Hubbard::Helper {
 		Vector_L startingState_SC[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_CDW[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_AFM[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
-		if (this->usingDOS) {
-			//Constants::BASIS_SIZE / (-2.0 * DOS::LOWER_BORDER);
-		}
-		const double norm_constant = sqrt(1. / ((double)Constants::BASIS_SIZE));
+
+		const double norm_constant = this->usingDOS 
+			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
+			: sqrt(1. / ((double)Constants::BASIS_SIZE));
 		for (int j = 0; j < 2; ++j)
 		{
 			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
@@ -56,10 +56,6 @@ namespace Hubbard::Helper {
 				startingState_CDW[j](2 * Constants::BASIS_SIZE + i) = norm_constant;
 				startingState_AFM[j](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? norm_constant : -norm_constant;
 			}
-			//startingState_SC[j].normalize();
-			//startingState_CDW[j].normalize();
-			//startingState_AFM[j].normalize();
-			//startingState_SC[j](0) = 1;
 		}
 		
 		// M_new = K_plus

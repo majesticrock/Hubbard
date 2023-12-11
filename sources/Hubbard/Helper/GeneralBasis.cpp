@@ -165,22 +165,24 @@ namespace Hubbard::Helper {
 		* 2 - CDW
 		* 3 - AFM
 		*/
-		const global_floating_type norm_factor = 1. / sqrt((global_floating_type)Constants::BASIS_SIZE);
+		const double norm_constant = this->usingDOS
+			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
+			: sqrt(1. / ((double)Constants::BASIS_SIZE));
 		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
 		for (int i = 0; i < Constants::BASIS_SIZE; i++)
 		{
-			psis[0](i* number_of_basis_terms) = norm_factor;
-			psis[0](i* number_of_basis_terms + 1) = norm_factor;
+			psis[0](i* number_of_basis_terms) = norm_constant;
+			psis[0](i* number_of_basis_terms + 1) = norm_constant;
 
-			psis[1](i* number_of_basis_terms) = norm_factor;
-			psis[1](i* number_of_basis_terms + 1) = -norm_factor;
+			psis[1](i* number_of_basis_terms) = norm_constant;
+			psis[1](i* number_of_basis_terms + 1) = -norm_constant;
 
 			if (number_of_basis_terms >= 6) {
-				psis[2](i* number_of_basis_terms + 4) = norm_factor;
-				psis[2](i* number_of_basis_terms + 5) = norm_factor;
+				psis[2](i* number_of_basis_terms + 4) = norm_constant;
+				psis[2](i* number_of_basis_terms + 5) = norm_constant;
 
-				psis[3](i* number_of_basis_terms + 4) = norm_factor;
-				psis[3](i* number_of_basis_terms + 5) = -norm_factor;
+				psis[3](i* number_of_basis_terms + 4) = norm_constant;
+				psis[3](i* number_of_basis_terms + 5) = -norm_constant;
 			}
 		}
 

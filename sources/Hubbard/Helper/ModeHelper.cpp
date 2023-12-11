@@ -68,6 +68,19 @@ namespace Hubbard::Helper {
 		: number_of_basis_terms{ input.getInt("number_of_basis_terms") }, start_basis_at{ input.getInt("start_basis_at") },
 		usingDOS(input.getBool("use_DOS"))
 	{
+		if (this->usingDOS) {
+			const auto lattice = input.getString("lattice_type");
+			if (lattice == "square") {
+				this->dos_dimension = 2;
+			}
+			else if (lattice == "cube") {
+				this->dos_dimension = 3;
+			}
+			else {
+				std::cerr << "Did not recognize lattice type in ModeHelper!" << std::endl;
+				throw;
+			}
+		}
 		if (this->start_basis_at < 0) {
 			// We investigate the special x-p-basis
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * 8;
