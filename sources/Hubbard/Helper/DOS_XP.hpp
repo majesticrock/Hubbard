@@ -49,6 +49,11 @@ namespace Hubbard::Helper {
 
 							L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l)
 								+= computeRealTerm(term, k, l) * this->approximate_dos[k];
+							// Technically, we need to multiply this term by h(gamma - gamma') = Delta gamma
+							// But we dont, that's why we need to devide it later in the offdiagonal parts
+							// The factor is added, when we compute the lanczos coefficients
+							// If we were to include it here, the matrix elements would become very small (as Delta gamma is small)
+							// which is bad for numerical stability
 						}
 						else {
 							for (int l = 0; l < inner_sum_limit; l++)

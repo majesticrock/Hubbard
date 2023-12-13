@@ -137,7 +137,7 @@ namespace Hubbard::Helper {
 				{
 					value *= INV_GAMMA_DISC / boost::math::pow<DOS::DIMENSION>(2. * Constants::K_DISCRETIZATION);
 				}
-
+				
 				Constants::K_DISCRETIZATION /= faktor;
 				Constants::PI_DIV_DISCRETIZATION *= faktor;
 			}
