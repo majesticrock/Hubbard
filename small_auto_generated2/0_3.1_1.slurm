@@ -5,7 +5,7 @@
 
 ## Mandatory:
 #SBATCH --job-name=small_modes
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/small_modes_output_0_6.00015_1.txt
+#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/small_modes_output_0_3.1_1.txt
 #SBATCH --time=16:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=ultralong       ## choose queue
 
@@ -32,7 +32,7 @@ date
 echo "--- START ---"
 
 ## execute binary using mpirun on the allocated computation resource; the number of cores is $
-mpirun ./build/main small_auto_generated2/0_6.00015_1.config
+mpirun ./build/main small_auto_generated2/0_3.1_1.config
 
 echo "--- END ---"
 date
