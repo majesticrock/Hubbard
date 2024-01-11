@@ -185,5 +185,11 @@ namespace Hubbard {
 		inline const ModelAttributes<DataType>& getAttributes() const {
 			return this->model_attributes;
 		}
+
+		inline void set_CDW_SC_ratio(double cdw_ratio) {
+			auto buffer = this->model_attributes[0] + this->model_attributes[2];
+			this->model_attributes[0] = buffer * cdw_ratio;
+			this->model_attributes[2] = buffer * (1. - cdw_ratio);
+		};
 	};
 }
