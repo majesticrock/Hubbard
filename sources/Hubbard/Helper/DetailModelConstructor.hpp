@@ -41,7 +41,9 @@ namespace Hubbard::Helper {
 				0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
 			model = std::make_unique<Model>(modelParameters);
-			model->set_CDW_SC_ratio(input.getDouble("ratio_CDW_SC"));
+			if (input.getString("ratio_CDW_SC") != "-1") {
+				model->set_CDW_SC_ratio(input.getDouble("ratio_CDW_SC"));
+			}
 			ModelAttributes<global_floating_type> result = model->computePhases();
 
 			if (model_params[1] > 0 && model_params[2] > 0) { // only for U>0 and V>0
