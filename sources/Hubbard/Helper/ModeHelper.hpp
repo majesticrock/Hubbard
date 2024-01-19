@@ -37,7 +37,7 @@ namespace Hubbard::Helper {
 		int start_basis_at{};
 
 		double dos_dimension{};
-		bool usingDOS{};	
+		bool usingDOS{};
 
 		/////////////
 		// methods //

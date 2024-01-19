@@ -144,7 +144,6 @@ namespace Hubbard {
 				this->fillRho();
 				occ += this->get_n_down() * this->get_n_down_Q();
 				f += this->get_f().real() * this->get_f_Q().real();
-
 			} while (ks.iterateFullBZ());
 			occ /= Constants::BASIS_SIZE;
 			f /= Constants::BASIS_SIZE;

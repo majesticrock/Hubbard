@@ -101,7 +101,7 @@ namespace Hubbard::Helper {
 			approximate_dos(Constants::BASIS_SIZE, 0.0)
 		{
 			auto dos_norm = [this]() -> global_floating_type {
-				return (- 2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE) * std::reduce(approximate_dos.begin(), approximate_dos.end(), global_floating_type{});
+				return (-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE) * std::reduce(approximate_dos.begin(), approximate_dos.end(), global_floating_type{});
 				};
 
 			const std::string filename = "../../data/approx_dos_dim_" + std::to_string(DOS::DIMENSION) + "_disc_" + std::to_string(Constants::BASIS_SIZE) + ".bin";
@@ -137,7 +137,7 @@ namespace Hubbard::Helper {
 				{
 					value *= INV_GAMMA_DISC / boost::math::pow<DOS::DIMENSION>(2. * Constants::K_DISCRETIZATION);
 				}
-				
+
 				Constants::K_DISCRETIZATION /= faktor;
 				Constants::PI_DIV_DISCRETIZATION *= faktor;
 			}

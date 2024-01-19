@@ -395,7 +395,7 @@ namespace Utility {
 			}
 			data.push_back(std::move(res));
 		};
-		
+
 		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
 		// Additionally, this function orthogonalizes the Krylov basis each step
 		void computeWithReorthogonalization(const matrix_t& toSolve, int maxIter, double errorMargin = 1e-10)
@@ -444,7 +444,8 @@ namespace Utility {
 				}
 				if (iterNum > 0U) {
 					currentSolution = (buffer - (deltas.back() * basisVectors.back())) - (gammas.back() * basisVectors[iterNum]);
-				} else {
+				}
+				else {
 					currentSolution = (buffer - (deltas.back() * basisVectors.back()));
 				}
 				GramSchmidt<ComputationType>::orthogonalizeSingleVector(currentSolution, basisVectors);
@@ -504,6 +505,4 @@ namespace Utility {
 			data.writeDataToFile(filename);
 		};
 	};
-
-
 }

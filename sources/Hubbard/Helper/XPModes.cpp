@@ -45,7 +45,7 @@ namespace Hubbard::Helper {
 		Vector_L startingState_CDW[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_AFM[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 
-		const double norm_constant = this->usingDOS 
+		const double norm_constant = this->usingDOS
 			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
 			: sqrt(1. / ((double)Constants::BASIS_SIZE));
 		for (int j = 0; j < 2; ++j)
@@ -57,7 +57,7 @@ namespace Hubbard::Helper {
 				startingState_AFM[j](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? norm_constant : -norm_constant;
 			}
 		}
-		
+
 		// M_new = K_plus
 		Matrix_L solver_matrix;
 		Eigen::SelfAdjointEigenSolver<Matrix_L> k_solver[2];

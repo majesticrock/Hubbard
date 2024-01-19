@@ -318,7 +318,7 @@ namespace Hubbard {
 				this->fillHamiltonian(gamma);
 				this->fillRho();
 
-				values(0) = this->get_f().real() * this->get_f_Q().real(); // f_k * f_k+q 
+				values(0) = this->get_f().real() * this->get_f_Q().real(); // f_k * f_k+q
 				values(1) = this->get_n_down() * this->get_n_down_Q(); // n_k * n_k+q
 
 				return values;
