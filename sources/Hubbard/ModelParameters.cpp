@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
+#include "../Utility/better_to_string.hpp"
 
 namespace Hubbard {
 	void ModelParameters::init()
@@ -143,7 +144,7 @@ namespace Hubbard {
 				return out.str();
 			}
 			else {
-				std::string str = std::to_string(number);
+				std::string str = Utility::better_to_string(number, std::chars_format::fixed);
 				// Remove trailing zeroes
 				str.erase(str.find_last_not_of('0') + 1, std::string::npos);
 				str.erase(str.find_last_not_of('.') + 1, std::string::npos);
