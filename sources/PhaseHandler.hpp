@@ -9,6 +9,7 @@ protected:
 	double GLOBAL_IT_LIMS[2] = {0, 0};
 	double FIRST_IT_RANGE{};
 	double FIRST_IT_MIN{};
+	double FIRST_IT_MAX{};
 	const int GLOBAL_IT_STEPS{};
 	const int FIRST_IT_STEPS{};
 
@@ -25,6 +26,7 @@ public:
 				GLOBAL_IT_LIMS[0] = model_params[i];
 				FIRST_IT_RANGE = (GLOBAL_IT_LIMS[1] - GLOBAL_IT_LIMS[0]) / numberOfRanks;
 				FIRST_IT_MIN = GLOBAL_IT_LIMS[0] + rank * FIRST_IT_RANGE;
+				FIRST_IT_MAX = FIRST_IT_MIN + FIRST_IT_RANGE;
 				model_params[i] = FIRST_IT_MIN;
 			}
 		}

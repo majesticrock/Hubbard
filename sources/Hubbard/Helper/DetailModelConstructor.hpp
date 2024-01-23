@@ -34,19 +34,14 @@ namespace Hubbard::Helper {
 
 	public:
 		virtual ~DetailModelConstructor() = default;
-		DetailModelConstructor(Utility::InputFileReader& input)
-		{
-			std::vector<double> model_params = input.getDoubleList("model_parameters");
-			Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
-				0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
-			model = std::make_unique<Model>(modelParameters);
+		DetailModelConstructor(Utility::InputFileReader& input, const ModelParameters& modelParameters) : model(std::make_unique<Model>(modelParameters)) {
 			if (input.getString("ratio_CDW_SC") != "-1") {
 				model->set_CDW_SC_ratio(input.getDouble("ratio_CDW_SC"));
 			}
 			ModelAttributes<global_floating_type> result = model->computePhases();
 
-			if (model_params[1] > 0 && model_params[2] > 0) { // only for U>0 and V>0
+			if (modelParameters.U > 0 && modelParameters.V > 0) { // only for U>0 and V>0
 				if (result.isFinite(0) || result.isFinite(1)) {
 					decltype(result) copy{ result };
 					if (result.isFinite(0)) {
@@ -69,7 +64,7 @@ namespace Hubbard::Helper {
 			}
 			model->getAttributes().print();
 			model->computeExpectationValues(expecs, sum_of_all);
-		};
+		}
 
 		DetailModelConstructor(std::unique_ptr<Model>&& model_ptr) : model{ std::move(model_ptr) }
 		{

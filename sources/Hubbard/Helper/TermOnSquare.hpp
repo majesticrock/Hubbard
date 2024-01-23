@@ -16,7 +16,7 @@ namespace Hubbard::Helper {
 		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 
 	public:
-		TermOnSquare(Utility::InputFileReader& input) : DetailModelConstructor(input) {};
+		TermOnSquare(Utility::InputFileReader& input, const ModelParameters& modelParameters) : DetailModelConstructor(input, modelParameters) {};
 		TermOnSquare(std::unique_ptr<Hubbard::SquareLattice::UsingBroyden>&& model_ptr) : DetailModelConstructor(std::move(model_ptr)) {};
 	};
 }

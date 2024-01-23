@@ -97,7 +97,7 @@ namespace Hubbard::Helper {
 		};
 
 	public:
-		TermWithDOS(Utility::InputFileReader& input) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input),
+		TermWithDOS(Utility::InputFileReader& input, const ModelParameters& modelParameters) : DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input, modelParameters),
 			approximate_dos(Constants::BASIS_SIZE, 0.0)
 		{
 			auto dos_norm = [this]() -> global_floating_type {

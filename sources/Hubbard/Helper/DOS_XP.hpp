@@ -4,7 +4,7 @@
 
 namespace Hubbard::Helper {
 	template <class DOS>
-	class DOS_XP : public XPModes, public TermWithDOS<DOS>
+	class DOS_XP : public TermWithDOS<DOS>, public XPModes
 	{
 	private:
 		inline global_floating_type computeRealTerm(const SymbolicOperators::WickTerm& term, int k, int l) const {
@@ -114,7 +114,7 @@ namespace Hubbard::Helper {
 			return *(this->model);
 		};
 
-		DOS_XP(Utility::InputFileReader& input) : XPModes(input), TermWithDOS<DOS>(input) {
+		DOS_XP(Utility::InputFileReader& input, const ModelParameters& modelParameters) : TermWithDOS<DOS>(input, modelParameters), XPModes(input) {
 			this->TOTAL_BASIS = this->number_of_basis_terms * Constants::BASIS_SIZE;
 		};
 	};

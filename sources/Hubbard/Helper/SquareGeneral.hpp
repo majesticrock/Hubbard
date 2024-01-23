@@ -3,7 +3,7 @@
 #include "TermOnSquare.hpp"
 
 namespace Hubbard::Helper {
-	class SquareGeneral : public GeneralBasis, public TermOnSquare
+	class SquareGeneral : public TermOnSquare, public GeneralBasis
 	{
 	private:
 		virtual void fill_block_M(int i, int j) override;
@@ -17,8 +17,8 @@ namespace Hubbard::Helper {
 			return *model;
 		};
 
-		SquareGeneral(Utility::InputFileReader& input) : GeneralBasis(input), TermOnSquare(input) {};
+		SquareGeneral(Utility::InputFileReader& input, const ModelParameters& modelParameters) : TermOnSquare(input, modelParameters), GeneralBasis(input) {};
 		SquareGeneral(Utility::InputFileReader& input, std::unique_ptr<Hubbard::SquareLattice::UsingBroyden>&& model_ptr)
-			: GeneralBasis(input), TermOnSquare(std::move(model_ptr)) {};
+			: TermOnSquare(std::move(model_ptr)), GeneralBasis(input) {};
 	};
 }

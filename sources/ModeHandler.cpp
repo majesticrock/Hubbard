@@ -15,36 +15,40 @@ const std::string BASE_FOLDER = "../../data/modes/";
 
 std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(Utility::InputFileReader& input) const
 {
+	std::vector<double> model_params = input.getDoubleList("model_parameters");
+	Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
+			0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
+
 	if (input.getInt("start_basis_at") == -1) {
 		if (input.getBool("use_DOS")) {
 			if (input.getString("lattice_type") == "square") {
-				return std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::Square>>(input);
+				return std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::Square>>(input, modelParameters);
 			}
 			else if (input.getString("lattice_type") == "cube") {
-				return std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::SimpleCubic>>(input);
+				return std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::SimpleCubic>>(input, modelParameters);
 			}
 			else {
 				throw std::runtime_error("Could not find lattice_type: " + input.getString("lattice_type"));
 			}
 		}
 		else {
-			return std::make_unique<Hubbard::Helper::SquareXP>(input);
+			return std::make_unique<Hubbard::Helper::SquareXP>(input, modelParameters);
 		}
 	}
 	else {
 		if (input.getBool("use_DOS")) {
 			if (input.getString("lattice_type") == "square") {
-				return std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::Square>>(input);
+				return std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::Square>>(input, modelParameters);
 			}
 			else if (input.getString("lattice_type") == "cube") {
-				return std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::SimpleCubic>>(input);
+				return std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::SimpleCubic>>(input, modelParameters);
 			}
 			else {
 				throw std::runtime_error("Could not find lattice_type: " + input.getString("lattice_type"));
 			}
 		}
 		else {
-			return std::make_unique<Hubbard::Helper::SquareGeneral>(input);
+			return std::make_unique<Hubbard::Helper::SquareGeneral>(input, modelParameters);
 		}
 	}
 	return nullptr;

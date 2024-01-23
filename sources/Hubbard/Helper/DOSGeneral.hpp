@@ -4,7 +4,7 @@
 
 namespace Hubbard::Helper {
 	template <class DOS>
-	class DOSGeneral : public GeneralBasis, public TermWithDOS<DOS>
+	class DOSGeneral : public TermWithDOS<DOS>, public GeneralBasis
 	{
 	private:
 		virtual void fill_block_M(int i, int j) override
@@ -67,7 +67,7 @@ namespace Hubbard::Helper {
 			return *(this->model);
 		};
 
-		DOSGeneral(Utility::InputFileReader& input) : GeneralBasis(input), TermWithDOS<DOS>(input) {
+		DOSGeneral(Utility::InputFileReader& input, const ModelParameters& modelParameters) : TermWithDOS<DOS>(input, modelParameters), GeneralBasis(input) {
 			this->TOTAL_BASIS = this->number_of_basis_terms * Constants::BASIS_SIZE;
 		};
 	};

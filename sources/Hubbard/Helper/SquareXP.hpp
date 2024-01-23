@@ -26,7 +26,7 @@ namespace Hubbard::Helper {
 			return *model;
 		};
 
-		SquareXP(Utility::InputFileReader& input) : TermOnSquare(input), XPModes(input)
+		SquareXP(Utility::InputFileReader& input, const ModelParameters& modelParameters) : TermOnSquare(input, modelParameters), XPModes(input)
 		{};
 	};
 }
