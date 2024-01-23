@@ -8,7 +8,6 @@ namespace Hubbard::Helper {
 		K_plus = Matrix_L::Zero(5 * Constants::BASIS_SIZE, 5 * Constants::BASIS_SIZE);
 		K_minus = Matrix_L::Zero(3 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
 		L = Matrix_L::Zero(5 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
-
 		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
 			for (int j = 0; j < number_of_basis_terms; ++j)
@@ -17,6 +16,44 @@ namespace Hubbard::Helper {
 			}
 		}
 	}
+
+	bool XPModes::matrix_is_negative() {
+		K_plus = Matrix_L::Zero(5 * Constants::BASIS_SIZE, 5 * Constants::BASIS_SIZE);
+		K_minus = Matrix_L::Zero(3 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
+		for (int i = 0; i < number_of_basis_terms; ++i)
+		{
+			for (int j = 0; j < number_of_basis_terms; ++j)
+			{
+				fill_block_M(i, j);
+			}
+		}
+		if ((K_plus - K_plus.adjoint()).norm() > ERROR_MARGIN * K_plus.rows() * K_plus.cols())
+			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_plus - K_plus.adjoint()).norm()));
+		if ((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols())
+			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
+		
+		auto setZero = [](global_floating_type val) {
+			return (abs(val) < 1e-12 ? 0 : val);
+			};
+		K_plus = K_plus.array().unaryExpr(setZero);
+		K_minus = K_minus.array().unaryExpr(setZero);
+
+		// As far as I understand this cannot be done in parallel as I do it in computeCollectiveModes
+		// because I cannot cancel the .compute method from the other thread if an exception occurs
+		try {
+			Eigen::SelfAdjointEigenSolver<Matrix_L> solver_minus(K_minus, Eigen::EigenvaluesOnly);
+			Vector_L& evs = const_cast<Vector_L&>(solver_minus.eigenvalues());
+			applyMatrixOperation<OPERATION_NONE>(evs);
+
+			Eigen::SelfAdjointEigenSolver<Matrix_L> solver_plus(K_plus, Eigen::EigenvaluesOnly);
+			evs = const_cast<Vector_L&>(solver_plus.eigenvalues());
+			applyMatrixOperation<OPERATION_NONE>(evs);
+		} catch (const MatrixIsNegativeException& ex){
+			return true;
+		}
+
+		return false;
+	};
 
 	std::vector<ResolventReturnData> XPModes::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever)
 	{

@@ -16,6 +16,7 @@ namespace Hubbard::Helper {
 	public:
 		GeneralBasis(Utility::InputFileReader& input) : ModeHelper(input) { };
 
+		virtual bool matrix_is_negative() override;
 		virtual std::vector<ResolventReturnData> computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) override;
 	};
 }

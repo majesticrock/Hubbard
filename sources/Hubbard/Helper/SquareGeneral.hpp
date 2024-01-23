@@ -6,7 +6,8 @@ namespace Hubbard::Helper {
 	class SquareGeneral : public GeneralBasis, public TermOnSquare
 	{
 	private:
-		virtual void fillBlock(int i, int j) override;
+		virtual void fill_block_M(int i, int j) override;
+		virtual void fill_block_N(int i, int j) override;
 
 	public:
 		virtual const BaseModel<global_floating_type>& getModel() const override {

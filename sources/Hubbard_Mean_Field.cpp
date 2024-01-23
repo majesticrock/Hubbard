@@ -3,7 +3,6 @@
 #endif
 #include "Hubbard/GlobalDefinitions.hpp"
 
-#include <omp.h>
 #ifndef _NO_MPI
 #define _DEFAULT_EXIT MPI_Finalize()
 #include <mpi.h>
@@ -16,6 +15,7 @@
 #include "TestHandler.hpp"
 #include "PhaseHandler.hpp"
 #include "ModeHandler.hpp"
+#include "UnknownBoundaryHandler.hpp"
 #include <Eigen/Dense>
 
 using namespace Hubbard;
@@ -74,6 +74,9 @@ int main(int argc, char** argv)
 	else if (input.getString("compute_what") == "modes") {
 		ModeHandler modes(input, rank, numberOfRanks);
 		modes.execute(input);
+	} else if(input.getString("compute_what") == "unknown_boundary") {
+		UnknownBoundaryHandler u_boundary(input, rank, numberOfRanks);
+		u_boundary.execute(input);
 	}
 
 	if (rank == 0) {

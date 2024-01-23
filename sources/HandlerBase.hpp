@@ -16,4 +16,5 @@ protected:
 public:
 	HandlerBase(Utility::InputFileReader& input, int _rank, int _numberOfRanks);
 	virtual ~HandlerBase() = default;
+	virtual void execute(Utility::InputFileReader& input) const = 0;
 };

@@ -1,7 +1,6 @@
 #include "ModeHandler.hpp"
 #include <vector>
 #include <filesystem>
-#include "Hubbard/Helper/ModeHelper.hpp"
 #include "Hubbard/Helper/SquareGeneral.hpp"
 #include "Hubbard/Helper/SquareXP.hpp"
 #include "Hubbard/Helper/DOSGeneral.hpp"
@@ -14,6 +13,43 @@
 using data_vector = std::vector<Hubbard::global_floating_type>;
 const std::string BASE_FOLDER = "../../data/modes/";
 
+std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(Utility::InputFileReader& input) const
+{
+	if (input.getInt("start_basis_at") == -1) {
+		if (input.getBool("use_DOS")) {
+			if (input.getString("lattice_type") == "square") {
+				return std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::Square>>(input);
+			}
+			else if (input.getString("lattice_type") == "cube") {
+				return std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::SimpleCubic>>(input);
+			}
+			else {
+				throw std::runtime_error("Could not find lattice_type: " + input.getString("lattice_type"));
+			}
+		}
+		else {
+			return std::make_unique<Hubbard::Helper::SquareXP>(input);
+		}
+	}
+	else {
+		if (input.getBool("use_DOS")) {
+			if (input.getString("lattice_type") == "square") {
+				return std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::Square>>(input);
+			}
+			else if (input.getString("lattice_type") == "cube") {
+				return std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::SimpleCubic>>(input);
+			}
+			else {
+				throw std::runtime_error("Could not find lattice_type: " + input.getString("lattice_type"));
+			}
+		}
+		else {
+			return std::make_unique<Hubbard::Helper::SquareGeneral>(input);
+		}
+	}
+	return nullptr;
+}
+
 void ModeHandler::execute(Utility::InputFileReader& input) const
 {
 	using std::to_string;
@@ -23,39 +59,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	Hubbard::global_floating_type totalGapValue;
 	std::vector<Hubbard::ResolventReturnData> resolvents;
 
-	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;
-	if (input.getInt("start_basis_at") == -1) {
-		if (input.getBool("use_DOS")) {
-			if (input.getString("lattice_type") == "square") {
-				modeHelper = std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::Square>>(input);
-			}
-			else if (input.getString("lattice_type") == "cube") {
-				modeHelper = std::make_unique<Hubbard::Helper::DOS_XP<Hubbard::DensityOfStates::SimpleCubic>>(input);
-			}
-			else {
-				throw std::runtime_error("Could not find lattice_type: " + input.getString("lattice_type"));
-			}
-		}
-		else {
-			modeHelper = std::make_unique<Hubbard::Helper::SquareXP>(input);
-		}
-	}
-	else {
-		if (input.getBool("use_DOS")) {
-			if (input.getString("lattice_type") == "square") {
-				modeHelper = std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::Square>>(input);
-			}
-			else if (input.getString("lattice_type") == "cube") {
-				modeHelper = std::make_unique<Hubbard::Helper::DOSGeneral<Hubbard::DensityOfStates::SimpleCubic>>(input);
-			}
-			else {
-				throw std::runtime_error("Could not find lattice_type: " + input.getString("lattice_type"));
-			}
-		}
-		else {
-			modeHelper = std::make_unique<Hubbard::Helper::SquareGeneral>(input);
-		}
-	}
+	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper{getHelper(input)};
 
 	totalGapValue = modeHelper->getModel().getTotalGapValue();
 	modeHelper->getModel().getAllEnergies(oneParticleEnergies);

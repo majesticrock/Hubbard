@@ -9,7 +9,6 @@ namespace Hubbard::Helper {
 		M = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
 		N = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
 
-		//#pragma omp parallel for
 		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
 			for (int j = 0; j < number_of_basis_terms; ++j)
@@ -105,13 +104,36 @@ namespace Hubbard::Helper {
 		}
 	}
 
+	bool GeneralBasis::matrix_is_negative() {
+		M = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		for (int i = 0; i < number_of_basis_terms; ++i)
+		{
+			for (int j = 0; j < number_of_basis_terms; ++j)
+			{
+				fill_block_M(i, j);
+			}
+		}
+
+		if ((M - M.adjoint()).norm() > 1e-8) {
+			throw std::runtime_error("M is not Hermitian!");
+		}
+
+		Eigen::SelfAdjointEigenSolver<MatrixCL> M_solver(M);
+		Vector_L& evs_M = const_cast<Vector_L&>(M_solver.eigenvalues());
+		try{
+			applyMatrixOperation<OPERATION_NONE>(evs_M);
+		} catch(const MatrixIsNegativeException&){
+			return true;
+		}
+
+		return false;
+	}
+
 	std::vector<ResolventReturnData> GeneralBasis::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 
 		fillMatrices();
-
-		std::cout << "||M-M^+|| = " << (M - M.adjoint()).norm() << std::endl;
 		if ((M - M.adjoint()).norm() > 1e-8) {
 			throw std::runtime_error("M is not Hermitian!");
 		}

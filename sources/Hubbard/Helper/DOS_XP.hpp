@@ -14,57 +14,13 @@ namespace Hubbard::Helper {
 			}
 			return result.real();
 		};
-
-		virtual void fillBlock(int i, int j) override
+		
+		virtual void fill_block_M(int i, int j) override
 		{
-			constexpr std::array<int, 4> cdw_basis_positions{ 2,3,8,9 };
-			const int hermitian_offsets[6] = {
-				0,							Constants::BASIS_SIZE,
-				2 * Constants::BASIS_SIZE,	(5 * Constants::BASIS_SIZE) / 2,
-				3 * Constants::BASIS_SIZE,	4 * Constants::BASIS_SIZE
-			};
-			const int antihermitian_offsets[4] = {
-				0,									Constants::BASIS_SIZE,
-				2 * Constants::BASIS_SIZE,			(5 * Constants::BASIS_SIZE) / 2
-			};
-
 			const int sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()
 				? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
 			const int inner_sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), j) == cdw_basis_positions.end()
 				? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
-
-			// L
-			if (i < 6 && j > 5) {
-				for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
-					for (int k = 0; k < sum_limit; ++k)
-					{
-						if (term.delta_momenta.size() > 0U) {
-							int l{ k };
-							if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
-								l = this->model->shiftByQ(k);
-							}
-							if (l >= inner_sum_limit) {
-								continue;
-							}
-
-							L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l)
-								+= computeRealTerm(term, k, l) * this->approximate_dos[k];
-							// Technically, we need to multiply this term by h(gamma - gamma') = Delta gamma
-							// But we dont, that's why we need to devide it later in the offdiagonal parts
-							// The factor is added, when we compute the lanczos coefficients
-							// If we were to include it here, the matrix elements would become very small (as Delta gamma is small)
-							// which is bad for numerical stability
-						}
-						else {
-							for (int l = 0; l < inner_sum_limit; l++)
-							{
-								L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l)
-									+= computeRealTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
-							}
-						}
-					} // end k-loop
-				} // end term-loop
-			}
 
 			// K_+ / K_-
 			// Ignore the offdiagonal blocks as they are 0
@@ -107,6 +63,47 @@ namespace Hubbard::Helper {
 					}
 				} // end k-loop
 			} // end term-loop
+		}
+
+		virtual void fill_block_N(int i, int j) override
+		{
+			const int sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()
+				? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
+			const int inner_sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), j) == cdw_basis_positions.end()
+				? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
+
+			// L
+			if (i < 6 && j > 5) {
+				for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
+					for (int k = 0; k < sum_limit; ++k)
+					{
+						if (term.delta_momenta.size() > 0U) {
+							int l{ k };
+							if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
+								l = this->model->shiftByQ(k);
+							}
+							if (l >= inner_sum_limit) {
+								continue;
+							}
+
+							L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l)
+								+= computeRealTerm(term, k, l) * this->approximate_dos[k];
+							// Technically, we need to multiply this term by h(gamma - gamma') = Delta gamma
+							// But we dont, that's why we need to devide it later in the offdiagonal parts
+							// The factor is added, when we compute the lanczos coefficients
+							// If we were to include it here, the matrix elements would become very small (as Delta gamma is small)
+							// which is bad for numerical stability
+						}
+						else {
+							for (int l = 0; l < inner_sum_limit; l++)
+							{
+								L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l)
+									+= computeRealTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
+							}
+						}
+					} // end k-loop
+				} // end term-loop
+			}
 		}
 
 	public:

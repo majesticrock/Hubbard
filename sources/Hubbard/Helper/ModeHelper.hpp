@@ -3,11 +3,19 @@
 #include "../../Utility/InputFileReader.hpp"
 #include "../GlobalDefinitions.hpp"
 #include "../BaseModel.hpp"
+#include "../../Utility/better_to_string.hpp"
 
 // Both methods yield precisely the same data!
 #define _PSEUDO_INVERSE
 
 namespace Hubbard::Helper {
+	class MatrixIsNegativeException : public std::runtime_error {
+	public:
+		MatrixIsNegativeException(const global_floating_type& negative_eigenvalue)
+			: std::runtime_error("The matrix M is negative! First negative eigenvalue = " + Utility::better_to_string(negative_eigenvalue))
+			{};
+	};
+
 	class ModeHelper {
 	protected:
 		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M{}, wicks_N{};
@@ -45,7 +53,6 @@ namespace Hubbard::Helper {
 		void loadWick(const std::string& filename);
 
 		virtual void fillMatrices() = 0;
-
 		/* Takes a positive semidefinite vector (the idea is that this contains eigenvalues) and applies an operation on it
 		* 0: Correct for negative eigenvalues
 		* 1: Compute the pseudoinverse
@@ -57,8 +64,7 @@ namespace Hubbard::Helper {
 			for (auto& ev : evs)
 			{
 				if (ev < -(SALT * evs.size())) {
-					std::cerr << std::scientific << "M:   " << ev << std::endl;
-					throw std::invalid_argument("Matrix is not positive!  " + to_string(ev));
+					throw MatrixIsNegativeException(ev);
 				}
 				if (ev < SALT * evs.size()) {
 #ifdef _PSEUDO_INVERSE
@@ -92,7 +98,12 @@ namespace Hubbard::Helper {
 		// Throws an exception if the passed term is not valid or of a type that is not implemented yet,
 		// otherwise it does nothing
 		void checkTermValidity(const SymbolicOperators::WickTerm& term);
-		virtual void fillBlock(int i, int j) = 0;
+		virtual void fill_block_M(int i, int j) = 0;
+		virtual void fill_block_N(int i, int j) = 0;
+		inline void fillBlock(int i, int j) {
+			fill_block_M(i, j);
+			fill_block_N(i, j);
+		};
 
 	public:
 		ModeHelper(Utility::InputFileReader& input);
@@ -101,6 +112,9 @@ namespace Hubbard::Helper {
 		virtual const BaseModel<global_floating_type>& getModel() const = 0;
 		virtual BaseModel<global_floating_type>& getModel() = 0;
 
+		// Merely checks whether the dynamical matrix M is negative or not
+		virtual bool matrix_is_negative() = 0;
+		// does the full iEoM resolvent computations
 		virtual std::vector<ResolventReturnData> computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) = 0;
 	};
 }
