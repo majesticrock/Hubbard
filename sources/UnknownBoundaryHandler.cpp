@@ -82,6 +82,8 @@ void UnknownBoundaryHandler::execute(Utility::InputFileReader& input) const {
             }
             if(iter == MAX_ITERATIONS - 1) std::cerr << "Finished loop #" << i << " with the maximum number of iterations. Precision: " << upper - lower << std::endl;
         }
+        
+        local_data[i] = center;
         modelParameters.incrementGlobalIterator();
         end = std::chrono::steady_clock::now();
         std::cout << "Rank #" << rank << ": Runtime for iteration #" << i << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
