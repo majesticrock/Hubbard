@@ -112,13 +112,15 @@ namespace Hubbard::Helper {
 				}
 				else {
 					std::cerr << "An error occurred while reading the approximate dos data." << std::endl;
-					std::cerr << "Approximate DOS norm = " << std::scientific << std::setprecision(8) << dos_norm() << std::endl;
+					std::cerr << "1 - Approximate DOS norm = " << std::scientific << std::setprecision(8) << std::abs(dos_norm() - 1.) << std::endl;
 				}
+			} else {
+				std::cout << "DOS file does not exist yet. Computing..." << std::endl;
 			}
 
 			std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 			if constexpr (DOS::DIMENSION == 2) {
-				constexpr int faktor = 50;
+				constexpr int faktor = 1;
 				Constants::K_DISCRETIZATION *= faktor;
 				Constants::PI_DIV_DISCRETIZATION /= faktor;
 
@@ -161,7 +163,9 @@ namespace Hubbard::Helper {
 			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 			std::cout << "Computed DOS for iEoM in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-			Utility::BinaryIO::serializeVector(approximate_dos, filename);
+			if( !(Utility::BinaryIO::serializeVector(approximate_dos, filename).good()) ){
+				std::cerr << "Error while writing dos data to " << filename << std::endl;
+			}
 		};
 	};
 }
