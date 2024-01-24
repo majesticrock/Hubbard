@@ -10,7 +10,7 @@ namespace Utility {
 	template <typename... Args>
 	std::string better_to_string(Args&&... format_args)
 	{
-		std::array<char, 16> str;
+		std::array<char, 18> str;
 		auto result = std::to_chars(str.data(), str.data() + str.size(), std::forward<Args>(format_args)...);
 
 		if (result.ec == std::errc())
@@ -22,7 +22,7 @@ namespace Utility {
 	template <typename FloatingPoint>
 	std::string better_to_string_fixed(FloatingPoint number, unsigned short digits)
 	{
-		std::array<char, 16> str;
+		std::array<char, 18> str;
 		auto result = std::to_chars(str.data(), str.data() + str.size(), number, std::chars_format::fixed, digits);
 
 		if (result.ec == std::errc())

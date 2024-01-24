@@ -11,8 +11,10 @@
 namespace Hubbard::Helper {
 	class MatrixIsNegativeException : public std::runtime_error {
 	public:
-		MatrixIsNegativeException(const global_floating_type& negative_eigenvalue)
-			: std::runtime_error("The matrix M is negative! First negative eigenvalue = " + Utility::better_to_string(negative_eigenvalue))
+		global_floating_type negative_eigenvalue{};
+		MatrixIsNegativeException(const global_floating_type& _negative_eigenvalue)
+			: std::runtime_error("The matrix M is negative! First negative eigenvalue = " + Utility::better_to_string(_negative_eigenvalue, std::chars_format::scientific, 6)),
+				negative_eigenvalue(_negative_eigenvalue)
 			{};
 	};
 

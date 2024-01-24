@@ -122,7 +122,7 @@ namespace Hubbard::Helper {
 		Vector_L& evs_M = const_cast<Vector_L&>(M_solver.eigenvalues());
 		try{
 			applyMatrixOperation<OPERATION_NONE>(evs_M);
-		} catch(const MatrixIsNegativeException&){
+		} catch(const MatrixIsNegativeException& ex){
 			return true;
 		}
 

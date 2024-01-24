@@ -38,15 +38,19 @@ namespace Hubbard::Helper {
 		K_plus = K_plus.array().unaryExpr(setZero);
 		K_minus = K_minus.array().unaryExpr(setZero);
 
-		// As far as I understand this cannot be done in parallel as I do it in computeCollectiveModes
-		// because I cannot cancel the .compute method from the other thread if an exception occurs
 		try {
-			Eigen::SelfAdjointEigenSolver<Matrix_L> solver_minus(K_minus, Eigen::EigenvaluesOnly);
-			Vector_L& evs = const_cast<Vector_L&>(solver_minus.eigenvalues());
-			applyMatrixOperation<OPERATION_NONE>(evs);
+			// I learned that K_- is negative, if we lack proper precision
+			// This occurs when our gamma-discretization is of the same order as the gap
+			// We do not care about this though.
+			//Eigen::SelfAdjointEigenSolver<Matrix_L> solver_minus(K_minus, Eigen::EigenvaluesOnly);
+			//Vector_L& evs = const_cast<Vector_L&>(solver_minus.eigenvalues());
+			//applyMatrixOperation<OPERATION_NONE>(evs);
 
+			// K_+ may become negative if the self-consistency did not find the thermal equilibrium
+			// So we are interested in whether it is positive or negative.
+			// It would be nice to find a proper analytical statement, why K_+ is relevant to this, but not K_-...
 			Eigen::SelfAdjointEigenSolver<Matrix_L> solver_plus(K_plus, Eigen::EigenvaluesOnly);
-			evs = const_cast<Vector_L&>(solver_plus.eigenvalues());
+			Vector_L& evs = const_cast<Vector_L&>(solver_plus.eigenvalues());
 			applyMatrixOperation<OPERATION_NONE>(evs);
 		} catch (const MatrixIsNegativeException& ex){
 			return true;
