@@ -39,18 +39,12 @@ namespace Hubbard::Helper {
 		K_minus = K_minus.array().unaryExpr(setZero);
 
 		try {
-			// I learned that K_- is negative, if we lack proper precision
-			// This occurs when our gamma-discretization is of the same order as the gap
-			// We do not care about this though.
-			//Eigen::SelfAdjointEigenSolver<Matrix_L> solver_minus(K_minus, Eigen::EigenvaluesOnly);
-			//Vector_L& evs = const_cast<Vector_L&>(solver_minus.eigenvalues());
-			//applyMatrixOperation<OPERATION_NONE>(evs);
+			Eigen::SelfAdjointEigenSolver<Matrix_L> solver_minus(K_minus, Eigen::EigenvaluesOnly);
+			Vector_L& evs = const_cast<Vector_L&>(solver_minus.eigenvalues());
+			applyMatrixOperation<OPERATION_NONE>(evs);
 
-			// K_+ may become negative if the self-consistency did not find the thermal equilibrium
-			// So we are interested in whether it is positive or negative.
-			// It would be nice to find a proper analytical statement, why K_+ is relevant to this, but not K_-...
 			Eigen::SelfAdjointEigenSolver<Matrix_L> solver_plus(K_plus, Eigen::EigenvaluesOnly);
-			Vector_L& evs = const_cast<Vector_L&>(solver_plus.eigenvalues());
+			evs = const_cast<Vector_L&>(solver_plus.eigenvalues());
 			applyMatrixOperation<OPERATION_NONE>(evs);
 		} catch (const MatrixIsNegativeException& ex){
 			return true;
