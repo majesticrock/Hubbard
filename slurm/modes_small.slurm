@@ -6,8 +6,8 @@
 ## Mandatory:
 #SBATCH --job-name=small_modes
 #SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/small_modes_output.txt
-#SBATCH --time=16:00:00         ## maximum runtime; hours:minutes:seconds
-#SBATCH --partition=ultralong       ## choose queue
+#SBATCH --time=12:00:00         ## maximum runtime; hours:minutes:seconds
+#SBATCH --partition=long       ## choose queue
 
 #SBATCH --ntasks=1             ## sets number of total mpi processes
 #SBATCH --tasks-per-node=1    ## mpi processes spawned per node
