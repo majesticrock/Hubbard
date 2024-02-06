@@ -16,7 +16,7 @@
 #include <filesystem>
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
-constexpr int NUMBER_OF_PARAMETERS = 8;
+constexpr int NUMBER_OF_PARAMETERS = 9;
 constexpr int NUMBER_OF_GAP_VALUES = NUMBER_OF_PARAMETERS - 2; // The Fock parameters are not important
 const std::string BASE_FOLDER = "../../data/phases/";
 
@@ -39,19 +39,11 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 	Hubbard::Helper::PhaseHelper phaseHelper(input, rank, numberOfRanks);
 	phaseHelper.compute_crude(local_data);
 
-	std::vector<data_vector> local_coexitence_data(3, data_vector(FIRST_IT_STEPS));
-	std::vector<data_vector> recieve_coexitence_data(3, data_vector(GLOBAL_IT_STEPS));
-	phaseHelper.coexistence_AFM_CDW(local_coexitence_data);
-
 #ifndef _NO_MPI
 	for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
 	{
 		MPI_Allgather(local_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE,
 			recieve_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE, MPI_COMM_WORLD);
-	}
-	for (size_t i = 0U; i < 3; ++i) {
-		MPI_Gather(local_coexitence_data[i].data(), FIRST_IT_STEPS, MPI_DOUBLE,
-			recieve_coexitence_data[i].data(), FIRST_IT_STEPS, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	}
 #else
 	for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
@@ -84,19 +76,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 		Utility::saveData(recieve_data[3], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "gamma_sc.dat.gz", comments);
 		Utility::saveData(recieve_data[4], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "xi_sc.dat.gz", comments);
 		Utility::saveData(recieve_data[5], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "eta.dat.gz", comments);
-
-		// We saved those data points, where there is no afm/cdw phase as nan and we remove them now
-		for (auto& vec : recieve_coexitence_data) {
-			for (auto it = vec.begin(); it != vec.end();) {
-				if (std::isnan(*it)) {
-					it = vec.erase(it);
-				}
-				else {
-					++it;
-				}
-			}
-		}
-		Utility::saveData(recieve_coexitence_data, BASE_FOLDER + output_folder + "coexistence_afm_cdw.dat.gz", comments);
+		Utility::saveData(recieve_data[8], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "ps.dat.gz", comments);
 
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 		std::cout << "Crude computation time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
@@ -111,7 +91,7 @@ void PhaseHandler::execute(Utility::InputFileReader& input) const
 
 		for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 		{
-			phaseHelper.findSingleBoundary(recieve_data, local[i], i);
+			phaseHelper.findSingleBoundary(recieve_data, local[i], i < 6 ? i : i + 2);
 			sizes[i] = local[i].size();
 		}
 

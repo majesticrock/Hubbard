@@ -87,10 +87,7 @@ namespace Hubbard {
 	void printAsRow(Eigen::Vector<global_floating_type, vector_size>& printer) {
 		for (size_t i = 0U; i < printer.size(); ++i)
 		{
-			std::cout << " \t" << printer(i);
-			if ((i + 1U) % 8U == 0U) {
-				std::cout << "\n\t    ";
-			}
+			std::cout << "   " << printer(i);
 		}
 		std::cout << std::endl;
 	}
@@ -124,5 +121,6 @@ namespace Hubbard {
 		r(5) = c(5).imag(); // Eta
 		r(6) = c(6).real(); // Gamma Occupation Up
 		r(7) = c(7).real(); // Gamma Occupation Down
+		r(8) = c(8).real(); // PS
 	};
 }

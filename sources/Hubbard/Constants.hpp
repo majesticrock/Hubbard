@@ -8,6 +8,8 @@ namespace Hubbard {
 		extern int K_DISCRETIZATION;
 		extern int BASIS_SIZE;
 		extern int HALF_BASIS;
+		extern size_t SPINOR_SIZE;
+
 		extern global_floating_type PI_DIV_DISCRETIZATION;
 
 		const std::vector<std::string> option_list{ "T", "U", "V" };

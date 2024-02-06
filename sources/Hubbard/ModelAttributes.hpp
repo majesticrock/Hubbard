@@ -20,7 +20,7 @@ namespace Hubbard {
 				};
 			this->selfconsistency_values[0] = guess() + std::abs(_params.V);
 			this->selfconsistency_values[1] = guess() + std::abs(_params.V);
-			this->selfconsistency_values[2] = guess() + std::abs(_params.V);
+			this->selfconsistency_values[2] = guess();
 			if (_params.U > 0) {
 				this->selfconsistency_values[2] = 0.;
 			}
@@ -40,6 +40,7 @@ namespace Hubbard {
 			this->selfconsistency_values[5] = 0.;//_params.U * 0.1;
 			this->selfconsistency_values[6] = _params.V * 0.2;
 			this->selfconsistency_values[7] = _params.V * 0.2;
+			this->selfconsistency_values[8] = _params.V >= 0 ? 0.0 : guess() + std::abs(_params.V);
 		};
 		void initializeParamters_2d(const ModelParameters& _params) {
 			auto guess = [&]() -> double {
@@ -50,7 +51,7 @@ namespace Hubbard {
 				};
 			this->selfconsistency_values[0] = guess() + std::abs(_params.V);
 			this->selfconsistency_values[1] = guess() + std::abs(_params.V);
-			this->selfconsistency_values[2] = guess() + std::abs(_params.V);
+			this->selfconsistency_values[2] = guess();
 			if (_params.U >= 0) {
 				this->selfconsistency_values[2] = 0.;
 			}
@@ -70,6 +71,7 @@ namespace Hubbard {
 			this->selfconsistency_values[5] = 0.;//_params.U * 0.1;
 			this->selfconsistency_values[6] = _params.V * 0.2;
 			this->selfconsistency_values[7] = _params.V * 0.2;
+			this->selfconsistency_values[8] = _params.V >= 0 ? 0.0 : guess() + std::abs(_params.V);
 		};
 		void initializeParamters(const ModelParameters& _params) {
 			this->selfconsistency_values[0] = (abs(_params.U) + _params.V) * 0.5 + 0.1;
@@ -94,6 +96,7 @@ namespace Hubbard {
 			this->selfconsistency_values[5] = 0.;//_params.U * 0.1;
 			this->selfconsistency_values[6] = _params.V * 0.2;
 			this->selfconsistency_values[7] = _params.V * 0.2;
+			this->selfconsistency_values[8] = _params.V >= 0 ? 0.0 : abs(_params.U) + abs(_params.V) * 0.5 + 0.1;;
 		}
 	public:
 		/* On a 2D System we choose the following:
@@ -101,12 +104,12 @@ namespace Hubbard {
 		* 1 - Delta_AFM
 		* 2 - Delta_SC
 		* 3 - Gamma_SC
-		* 4 - Xi_SC (1D: Tau_SC, 3D: None? P-wave?)
+		* 4 - Xi_SC (1D: Tau_SC, 3D: None? p-wave?) | For DOS: trying PS
 		* 5 - Delta_eta
 		* 6 - Gamma_n_up
 		* 7 - Gamma_n_down
 		*/
-		std::vector<DataType> selfconsistency_values = std::vector<DataType>(8);
+		std::vector<DataType> selfconsistency_values = std::vector<DataType>(9U);
 		bool converged{};
 
 		~ModelAttributes() = default;
@@ -235,12 +238,7 @@ namespace Hubbard {
 			return (abs(selfconsistency_values[i]) > epsilon);
 		}
 		inline void print() const {
-			for (const auto& value : selfconsistency_values)
-			{
-				std::cout << value << "\t";
-			}
-
-			std::cout << "\n    Delta_tot = " << getTotalGapValue() << std::endl;
+			std::cout << *this << "\n    Delta_tot = " << getTotalGapValue() << std::endl;
 		};
 
 		/*

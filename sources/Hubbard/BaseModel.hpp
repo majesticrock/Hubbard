@@ -30,8 +30,8 @@ namespace Hubbard {
 	private:
 		inline void init()
 		{
-			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
-			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+			this->hamilton = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
+			this->rho = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
 
 			computeChemicalPotential();
 			this->parameterCoefficients = {
@@ -43,17 +43,18 @@ namespace Hubbard {
 				this->U_OVER_N, // Eta
 				this->V_OVER_N, // Occupation Up
 				this->V_OVER_N, // Occupation Down
+				(0.5 * this->U_OVER_N + 4. * this->V_OVER_N) // Phase seperation
 			};
 		};
 		inline void multiplyParametersByCoefficients(ParameterVector& F) const {
-			for (size_t i = 0U; i < F.size(); ++i)
+			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
 			{
 				F(i) *= parameterCoefficients[i];
 			}
 		};
 		inline void setParameters(ParameterVector& F) {
 			_CONST_FLOATING new_weight{ 0.5 };
-			for (size_t i = 0U; i < F.size(); ++i)
+			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
 			{
 				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
 			}
@@ -62,7 +63,7 @@ namespace Hubbard {
 	protected:
 		ModelAttributes<DataType> model_attributes;
 		// Stores the coefficients for the parameters (e.g. V/N) with the appropriate index
-		std::vector<global_floating_type> parameterCoefficients;
+		std::vector<global_floating_type> parameterCoefficients = std::vector<global_floating_type>(9U);
 
 		SpinorMatrix hamilton;
 		SpinorMatrix rho;
@@ -74,8 +75,6 @@ namespace Hubbard {
 		double U_OVER_N{ U / Constants::BASIS_SIZE };
 		double V_OVER_N{ V / Constants::BASIS_SIZE };
 		double chemical_potential{};
-
-		size_t SPINOR_SIZE{ 4U };
 
 		virtual void computeChemicalPotential() {
 			this->chemical_potential = 0.5 * U + 4 * V;
@@ -95,7 +94,7 @@ namespace Hubbard {
 		inline void fillRho() {
 			this->hamilton_solver.compute(this->hamilton);
 			rho.fill(global_floating_type{});
-			for (int i = 0; i < rho.rows(); ++i)
+			for (size_t i = 0U; i < Constants::SPINOR_SIZE; ++i)
 			{
 				rho(i, i) = 1 - fermi_dirac(hamilton_solver.eigenvalues()(i));
 			}

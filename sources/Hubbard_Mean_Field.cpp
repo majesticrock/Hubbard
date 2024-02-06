@@ -24,6 +24,7 @@ int Constants::K_DISCRETIZATION = -1;
 int Constants::BASIS_SIZE = -1;
 int Constants::HALF_BASIS = -1;
 global_floating_type Constants::PI_DIV_DISCRETIZATION = -1;
+size_t Constants::SPINOR_SIZE = 4U;
 
 int main(int argc, char** argv)
 {

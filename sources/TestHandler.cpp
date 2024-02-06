@@ -65,7 +65,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	return;*/
 
 	//------------------------------------------------------------//
-	ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1 };
+	ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1, 1. };
 	if (input.getBool("use_DOS")) {
 		if (input.getString("lattice_type") == "square") {
 			DOSModels::BroydenDOS<Square> model(modelParameters, startingValues);

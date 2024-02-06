@@ -17,6 +17,7 @@
 #define DELTA_ETA this->model_attributes[5]
 #define GAMMA_OCCUPATION_UP this->model_attributes[6]
 #define GAMMA_OCCUPATION_DOWN this->model_attributes[7]
+#define DELTA_PS this->model_attributes[8]
 
 namespace Hubbard {
 	template <typename DataType, class DOS>
@@ -27,11 +28,14 @@ namespace Hubbard {
 
 		typename DOS::Integrator<ComplexParameterVector> _self_consistency_integrator;
 		static std::mutex dos_mutex;
-		constexpr static int NUMBER_OF_PARAMETERS = 8;
+		constexpr static int NUMBER_OF_PARAMETERS = 9;
 
 		void init() {
+			Constants::SPINOR_SIZE = 8U;
+			this->hamilton = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
+			this->rho = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
+
 			this->model_attributes[4] = 0.;
-			//DELTA_CDW = 0.;
 			// The "1/N"-part is handled in the integration method
 			this->V_OVER_N = this->V;
 			this->U_OVER_N = this->U;
@@ -40,10 +44,11 @@ namespace Hubbard {
 				0.5 * this->U_OVER_N, // AFM
 				this->U_OVER_N, // SC
 				this->V_OVER_N, // Gamma SC
-				this->V_OVER_N, // Xi SC
+				0, // unused
 				this->U_OVER_N, // Eta
 				this->V_OVER_N, // Occupation Up
 				this->V_OVER_N, // Occupation Down
+				(0.5 * this->U_OVER_N + DOS::COORDINATION_NUMBER * this->V_OVER_N) // Phase seperation
 			};
 			this->computeChemicalPotential();
 
@@ -72,7 +77,7 @@ namespace Hubbard {
 		inline void fillHamiltonian(const global_floating_type& gamma) {
 			this->hamilton.fill(global_floating_type{});
 
-			this->hamilton(0, 1) = DELTA_CDW - DELTA_AFM;;
+			this->hamilton(0, 1) = DELTA_CDW - DELTA_AFM;
 			this->hamilton(0, 2) = DELTA_SC + GAMMA_SC * gamma;
 			this->hamilton(0, 3) = I * DELTA_ETA;
 
@@ -88,16 +93,29 @@ namespace Hubbard {
 			eps = this->model_attributes.renormalizedEnergy_down(gamma);
 			this->hamilton(2, 2) = -eps;
 			this->hamilton(3, 3) = eps;
+
+			// For PS
+			for (int i = 0; i < 4; ++i) {
+				for (int j = 0; j < 4; ++j) {
+					this->hamilton(4 + i, 4 + j) = this->hamilton(i, j);
+				}
+			}
+			for (int i = 0; i < 4; ++i) {
+				this->hamilton(i, 4 + i) = i < 2 ? DELTA_PS : -DELTA_PS;
+				this->hamilton(4 + i, i) = i < 2 ? DELTA_PS : -DELTA_PS;
+			}
 		};
 
 		inline void setParameterSet(ComplexParameterVector& F, const global_floating_type gamma) const {
-			F(0) = -ONE_HALF * (this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real(); // CDW
-			F(1) = -ONE_HALF * (this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real(); // AFM
-			F(2) = -ONE_HALF * (this->rho(0, 2) + this->rho(1, 3)); // SC
-			F(3) = -(ONE_HALF * 2.0 / DOS::DIMENSION) * gamma * (this->rho(0, 2) - this->rho(1, 3)); // Gamma SC
-			F(5) = -ONE_HALF * (this->rho(0, 3) + this->rho(1, 2)); // Eta
-			F(6) = -(ONE_HALF * 2.0 / DOS::DIMENSION) * gamma * (this->rho(0, 0) - this->rho(1, 1)).real(); // Gamma Occupation Up
-			F(7) = +(ONE_HALF * 2.0 / DOS::DIMENSION) * gamma * (this->rho(2, 2) - this->rho(3, 3)).real(); // Gamma Occupation Down
+			F(0) = -(this->rho(0, 1) + this->rho(1, 0) - this->rho(2, 3) - this->rho(3, 2)).real(); // CDW
+			F(1) = -(this->rho(0, 1) + this->rho(1, 0) + this->rho(2, 3) + this->rho(3, 2)).real(); // AFM
+			F(2) = -(this->rho(0, 2) + this->rho(1, 3)); // SC
+			F(3) = -(2.0 / DOS::DIMENSION) * gamma * (this->rho(0, 2) - this->rho(1, 3)); // Gamma SC
+			F(4) = 0; // unused
+			F(5) = -(this->rho(0, 3) + this->rho(1, 2)); // Eta
+			F(6) = -(2.0 / DOS::DIMENSION) * gamma * (this->rho(0, 0) - this->rho(1, 1)).real(); // Gamma Occupation Up
+			F(7) = +(2.0 / DOS::DIMENSION) * gamma * (this->rho(2, 2) - this->rho(3, 3)).real(); // Gamma Occupation Down
+			F(8) = -this->rho(0, 4).real() - this->rho(1, 5).real() + this->rho(2, 6).real() + this->rho(3, 7).real(); // PS
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
@@ -111,8 +129,8 @@ namespace Hubbard {
 				this->fillRho();
 				this->setParameterSet(result, gamma);
 				};
-
-			complex_F = _self_consistency_integrator.integrate_by_reference(expectationValues);
+	
+			complex_F = _self_consistency_integrator.integrate_by_reference_symmetric(expectationValues);
 
 			if constexpr (!std::is_same_v<DataType, complex_prec>) {
 				complexParametersToReal(complex_F, F);
@@ -270,7 +288,7 @@ namespace Hubbard {
 		// saves all one particle energies to reciever
 		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) override
 		{
-			reciever.reserve(4 * Constants::BASIS_SIZE + 4);
+			reciever.reserve(Constants::SPINOR_SIZE * (Constants::BASIS_SIZE + 1));
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			const global_floating_type step{ DOS::LOWER_BORDER / Constants::BASIS_SIZE };
 
@@ -279,7 +297,7 @@ namespace Hubbard {
 				this->fillHamiltonian(g * step);
 				solver.compute(this->hamilton, false);
 
-				for (int i = 0; i < 4; i++)
+				for (int i = 0; i < Constants::SPINOR_SIZE; ++i)
 				{
 					reciever.push_back(solver.eigenvalues()(i));
 				}
