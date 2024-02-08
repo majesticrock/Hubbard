@@ -69,7 +69,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1, 1. };
 	if (input.getBool("use_DOS")) {
 		if (input.getString("lattice_type") == "square") {
-			DOSModels::PhaseSeparationDOS<Square> model(modelParameters, startingValues, 1);
+			DOSModels::PhaseSeparationDOS<Square> model(modelParameters, startingValues, 2);
 			model.computePhases(WarnNoConvergence).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 			std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;

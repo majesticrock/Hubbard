@@ -4,6 +4,7 @@
 #include "../SquareLattice/UsingBroyden.hpp"
 #include "../ChainLattice/ChainTripletPairing.hpp"
 #include "../DOSModels/BroydenDOS.hpp"
+#include "../DOSModels/PhaseSeparationDOS.hpp"
 #include "../DensityOfStates/Square.hpp"
 #include "../DensityOfStates/SimpleCubic.hpp"
 
@@ -84,16 +85,16 @@ namespace Hubbard::Helper {
 			case 1:
 				throw std::runtime_error("1D Chain: To be implemented!");
 			case 2:
-				return std::make_unique<SquareLattice::UsingBroyden>(mp, startingValues.value(), 10);
+				return std::make_unique<SquareLattice::UsingBroyden>(mp, startingValues.value(), 10U);
 			case 3:
 				throw std::runtime_error("3D Cube: To be implemented!");
 
 			case 129:
 				throw std::runtime_error("1D Chain: To be implemented!");
 			case 130:
-				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::Square>>(mp, startingValues.value(), 10);
+				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::Square>>(mp, startingValues.value(), 10U);
 			case 131:
-				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::SimpleCubic>>(mp, startingValues.value(), 10);
+				return std::make_unique<DOSModels::BroydenDOS<DensityOfStates::SimpleCubic>>(mp, startingValues.value(), 10U);
 			default:
 				throw std::runtime_error("_internal_lattice_type not properly set " + to_string(_internal_lattice_type));
 			}
