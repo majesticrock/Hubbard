@@ -19,11 +19,12 @@
 #define GAMMA_OCCUPATION_DOWN this->model_attributes[7]
 #define DELTA_PS this->model_attributes[8]
 
-namespace Hubbard {
+namespace Hubbard::DOSModels {
 	template <typename DataType, class DOS>
 	class DOSBasedModel : public BaseModel<DataType>
 	{
 	private:
+		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 		static std::mutex dos_mutex;
 		constexpr static int NUMBER_OF_PARAMETERS = 9;
 
@@ -78,7 +79,6 @@ namespace Hubbard {
 
 	protected:
 		using _scalar_integrator = typename DOS::Integrator<global_floating_type>;
-		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 		typename DOS::Integrator<ComplexParameterVector> _self_consistency_integrator;
 
 		virtual void computeChemicalPotential() override {
@@ -120,7 +120,7 @@ namespace Hubbard {
 	
 			complex_F = _self_consistency_integrator.integrate_by_reference_symmetric(expectationValues);
 
-			if constexpr (!std::is_same_v<DataType, complex_prec>) {
+			if constexpr (!Utility::is_complex<DataType>()) {
 				complexParametersToReal(complex_F, F);
 			}
 			this->applyIteration(F);

@@ -8,6 +8,7 @@
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
 #include "Utility/GramSchmidt.hpp"
+#include "Hubbard/DOSModels/PhaseSeparationDOS.hpp"
 //#include <Eigen/Sparse>
 
 using namespace Hubbard::DensityOfStates;
@@ -68,13 +69,13 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1, 1. };
 	if (input.getBool("use_DOS")) {
 		if (input.getString("lattice_type") == "square") {
-			DOSModels::BroydenDOS<Square> model(modelParameters, startingValues);
+			DOSModels::PhaseSeparationDOS<Square> model(modelParameters, startingValues, 1);
 			model.computePhases(WarnNoConvergence).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 			std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
 		}
 		else if (input.getString("lattice_type") == "cube") {
-			DOSModels::BroydenDOS<SimpleCubic> model(modelParameters);
+			DOSModels::PhaseSeparationDOS<SimpleCubic> model(modelParameters, 1);
 			model.computePhases(WarnNoConvergence).print();
 			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 			std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;

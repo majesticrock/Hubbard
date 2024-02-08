@@ -14,7 +14,7 @@ namespace Hubbard::DOSModels {
 		BroydenDOS(const ModelParameters& _params, const ModelAttributes<global_floating_type>& startingValues, size_t MaxPreBroydenIterations = 300U)
 			: DOSBasedModel<global_floating_type, DOS>(_params, startingValues), _MaxPreBroydenIterations(MaxPreBroydenIterations) {};
 
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) override
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = NoWarning) override
 		{
 			Selfconsistency::BroydenSolver solver(this, &this->model_attributes, _MaxPreBroydenIterations);
 			return solver.computePhases(debugPolicy);
