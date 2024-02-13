@@ -29,8 +29,8 @@ namespace Hubbard::DOSModels {
 		constexpr static int NUMBER_OF_PARAMETERS = 9;
 
 		void init() {
-			this->hamilton = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
-			this->rho = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
+			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 
 			this->model_attributes[4] = 0.;
 			// The "1/N"-part is handled in the integration method
@@ -117,7 +117,7 @@ namespace Hubbard::DOSModels {
 				this->fillRho();
 				this->setParameterSet(result, gamma);
 				};
-	
+
 			complex_F = _self_consistency_integrator.integrate_by_reference_symmetric(expectationValues);
 
 			if constexpr (!Utility::is_complex<DataType>()) {
@@ -127,7 +127,7 @@ namespace Hubbard::DOSModels {
 			F -= x;
 		};
 	public:
-		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params, DOS::DIMENSION),
+		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params, static_cast<SystemType>(DOS::DIMENSION)),
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
@@ -152,7 +152,7 @@ namespace Hubbard::DOSModels {
 					[this](global_floating_type current, global_floating_type toAdd) {
 						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
-						return (occ > 1e-12 ? current - occ * log(occ) : current);
+						return (occ > DEFAULT_PRECISION ? current - occ * log(occ) : current);
 					});
 				};
 			// Devide by two because the matrix representation already includes gamma and -gamma.
@@ -276,7 +276,7 @@ namespace Hubbard::DOSModels {
 		// saves all one particle energies to reciever
 		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) override
 		{
-			reciever.reserve(Constants::SPINOR_SIZE * (Constants::BASIS_SIZE + 1));
+			reciever.reserve(this->SPINOR_SIZE * (Constants::BASIS_SIZE + 1));
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 			const global_floating_type step{ DOS::LOWER_BORDER / Constants::BASIS_SIZE };
 
@@ -285,7 +285,7 @@ namespace Hubbard::DOSModels {
 				this->fillHamiltonian(g * step);
 				solver.compute(this->hamilton, false);
 
-				for (int i = 0; i < Constants::SPINOR_SIZE; ++i)
+				for (int i = 0; i < this->SPINOR_SIZE; ++i)
 				{
 					reciever.push_back(solver.eigenvalues()(i));
 				}

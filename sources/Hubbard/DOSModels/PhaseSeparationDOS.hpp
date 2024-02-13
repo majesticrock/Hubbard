@@ -11,9 +11,9 @@ namespace Hubbard::DOSModels {
 		int _extra_dimensions{};
 
 		void init() {
-			Constants::SPINOR_SIZE = 4 + 4 * _extra_dimensions;
-			this->hamilton = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
-			this->rho = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
+			this->SPINOR_SIZE = 4 + 4 * _extra_dimensions;
+			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 		};
 
 		inline void fillHamiltonian(const global_floating_type& gamma) {

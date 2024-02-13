@@ -31,9 +31,9 @@ namespace Hubbard::Helper {
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_plus - K_plus.adjoint()).norm()));
 		if ((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols())
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
-		
+
 		auto setZero = [](global_floating_type val) {
-			return (abs(val) < 1e-12 ? 0 : val);
+			return (abs(val) < DEFAULT_PRECISION ? 0 : val);
 			};
 		K_plus = K_plus.array().unaryExpr(setZero);
 		K_minus = K_minus.array().unaryExpr(setZero);
@@ -46,7 +46,8 @@ namespace Hubbard::Helper {
 			Eigen::SelfAdjointEigenSolver<Matrix_L> solver_plus(K_plus, Eigen::EigenvaluesOnly);
 			evs = const_cast<Vector_L&>(solver_plus.eigenvalues());
 			applyMatrixOperation<OPERATION_NONE>(evs);
-		} catch (const MatrixIsNegativeException& ex){
+		}
+		catch (const MatrixIsNegativeException& ex) {
 			return true;
 		}
 
@@ -66,7 +67,7 @@ namespace Hubbard::Helper {
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
 
 		auto setZero = [](global_floating_type val) {
-			return (abs(val) < 1e-12 ? 0 : val);
+			return (abs(val) < DEFAULT_PRECISION ? 0 : val);
 			};
 		L = L.array().unaryExpr(setZero);
 		K_plus = K_plus.array().unaryExpr(setZero);

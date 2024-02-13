@@ -30,8 +30,8 @@ namespace Hubbard {
 	private:
 		inline void init()
 		{
-			this->hamilton = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
-			this->rho = SpinorMatrix::Zero(Constants::SPINOR_SIZE, Constants::SPINOR_SIZE);
+			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 
 			computeChemicalPotential();
 			this->parameterCoefficients = {
@@ -57,6 +57,8 @@ namespace Hubbard {
 			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
 			{
 				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
+				// Numerical noise correction
+				if (this->model_attributes[i] < 1e-14) this->model_attributes[i] = 0;
 			}
 		};
 
@@ -76,16 +78,18 @@ namespace Hubbard {
 		double V_OVER_N{ V / Constants::BASIS_SIZE };
 		double chemical_potential{};
 
+		size_t SPINOR_SIZE;
+
 		virtual void computeChemicalPotential() {
 			this->chemical_potential = 0.5 * U + 4 * V;
 		};
 
 		inline global_floating_type fermi_dirac(global_floating_type energy) const {
-			if (temperature > 1e-12) {
+			if (temperature > DEFAULT_PRECISION) {
 				return (1. / (1. + exp(energy / temperature)));
 			}
 			else {
-				if (abs(energy) < 1e-12) {
+				if (abs(energy) < DEFAULT_PRECISION) {
 					return global_floating_type{ 0.5 };
 				}
 				return ((energy > 0) ? global_floating_type{} : global_floating_type{ 1 });
@@ -94,7 +98,7 @@ namespace Hubbard {
 		inline void fillRho() {
 			this->hamilton_solver.compute(this->hamilton);
 			rho.fill(global_floating_type{});
-			for (size_t i = 0U; i < Constants::SPINOR_SIZE; ++i)
+			for (size_t i = 0U; i < this->SPINOR_SIZE; ++i)
 			{
 				rho(i, i) = 1 - fermi_dirac(hamilton_solver.eigenvalues()(i));
 			}
@@ -102,14 +106,11 @@ namespace Hubbard {
 		};
 		inline void applyIteration(ParameterVector& F) {
 			this->multiplyParametersByCoefficients(F);
-			// Numerical noise correction
-			for (auto& value : F) {
-				if (abs(value) < 1e-14) value = 0.;
-			}
 			this->setParameters(F);
 		}
 
 		// Utility
+		// To be used in the standard 4x4 spinor representation - does not work if the representation is changed
 		inline global_floating_type get_n_up() const {
 			return 1 - this->rho(0, 0).real();
 		};
@@ -145,10 +146,19 @@ namespace Hubbard {
 		};
 
 	public:
-		explicit BaseModel(const ModelParameters& params, int dimension = 0)
-			: model_attributes(params, dimension), temperature(params.temperature), U(params.U), V(params.V)
+		explicit BaseModel(const ModelParameters& params, SystemType sytemType = Undefined)
+			: model_attributes(params, sytemType), temperature(params.temperature), U(params.U), V(params.V)
 		{
 			init();
+		};
+
+		BaseModel(const ModelParameters& params, const size_t _spinor_size, const size_t number_of_attributes)
+			: model_attributes(number_of_attributes), parameterCoefficients(_spinor_size), temperature(params.temperature), U(params.U), V(params.V), SPINOR_SIZE(_spinor_size)
+		{
+			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+
+			computeChemicalPotential();
 		};
 
 		template<typename StartingValuesDataType>
@@ -161,7 +171,7 @@ namespace Hubbard {
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) = 0;
 
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) = 0;
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = NoWarning) = 0;
 
 		// saves all one particle energies to reciever
 		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) = 0;

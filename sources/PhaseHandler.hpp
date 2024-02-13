@@ -6,7 +6,7 @@ class PhaseHandler : virtual public HandlerBase
 {
 protected:
 	std::vector<double> model_params;
-	double GLOBAL_IT_LIMS[2] = {0, 0};
+	double GLOBAL_IT_LIMS[2] = { 0, 0 };
 	double FIRST_IT_RANGE{};
 	double FIRST_IT_MIN{};
 	double FIRST_IT_MAX{};
@@ -15,8 +15,8 @@ protected:
 
 public:
 	PhaseHandler(Utility::InputFileReader& input, int _rank, int _numberOfRanks)
-		: HandlerBase(input, _rank, _numberOfRanks), model_params{input.getDoubleList("model_parameters")},
-		GLOBAL_IT_STEPS{input.getInt("global_iterator_steps")}, FIRST_IT_STEPS{GLOBAL_IT_STEPS / _numberOfRanks}
+		: HandlerBase(input, _rank, _numberOfRanks), model_params{ input.getDoubleList("model_parameters") },
+		GLOBAL_IT_STEPS{ input.getInt("global_iterator_steps") }, FIRST_IT_STEPS{ GLOBAL_IT_STEPS / _numberOfRanks }
 	{
 		// Setup the number of steps
 		GLOBAL_IT_LIMS[1] = input.getDouble("global_iterator_upper_limit");

@@ -6,6 +6,15 @@
 #include "Constants.hpp"
 
 namespace Hubbard {
+	inline int mod_two_pi(int index) {
+		if (index >= -Constants::K_DISCRETIZATION && index < Constants::K_DISCRETIZATION) 
+			return index;
+		if (index < 0)
+			return ((1 + abs(index / TWO_K_DISC)) * TWO_K_DISC + index) % TWO_K_DISC - Constants::K_DISCRETIZATION;
+		else
+			std::cout << index % TWO_K_DISC - Constants::K_DISCRETIZATION << std::endl;
+	}
+
 	template<unsigned int Dimension>
 	struct NumericalMomentum {
 		global_floating_type momenta[Dimension];
@@ -96,6 +105,39 @@ namespace Hubbard {
 			return (k[Dimension - 1] < Constants::K_DISCRETIZATION);
 		};
 
+		inline size_t getIndex() const {
+			size_t index{};
+			for (size_t i = 0U; i < Dimension; ++i)
+			{
+				index += 2 * i * Constants::K_DISCRETIZATION * k[i];
+			}
+			return index;
+		};
+		inline void reset() {
+			for (size_t d = 0U; d < Dimension; ++d)
+			{
+				momenta[d] = -BASE_PI;
+				k[d] = -Constants::K_DISCRETIZATION;
+			}
+		}
+
+		inline NumericalMomentum& operator+=(const NumericalMomentum& rhs) {
+			for (size_t i = 0U; i < Dimension; ++i)
+			{
+				this->k[i] = mod_two_pi(this->k[i] + rhs.k[i]);
+				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
+			}
+			return *this;
+		};
+		inline NumericalMomentum& operator-=(const NumericalMomentum& rhs) {
+			for (size_t i = 0U; i < Dimension; ++i)
+			{
+				this->k[i] = mod_two_pi(this->k[i] - rhs.k[i]);
+				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
+			}
+			return *this;
+		};
+
 	private:
 		template <int _d>
 		inline void _increment() {
@@ -110,7 +152,16 @@ namespace Hubbard {
 		};
 	};
 
-	template<unsigned int Dimension>
+	template <unsigned int Dimension>
+	inline NumericalMomentum<Dimension> operator+(NumericalMomentum<Dimension> lhs, const NumericalMomentum<Dimension>& rhs) {
+		return lhs += rhs;
+	};
+	template <unsigned int Dimension>
+	inline NumericalMomentum<Dimension> operator-(NumericalMomentum<Dimension> lhs, const NumericalMomentum<Dimension>& rhs) {
+		return lhs -= rhs;
+	};
+
+	template <unsigned int Dimension>
 	inline std::ostream& operator<<(std::ostream& os, const NumericalMomentum<Dimension>& momentum) {
 		os << momentum.momenta[0];
 		for (size_t d = 1U; d < Dimension; ++d)

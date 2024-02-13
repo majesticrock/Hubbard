@@ -46,13 +46,16 @@ namespace Hubbard {
 	typedef boost::multiprecision::cpp_bin_float_100 long_double_t;
 #define _CONST_FLOATING const long_double_t
 #define _CONST_LONG_FLOATING const long_double_t
+	_CONST_FLOATING DEFAULT_PRECISION{ 1e-15 };
 #else
 #ifdef _LONG_PRECISION
 #define _CONST_FLOATING constexpr long double
 #define _MPI_RETURN_TYPE MPI_LONG_DOUBLE
 	typedef long double global_floating_type;
+	_CONST_FLOATING DEFAULT_PRECISION{ 1e-15 };
 #else
 #define _CONST_FLOATING constexpr double
+	_CONST_FLOATING DEFAULT_PRECISION{ 1e-12 };
 #define _MPI_RETURN_TYPE MPI_DOUBLE
 	typedef double global_floating_type;
 #endif // _LONG_PRECISION

@@ -7,7 +7,7 @@
 #include "../../../../FermionCommute/sources/WickTerm.hpp"
 
 namespace Hubbard::Helper {
-	namespace DetailModelConstructorSettings{
+	namespace DetailModelConstructorSettings {
 		inline bool print_mean_field_result = true;
 	}
 
@@ -66,7 +66,7 @@ namespace Hubbard::Helper {
 					}
 				}
 			}
-			if(DetailModelConstructorSettings::print_mean_field_result) model->getAttributes().print();
+			if (DetailModelConstructorSettings::print_mean_field_result) model->getAttributes().print();
 			model->computeExpectationValues(expecs, sum_of_all);
 		}
 

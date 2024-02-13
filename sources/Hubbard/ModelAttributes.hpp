@@ -8,13 +8,15 @@
 #include <initializer_list>
 
 namespace Hubbard {
+	enum SystemType { Undefined, Chain, Square, Cube };
+
 	template <typename DataType>
 	struct ModelAttributes {
 	private:
 		void initializeParamters_3d(const ModelParameters& _params) {
 			auto guess = [&]() -> double {
-				if (std::abs(_params.U) > 1e-12) {
-					return std::abs(_params.U) * exp(0.5 * log(36.)) * exp(-2. / (0.288731210720569176L * std::abs(_params.U)));
+				if (std::abs(_params.U) > DEFAULT_PRECISION) {
+					return std::abs(_params.U) * exp(0.5 * log(36.)) * exp(-2. / (0.2887312107205692 * std::abs(_params.U)));
 				}
 				return 0.0;
 				};
@@ -45,7 +47,7 @@ namespace Hubbard {
 		void initializeParamters_2d(const ModelParameters& _params) {
 			auto guess = [&]() -> double {
 				if (std::abs(_params.U) > 1e-12) {
-					return std::abs(_params.U) * 4. * exp(-2 * 3.1415926L / sqrt(std::abs(_params.U)));
+					return std::abs(_params.U) * 4. * exp(-2 * 3.1415926 / sqrt(std::abs(_params.U)));
 				}
 				return 0.0;
 				};
@@ -108,6 +110,7 @@ namespace Hubbard {
 		* 5 - Delta_eta
 		* 6 - Gamma_n_up
 		* 7 - Gamma_n_down
+		* 8 - Delta_PS
 		*/
 		std::vector<DataType> selfconsistency_values = std::vector<DataType>(9U);
 		bool converged{};
@@ -119,17 +122,20 @@ namespace Hubbard {
 		ModelAttributes& operator=(const ModelAttributes& other) = default;
 		ModelAttributes& operator=(ModelAttributes&& other) = default;
 
-		explicit ModelAttributes(const ModelParameters& _params, int dimension = 0) {
-			if (dimension == 2) {
+		explicit ModelAttributes(const ModelParameters& _params, SystemType systemType = Undefined) {
+			if (systemType == Square) {
 				this->initializeParamters_2d(_params);
 			}
-			else if (dimension == 3) {
+			else if (systemType == Cube) {
 				this->initializeParamters_3d(_params);
 			}
 			else {
 				this->initializeParamters(_params);
 			}
 		};
+		// Using this constructor constructs the attribute vector with a fixed value, default is 0
+		explicit ModelAttributes(const size_t number_of_attributes, const DataType& default_value = DataType{})
+			: selfconsistency_values(number_of_attributes, default_value) {};
 
 		ModelAttributes(const ModelAttributes<complex_prec>& other)
 			: selfconsistency_values(other.selfconsistency_values.size()), converged{ other.converged }
@@ -196,7 +202,7 @@ namespace Hubbard {
 		inline bool isOrdered() const {
 			for (const auto& value : selfconsistency_values)
 			{
-				if (abs(value) > 1e-12) {
+				if (abs(value) > DEFAULT_PRECISION) {
 					return true;
 				}
 			}
@@ -234,8 +240,8 @@ namespace Hubbard {
 			}
 		};
 
-		inline bool isFinite(const size_t i, const double epsilon = 1e-12) const {
-			return (abs(selfconsistency_values[i]) > epsilon);
+		inline bool isFinite(const size_t i) const {
+			return (abs(selfconsistency_values[i]) > DEFAULT_PRECISION);
 		}
 		inline void print() const {
 			std::cout << *this << "\n    Delta_tot = " << getTotalGapValue() << std::endl;
@@ -249,6 +255,13 @@ namespace Hubbard {
 			for (size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
 			{
 				this->selfconsistency_values[i] += rhs.selfconsistency_values[i];
+			}
+			return *this;
+		};
+		inline ModelAttributes& operator-=(const ModelAttributes& rhs) {
+			for (size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
+			{
+				this->selfconsistency_values[i] -= rhs.selfconsistency_values[i];
 			}
 			return *this;
 		};
@@ -273,6 +286,10 @@ namespace Hubbard {
 	template <typename DataType>
 	inline ModelAttributes<DataType> operator+(ModelAttributes<DataType> lhs, const ModelAttributes<DataType>& rhs) {
 		return lhs += rhs;
+	};
+	template <typename DataType>
+	inline ModelAttributes<DataType> operator-(ModelAttributes<DataType> lhs, const ModelAttributes<DataType>& rhs) {
+		return lhs -= rhs;
 	};
 
 	template <typename DataType, class RealType>

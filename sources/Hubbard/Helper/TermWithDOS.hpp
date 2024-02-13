@@ -114,7 +114,8 @@ namespace Hubbard::Helper {
 					std::cerr << "An error occurred while reading the approximate dos data." << std::endl;
 					std::cerr << "1 - Approximate DOS norm = " << std::scientific << std::setprecision(8) << std::abs(dos_norm() - 1.) << std::endl;
 				}
-			} else {
+			}
+			else {
 				std::cout << "DOS file does not exist yet. Computing..." << std::endl;
 			}
 
@@ -163,7 +164,7 @@ namespace Hubbard::Helper {
 			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 			std::cout << "Computed DOS for iEoM in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-			if( !(Utility::BinaryIO::serializeVector(approximate_dos, filename).good()) ){
+			if (!(Utility::BinaryIO::serializeVector(approximate_dos, filename).good())) {
 				std::cerr << "Error while writing dos data to " << filename << std::endl;
 			}
 		};

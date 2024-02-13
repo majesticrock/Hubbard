@@ -59,14 +59,14 @@ namespace Hubbard {
 		// saves all one particle energies to reciever
 		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) override
 		{
-			reciever.reserve(Constants::SPINOR_SIZE * Constants::BASIS_SIZE / 2);
+			reciever.reserve(this->SPINOR_SIZE * Constants::BASIS_SIZE / 2);
 			Eigen::SelfAdjointEigenSolver<SpinorMatrix> solver;
 
 			NumericalMomentum<Dimension> ks;
 			do {
 				this->fillHamiltonian(ks);
 				solver.compute(this->hamilton, false);
-				for (int i = 0; i < Constants::SPINOR_SIZE; i++)
+				for (int i = 0; i < this->SPINOR_SIZE; i++)
 				{
 					reciever.push_back(solver.eigenvalues()(i));
 				}
@@ -86,7 +86,7 @@ namespace Hubbard {
 					[this](global_floating_type current, global_floating_type toAdd) {
 						auto occ = BaseModel<DataType>::fermi_dirac(toAdd);
 						// Let's just not take the ln of 0. Negative numbers cannot be reached (because math...)
-						return (occ > 1e-12 ? current - occ * log(occ) : current);
+						return (occ > DEFAULT_PRECISION ? current - occ * log(occ) : current);
 					});
 			} while (ks.iterateHalfBZ());
 			return entropy / Constants::BASIS_SIZE;

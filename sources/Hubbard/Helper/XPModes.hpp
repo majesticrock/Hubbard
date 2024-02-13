@@ -13,15 +13,15 @@ namespace Hubbard::Helper {
 
 		virtual void fillMatrices() override;
 	public:
-		XPModes(Utility::InputFileReader& input) : ModeHelper(input), 
+		XPModes(Utility::InputFileReader& input) : ModeHelper(input),
 			hermitian_offsets{
 				0,							Constants::BASIS_SIZE,
 				2 * Constants::BASIS_SIZE,	(5 * Constants::BASIS_SIZE) / 2,
 				3 * Constants::BASIS_SIZE,	4 * Constants::BASIS_SIZE
-			}, antihermitian_offsets {
-				0,									Constants::BASIS_SIZE,
-				2 * Constants::BASIS_SIZE,			(5 * Constants::BASIS_SIZE) / 2
-			}
+		}, antihermitian_offsets{
+			0,									Constants::BASIS_SIZE,
+			2 * Constants::BASIS_SIZE,			(5 * Constants::BASIS_SIZE) / 2
+		}
 		{ };
 
 		virtual bool matrix_is_negative() override;

@@ -2,13 +2,13 @@
 #include <string>
 #include <vector>
 #include "GlobalDefinitions.hpp"
+#define TWO_K_DISC (2 * Constants::K_DISCRETIZATION)
 
 namespace Hubbard {
 	namespace Constants {
 		extern int K_DISCRETIZATION;
 		extern int BASIS_SIZE;
 		extern int HALF_BASIS;
-		extern size_t SPINOR_SIZE;
 
 		extern global_floating_type PI_DIV_DISCRETIZATION;
 

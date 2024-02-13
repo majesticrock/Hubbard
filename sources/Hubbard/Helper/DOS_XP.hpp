@@ -14,7 +14,7 @@ namespace Hubbard::Helper {
 			}
 			return result.real();
 		};
-		
+
 		virtual void fill_block_M(int i, int j) override
 		{
 			const int sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()

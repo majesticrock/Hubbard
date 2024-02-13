@@ -28,7 +28,7 @@ namespace Hubbard::Helper {
 		};
 
 		inline bool valueIsFinite(const size_t index) const {
-			return abs(attributes[index][value_index]) > 1e-12;
+			return abs(attributes[index][value_index]) > DEFAULT_PRECISION;
 		};
 		inline bool containsPhaseBoundary() const
 		{

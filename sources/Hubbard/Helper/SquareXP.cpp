@@ -7,7 +7,7 @@ namespace Hubbard::Helper {
 			? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
 		const int inner_sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), j) == cdw_basis_positions.end()
 			? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
-		
+
 		// K_+ / K_-
 		// Ignore the offdiagonal blocks as they are 0
 		if (i < 6 && j > 5) return;

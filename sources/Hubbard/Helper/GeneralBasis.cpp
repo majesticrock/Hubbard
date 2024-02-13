@@ -20,7 +20,7 @@ namespace Hubbard::Helper {
 
 	void GeneralBasis::printM(int i, int j) const
 	{
-		if (std::abs(M(j, i)) < 1e-12) {
+		if (std::abs(M(j, i)) < DEFAULT_PRECISION) {
 			std::cout << 0 << "\t";
 		}
 		else {
@@ -120,9 +120,10 @@ namespace Hubbard::Helper {
 
 		Eigen::SelfAdjointEigenSolver<MatrixCL> M_solver(M);
 		Vector_L& evs_M = const_cast<Vector_L&>(M_solver.eigenvalues());
-		try{
+		try {
 			applyMatrixOperation<OPERATION_NONE>(evs_M);
-		} catch(const MatrixIsNegativeException& ex){
+		}
+		catch (const MatrixIsNegativeException& ex) {
 			return true;
 		}
 

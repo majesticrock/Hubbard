@@ -54,7 +54,7 @@ std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(Utility::Inp
 {
 	std::vector<double> model_params = input.getDoubleList("model_parameters");
 	Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
-			0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
+		0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 	return getHelper(input, modelParameters);
 }
 
@@ -67,7 +67,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	Hubbard::global_floating_type totalGapValue;
 	std::vector<Hubbard::ResolventReturnData> resolvents;
 
-	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper{getHelper(input)};
+	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper{ getHelper(input) };
 
 	totalGapValue = modeHelper->getModel().getTotalGapValue();
 	modeHelper->getModel().getAllEnergies(oneParticleEnergies);

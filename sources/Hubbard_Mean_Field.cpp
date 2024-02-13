@@ -24,7 +24,6 @@ int Constants::K_DISCRETIZATION = -1;
 int Constants::BASIS_SIZE = -1;
 int Constants::HALF_BASIS = -1;
 global_floating_type Constants::PI_DIV_DISCRETIZATION = -1;
-size_t Constants::SPINOR_SIZE = 4U;
 
 int main(int argc, char** argv)
 {
@@ -75,7 +74,8 @@ int main(int argc, char** argv)
 	else if (input.getString("compute_what") == "modes") {
 		ModeHandler modes(input, rank, numberOfRanks);
 		modes.execute(input);
-	} else if(input.getString("compute_what") == "unknown_boundary") {
+	}
+	else if (input.getString("compute_what") == "unknown_boundary") {
 		UnknownBoundaryHandler u_boundary(input, rank, numberOfRanks);
 		u_boundary.execute(input);
 	}

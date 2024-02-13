@@ -19,7 +19,7 @@ namespace Hubbard::Selfconsistency {
 			for (size_t j = 0U; j < this->NUMBER_OF_PARAMETERS; ++j)
 			{
 				if (abs(x0[j]) > 1e-10) {
-					if (abs((x0[j] + (*this->_attr)[j]) / x0[j]) < 1e-12) {
+					if (abs((x0[j] + (*this->_attr)[j]) / x0[j]) < DEFAULT_PRECISION) {
 						return true;
 					}
 				}
@@ -68,7 +68,7 @@ namespace Hubbard::Selfconsistency {
 	public:
 		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy& debugPolicy)
 		{
-			constexpr double EPSILON = 1e-12;
+			constexpr double EPSILON = DEFAULT_PRECISION;
 			constexpr size_t MAX_STEPS = 1500;
 			this->_attr->converged = true;
 			if (!procedureIterative(debugPolicy, MAX_STEPS, EPSILON)) {

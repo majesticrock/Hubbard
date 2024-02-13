@@ -14,8 +14,8 @@ namespace Hubbard::Helper {
 		global_floating_type negative_eigenvalue{};
 		MatrixIsNegativeException(const global_floating_type& _negative_eigenvalue)
 			: std::runtime_error("The matrix M is negative! First negative eigenvalue = " + Utility::better_to_string(_negative_eigenvalue, std::chars_format::scientific, 6)),
-				negative_eigenvalue(_negative_eigenvalue)
-			{};
+			negative_eigenvalue(_negative_eigenvalue)
+		{};
 	};
 
 	class ModeHelper {
@@ -36,12 +36,9 @@ namespace Hubbard::Helper {
 
 		static constexpr double SQRT_SALT = 1e-6;
 		static constexpr double SALT = SQRT_SALT * SQRT_SALT;
-		static constexpr double ERROR_MARGIN = 1e-12;
+		static constexpr double ERROR_MARGIN = DEFAULT_PRECISION;
 
-		static constexpr int OPERATION_NONE = 0;
-		static constexpr int OPERATION_INVERSE = 1;
-		static constexpr int OPERATION_SQRT = 2;
-		static constexpr int OPERATION_INVERSE_SQRT = 3;
+		enum Operation { OPERATION_NONE, OPERATION_INVERSE, OPERATION_SQRT, OPERATION_INVERSE_SQRT };
 
 		int number_of_basis_terms{};
 		int start_basis_at{};
@@ -61,7 +58,7 @@ namespace Hubbard::Helper {
 		* 2: Compute the square root
 		* 3: Compute the pseudoinverse square root
 		*/
-		template<int option>
+		template<Operation option>
 		void applyMatrixOperation(Vector_L& evs) const {
 			for (auto& ev : evs)
 			{
@@ -72,25 +69,25 @@ namespace Hubbard::Helper {
 #ifdef _PSEUDO_INVERSE
 					ev = 0;
 #else
-					if constexpr (option == 1) {
+					if constexpr (option == OPERATION_INVERSE) {
 						ev = (1. / SALT);
 					}
-					else if constexpr (option == 2) {
+					else if constexpr (option == OPERATION_SQRT) {
 						ev = SQRT_SALT;
 					}
-					else if constexpr (option == 3) {
+					else if constexpr (option == OPERATION_INVERSE_SQRT) {
 						ev = (1. / SQRT_SALT);
 					}
 #endif
 				}
 				else {
-					if constexpr (option == 1) {
+					if constexpr (option == OPERATION_INVERSE) {
 						ev = 1. / ev;
 					}
-					else if constexpr (option == 2) {
+					else if constexpr (option == OPERATION_SQRT) {
 						ev = sqrt(ev);
 					}
-					else if constexpr (option == 3) {
+					else if constexpr (option == OPERATION_INVERSE_SQRT) {
 						ev = 1. / sqrt(ev);
 					}
 				}
