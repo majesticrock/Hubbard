@@ -13,7 +13,7 @@ namespace Hubbard {
 		virtual void addToParameterSet(ComplexParameterVector& F, const NumericalMomentum<Dimension>& k_values) = 0;
 	public:
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
-			F.fill(global_floating_type{});
+			F.fill(DataType{});
 			std::conditional_t<Utility::is_complex<DataType>(),
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 

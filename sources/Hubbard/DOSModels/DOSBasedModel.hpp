@@ -86,7 +86,7 @@ namespace Hubbard::DOSModels {
 		};
 
 		inline void fillHamiltonian(const global_floating_type& gamma) {
-			this->hamilton.fill(global_floating_type{});
+			this->hamilton.fill(complex_prec{});
 
 			this->hamilton(0, 1) = DELTA_CDW - DELTA_AFM;
 			this->hamilton(0, 2) = DELTA_SC + GAMMA_SC * gamma;
@@ -107,7 +107,7 @@ namespace Hubbard::DOSModels {
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
-			F.fill(global_floating_type{});
+			F.fill(DataType{});
 			std::conditional_t<Utility::is_complex<DataType>(), ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());

@@ -12,7 +12,7 @@ namespace Hubbard {
 		if (index < 0)
 			return ((1 + abs(index / TWO_K_DISC)) * TWO_K_DISC + index) % TWO_K_DISC - Constants::K_DISCRETIZATION;
 		else
-			std::cout << index % TWO_K_DISC - Constants::K_DISCRETIZATION << std::endl;
+			return index % TWO_K_DISC - Constants::K_DISCRETIZATION;
 	}
 
 	template<unsigned int Dimension>
@@ -107,9 +107,9 @@ namespace Hubbard {
 
 		inline size_t getIndex() const {
 			size_t index{};
-			for (size_t i = 0U; i < Dimension; ++i)
+			for (unsigned int i = 0U; i < Dimension; ++i)
 			{
-				index += 2 * i * Constants::K_DISCRETIZATION * k[i];
+				index += 2 * i * Constants::K_DISCRETIZATION * (k[i] + Constants::K_DISCRETIZATION);
 			}
 			return index;
 		};
@@ -121,18 +121,40 @@ namespace Hubbard {
 			}
 		}
 
+		inline bool isZero() const{
+			for (unsigned int i = 0U; i < Dimension; ++i){
+				if(k[i] != 0) return false;
+			}
+			return true;
+		};
+
+		inline bool isQ() const{
+			for (unsigned int i = 0U; i < Dimension; ++i){
+				if(k[i] != -Constants::K_DISCRETIZATION) return false;
+			}
+			return true;
+		};
+
+		// This function assumes that no anomalous momenta (i.e. outside of [-pi, pi)) are being used
 		inline NumericalMomentum& operator+=(const NumericalMomentum& rhs) {
 			for (size_t i = 0U; i < Dimension; ++i)
 			{
-				this->k[i] = mod_two_pi(this->k[i] + rhs.k[i]);
+				this->k[i] += rhs.k[i];
+				if(this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
+				else if (this->k[i] >= Constants::K_DISCRETIZATION) this->k[i] -= TWO_K_DISC;
+		
 				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
 			}
 			return *this;
 		};
+		// This function assumes that no anomalous momenta (i.e. outside of [-pi, pi)) are being used
 		inline NumericalMomentum& operator-=(const NumericalMomentum& rhs) {
 			for (size_t i = 0U; i < Dimension; ++i)
 			{
-				this->k[i] = mod_two_pi(this->k[i] - rhs.k[i]);
+				this->k[i] -= rhs.k[i];
+				if(this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
+				else if (this->k[i] >= Constants::K_DISCRETIZATION) this->k[i] -= TWO_K_DISC;
+		
 				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
 			}
 			return *this;
