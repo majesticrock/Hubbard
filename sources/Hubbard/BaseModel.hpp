@@ -69,7 +69,7 @@ namespace Hubbard {
 		double V_OVER_N{ V / Constants::BASIS_SIZE };
 		double chemical_potential{};
 
-		size_t SPINOR_SIZE;
+		size_t SPINOR_SIZE{4U};
 
 		inline void setParameters(ParameterVector& F) {
 			_CONST_FLOATING new_weight{ 0.5 };
@@ -77,7 +77,7 @@ namespace Hubbard {
 			{
 				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
 				// Numerical noise correction
-				if (abs(this->model_attributes[i]) < (DEFAULT_PRECISION * 1e-2)) this->model_attributes[i] = 0;
+				if (abs(this->model_attributes[i]) < DEFAULT_PRECISION * 1e-2) this->model_attributes[i] = DataType{};
 			}
 		};
 

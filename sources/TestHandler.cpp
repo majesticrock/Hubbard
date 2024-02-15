@@ -37,10 +37,10 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 		model.computePhases().print();
 	}
 	else {
-		ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1, 1. };
+		//ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1, 0. };
 		if (input.getBool("use_DOS")) {
 			if (input.getString("lattice_type") == "square") {
-				DOSModels::PhaseSeparationDOS<DensityOfStates::Square> model(modelParameters, startingValues, 2);
+				DOSModels::BroydenDOS<DensityOfStates::Square> model(modelParameters);
 				model.computePhases(WarnNoConvergence).print();
 				std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 				std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
@@ -56,7 +56,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 			Constants::setDiscretization(input.getInt("k_discretization"));
 			Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
 
-			SquareLattice::UsingBroyden model2(modelParameters, startingValues);
+			SquareLattice::UsingBroyden model2(modelParameters);
 			test_b = std::chrono::steady_clock::now();
 			model2.computePhases({ false, true }).print();
 			std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
