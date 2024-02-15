@@ -2,7 +2,7 @@
 #include "../../Utility/BroydensMethodEigen.hpp"
 
 namespace Hubbard::Selfconsistency {
-	ModelAttributes<global_floating_type> BroydenSolver::computePhases(const PhaseDebuggingPolicy& debugPolicy)
+	const ModelAttributes<global_floating_type>& BroydenSolver::computePhases(const PhaseDebuggingPolicy& debugPolicy)
 	{
 		procedureIterative(debugPolicy, _MaxPreBroydenIterations, DEFAULT_PRECISION);
 
@@ -41,6 +41,6 @@ namespace Hubbard::Selfconsistency {
 			std::cout << ")\n -> |f0| = " << std::scientific << std::setprecision(8) << f0.norm() << std::endl;
 		}
 
-		return ModelAttributes<global_floating_type>(*_attr);
+		return *this->_attr;
 	}
 }

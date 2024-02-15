@@ -162,8 +162,7 @@ namespace Hubbard {
 			computeChemicalPotential();
 		};
 
-		template<typename StartingValuesDataType>
-		BaseModel(const ModelParameters& _params, const ModelAttributes< StartingValuesDataType >& startingValues)
+		BaseModel(const ModelParameters& _params, const ModelAttributes<DataType>& startingValues)
 			: model_attributes(startingValues), temperature(_params.temperature), U(_params.U), V(_params.V)
 		{
 			init();

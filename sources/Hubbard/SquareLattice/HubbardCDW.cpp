@@ -106,6 +106,6 @@ namespace Hubbard::SquareLattice {
 	ModelAttributes<global_floating_type> HubbardCDW::computePhases(const PhaseDebuggingPolicy debugPolicy)
 	{
 		Selfconsistency::IterativeSolver<complex_prec> solver(this, &model_attributes);
-		return solver.computePhases(debugPolicy);
+		return ModelAttributes<global_floating_type>(solver.computePhases(debugPolicy), Magnitude);
 	}
 }

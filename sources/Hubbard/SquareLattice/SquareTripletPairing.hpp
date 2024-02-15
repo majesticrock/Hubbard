@@ -22,6 +22,6 @@ namespace Hubbard::SquareLattice {
 	public:
 		SquareTripletPairing(const ModelParameters& _params);
 
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PhaseDebuggingPolicy{}) override;
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = WarnNoConvergence) override;
 	};
 }

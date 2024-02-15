@@ -26,7 +26,7 @@ namespace Hubbard {
 			: BaseModel(_params, static_cast<size_t>(2 * Constants::BASIS_SIZE), static_cast<size_t>(2 * Constants::BASIS_SIZE)) 
 		{};
 
-		EMCoupling(const ModelParameters& _params, const ModelAttributes<global_floating_type>& startingValues)
+		EMCoupling(const ModelParameters& _params, const ModelAttributes<complex_prec>& startingValues)
 			: BaseModel(_params, startingValues) {};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override;

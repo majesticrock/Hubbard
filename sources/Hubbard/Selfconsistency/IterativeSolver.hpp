@@ -66,7 +66,7 @@ namespace Hubbard::Selfconsistency {
 			return true;
 		};
 	public:
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy& debugPolicy)
+		virtual const ModelAttributes<DataType>& computePhases(const PhaseDebuggingPolicy& debugPolicy)
 		{
 			constexpr double EPSILON = DEFAULT_PRECISION;
 			constexpr size_t MAX_STEPS = 1500;
@@ -78,7 +78,7 @@ namespace Hubbard::Selfconsistency {
 				this->_attr->reset();
 			}
 
-			return ModelAttributes<global_floating_type>(*this->_attr);
+			return *this->_attr;
 		};
 
 		virtual ~IterativeSolver() = default;

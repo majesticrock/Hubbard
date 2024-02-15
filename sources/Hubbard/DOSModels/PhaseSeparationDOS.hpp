@@ -81,7 +81,7 @@ namespace Hubbard::DOSModels {
 			init();
 		};
 
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = NoWarning) override
+		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = WarnNoConvergence) override
 		{
 			Selfconsistency::BroydenSolver solver(this, &this->model_attributes, _MaxPreBroydenIterations);
 			return solver.computePhases(debugPolicy);

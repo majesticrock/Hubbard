@@ -6,9 +6,11 @@
 #include <vector>
 #include <algorithm>
 #include <initializer_list>
+#include <type_traits>
 
 namespace Hubbard {
 	enum SystemType { Undefined, Chain, Square, Cube };
+	enum ComplexAttributePolicy { Magnitude, SeperateRealAndImaginary };
 
 	template <typename DataType>
 	struct ModelAttributes {
@@ -119,6 +121,7 @@ namespace Hubbard {
 		ModelAttributes() = default;
 		ModelAttributes(std::initializer_list<DataType> i_list) : selfconsistency_values(i_list) {};
 		ModelAttributes(ModelAttributes&& other) = default;
+		ModelAttributes(const ModelAttributes& other) = default;
 		ModelAttributes& operator=(const ModelAttributes& other) = default;
 		ModelAttributes& operator=(ModelAttributes&& other) = default;
 
@@ -137,28 +140,26 @@ namespace Hubbard {
 		explicit ModelAttributes(const size_t number_of_attributes, const DataType& default_value = DataType{})
 			: selfconsistency_values(number_of_attributes, default_value) {};
 
-		ModelAttributes(const ModelAttributes<complex_prec>& other)
-			: selfconsistency_values(other.selfconsistency_values.size()), converged{ other.converged }
+		ModelAttributes(const ModelAttributes<complex_prec>& other, ComplexAttributePolicy complexAttributePolicy)
+			: selfconsistency_values(complexAttributePolicy == Magnitude ? other.selfconsistency_values.size() : 2U * other.selfconsistency_values.size()),
+			converged{ other.converged }
 		{
-			if constexpr (!Utility::is_complex<DataType>()) {
+			if (complexAttributePolicy == Magnitude) {
 				for (size_t i = 0U; i < selfconsistency_values.size(); ++i)
 				{
-					if (i == 4 || i == 7) {
-						selfconsistency_values[i] = other.selfconsistency_values[i].imag();
-					}
-					else {
-						selfconsistency_values[i] = other.selfconsistency_values[i].real();
-					}
+					selfconsistency_values[i] = abs(other.selfconsistency_values[i]);
+				}
+			}
+			else if (complexAttributePolicy == SeperateRealAndImaginary) {
+				for (size_t i = 0; i < other.selfconsistency_values.size(); i++)
+				{
+					selfconsistency_values[i] = real(other.selfconsistency_values[i]);
+					selfconsistency_values[i + other.selfconsistency_values.size()] = imag(other.selfconsistency_values[i]);
 				}
 			}
 			else {
-				std::copy(other.begin(), other.end(), this->begin());
+				throw std::runtime_error("ComplexAttributePolicy not recognized!");
 			}
-		};
-		ModelAttributes(const ModelAttributes<global_floating_type>& other)
-			: selfconsistency_values(other.selfconsistency_values.size()), converged{ other.converged }
-		{
-			std::copy(other.begin(), other.end(), this->begin());
 		};
 
 		/*
@@ -228,10 +229,10 @@ namespace Hubbard {
 
 		// Returns the total gap value sqrt(sc^2 + cdw^2)
 		inline global_floating_type getTotalGapValue() const {
-			if constexpr (Utility::is_complex<decltype(selfconsistency_values[0])>()) {
-				return sqrt(std::conj(selfconsistency_values[0]) * selfconsistency_values[0]
-					+ std::conj(selfconsistency_values[1]) * selfconsistency_values[1]
-					+ std::conj(selfconsistency_values[2]) * selfconsistency_values[2]);
+			if constexpr (Utility::is_complex<DataType>()) {
+				return sqrt(norm(selfconsistency_values[0])
+					+ norm(selfconsistency_values[1])
+					+ norm(selfconsistency_values[2]));
 			}
 			else {
 				return sqrt(selfconsistency_values[0] * selfconsistency_values[0]
