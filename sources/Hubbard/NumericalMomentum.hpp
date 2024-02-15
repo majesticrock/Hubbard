@@ -160,6 +160,15 @@ namespace Hubbard {
 			return *this;
 		};
 
+		inline NumericalMomentum& operator*=(const int rhs) {
+			for (size_t i = 0U; i < Dimension; ++i)
+			{
+				this->k[i] = mod_two_pi(rhs * this->k[i]);
+				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
+			}
+			return *this;
+		};
+
 	private:
 		template <int _d>
 		inline void _increment() {
@@ -181,6 +190,18 @@ namespace Hubbard {
 	template <unsigned int Dimension>
 	inline NumericalMomentum<Dimension> operator-(NumericalMomentum<Dimension> lhs, const NumericalMomentum<Dimension>& rhs) {
 		return lhs -= rhs;
+	};
+	template <unsigned int Dimension>
+	inline NumericalMomentum<Dimension> operator*(NumericalMomentum<Dimension> lhs, const int rhs) {
+		return lhs *= rhs;
+	};
+	template <unsigned int Dimension>
+	inline NumericalMomentum<Dimension> operator*(const int lhs, NumericalMomentum<Dimension> rhs) {
+		return rhs *= lhs;
+	};
+	template <unsigned int Dimension>
+	inline NumericalMomentum<Dimension> operator-(NumericalMomentum<Dimension> rhs) {
+		return rhs *= -1;
 	};
 
 	template <unsigned int Dimension>

@@ -1,5 +1,5 @@
 #include "EMCoupling.hpp"
-#include "../Selfconsistency/IterativeSolver.hpp"
+#include "Selfconsistency/IterativeSolver.hpp"
 
 namespace Hubbard {
 	void EMCoupling::fillHamiltonian()
@@ -78,15 +78,21 @@ namespace Hubbard {
 
 	global_floating_type EMCoupling::entropyPerSite(){
 		std::cerr << "To be implemented" << std::endl;
+		return 0;
 	}
 
 	global_floating_type EMCoupling::internalEnergyPerSite(){
 		std::cerr << "To be implemented" << std::endl;
+		return 0;
 	}
 
-	ModelAttributes<global_floating_type> EMCoupling::computePhases(const PhaseDebuggingPolicy debugPolicy = NoWarning) 
+	ModelAttributes<global_floating_type> EMCoupling::computePhases(const PhaseDebuggingPolicy debugPolicy/*=NoWarning*/)
 	{
 		Selfconsistency::IterativeSolver<complex_prec> solver(this, &model_attributes);
 		return solver.computePhases(debugPolicy);
+	}
+	void EMCoupling::computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all)
+	{
+		std::cerr << "To be implemented" << std::endl;
 	}
 }

@@ -52,15 +52,6 @@ namespace Hubbard {
 				F(i) *= parameterCoefficients[i];
 			}
 		};
-		inline void setParameters(ParameterVector& F) {
-			_CONST_FLOATING new_weight{ 0.5 };
-			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
-			{
-				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
-				// Numerical noise correction
-				if (this->model_attributes[i] < 1e-14) this->model_attributes[i] = 0;
-			}
-		};
 
 	protected:
 		ModelAttributes<DataType> model_attributes;
@@ -79,6 +70,16 @@ namespace Hubbard {
 		double chemical_potential{};
 
 		size_t SPINOR_SIZE;
+
+		inline void setParameters(ParameterVector& F) {
+			_CONST_FLOATING new_weight{ 0.5 };
+			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
+			{
+				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
+				// Numerical noise correction
+				if (abs(this->model_attributes[i]) < (DEFAULT_PRECISION * 1e-2)) this->model_attributes[i] = 0;
+			}
+		};
 
 		virtual void computeChemicalPotential() {
 			this->chemical_potential = 0.5 * U + 4 * V;

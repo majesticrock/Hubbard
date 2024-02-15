@@ -19,7 +19,7 @@ SQUARE_SRCS=HubbardCDW.cpp UsingBroyden.cpp SquareTripletPairing.cpp
 CHAIN_SRCS=ChainTripletPairing.cpp
 DOS_SRCS=BaseDOS.cpp Square.cpp SimpleCubic.cpp
 SELFCON_SRCS=Selfconsistency/BroydenSolver.cpp
-HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(SELFCON_SRCS) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) ModelParameters.cpp
+HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(SELFCON_SRCS) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) ModelParameters.cpp EMCoupling.cpp
 UTIL_SRCS=Utility/InputFileReader.cpp
 
 PART_SRCS=HandlerBase.cpp TestHandler.cpp ModeHandler.cpp PhaseHandler.cpp UnknownBoundaryHandler.cpp Hubbard_Mean_Field.cpp

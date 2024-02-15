@@ -11,7 +11,6 @@
 #include "Hubbard/DOSModels/PhaseSeparationDOS.hpp"
 #include "Hubbard/EMCoupling.hpp"
 
-using namespace Hubbard::DensityOfStates;
 using namespace Hubbard;
 
 std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
@@ -41,13 +40,13 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 		ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1, 1. };
 		if (input.getBool("use_DOS")) {
 			if (input.getString("lattice_type") == "square") {
-				DOSModels::PhaseSeparationDOS<Square> model(modelParameters, startingValues, 2);
+				DOSModels::PhaseSeparationDOS<DensityOfStates::Square> model(modelParameters, startingValues, 2);
 				model.computePhases(WarnNoConvergence).print();
 				std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 				std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
 			}
 			else if (input.getString("lattice_type") == "cube") {
-				DOSModels::PhaseSeparationDOS<SimpleCubic> model(modelParameters, 1);
+				DOSModels::PhaseSeparationDOS<DensityOfStates::SimpleCubic> model(modelParameters, 1);
 				model.computePhases(WarnNoConvergence).print();
 				std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 				std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
