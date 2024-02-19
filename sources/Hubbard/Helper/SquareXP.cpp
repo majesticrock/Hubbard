@@ -1,17 +1,13 @@
 #include "SquareXP.hpp"
 
 namespace Hubbard::Helper {
+	// K_+ / K_-
 	void SquareXP::fill_block_M(int i, int j)
 	{
 		const int sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()
 			? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
 		const int inner_sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), j) == cdw_basis_positions.end()
 			? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
-
-		// K_+ / K_-
-		// Ignore the offdiagonal blocks as they are 0
-		if (i < 6 && j > 5) return;
-		if (j < 6 && i > 5) return;
 
 		for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
 			for (int k = 0; k < sum_limit; ++k)
@@ -25,21 +21,21 @@ namespace Hubbard::Helper {
 						continue;
 					}
 
-					if (i < 6) {
+					if (i < hermitian_size) {
 						K_plus(hermitian_offsets[i] + k, hermitian_offsets[j] + l) += computeRealTerm(term, k, l);
 					}
 					else {
-						K_minus(antihermitian_offsets[i - 6] + k, antihermitian_offsets[j - 6] + l) += computeRealTerm(term, k, l);
+						K_minus(antihermitian_offsets[i - hermitian_size] + k, antihermitian_offsets[j - hermitian_size] + l) += computeRealTerm(term, k, l);
 					}
 				}
 				else {
 					for (int l = 0; l < inner_sum_limit; ++l)
 					{
-						if (i < 6) {
+						if (i < hermitian_size) {
 							K_plus(hermitian_offsets[i] + k, hermitian_offsets[j] + l) += computeRealTerm(term, k, l);
 						}
 						else {
-							K_minus(antihermitian_offsets[i - 6] + k, antihermitian_offsets[j - 6] + l) += computeRealTerm(term, k, l);
+							K_minus(antihermitian_offsets[i - hermitian_size] + k, antihermitian_offsets[j - hermitian_size] + l) += computeRealTerm(term, k, l);
 						}
 					}
 				}
@@ -47,6 +43,7 @@ namespace Hubbard::Helper {
 		} // end term-loop
 	}
 
+	// L
 	void SquareXP::fill_block_N(int i, int j)
 	{
 		const int sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), i) == cdw_basis_positions.end()
@@ -54,30 +51,27 @@ namespace Hubbard::Helper {
 		const int inner_sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), j) == cdw_basis_positions.end()
 			? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
 
-		// L
-		if (i < 6 && j > 5) {
-			for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
-				for (int k = 0; k < sum_limit; ++k)
-				{
-					if (term.delta_momenta.size() > 0U) {
-						int l{ k };
-						if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
-							l = addQTo(k);
-						}
-						if (l >= inner_sum_limit) {
-							continue;
-						}
+		for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
+			for (int k = 0; k < sum_limit; ++k)
+			{
+				if (term.delta_momenta.size() > 0U) {
+					int l{ k };
+					if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
+						l = addQTo(k);
+					}
+					if (l >= inner_sum_limit) {
+						continue;
+					}
 
-						L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l) += computeRealTerm(term, k, l);
+					L(hermitian_offsets[i] + k, antihermitian_offsets[j - hermitian_size] + l) += computeRealTerm(term, k, l);
+				}
+				else {
+					for (int l = 0; l < inner_sum_limit; l++)
+					{
+						L(hermitian_offsets[i] + k, antihermitian_offsets[j - hermitian_size] + l) += computeRealTerm(term, k, l);
 					}
-					else {
-						for (int l = 0; l < inner_sum_limit; l++)
-						{
-							L(hermitian_offsets[i] + k, antihermitian_offsets[j - 6] + l) += computeRealTerm(term, k, l);
-						}
-					}
-				} // end k-loop
-			} // end term-loop
-		}
+				}
+			} // end k-loop
+		} // end term-loop
 	}
 }

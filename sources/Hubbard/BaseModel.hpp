@@ -69,7 +69,7 @@ namespace Hubbard {
 		double V_OVER_N{ V / Constants::BASIS_SIZE };
 		double chemical_potential{};
 
-		size_t SPINOR_SIZE{4U};
+		size_t SPINOR_SIZE{ 4U };
 
 		inline void setParameters(ParameterVector& F) {
 			_CONST_FLOATING new_weight{ 0.5 };
@@ -98,7 +98,7 @@ namespace Hubbard {
 		};
 		inline void fillRho() {
 			this->hamilton_solver.compute(this->hamilton);
-			rho.fill(global_floating_type{});
+			rho.fill(DataType{});
 			for (size_t i = 0U; i < this->SPINOR_SIZE; ++i)
 			{
 				rho(i, i) = 1 - fermi_dirac(hamilton_solver.eigenvalues()(i));

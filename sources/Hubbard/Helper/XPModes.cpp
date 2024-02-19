@@ -5,26 +5,43 @@
 namespace Hubbard::Helper {
 	void XPModes::fillMatrices()
 	{
-		K_plus = Matrix_L::Zero(5 * Constants::BASIS_SIZE, 5 * Constants::BASIS_SIZE);
-		K_minus = Matrix_L::Zero(3 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
-		L = Matrix_L::Zero(5 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
+		constexpr int a = hermitian_size - 1;
+		constexpr int b = antihermitian_size - 1;
+
+		K_plus = Matrix_L::Zero(a * Constants::BASIS_SIZE, a * Constants::BASIS_SIZE);
+		K_minus = Matrix_L::Zero(b * Constants::BASIS_SIZE, b * Constants::BASIS_SIZE);
+		L = Matrix_L::Zero(a * Constants::BASIS_SIZE, b * Constants::BASIS_SIZE);
+
 		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
 			for (int j = 0; j < number_of_basis_terms; ++j)
 			{
-				fillBlock(i, j);
+				// Ignore the offdiagonal blocks as they are 0
+				if ((i < hermitian_size && j < hermitian_size) || (j >= hermitian_size && i >= hermitian_size)) {
+					fill_block_M(i, j);
+				}
+				// N only contains offdiagonal blocks
+				else if (i < hermitian_size && j >= hermitian_size) {
+					fill_block_N(i, j);
+				}
 			}
 		}
 	}
 
 	bool XPModes::matrix_is_negative() {
-		K_plus = Matrix_L::Zero(5 * Constants::BASIS_SIZE, 5 * Constants::BASIS_SIZE);
-		K_minus = Matrix_L::Zero(3 * Constants::BASIS_SIZE, 3 * Constants::BASIS_SIZE);
+		constexpr int a = hermitian_size - 1;
+		constexpr int b = antihermitian_size - 1;
+
+		K_plus = Matrix_L::Zero(a * Constants::BASIS_SIZE, a * Constants::BASIS_SIZE);
+		K_minus = Matrix_L::Zero(b * Constants::BASIS_SIZE, b * Constants::BASIS_SIZE);
 		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
 			for (int j = 0; j < number_of_basis_terms; ++j)
 			{
-				fill_block_M(i, j);
+				// Ignore the offdiagonal blocks as they are 0
+				if ((i < hermitian_size && j < hermitian_size) || (j >= hermitian_size && i >= hermitian_size)) {
+					fill_block_M(i, j);
+				}
 			}
 		}
 		if ((K_plus - K_plus.adjoint()).norm() > ERROR_MARGIN * K_plus.rows() * K_plus.cols())
@@ -58,7 +75,7 @@ namespace Hubbard::Helper {
 	{
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
-
+		
 		fillMatrices();
 
 		if ((K_plus - K_plus.adjoint()).norm() > ERROR_MARGIN * K_plus.rows() * K_plus.cols())
@@ -80,6 +97,7 @@ namespace Hubbard::Helper {
 		Vector_L startingState_SC[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_CDW[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		Vector_L startingState_AFM[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
+		Vector_L startingState_AFM_transversal[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 
 		const double norm_constant = this->usingDOS
 			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
@@ -91,6 +109,7 @@ namespace Hubbard::Helper {
 				startingState_SC[j](i) = norm_constant;
 				startingState_CDW[j](2 * Constants::BASIS_SIZE + i) = norm_constant;
 				startingState_AFM[j](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? norm_constant : -norm_constant;
+				startingState_AFM_transversal[j](3 * Constants::BASIS_SIZE + i) = norm_constant;
 			}
 		}
 
@@ -188,6 +207,7 @@ namespace Hubbard::Helper {
 			startingState_SC[plus_index] = N_new * L * startingState_SC[plus_index];
 			startingState_CDW[plus_index] = N_new * L * startingState_CDW[plus_index];
 			startingState_AFM[plus_index] = N_new * L * startingState_AFM[plus_index];
+			startingState_AFM_transversal[plus_index] = N_new * L * startingState_AFM_transversal[plus_index];
 
 			end_in = std::chrono::steady_clock::now();
 			std::cout << "Time for adjusting N_new: "
@@ -203,8 +223,9 @@ namespace Hubbard::Helper {
 
 		begin = std::chrono::steady_clock::now();
 
+		constexpr unsigned int N_RESOLVENT_TYPES = 4U;
 		std::vector<ResolventReal> resolvents{};
-		resolvents.reserve(6);
+		resolvents.reserve(2 * N_RESOLVENT_TYPES);
 
 		int LANCZOS_ITERATION_NUMBER;
 		if (this->usingDOS) {
@@ -221,20 +242,26 @@ namespace Hubbard::Helper {
 			resolvents.push_back(ResolventReal(startingState_SC[i]));
 			resolvents.push_back(ResolventReal(startingState_CDW[i]));
 			resolvents.push_back(ResolventReal(startingState_AFM[i]));
+			resolvents.push_back(ResolventReal(startingState_AFM_transversal[i]));
+
 
 #pragma omp parallel sections
 			{
-#pragma omp section
+				#pragma omp section
 				{
-					resolvents[3 * i].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
+					resolvents[N_RESOLVENT_TYPES * i].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
-#pragma omp section
+				#pragma omp section
 				{
-					resolvents[3 * i + 1].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
+					resolvents[N_RESOLVENT_TYPES * i + 1].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
-#pragma omp section
+				#pragma omp section
 				{
-					resolvents[3 * i + 2].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
+					resolvents[N_RESOLVENT_TYPES * i + 2].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
+				}
+				#pragma omp section
+				{
+					resolvents[N_RESOLVENT_TYPES * i + 3].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
 			}
 		}

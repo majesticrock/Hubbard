@@ -1,19 +1,20 @@
 #pragma once
 #include <iterator>
 #include <numeric>
+#include <algorithm>
 #include <array>
 #include "GlobalDefinitions.hpp"
 #include "Constants.hpp"
 
 namespace Hubbard {
 	inline int mod_two_pi(int index) {
-		if (index >= -Constants::K_DISCRETIZATION && index < Constants::K_DISCRETIZATION) 
+		if (index >= -Constants::K_DISCRETIZATION && index < Constants::K_DISCRETIZATION)
 			return index;
 		if (index < 0)
 			return ((1 + abs(index / TWO_K_DISC)) * TWO_K_DISC + index) % TWO_K_DISC - Constants::K_DISCRETIZATION;
 		else
 			return index % TWO_K_DISC - Constants::K_DISCRETIZATION;
-	}
+	};
 
 	template<unsigned int Dimension>
 	struct NumericalMomentum {
@@ -22,12 +23,12 @@ namespace Hubbard {
 
 		NumericalMomentum()
 		{
-			for (size_t d = 0U; d < Dimension; ++d)
-			{
-				momenta[d] = -BASE_PI;
-				k[d] = -Constants::K_DISCRETIZATION;
-			}
+			this->reset();
 		};
+		explicit NumericalMomentum(int default_k) {
+			std::fill(std::begin(momenta), std::end(momenta), Constants::PI_DIV_DISCRETIZATION * default_k);
+			std::fill(std::begin(k), std::end(k), default_k);
+		}
 		template <typename... Args>
 		explicit NumericalMomentum(Args... args) : k{ static_cast<int>(args)... } {
 			static_assert(sizeof...(Args) == Dimension, "Incorrect number of arguments");
@@ -45,23 +46,10 @@ namespace Hubbard {
 				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
 			}
 		};
-		explicit NumericalMomentum(Eigen::Array<int, Dimension, 1>&& point_in_bz) {
-			for (size_t d = 0U; d < Dimension; ++d)
-			{
-				k[d] = std::move(point_in_bz(d));
-				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
-			}
-		};
 		explicit NumericalMomentum(const Eigen::Vector<global_floating_type, Dimension>& momentum) {
 			for (size_t d = 0U; d < Dimension; ++d)
 			{
 				momenta[d] = momentum(d);
-			}
-		};
-		explicit NumericalMomentum(Eigen::Vector<global_floating_type, Dimension>&& momentum) {
-			for (size_t d = 0U; d < Dimension; ++d)
-			{
-				momenta[d] = std::move(momentum(d));
 			}
 		};
 
@@ -106,33 +94,35 @@ namespace Hubbard {
 		};
 
 		inline size_t getIndex() const {
-			size_t index{};
-			for (unsigned int i = 0U; i < Dimension; ++i)
+			assert(k[0] + Constants::K_DISCRETIZATION >= 0);
+;			size_t index{ static_cast<size_t>(k[0] + Constants::K_DISCRETIZATION) };
+			for (unsigned int i = 1U; i < Dimension; ++i)
 			{
 				index += 2 * i * Constants::K_DISCRETIZATION * (k[i] + Constants::K_DISCRETIZATION);
 			}
 			return index;
 		};
 		inline void reset() {
-			for (size_t d = 0U; d < Dimension; ++d)
-			{
-				momenta[d] = -BASE_PI;
-				k[d] = -Constants::K_DISCRETIZATION;
-			}
-		}
-
-		inline bool isZero() const{
-			for (unsigned int i = 0U; i < Dimension; ++i){
-				if(k[i] != 0) return false;
-			}
-			return true;
+			std::fill(std::begin(momenta), std::end(momenta), -BASE_PI);
+			std::fill(std::begin(k), std::end(k), -Constants::K_DISCRETIZATION);
 		};
 
-		inline bool isQ() const{
-			for (unsigned int i = 0U; i < Dimension; ++i){
-				if(k[i] != -Constants::K_DISCRETIZATION) return false;
-			}
-			return true;
+		bool isZero() const {
+			return std::all_of(std::begin(k), std::end(k), [](int value) { return value == 0; });
+		};
+
+		bool isQ() const {
+			return std::all_of(std::begin(k), std::end(k), [](int value) { return value == -Constants::K_DISCRETIZATION; });
+		};
+
+		global_floating_type squared_norm() const {
+			return std::accumulate(std::begin(momenta), std::end(momenta), global_floating_type{}, [](global_floating_type current, global_floating_type toAdd) {
+				return current + toAdd * toAdd;
+				});
+		};
+
+		global_floating_type norm() const {
+			return sqrt(squared_norm());
 		};
 
 		// This function assumes that no anomalous momenta (i.e. outside of [-pi, pi)) are being used

@@ -8,7 +8,6 @@ namespace Hubbard {
 
 		NumericalMomentum<Dimension> k; // base momentum
 		NumericalMomentum<Dimension> q; // transfer momentum
-		//NumericalMomentum<Dimension> l; // k + q
 		size_t i, j;
 
 		do {
@@ -49,7 +48,28 @@ namespace Hubbard {
 					F(this->get_cdw_index(q)) -= this->rho(i, j) - this->rho(i + Constants::BASIS_SIZE, j + Constants::BASIS_SIZE);
 				}
 			} while (q.iterateFullBZ());
+			q.reset();
 		} while (k.iterateFullBZ());
+	}
+
+	EMCoupling::EMCoupling(const ModelParameters& _params)
+		: BaseModel(_params, static_cast<size_t>(2 * Constants::BASIS_SIZE), static_cast<size_t>(2 * Constants::BASIS_SIZE))
+	{
+		auto guess = [&]() -> double {
+			if (std::abs(this->U) > 1e-12) {
+				return std::abs(this->U) * 4. * exp(-2 * 3.1415926 / sqrt(std::abs(this->U)));
+			}
+			return 0.0;
+			};
+
+		this->model_attributes[get_cdw_index(NumericalMomentum<Dimension>())] = guess() / sqrt(2.0);
+		this->model_attributes[get_sc_index(NumericalMomentum<Dimension>(0))] = guess() / sqrt(2.0);
+		//NumericalMomentum<Dimension> q;
+		//do {
+		//	auto mod = pow(cos(q.squared_norm() / (2 * BASE_PI)), 2);
+		//	this->model_attributes[get_sc_index(q)] = this->U * mod;
+		//	this->model_attributes[get_cdw_index(q)] = this->U * mod;
+		//} while (q.iterateFullBZ());
 	}
 
 	void EMCoupling::iterationStep(const ParameterVector& x, ParameterVector& F)
@@ -87,6 +107,7 @@ namespace Hubbard {
 	ModelAttributes<global_floating_type> EMCoupling::computePhases(const PhaseDebuggingPolicy debugPolicy/*=NoWarning*/)
 	{
 		Selfconsistency::IterativeSolver<complex_prec> solver(this, &model_attributes);
+
 		return ModelAttributes<global_floating_type>(solver.computePhases(debugPolicy), SeperateRealAndImaginary);
 	}
 

@@ -90,7 +90,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		if (resolvents.size() > 0U) {
 			std::vector<std::string> names;
 			if (input.getInt("start_basis_at") == -1) {
-				names = { "phase_SC", "phase_CDW", "phase_AFM", "higgs_SC", "higgs_CDW", "higgs_AFM" };
+				names = { "phase_SC", "phase_CDW", "phase_AFM", "phase_AFM_trans", "higgs_SC", "higgs_CDW", "higgs_AFM", "higgs_AFM_trans"};
 			}
 			else {
 				names = { "higgs_SC_a", "higgs_SC_a+b", "higgs_SC_a+ib",

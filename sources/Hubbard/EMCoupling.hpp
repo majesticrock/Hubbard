@@ -22,9 +22,7 @@ namespace Hubbard {
 		virtual void fillHamiltonian();
 		virtual void setParameterSet(ComplexParameterVector& F);
 	public:
-		EMCoupling(const ModelParameters& _params)
-			: BaseModel(_params, static_cast<size_t>(2 * Constants::BASIS_SIZE), static_cast<size_t>(2 * Constants::BASIS_SIZE)) 
-		{};
+		EMCoupling(const ModelParameters& _params);
 
 		EMCoupling(const ModelParameters& _params, const ModelAttributes<complex_prec>& startingValues)
 			: BaseModel(_params, startingValues) {};

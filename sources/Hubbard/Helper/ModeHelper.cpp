@@ -83,8 +83,8 @@ namespace Hubbard::Helper {
 		}
 		if (this->start_basis_at < 0) {
 			// We investigate the special x-p-basis
-			this->TOTAL_BASIS = Constants::BASIS_SIZE * 8;
-			this->number_of_basis_terms = 10;
+			this->TOTAL_BASIS = Constants::BASIS_SIZE * 10;
+			this->number_of_basis_terms = 12;
 		}
 		else {
 			this->TOTAL_BASIS = Constants::BASIS_SIZE * this->number_of_basis_terms;

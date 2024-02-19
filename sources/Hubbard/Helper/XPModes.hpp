@@ -5,11 +5,14 @@ namespace Hubbard::Helper {
 	class XPModes : public ModeHelper
 	{
 	protected:
-		Matrix_L K_plus, K_minus, L;
-		const std::array<int, 6> hermitian_offsets;
-		const std::array<int, 4> antihermitian_offsets;
+		static constexpr size_t hermitian_size = 7U;
+		static constexpr size_t antihermitian_size = 5U;
 
-		static constexpr std::array<int, 4> cdw_basis_positions{ 2,3,8,9 };
+		Matrix_L K_plus, K_minus, L;
+		const std::array<int, hermitian_size> hermitian_offsets;
+		const std::array<int, antihermitian_size> antihermitian_offsets;
+
+		static constexpr std::array<int, 4> cdw_basis_positions{ 2,3,9,10 };
 
 		virtual void fillMatrices() override;
 	public:
@@ -17,10 +20,12 @@ namespace Hubbard::Helper {
 			hermitian_offsets{
 				0,							Constants::BASIS_SIZE,
 				2 * Constants::BASIS_SIZE,	(5 * Constants::BASIS_SIZE) / 2,
-				3 * Constants::BASIS_SIZE,	4 * Constants::BASIS_SIZE
+				3 * Constants::BASIS_SIZE,	4 * Constants::BASIS_SIZE,
+				5 * Constants::BASIS_SIZE
 		}, antihermitian_offsets{
 			0,									Constants::BASIS_SIZE,
-			2 * Constants::BASIS_SIZE,			(5 * Constants::BASIS_SIZE) / 2
+			2 * Constants::BASIS_SIZE,			(5 * Constants::BASIS_SIZE) / 2,
+			3 * Constants::BASIS_SIZE
 		}
 		{ };
 
