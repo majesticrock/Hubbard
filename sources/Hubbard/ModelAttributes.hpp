@@ -9,7 +9,7 @@
 #include <type_traits>
 
 namespace Hubbard {
-	enum SystemType { Undefined, Chain, Square, Cube };
+	enum SystemType { SystemUndefined, SystemChain, SystemSquare, SystemCube };
 	enum ComplexAttributePolicy { Magnitude, SeperateRealAndImaginary };
 
 	template <typename DataType>
@@ -125,11 +125,11 @@ namespace Hubbard {
 		ModelAttributes& operator=(const ModelAttributes& other) = default;
 		ModelAttributes& operator=(ModelAttributes&& other) = default;
 
-		explicit ModelAttributes(const ModelParameters& _params, SystemType systemType = Undefined) {
-			if (systemType == Square) {
+		explicit ModelAttributes(const ModelParameters& _params, SystemType systemType = SystemUndefined) {
+			if (systemType == SystemSquare) {
 				this->initializeParamters_2d(_params);
 			}
-			else if (systemType == Cube) {
+			else if (systemType == SystemCube) {
 				this->initializeParamters_3d(_params);
 			}
 			else {

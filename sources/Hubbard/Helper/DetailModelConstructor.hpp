@@ -39,7 +39,8 @@ namespace Hubbard::Helper {
 	public:
 		virtual ~DetailModelConstructor() = default;
 
-		DetailModelConstructor(Utility::InputFileReader& input, const ModelParameters& modelParameters) : model(std::make_unique<Model>(modelParameters)) {
+		DetailModelConstructor(Utility::InputFileReader& input, const ModelParameters& modelParameters) 
+			: model(std::make_unique<Model>(modelParameters)) {
 			if (input.getString("ratio_CDW_SC") != "-1") {
 				model->set_CDW_SC_ratio(input.getDouble("ratio_CDW_SC"));
 			}

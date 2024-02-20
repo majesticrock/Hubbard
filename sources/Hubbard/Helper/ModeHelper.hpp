@@ -4,6 +4,7 @@
 #include "../GlobalDefinitions.hpp"
 #include "../BaseModel.hpp"
 #include "../../Utility/better_to_string.hpp"
+#include <utility>
 
 // Both methods yield precisely the same data!
 #define _PSEUDO_INVERSE
@@ -16,6 +17,13 @@ namespace Hubbard::Helper {
 			: std::runtime_error("The matrix M is negative! First negative eigenvalue = " + Utility::better_to_string(_negative_eigenvalue, std::chars_format::scientific, 6)),
 			negative_eigenvalue(_negative_eigenvalue)
 		{};
+	};
+
+	template <class EigenMatrixType>
+	inline EigenMatrixType removeNoise(EigenMatrixType const& matrix) {
+		return matrix.unaryExpr([](typename EigenMatrixType::Scalar const& val) {
+			return (abs(val) < DEFAULT_PRECISION ? typename EigenMatrixType::Scalar{} : val);
+			});
 	};
 
 	class ModeHelper {

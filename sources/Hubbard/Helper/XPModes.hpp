@@ -9,12 +9,18 @@ namespace Hubbard::Helper {
 		static constexpr size_t antihermitian_size = 5U;
 
 		Matrix_L K_plus, K_minus, L;
+		std::array<Vector_L, 2> startingState_SC;
+		std::array<Vector_L, 2> startingState_CDW;
+		std::array<Vector_L, 2> startingState_AFM;
+		std::array<Vector_L, 2> startingState_AFM_transversal;
+
 		const std::array<int, hermitian_size> hermitian_offsets;
 		const std::array<int, antihermitian_size> antihermitian_offsets;
 
 		static constexpr std::array<int, 4> cdw_basis_positions{ 2,3,9,10 };
 
 		virtual void fillMatrices() override;
+		void createStartingStates();
 	public:
 		XPModes(Utility::InputFileReader& input) : ModeHelper(input),
 			hermitian_offsets{

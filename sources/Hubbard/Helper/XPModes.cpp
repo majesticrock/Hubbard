@@ -5,6 +5,7 @@
 namespace Hubbard::Helper {
 	void XPModes::fillMatrices()
 	{
+		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		constexpr int a = hermitian_size - 1;
 		constexpr int b = antihermitian_size - 1;
 
@@ -16,6 +17,7 @@ namespace Hubbard::Helper {
 		{
 			for (int j = 0; j < number_of_basis_terms; ++j)
 			{
+				std::cout << i << "   " << j << std::endl;
 				// Ignore the offdiagonal blocks as they are 0
 				if ((i < hermitian_size && j < hermitian_size) || (j >= hermitian_size && i >= hermitian_size)) {
 					fill_block_M(i, j);
@@ -24,6 +26,41 @@ namespace Hubbard::Helper {
 				else if (i < hermitian_size && j >= hermitian_size) {
 					fill_block_N(i, j);
 				}
+			}
+		}
+
+		if ((K_plus - K_plus.adjoint()).norm() > ERROR_MARGIN * K_plus.rows() * K_plus.cols())
+			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_plus - K_plus.adjoint()).norm()));
+		if ((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols())
+			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
+
+		L = removeNoise(L);
+		K_plus = removeNoise(K_plus);
+		K_minus = removeNoise(K_minus);
+
+		std::chrono::time_point end = std::chrono::steady_clock::now();
+		std::cout << "Time for filling of M and N: "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+	}
+
+	void XPModes::createStartingStates()
+	{
+		this->startingState_SC = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
+		this->startingState_CDW = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
+		this->startingState_AFM = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
+		this->startingState_AFM_transversal = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
+
+		const double norm_constant = this->usingDOS
+			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
+			: sqrt(1. / ((double)Constants::BASIS_SIZE));
+		for (int j = 0; j < 2; ++j)
+		{
+			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
+			{
+				startingState_SC[j](i) = norm_constant;
+				startingState_CDW[j](2 * Constants::BASIS_SIZE + i) = norm_constant;
+				startingState_AFM[j](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? norm_constant : -norm_constant;
+				startingState_AFM_transversal[j](3 * Constants::BASIS_SIZE + i) = norm_constant;
 			}
 		}
 	}
@@ -49,11 +86,9 @@ namespace Hubbard::Helper {
 		if ((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols())
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
 
-		auto setZero = [](global_floating_type val) {
-			return (abs(val) < DEFAULT_PRECISION ? 0 : val);
-			};
-		K_plus = K_plus.array().unaryExpr(setZero);
-		K_minus = K_minus.array().unaryExpr(setZero);
+		
+		K_plus = removeNoise(K_plus);
+		K_minus = removeNoise(K_minus);
 
 		try {
 			Eigen::SelfAdjointEigenSolver<Matrix_L> solver_minus(K_minus, Eigen::EigenvaluesOnly);
@@ -73,45 +108,8 @@ namespace Hubbard::Helper {
 
 	std::vector<ResolventReturnData> XPModes::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever)
 	{
-		std::chrono::time_point begin = std::chrono::steady_clock::now();
-		std::chrono::time_point end = std::chrono::steady_clock::now();
-		
 		fillMatrices();
-
-		if ((K_plus - K_plus.adjoint()).norm() > ERROR_MARGIN * K_plus.rows() * K_plus.cols())
-			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_plus - K_plus.adjoint()).norm()));
-		if ((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols())
-			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
-
-		auto setZero = [](global_floating_type val) {
-			return (abs(val) < DEFAULT_PRECISION ? 0 : val);
-			};
-		L = L.array().unaryExpr(setZero);
-		K_plus = K_plus.array().unaryExpr(setZero);
-		K_minus = K_minus.array().unaryExpr(setZero);
-
-		end = std::chrono::steady_clock::now();
-		std::cout << "Time for filling of M and N: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-
-		Vector_L startingState_SC[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
-		Vector_L startingState_CDW[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
-		Vector_L startingState_AFM[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
-		Vector_L startingState_AFM_transversal[2] = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
-
-		const double norm_constant = this->usingDOS
-			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
-			: sqrt(1. / ((double)Constants::BASIS_SIZE));
-		for (int j = 0; j < 2; ++j)
-		{
-			for (size_t i = 0U; i < Constants::BASIS_SIZE; ++i)
-			{
-				startingState_SC[j](i) = norm_constant;
-				startingState_CDW[j](2 * Constants::BASIS_SIZE + i) = norm_constant;
-				startingState_AFM[j](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? norm_constant : -norm_constant;
-				startingState_AFM_transversal[j](3 * Constants::BASIS_SIZE + i) = norm_constant;
-			}
-		}
+		createStartingStates();
 
 		// M_new = K_plus
 		Matrix_L solver_matrix;
@@ -135,8 +133,6 @@ namespace Hubbard::Helper {
 					std::cerr << "K_+: eigenvalues may not be accurate: " << k_solver[0].info() << std::endl;
 				}
 
-				// Do the most scary thing I've ever seen in c++
-				// And remove the const from the reference returned by eigenvalues()
 				Vector_L& evs = const_cast<Vector_L&>(k_solver[0].eigenvalues());
 				applyMatrixOperation<OPERATION_NONE>(evs);
 
@@ -157,8 +153,6 @@ namespace Hubbard::Helper {
 					std::cerr << "K_-: eigenvalues may not be accurate: " << k_solver[1].info() << std::endl;
 				}
 
-				// Do the most scary thing I've ever seen in c++
-				// And remove the const from the reference returned by eigenvalues()
 				Vector_L& evs = const_cast<Vector_L&>(k_solver[1].eigenvalues());
 				applyMatrixOperation<OPERATION_NONE>(evs);
 
@@ -215,13 +209,14 @@ namespace Hubbard::Helper {
 
 			begin_in = std::chrono::steady_clock::now();
 			buffer_matrix = N_new * k_solver[plus_index].eigenvectors();
-			solver_matrix = (buffer_matrix * k_solver[plus_index].eigenvalues().asDiagonal() * buffer_matrix.adjoint()).array().unaryExpr(setZero);
+			solver_matrix = removeNoise((buffer_matrix * k_solver[plus_index].eigenvalues().asDiagonal() * buffer_matrix.adjoint()).eval());
 			end_in = std::chrono::steady_clock::now();
 			std::cout << "Time for computing solver_matrix: "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 			}; // end lambda
 
-		begin = std::chrono::steady_clock::now();
+
+		std::chrono::time_point begin = std::chrono::steady_clock::now();
 
 		constexpr unsigned int N_RESOLVENT_TYPES = 4U;
 		std::vector<ResolventReal> resolvents{};
@@ -266,7 +261,7 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		end = std::chrono::steady_clock::now();
+		std::chrono::time_point end = std::chrono::steady_clock::now();
 		std::cout << "Time for resolvents: "
 			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 

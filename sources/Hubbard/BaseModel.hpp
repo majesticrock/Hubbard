@@ -147,7 +147,7 @@ namespace Hubbard {
 		};
 
 	public:
-		explicit BaseModel(const ModelParameters& params, SystemType sytemType = Undefined)
+		explicit BaseModel(const ModelParameters& params, SystemType sytemType = SystemUndefined)
 			: model_attributes(params, sytemType), temperature(params.temperature), U(params.U), V(params.V)
 		{
 			init();
