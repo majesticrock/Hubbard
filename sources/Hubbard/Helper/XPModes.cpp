@@ -17,7 +17,6 @@ namespace Hubbard::Helper {
 		{
 			for (int j = 0; j < number_of_basis_terms; ++j)
 			{
-				std::cout << i << "   " << j << std::endl;
 				// Ignore the offdiagonal blocks as they are 0
 				if ((i < hermitian_size && j < hermitian_size) || (j >= hermitian_size && i >= hermitian_size)) {
 					fill_block_M(i, j);

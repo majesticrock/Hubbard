@@ -18,6 +18,10 @@ namespace Hubbard::Helper {
 		// The non-summing terms (except for the epsilon terms) are proportioal to 1/#lattice sites
 		// This number is probably arbitrary in the DOS-description so we will fix it to a value that works
 	protected:
+		// The abcissa need to be organized so that [0] -> -gamma_max + Delta gamma / 2
+		// Then a spacing of Delta gamma = 2 gamma_max / Constants::BASIS_SIZE yields a proper
+		// discretization that omits 0 (which is problematic when we need to compute k+Q for gamma(k) = 0
+		// [n] = -gamma_max + Delta gamma * (n + 1/2)
 		std::vector<global_floating_type> approximate_dos;
 		double INV_GAMMA_DISC = Constants::BASIS_SIZE / (-2.0 * DOS::LOWER_BORDER);
 
@@ -98,10 +102,11 @@ namespace Hubbard::Helper {
 
 	public:
 		TermWithDOS(Utility::InputFileReader& input, const ModelParameters& modelParameters) 
-			: DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input, modelParameters), approximate_dos(Constants::BASIS_SIZE, 0.0)
+			: DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input, modelParameters), 
+				approximate_dos(Constants::BASIS_SIZE, global_floating_type{})
 		{
 			auto dos_norm = [this]() -> global_floating_type {
-				return (-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE) * std::reduce(approximate_dos.begin(), approximate_dos.end(), global_floating_type{});
+				return this->model->getDeltaGamma() * std::reduce(approximate_dos.begin(), approximate_dos.end(), global_floating_type{});
 				};
 
 			const std::string filename = "../../data/approx_dos_dim_" + std::to_string(DOS::DIMENSION) + "_disc_" + std::to_string(Constants::BASIS_SIZE) + ".bin";
@@ -120,45 +125,14 @@ namespace Hubbard::Helper {
 			}
 
 			std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-			if constexpr (DOS::DIMENSION == 2) {
-				constexpr int faktor = 1;
-				Constants::K_DISCRETIZATION *= faktor;
-				Constants::PI_DIV_DISCRETIZATION /= faktor;
-
-				NumericalMomentum<DOS::DIMENSION> ks;
-				do {
-					// Irgendeine Zahl zwischen 0 und BASIS_SIZE
-					approximate_dos.at(std::round(0.5 * (1 - ks.gamma() / DOS::LOWER_BORDER) * (Constants::BASIS_SIZE - 1))) += 1;
-				} while (ks.iterateFullBZ());
-				for (int i = 0; i < Constants::HALF_BASIS; ++i)
-				{
-					approximate_dos[i] += approximate_dos[Constants::BASIS_SIZE - 1 - i];
-					approximate_dos[i] *= 0.5;
-					approximate_dos[Constants::BASIS_SIZE - 1 - i] = approximate_dos[i];
-				}
-				for (auto& value : this->approximate_dos)
-				{
-					value *= INV_GAMMA_DISC / boost::math::pow<DOS::DIMENSION>(2. * Constants::K_DISCRETIZATION);
-				}
-
-				Constants::K_DISCRETIZATION /= faktor;
-				Constants::PI_DIV_DISCRETIZATION *= faktor;
+			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
+			{
+				approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
 			}
-			else {
-				for (int i = 0; i < Constants::BASIS_SIZE; ++i)
-				{
-					if (i == 0 || i == Constants::BASIS_SIZE - 1) {
-						approximate_dos[i] = 0.25 * DOS::computeValue(this->model->getGammaFromIndex(1));
-					}
-					else {
-						approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
-					}
-				}
-				global_floating_type inverse_norm = 1. / dos_norm();
-				for (auto& value : approximate_dos)
-				{
-					value *= inverse_norm;
-				}
+			global_floating_type inverse_norm = 1. / dos_norm();
+			for (auto& value : approximate_dos)
+			{
+				value *= inverse_norm;
 			}
 
 			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

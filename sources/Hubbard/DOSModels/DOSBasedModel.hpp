@@ -26,6 +26,7 @@ namespace Hubbard::DOSModels {
 	private:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 		static std::mutex dos_mutex;
+		const global_floating_type DELTA_GAMMA;
 		constexpr static int NUMBER_OF_PARAMETERS = 9;
 
 		void init() {
@@ -59,7 +60,7 @@ namespace Hubbard::DOSModels {
 #ifdef _EXACT_DOS
 					//Constants::setBasis(2U * DOS::size());
 #else
-					Constants::BASIS_SIZE += 1;
+					//Constants::BASIS_SIZE += 1;
 #endif
 				}
 			}
@@ -127,7 +128,9 @@ namespace Hubbard::DOSModels {
 			F -= x;
 		};
 	public:
-		DOSBasedModel(const ModelParameters& _params) : BaseModel<DataType>(_params, static_cast<SystemType>(DOS::DIMENSION)),
+		DOSBasedModel(const ModelParameters& _params) 
+			: BaseModel<DataType>(_params, static_cast<SystemType>(DOS::DIMENSION)), 
+			DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
@@ -135,7 +138,7 @@ namespace Hubbard::DOSModels {
 
 		template<typename StartingValuesDataType>
 		DOSBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
-			: BaseModel<DataType>(_params, startingValues),
+			: BaseModel<DataType>(_params, startingValues), DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
@@ -200,17 +203,15 @@ namespace Hubbard::DOSModels {
 			return (Constants::HALF_BASIS - gamma_idx - 0.5) * DOS::LOWER_BORDER / Constants::BASIS_SIZE;
 			//return DOS::abscissa_v(gamma_idx);
 #else
-			return 2 * (Constants::HALF_BASIS - gamma_idx) * DOS::LOWER_BORDER / (Constants::BASIS_SIZE - 1);
+			return DOS::LOWER_BORDER + this->DELTA_GAMMA * (gamma_idx + 0.5);
 #endif
 		};
 
+		/* Needs to change gamma -> -gamma 
+		*  Indexing is symmetric about the middle. Thus:
+		*  gamma[k] = -gamma[Constants::BASIS_SIZE - 1 - k] */ 
 		inline int shiftByQ(int k) const {
-#ifdef _EXACT_DOS
-			return (-k + 2 * Constants::HALF_BASIS - 1);
-			//return k + (k < Constants::HALF_BASIS ? Constants::HALF_BASIS : -Constants::HALF_BASIS);
-#else
-			return (-k + 2 * Constants::HALF_BASIS);
-#endif
+			return (Constants::BASIS_SIZE - 1 - k);
 		};
 
 		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override {
@@ -336,6 +337,10 @@ namespace Hubbard::DOSModels {
 			std::cout << res(0) << "   " << res(1) << std::endl;
 			return 1 + 2 * (res(0) - res(1));
 		};
+
+		inline auto getDeltaGamma() const {
+			return this->DELTA_GAMMA;
+		}
 	};
 
 	template <typename DataType, class DOS>
