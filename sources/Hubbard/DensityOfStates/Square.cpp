@@ -11,7 +11,7 @@ namespace Hubbard::DensityOfStates {
 	dos_precision Square::b_minus_a_halved;
 
 	global_floating_type Square::computeValue(const global_floating_type& gamma) {
-		return (LONG_1_PI * LONG_1_PI) * boost::math::ellint_1(sqrt(1 - gamma * gamma));
+		return (LONG_1_PI * LONG_1_PI) * boost::math::ellint_1(sqrt(1 - gamma * gamma / 4));
 	};
 
 #ifdef _BOOST_PRECISION
