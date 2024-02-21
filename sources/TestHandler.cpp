@@ -11,6 +11,7 @@
 #include "Hubbard/DOSModels/PhaseSeparationDOS.hpp"
 #include "Hubbard/EMCoupling.hpp"
 
+
 using namespace Hubbard;
 
 std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
@@ -26,6 +27,17 @@ std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
 
 void TestHandler::execute(Utility::InputFileReader& input) const
 {
+
+	//Eigen::MatrixXi A(5, 5);
+    //A<< 1, 0, 2, 0, 0,
+    //    0, 4, 0, 6, 1,
+    //    2, 0, 5, 0, 0,
+    //    0, 6, 0, 8, 0,
+    //    0, 1, 0, 0, 9;
+	//auto perm = Utility::pivot_to_block_structure(A);
+	//std::cout << A << "\n\n" << perm * A * perm.transpose() << std::endl;
+	//return ;
+
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 	std::chrono::steady_clock::time_point test_e;
 

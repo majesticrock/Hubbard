@@ -1,6 +1,7 @@
 #include "XPModes.hpp"
 #include <chrono>
 #include <omp.h>
+#include "../../Utility/PivotToBlockStructure.hpp"
 
 namespace Hubbard::Helper {
 	void XPModes::fillMatrices()
@@ -116,6 +117,14 @@ namespace Hubbard::Helper {
 
 		omp_set_nested(1);
 		Eigen::initParallel();
+
+		Utility::pivot_to_block_structure(K_plus);
+		Utility::pivot_to_block_structure(K_minus);
+
+		auto b_idx = Utility::identify_hermitian_blocks(K_plus);
+		for(auto b : b_idx){
+			std::cout << b.first << "  " << b.second << std::endl;
+		}
 
 #pragma omp parallel sections
 		{
