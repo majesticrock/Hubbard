@@ -128,7 +128,7 @@ namespace Hubbard::Helper {
 		Matrix_L solver_matrix;
 		matrix_wrapper k_solutions[2] = { matrix_wrapper(K_plus.rows()), matrix_wrapper(K_minus.rows()) };
 
-		omp_set_nested(1);
+		omp_set_nested(2);
 		Eigen::initParallel();
 
 #pragma omp parallel sections
@@ -145,6 +145,7 @@ namespace Hubbard::Helper {
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 				begin_in = std::chrono::steady_clock::now();
 
+#pragma omp parallel for
 				for (int i = 0; i < blocks.size(); ++i)
 				{
 					Eigen::SelfAdjointEigenSolver<Matrix_L> solver(K_plus.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second));
@@ -172,6 +173,7 @@ namespace Hubbard::Helper {
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 				begin_in = std::chrono::steady_clock::now();
 
+#pragma omp parallel for
 				for (int i = 0; i < blocks.size(); ++i)
 				{
 					Eigen::SelfAdjointEigenSolver<Matrix_L> solver(K_minus.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second));
@@ -216,6 +218,7 @@ namespace Hubbard::Helper {
 			auto blocks = Utility::identify_hermitian_blocks(N_new);
 
 			matrix_wrapper n_solution{ N_new.rows() };
+#pragma omp parallel for
 			for (int i = 0; i < blocks.size(); ++i)
 			{
 				Eigen::SelfAdjointEigenSolver<Matrix_L> solver(N_new.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second));

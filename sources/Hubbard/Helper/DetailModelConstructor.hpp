@@ -18,17 +18,21 @@ namespace Hubbard::Helper {
 		ValueArray sum_of_all;
 		std::unique_ptr<Model> model{};
 
-		const std::map<std::string, int> wick_map = { {"n", 0}, {"g", 1}, {"f", 2}, {"\\eta", 3} };
+		// We can cast enums to int without any issue
+		//const std::map<SymbolicOperators::Number_Type, int> wick_map = 
+		//	{ {SymbolicOperators::Number_Type, 0}, 
+		//		{SymbolicOperators::CDW_Type, 1},
+		//		{SymbolicOperators::SC_Type, 2},
+		//		{SymbolicOperators::Eta_Type, 3} };
 		const std::map<std::string, int> wick_spin_offset = { {"\\uparrow", 0}, {"\\downarrow", 4}, {"\\sigma", 6} };
 
 		inline complex_prec getSumOfAll(const SymbolicOperators::WickOperator& op, int cos_modulation = 0) const {
-			auto it = wick_map.find(op.type);
-			if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
+			assert(op.type < SymbolicOperators::Undefined_Type);
 
-			int index = it->second;
-			if (op.type == "g" || op.type == "n") {
+			int index = static_cast<int>(op.type);
+			if (op.type == SymbolicOperators::CDW_Type || op.type == SymbolicOperators::Number_Type) {
 				auto jt = wick_spin_offset.find(op.indizes[0]);
-				if (jt == wick_map.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
+				if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
 				index += jt->second;
 			}
 

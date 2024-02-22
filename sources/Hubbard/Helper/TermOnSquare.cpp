@@ -3,13 +3,12 @@
 namespace Hubbard::Helper {
 	complex_prec TermOnSquare::getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const
 	{
-		auto it = wick_map.find(op.type);
-		if (it == wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
+		assert(op.type < SymbolicOperators::Undefined_Type);
 
-		int index = it->second;
-		if (op.type == "g" || op.type == "n") {
+		int index = static_cast<int>(op.type);
+		if (op.type == SymbolicOperators::CDW_Type || op.type == SymbolicOperators::Number_Type) {
 			auto jt = wick_spin_offset.find(op.indizes[0]);
-			if (jt == wick_map.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
+			if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
 			index += jt->second;
 		}
 

@@ -26,13 +26,12 @@ namespace Hubbard::Helper {
 		double INV_GAMMA_DISC = Constants::BASIS_SIZE / (-2.0 * DOS::LOWER_BORDER);
 
 		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, int gamma_idx) const {
-			auto it = this->wick_map.find(op.type);
-			if (it == this->wick_map.end()) throw std::invalid_argument("Term type not recognized: " + op.type);
+			assert(op.type < SymbolicOperators::Undefined_Type);
 
-			int index = it->second;
-			if (op.type == "g" || op.type == "n") {
+			int index = static_cast<int>(op.type);
+			if (op.type == SymbolicOperators::CDW_Type || op.type == SymbolicOperators::Number_Type) {
 				auto jt = this->wick_spin_offset.find(op.indizes[0]);
-				if (jt == this->wick_map.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
+				if (jt == this->wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
 				index += jt->second;
 			}
 
@@ -48,6 +47,17 @@ namespace Hubbard::Helper {
 		};
 
 		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) const {
+			auto attributeVanishes = [this](int index) -> bool {
+				return (!this->model->getAttributes().isFinite(index));
+				};
+
+			if (attributeVanishes(0) && attributeVanishes(1) && term.includesType(SymbolicOperators::CDW_Type)) {
+				return complex_prec{};
+			}
+			if (attributeVanishes(2) && term.includesType(SymbolicOperators::SC_Type)) {
+				return complex_prec{};
+			}
+			
 			const global_floating_type& gamma{ this->model->getGammaFromIndex(gamma_idx) };
 			const global_floating_type& gamma_prime{ this->model->getGammaFromIndex(gamma_prime_idx) };
 
