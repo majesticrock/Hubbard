@@ -128,8 +128,8 @@ namespace Hubbard::DOSModels {
 			F -= x;
 		};
 	public:
-		DOSBasedModel(const ModelParameters& _params) 
-			: BaseModel<DataType>(_params, static_cast<SystemType>(DOS::DIMENSION)), 
+		DOSBasedModel(const ModelParameters& _params)
+			: BaseModel<DataType>(_params, static_cast<SystemType>(DOS::DIMENSION)),
 			DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
@@ -207,9 +207,9 @@ namespace Hubbard::DOSModels {
 #endif
 		};
 
-		/* Needs to change gamma -> -gamma 
+		/* Needs to change gamma -> -gamma
 		*  Indexing is symmetric about the middle. Thus:
-		*  gamma[k] = -gamma[Constants::BASIS_SIZE - 1 - k] */ 
+		*  gamma[k] = -gamma[Constants::BASIS_SIZE - 1 - k] */
 		inline int shiftByQ(int k) const {
 			return (Constants::BASIS_SIZE - 1 - k);
 		};

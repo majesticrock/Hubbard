@@ -4,6 +4,20 @@
 #include "../../Utility/PivotToBlockStructure.hpp"
 
 namespace Hubbard::Helper {
+	struct matrix_wrapper {
+		Matrix_L eigenvectors;
+		Vector_L eigenvalues;
+
+		explicit matrix_wrapper(Eigen::Index size)
+			: eigenvectors(Matrix_L::Zero(size, size)), eigenvalues(Vector_L::Zero(size))
+		{};
+
+		inline Matrix_L reconstruct_matrix() const
+		{
+			return eigenvectors * eigenvalues.asDiagonal() * eigenvectors.adjoint();
+		};
+	};
+
 	void XPModes::fillMatrices()
 	{
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
@@ -86,7 +100,6 @@ namespace Hubbard::Helper {
 		if ((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols())
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
 
-		
 		K_plus = removeNoise(K_plus);
 		K_minus = removeNoise(K_minus);
 
@@ -113,58 +126,63 @@ namespace Hubbard::Helper {
 
 		// M_new = K_plus
 		Matrix_L solver_matrix;
-		Eigen::SelfAdjointEigenSolver<Matrix_L> k_solver[2];
+		matrix_wrapper k_solutions[2] = { matrix_wrapper(K_plus.rows()), matrix_wrapper(K_minus.rows()) };
 
 		omp_set_nested(1);
 		Eigen::initParallel();
-
-		Utility::pivot_to_block_structure(K_plus);
-		Utility::pivot_to_block_structure(K_minus);
-
-		auto b_idx = Utility::identify_hermitian_blocks(K_plus);
-		for(auto b : b_idx){
-			std::cout << b.first << "  " << b.second << std::endl;
-		}
 
 #pragma omp parallel sections
 		{
 #pragma omp section
 			{
 				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
-				k_solver[0].compute(K_plus);
-
-				global_floating_type tol{ k_solver[0].eigenvalues().norm() * ERROR_MARGIN };
-				if (k_solver[0].info() == Eigen::Success && (k_solver[0].eigenvalues().array() >= -tol).all()) {
-					std::cout << "K_+: eigenvalues are real and accurate up to tolerance" << std::endl;
-				}
-				else {
-					std::cerr << "K_+: eigenvalues may not be accurate: " << k_solver[0].info() << std::endl;
-				}
-
-				Vector_L& evs = const_cast<Vector_L&>(k_solver[0].eigenvalues());
-				applyMatrixOperation<OPERATION_NONE>(evs);
+				auto pivot = Utility::pivot_to_block_structure(K_plus);
+				K_plus = pivot.transpose() * K_plus * pivot;
+				auto blocks = Utility::identify_hermitian_blocks(K_plus);
 
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
+				std::cout << "Time for pivoting K_+: "
+					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
+				begin_in = std::chrono::steady_clock::now();
+
+				for (int i = 0; i < blocks.size(); ++i)
+				{
+					Eigen::SelfAdjointEigenSolver<Matrix_L> solver(K_plus.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second));
+					k_solutions[0].eigenvalues.segment(blocks[i].first, blocks[i].second) = solver.eigenvalues();
+					k_solutions[0].eigenvectors.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second) = solver.eigenvectors();
+				}
+
+				applyMatrixOperation<OPERATION_NONE>(k_solutions[0].eigenvalues);
+				k_solutions[0].eigenvectors.applyOnTheLeft(pivot);
+
+				end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_+: "
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 			}
 #pragma omp section
 			{
 				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
-				k_solver[1].compute(K_minus);
 
-				global_floating_type tol{ k_solver[1].eigenvalues().norm() * ERROR_MARGIN };
-				if (k_solver[1].info() == Eigen::Success && (k_solver[1].eigenvalues().array() >= -tol).all()) {
-					std::cout << "K_-: eigenvalues are real and accurate up to tolerance" << std::endl;
-				}
-				else {
-					std::cerr << "K_-: eigenvalues may not be accurate: " << k_solver[1].info() << std::endl;
-				}
-
-				Vector_L& evs = const_cast<Vector_L&>(k_solver[1].eigenvalues());
-				applyMatrixOperation<OPERATION_NONE>(evs);
+				auto pivot = Utility::pivot_to_block_structure(K_minus);
+				K_minus = pivot.transpose() * K_minus * pivot;
+				auto blocks = Utility::identify_hermitian_blocks(K_minus);
 
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
+				std::cout << "Time for pivoting K_-: "
+					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
+				begin_in = std::chrono::steady_clock::now();
+
+				for (int i = 0; i < blocks.size(); ++i)
+				{
+					Eigen::SelfAdjointEigenSolver<Matrix_L> solver(K_minus.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second));
+					k_solutions[1].eigenvalues.segment(blocks[i].first, blocks[i].second) = solver.eigenvalues();
+					k_solutions[1].eigenvectors.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second) = solver.eigenvectors();
+				}
+
+				applyMatrixOperation<OPERATION_NONE>(k_solutions[1].eigenvalues);
+				k_solutions[1].eigenvectors.applyOnTheLeft(pivot);
+
+				end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_-: "
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 			}
@@ -178,11 +196,11 @@ namespace Hubbard::Helper {
 		auto compute_solver_matrix = [&](size_t plus_index, size_t minus_index) {
 			std::chrono::time_point begin_in = std::chrono::steady_clock::now();
 			if (minus_index == 0) L.transposeInPlace();
-			solver_matrix.resize(k_solver[plus_index].eigenvalues().rows(), k_solver[plus_index].eigenvalues().rows());
+			solver_matrix.resize(k_solutions[plus_index].eigenvalues.rows(), k_solutions[plus_index].eigenvalues.rows());
 
-			Vector_L K_EV = k_solver[minus_index].eigenvalues();
+			Vector_L K_EV = k_solutions[minus_index].eigenvalues;
 			applyMatrixOperation<OPERATION_INVERSE>(K_EV);
-			Matrix_L buffer_matrix = L * k_solver[minus_index].eigenvectors();
+			Matrix_L buffer_matrix = L * k_solutions[minus_index].eigenvectors;
 			Matrix_L N_new = buffer_matrix * K_EV.asDiagonal() * buffer_matrix.adjoint();
 
 			std::chrono::time_point end_in = std::chrono::steady_clock::now();
@@ -190,22 +208,27 @@ namespace Hubbard::Helper {
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 			begin_in = std::chrono::steady_clock::now();
 
-			Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
-			solver.compute(N_new);
-			global_floating_type tol{ solver.eigenvalues().norm() * ERROR_MARGIN };
-			if (solver.info() == Eigen::Success && (solver.eigenvalues().array() >= -tol).all()) {
-				std::cout << "N_new: eigenvalues are real and accurate up to tolerance" << std::endl;
-			}
-			else {
-				std::cerr << "N_new: eigenvalues may not be accurate: " << solver.info() << std::endl;
-			}
+			//Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
+			//solver.compute(N_new);
 
-			Vector_L& n_ev = const_cast<Vector_L&>(solver.eigenvalues());
-			applyMatrixOperation<OPERATION_INVERSE_SQRT>(n_ev);
+			auto pivot = Utility::pivot_to_block_structure(N_new);
+			N_new = pivot.transpose() * N_new * pivot;
+			auto blocks = Utility::identify_hermitian_blocks(N_new);
+
+			matrix_wrapper n_solution{ N_new.rows() };
+			for (int i = 0; i < blocks.size(); ++i)
+			{
+				Eigen::SelfAdjointEigenSolver<Matrix_L> solver(N_new.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second));
+				n_solution.eigenvalues.segment(blocks[i].first, blocks[i].second) = solver.eigenvalues();
+				n_solution.eigenvectors.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second) = solver.eigenvectors();
+			}
+			n_solution.eigenvectors.applyOnTheLeft(pivot);
+
+			applyMatrixOperation<OPERATION_INVERSE_SQRT>(n_solution.eigenvalues);
 
 			// Starting here, N_new = 1/sqrt(N_new)
 			// I forego another matrix to save some memory
-			N_new = solver.eigenvectors() * n_ev.asDiagonal() * solver.eigenvectors().adjoint();
+			N_new = n_solution.eigenvectors * n_solution.eigenvalues.asDiagonal() * n_solution.eigenvectors.adjoint();
 			startingState_SC[plus_index] = N_new * L * startingState_SC[plus_index];
 			startingState_CDW[plus_index] = N_new * L * startingState_CDW[plus_index];
 			startingState_AFM[plus_index] = N_new * L * startingState_AFM[plus_index];
@@ -216,13 +239,12 @@ namespace Hubbard::Helper {
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 
 			begin_in = std::chrono::steady_clock::now();
-			buffer_matrix = N_new * k_solver[plus_index].eigenvectors();
-			solver_matrix = removeNoise((buffer_matrix * k_solver[plus_index].eigenvalues().asDiagonal() * buffer_matrix.adjoint()).eval());
+			buffer_matrix = N_new * k_solutions[plus_index].eigenvectors;
+			solver_matrix = removeNoise((buffer_matrix * k_solutions[plus_index].eigenvalues.asDiagonal() * buffer_matrix.adjoint()).eval());
 			end_in = std::chrono::steady_clock::now();
 			std::cout << "Time for computing solver_matrix: "
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 			}; // end lambda
-
 
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 
@@ -247,22 +269,21 @@ namespace Hubbard::Helper {
 			resolvents.push_back(ResolventReal(startingState_AFM[i]));
 			resolvents.push_back(ResolventReal(startingState_AFM_transversal[i]));
 
-
 #pragma omp parallel sections
 			{
-				#pragma omp section
+#pragma omp section
 				{
 					resolvents[N_RESOLVENT_TYPES * i].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
-				#pragma omp section
+#pragma omp section
 				{
 					resolvents[N_RESOLVENT_TYPES * i + 1].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
-				#pragma omp section
+#pragma omp section
 				{
 					resolvents[N_RESOLVENT_TYPES * i + 2].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
-				#pragma omp section
+#pragma omp section
 				{
 					resolvents[N_RESOLVENT_TYPES * i + 3].compute(solver_matrix, LANCZOS_ITERATION_NUMBER);
 				}
