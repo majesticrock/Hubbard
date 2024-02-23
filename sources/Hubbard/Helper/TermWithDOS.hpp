@@ -25,6 +25,21 @@ namespace Hubbard::Helper {
 		std::vector<global_floating_type> approximate_dos;
 		double INV_GAMMA_DISC = Constants::BASIS_SIZE / (-2.0 * DOS::LOWER_BORDER);
 
+		inline global_floating_type getWeightFromIndex(size_t gamma_idx) {
+			if (gamma_idx < Constants::HALF_BASIS) {
+				// gamma < 0
+				if (gamma_idx < Constants::EIGHTH_BASIS) {
+					return this->model->getDeltaGamma();
+				}
+				if (gamma_idx < Constants::QUARTER_BASIS) {
+					return 0.5 * this->model->getDeltaGamma();
+				}
+				return 0.25 * this->model->getDeltaGamma();
+			}
+			return getWeightFromIndex(gamma_idx - Constants::HALF_BASIS);
+			//return DOS::weights_v(index);
+		};
+
 		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, int gamma_idx) const {
 			assert(op.type < SymbolicOperators::Undefined_Type);
 
@@ -115,9 +130,20 @@ namespace Hubbard::Helper {
 			: DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input, modelParameters), 
 				approximate_dos(Constants::BASIS_SIZE, global_floating_type{})
 		{
+#ifdef _EXACT_DOS
+			auto dos_norm = [this]() -> global_floating_type {
+				global_floating_type val{};
+				for (size_t i = 0U; i < approximate_dos.size(); ++i)
+				{
+					val += approximate_dos[i] * getWeightFromIndex(i);
+				}
+				return val;
+				};
+#else
 			auto dos_norm = [this]() -> global_floating_type {
 				return this->model->getDeltaGamma() * std::reduce(approximate_dos.begin(), approximate_dos.end(), global_floating_type{});
 				};
+#endif
 
 			const std::string filename = "../../data/approx_dos_dim_" + std::to_string(DOS::DIMENSION) + "_disc_" + std::to_string(Constants::BASIS_SIZE) + ".bin";
 			if (std::filesystem::exists(filename)) {
@@ -135,8 +161,10 @@ namespace Hubbard::Helper {
 			}
 
 			std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
 			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
+				//std::cout << i << "\t" << this->model->getGammaFromIndex(i) << "\t" << DOS::computeValue(this->model->getGammaFromIndex(i)) << std::endl;
 				approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
 			}
 			global_floating_type inverse_norm = 1. / dos_norm();

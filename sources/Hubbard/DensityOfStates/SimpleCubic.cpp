@@ -1,5 +1,4 @@
 #include "SimpleCubic.hpp"
-#include "../Constants.hpp"
 #include <omp.h>
 #include <cmath>
 #include <algorithm>

@@ -1,6 +1,5 @@
 #include "Square.hpp"
 #include "tanh_sinh_helper.hpp"
-#include "../Constants.hpp"
 #include <numeric>
 #include <filesystem>
 
