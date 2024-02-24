@@ -2,11 +2,19 @@
 #include "XPModes.hpp"
 #include "TermWithDOS.hpp"
 
+#ifdef _EXACT_DOS
+#define _FACTOR_DIAG (this->approximate_dos[k] * this->getWeightFromIndex(k) * Constants::BASIS_SIZE)
+#define _FACTOR_OFF_DIAG (this->approximate_dos[k] * this->approximate_dos[l] * this->getWeightFromIndex(k) * this->getWeightFromIndex(l) * Constants::BASIS_SIZE)
+#else
+#define _FACTOR_DIAG this->approximate_dos[k]
+#define _FACTOR_OFF_DIAG (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC)
+#endif
+
 namespace Hubbard::Helper {
 	template <class DOS>
 	class DOS_XP : public TermWithDOS<DOS>, public XPModes
 	{
-	private:
+	protected:
 		inline global_floating_type computeRealTerm(const SymbolicOperators::WickTerm& term, int k, int l) const {
 			const auto result = this->computeTerm(term, k, l);
 			if (abs(result.imag()) > ERROR_MARGIN) {
@@ -37,11 +45,11 @@ namespace Hubbard::Helper {
 
 						if (i < hermitian_size) {
 							K_plus(hermitian_offsets[i] + k, hermitian_offsets[j] + l)
-								+= computeRealTerm(term, k, l) * this->approximate_dos[k];
+								+= computeRealTerm(term, k, l) * _FACTOR_DIAG;
 						}
 						else {
 							K_minus(antihermitian_offsets[i - hermitian_size] + k, antihermitian_offsets[j - hermitian_size] + l)
-								+= computeRealTerm(term, k, l) * this->approximate_dos[k];
+								+= computeRealTerm(term, k, l) * _FACTOR_DIAG;
 						}
 					}
 					else {
@@ -49,18 +57,17 @@ namespace Hubbard::Helper {
 						{
 							if (i < hermitian_size) {
 								K_plus(hermitian_offsets[i] + k, hermitian_offsets[j] + l)
-									+= computeRealTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
+									+= computeRealTerm(term, k, l) * _FACTOR_OFF_DIAG;
 							}
 							else {
 								K_minus(antihermitian_offsets[i - hermitian_size] + k, antihermitian_offsets[j - hermitian_size] + l)
-									+= computeRealTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
+									+= computeRealTerm(term, k, l) * _FACTOR_OFF_DIAG;
 							}
 						}
 					}
 				} // end k-loop
 			} // end term-loop
 		}
-
 		// L
 		virtual void fill_block_N(int i, int j) override
 		{
@@ -82,7 +89,7 @@ namespace Hubbard::Helper {
 						}
 
 						L(hermitian_offsets[i] + k, antihermitian_offsets[j - hermitian_size] + l)
-							+= computeRealTerm(term, k, l) * this->approximate_dos[k];
+							+= computeRealTerm(term, k, l) * _FACTOR_DIAG;
 						// Technically, we need to multiply this term by h(gamma - gamma') = Delta gamma
 						// But we dont, that's why we need to devide it later in the offdiagonal parts
 						// The factor is added, when we compute the lanczos coefficients
@@ -93,7 +100,7 @@ namespace Hubbard::Helper {
 						for (int l = 0; l < inner_sum_limit; l++)
 						{
 							L(hermitian_offsets[i] + k, antihermitian_offsets[j - hermitian_size] + l)
-								+= computeRealTerm(term, k, l) * (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC);
+								+= computeRealTerm(term, k, l) * _FACTOR_OFF_DIAG;
 						}
 					}
 				} // end k-loop

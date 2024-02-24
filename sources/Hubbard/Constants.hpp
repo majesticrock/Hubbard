@@ -9,6 +9,8 @@ namespace Hubbard {
 		extern int K_DISCRETIZATION;
 		extern int BASIS_SIZE;
 		extern int HALF_BASIS;
+		extern int QUARTER_BASIS;
+		extern int EIGHTH_BASIS;
 
 		extern global_floating_type PI_DIV_DISCRETIZATION;
 
@@ -17,6 +19,8 @@ namespace Hubbard {
 		inline void setBasis(int setTo) {
 			BASIS_SIZE = setTo;
 			HALF_BASIS = setTo / 2;
+			QUARTER_BASIS = setTo / 4;
+			EIGHTH_BASIS = setTo / 8;
 		};
 
 		inline void setDiscretization(int setTo)

@@ -23,6 +23,8 @@ using namespace Hubbard;
 int Constants::K_DISCRETIZATION = -1;
 int Constants::BASIS_SIZE = -1;
 int Constants::HALF_BASIS = -1;
+int Constants::QUARTER_BASIS = -1;
+int Constants::EIGHTH_BASIS = -1;
 global_floating_type Constants::PI_DIV_DISCRETIZATION = -1;
 
 int main(int argc, char** argv)

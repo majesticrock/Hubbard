@@ -58,9 +58,7 @@ namespace Hubbard::DOSModels {
 					dos.computeValues();
 					std::cout << "1 - DOS-Norm = " << std::scientific << 1. - DensityOfStates::computeNorm<DOS>() << std::endl;
 #ifdef _EXACT_DOS
-					//Constants::setBasis(2U * DOS::size());
-#else
-					//Constants::BASIS_SIZE += 1;
+					//Constants::setBasis(2 * DOS::size());
 #endif
 				}
 			}
@@ -130,7 +128,11 @@ namespace Hubbard::DOSModels {
 	public:
 		DOSBasedModel(const ModelParameters& _params)
 			: BaseModel<DataType>(_params, static_cast<SystemType>(DOS::DIMENSION)),
+#ifdef _EXACT_DOS
+			DELTA_GAMMA(-4.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
+#else
 			DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
+#endif
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
@@ -138,7 +140,12 @@ namespace Hubbard::DOSModels {
 
 		template<typename StartingValuesDataType>
 		DOSBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
-			: BaseModel<DataType>(_params, startingValues), DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
+			: BaseModel<DataType>(_params, startingValues), 
+#ifdef _EXACT_DOS
+			DELTA_GAMMA(-4.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
+#else
+			DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
+#endif
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
@@ -200,7 +207,17 @@ namespace Hubbard::DOSModels {
 
 		inline global_floating_type getGammaFromIndex(int gamma_idx) const {
 #ifdef _EXACT_DOS
-			return (Constants::HALF_BASIS - gamma_idx - 0.5) * DOS::LOWER_BORDER / Constants::BASIS_SIZE;
+			if (gamma_idx < Constants::HALF_BASIS) {
+				// gamma < 0
+				if (gamma_idx < Constants::EIGHTH_BASIS) {
+					return DOS::LOWER_BORDER + this->DELTA_GAMMA * (gamma_idx + 0.5);
+				}
+				if (gamma_idx < Constants::QUARTER_BASIS) {
+					return (0.5 * DOS::LOWER_BORDER) + (0.5 * this->DELTA_GAMMA) * (gamma_idx - Constants::EIGHTH_BASIS + 0.5);
+				}
+				return (0.25 * DOS::LOWER_BORDER) + (0.25 * this->DELTA_GAMMA) * (gamma_idx - Constants::QUARTER_BASIS + 0.5);
+			}
+			return -getGammaFromIndex(gamma_idx - Constants::HALF_BASIS);
 			//return DOS::abscissa_v(gamma_idx);
 #else
 			return DOS::LOWER_BORDER + this->DELTA_GAMMA * (gamma_idx + 0.5);
@@ -211,7 +228,11 @@ namespace Hubbard::DOSModels {
 		*  Indexing is symmetric about the middle. Thus:
 		*  gamma[k] = -gamma[Constants::BASIS_SIZE - 1 - k] */
 		inline int shiftByQ(int k) const {
+#ifdef _EXACT_DOS
+			return (k < Constants::HALF_BASIS ? k + Constants::HALF_BASIS : k - Constants::HALF_BASIS);
+#else
 			return (Constants::BASIS_SIZE - 1 - k);
+#endif
 		};
 
 		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override {
