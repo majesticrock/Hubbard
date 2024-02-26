@@ -15,9 +15,8 @@
 #define SC_QUAD_CUT_OFF -12
 #endif
 
-// Does not quite work yet - but the equally spaced variant is just fine
-// Evenly spaced might even be required
 //#define _EXACT_DOS
+#define _CLOSED_FORMULA
 
 #include <cmath>
 #include <complex>

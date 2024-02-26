@@ -72,7 +72,7 @@ namespace Hubbard::Helper {
 			if (attributeVanishes(2) && term.includesType(SymbolicOperators::SC_Type)) {
 				return complex_prec{};
 			}
-			
+
 			const global_floating_type& gamma{ this->model->getGammaFromIndex(gamma_idx) };
 			const global_floating_type& gamma_prime{ this->model->getGammaFromIndex(gamma_prime_idx) };
 
@@ -126,9 +126,9 @@ namespace Hubbard::Helper {
 		};
 
 	public:
-		TermWithDOS(Utility::InputFileReader& input, const ModelParameters& modelParameters) 
-			: DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input, modelParameters), 
-				approximate_dos(Constants::BASIS_SIZE, global_floating_type{})
+		TermWithDOS(Utility::InputFileReader& input, const ModelParameters& modelParameters)
+			: DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input, modelParameters),
+			approximate_dos(Constants::BASIS_SIZE, global_floating_type{})
 		{
 #ifdef _EXACT_DOS
 			auto dos_norm = [this]() -> global_floating_type {
@@ -164,7 +164,7 @@ namespace Hubbard::Helper {
 
 			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
-				//std::cout << i << "\t" << this->model->getGammaFromIndex(i) << "\t" << DOS::computeValue(this->model->getGammaFromIndex(i)) << std::endl;
+			    std::cout << i << "\t" << this->model->getGammaFromIndex(i) << "\t" << DOS::computeValue(this->model->getGammaFromIndex(i)) << std::endl;
 				approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
 			}
 			global_floating_type inverse_norm = 1. / dos_norm();

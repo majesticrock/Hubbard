@@ -19,6 +19,16 @@
 #define GAMMA_OCCUPATION_DOWN this->model_attributes[7]
 #define DELTA_PS this->model_attributes[8]
 
+#if defined _EXACT_DOS
+#define SET_DELTA_GAMMA DELTA_GAMMA(-4.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
+#else
+#ifdef _CLOSED_FORMULA
+#define SET_DELTA_GAMMA DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / (Constants::BASIS_SIZE - 1)),
+#else
+#define SET_DELTA_GAMMA DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
+#endif
+#endif
+
 namespace Hubbard::DOSModels {
 	template <typename DataType, class DOS>
 	class DOSBasedModel : public BaseModel<DataType>
@@ -128,11 +138,7 @@ namespace Hubbard::DOSModels {
 	public:
 		DOSBasedModel(const ModelParameters& _params)
 			: BaseModel<DataType>(_params, static_cast<SystemType>(DOS::DIMENSION)),
-#ifdef _EXACT_DOS
-			DELTA_GAMMA(-4.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
-#else
-			DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
-#endif
+			SET_DELTA_GAMMA
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
@@ -141,11 +147,7 @@ namespace Hubbard::DOSModels {
 		template<typename StartingValuesDataType>
 		DOSBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
 			: BaseModel<DataType>(_params, startingValues), 
-#ifdef _EXACT_DOS
-			DELTA_GAMMA(-4.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
-#else
-			DELTA_GAMMA(-2.0 * DOS::LOWER_BORDER / Constants::BASIS_SIZE),
-#endif
+			SET_DELTA_GAMMA
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
 			init();
@@ -220,7 +222,11 @@ namespace Hubbard::DOSModels {
 			return -getGammaFromIndex(gamma_idx - Constants::HALF_BASIS);
 			//return DOS::abscissa_v(gamma_idx);
 #else
+#ifdef _CLOSED_FORMULA
+			return DOS::LOWER_BORDER + this->DELTA_GAMMA * gamma_idx;
+#else
 			return DOS::LOWER_BORDER + this->DELTA_GAMMA * (gamma_idx + 0.5);
+#endif
 #endif
 		};
 
