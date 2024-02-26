@@ -16,7 +16,7 @@
 #endif
 
 //#define _EXACT_DOS
-#define _CLOSED_FORMULA
+//#define _CLOSED_FORMULA
 
 #include <cmath>
 #include <complex>

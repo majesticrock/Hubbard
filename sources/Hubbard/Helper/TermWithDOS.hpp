@@ -23,7 +23,7 @@ namespace Hubbard::Helper {
 		// discretization that omits 0 (which is problematic when we need to compute k+Q for gamma(k) = 0
 		// [n] = -gamma_max + Delta gamma * (n + 1/2)
 		std::vector<global_floating_type> approximate_dos;
-		double INV_GAMMA_DISC = Constants::BASIS_SIZE / (-2.0 * DOS::LOWER_BORDER);
+		const double INV_GAMMA_DISC;
 
 		inline global_floating_type getWeightFromIndex(size_t gamma_idx) {
 			if (gamma_idx < Constants::HALF_BASIS) {
@@ -128,7 +128,8 @@ namespace Hubbard::Helper {
 	public:
 		TermWithDOS(Utility::InputFileReader& input, const ModelParameters& modelParameters)
 			: DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input, modelParameters),
-			approximate_dos(Constants::BASIS_SIZE, global_floating_type{})
+			approximate_dos(Constants::BASIS_SIZE, global_floating_type{}),
+			INV_GAMMA_DISC(1. / this->model->getDeltaGamma())
 		{
 #ifdef _EXACT_DOS
 			auto dos_norm = [this]() -> global_floating_type {
@@ -164,8 +165,19 @@ namespace Hubbard::Helper {
 
 			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
-			    std::cout << i << "\t" << this->model->getGammaFromIndex(i) << "\t" << DOS::computeValue(this->model->getGammaFromIndex(i)) << std::endl;
+			    //std::cout << i << "\t" << this->model->getGammaFromIndex(i) << "\t" << this->model->getGammaFromIndex(this->model->shiftByQ(i)) << std::endl;
 				approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
+#ifdef _CLOSED_FORMULA
+				if (i == 0 || i == Constants::BASIS_SIZE - 1) {
+					approximate_dos[i] *= (3. / 8.);
+				}
+				else if (i % 3 == 0) {
+					approximate_dos[i] *= (6. / 8.);
+				}
+				else {
+					approximate_dos[i] *= (9. / 8.);
+				}
+#endif
 			}
 			global_floating_type inverse_norm = 1. / dos_norm();
 			for (auto& value : approximate_dos)

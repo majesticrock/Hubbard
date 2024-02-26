@@ -3,8 +3,8 @@
 #include "TermWithDOS.hpp"
 
 #ifdef _EXACT_DOS
-#define _FACTOR_DIAG (this->approximate_dos[k] * this->getWeightFromIndex(k) * Constants::BASIS_SIZE)
-#define _FACTOR_OFF_DIAG (this->approximate_dos[k] * this->approximate_dos[l] * this->getWeightFromIndex(k) * this->getWeightFromIndex(l) * Constants::BASIS_SIZE)
+#define _FACTOR_DIAG (this->approximate_dos[k] * this->getWeightFromIndex(k))
+#define _FACTOR_OFF_DIAG (this->approximate_dos[k] * this->approximate_dos[l] * this->getWeightFromIndex(k) * this->getWeightFromIndex(l))
 #else
 #define _FACTOR_DIAG this->approximate_dos[k]
 #define _FACTOR_OFF_DIAG (this->approximate_dos[k] * this->approximate_dos[l] / this->INV_GAMMA_DISC)
