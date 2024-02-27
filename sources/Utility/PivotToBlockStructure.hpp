@@ -26,11 +26,21 @@ namespace Utility {
 		return P;
 	};
 
+	struct HermitianBlock{
+		Eigen::Index position{};
+		Eigen::Index size{};
+	};
+
+	inline std::ostream& operator<<(std::ostream& os, const HermitianBlock& block){
+		os << block.position << "\t" << block.size;
+		return os;
+	};
+
 	template<class EigenMatrixType>
 	auto identify_hermitian_blocks(const EigenMatrixType& matrix, const typename EigenMatrixType::Scalar epsilon = 1e-12) {
 		Eigen::Index block_index{ 1 };
 		Eigen::Index block_size{};
-		std::vector<std::pair<Eigen::Index, Eigen::Index>> block_indices;
+		std::vector<HermitianBlock> block_indices;
 		for (Eigen::Index i = 0; i < matrix.rows(); ++i)
 		{
 			for (Eigen::Index j = matrix.cols() - 1; j > block_index; --j)
@@ -42,11 +52,11 @@ namespace Utility {
 			}
 			if (block_index == i) {
 				if (block_indices.empty()) {
-					block_indices.push_back(std::make_pair(Eigen::Index{}, block_index + 1));
+					block_indices.push_back({ Eigen::Index{}, block_index + 1 });
 				}
 				else {
-					block_size = block_index - (block_indices.back().second + block_indices.back().first) + 1;
-					block_indices.push_back(std::make_pair(block_index - block_size + 1, block_size));
+					block_size = block_index - (block_indices.back().size + block_indices.back().position) + 1;
+					block_indices.push_back({ block_index - block_size + 1, block_size });
 				}
 			}
 		}

@@ -2,6 +2,7 @@
 #include <chrono>
 #include <omp.h>
 #include "../../Utility/PivotToBlockStructure.hpp"
+#include <Eigen/Sparse>
 
 namespace Hubbard::Helper {
 	struct matrix_wrapper {
@@ -24,9 +25,9 @@ namespace Hubbard::Helper {
 		constexpr int a = hermitian_size - 1;
 		constexpr int b = antihermitian_size - 1;
 
-		K_plus = Matrix_L::Zero(a * Constants::BASIS_SIZE, a * Constants::BASIS_SIZE);
-		K_minus = Matrix_L::Zero(b * Constants::BASIS_SIZE, b * Constants::BASIS_SIZE);
-		L = Matrix_L::Zero(a * Constants::BASIS_SIZE, b * Constants::BASIS_SIZE);
+		K_plus.setZero(a * Constants::BASIS_SIZE, a * Constants::BASIS_SIZE);
+		K_minus.setZero(b * Constants::BASIS_SIZE, b * Constants::BASIS_SIZE);
+		L.setZero(a * Constants::BASIS_SIZE, b * Constants::BASIS_SIZE);
 
 		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
@@ -127,7 +128,6 @@ namespace Hubbard::Helper {
 		fillMatrices();
 		createStartingStates();
 
-		// M_new = K_plus
 		Matrix_L solver_matrix;
 		matrix_wrapper k_solutions[2] = { matrix_wrapper(K_plus.rows()), matrix_wrapper(K_minus.rows()) };
 
@@ -151,9 +151,9 @@ namespace Hubbard::Helper {
 #pragma omp parallel for
 				for (int i = 0; i < blocks.size(); ++i)
 				{
-					Eigen::SelfAdjointEigenSolver<Matrix_L> solver(K_plus.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second));
-					k_solutions[0].eigenvalues.segment(blocks[i].first, blocks[i].second) = solver.eigenvalues();
-					k_solutions[0].eigenvectors.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second) = solver.eigenvectors();
+					Eigen::SelfAdjointEigenSolver<Matrix_L> solver(K_plus.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size));
+					k_solutions[0].eigenvalues.segment(blocks[i].position, blocks[i].size) = solver.eigenvalues();
+					k_solutions[0].eigenvectors.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size) = solver.eigenvectors();
 				}
 
 				applyMatrixOperation<OPERATION_NONE>(k_solutions[0].eigenvalues);
@@ -162,11 +162,13 @@ namespace Hubbard::Helper {
 				end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_+: "
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
+				
+				// free the allocated memory
+				K_plus.conservativeResize(0, 0);
 			}
 #pragma omp section
 			{
 				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
-
 				auto pivot = Utility::pivot_to_block_structure(K_minus);
 				K_minus = pivot.transpose() * K_minus * pivot;
 				auto blocks = Utility::identify_hermitian_blocks(K_minus);
@@ -179,9 +181,9 @@ namespace Hubbard::Helper {
 #pragma omp parallel for
 				for (int i = 0; i < blocks.size(); ++i)
 				{
-					Eigen::SelfAdjointEigenSolver<Matrix_L> solver(K_minus.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second));
-					k_solutions[1].eigenvalues.segment(blocks[i].first, blocks[i].second) = solver.eigenvalues();
-					k_solutions[1].eigenvectors.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second) = solver.eigenvectors();
+					Eigen::SelfAdjointEigenSolver<Matrix_L> solver(K_minus.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size));
+					k_solutions[1].eigenvalues.segment(blocks[i].position, blocks[i].size) = solver.eigenvalues();
+					k_solutions[1].eigenvectors.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size) = solver.eigenvectors();
 				}
 
 				applyMatrixOperation<OPERATION_NONE>(k_solutions[1].eigenvalues);
@@ -190,6 +192,9 @@ namespace Hubbard::Helper {
 				end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_-: "
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
+
+				// free the allocated memory
+				K_minus.conservativeResize(0, 0);
 			}
 		}
 
@@ -213,20 +218,17 @@ namespace Hubbard::Helper {
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 			begin_in = std::chrono::steady_clock::now();
 
-			//Eigen::SelfAdjointEigenSolver<Matrix_L> solver;
-			//solver.compute(N_new);
-
 			auto pivot = Utility::pivot_to_block_structure(N_new);
 			N_new = pivot.transpose() * N_new * pivot;
 			auto blocks = Utility::identify_hermitian_blocks(N_new);
 
 			matrix_wrapper n_solution{ N_new.rows() };
 #pragma omp parallel for
-			for (int i = 0; i < blocks.size(); ++i)
+			for (size_t i = 0U; i < blocks.size(); ++i)
 			{
-				Eigen::SelfAdjointEigenSolver<Matrix_L> solver(N_new.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second));
-				n_solution.eigenvalues.segment(blocks[i].first, blocks[i].second) = solver.eigenvalues();
-				n_solution.eigenvectors.block(blocks[i].first, blocks[i].first, blocks[i].second, blocks[i].second) = solver.eigenvectors();
+				Eigen::SelfAdjointEigenSolver<Matrix_L> solver(N_new.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size));
+				n_solution.eigenvalues.segment(blocks[i].position, blocks[i].size) = solver.eigenvalues();
+				n_solution.eigenvectors.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size) = solver.eigenvectors();
 			}
 			n_solution.eigenvectors.applyOnTheLeft(pivot);
 
