@@ -27,7 +27,7 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
       break
     fi
   done < params/small_square.config
-  cp slurm/modes_small.slurm small_square_auto_generated/$NEW_NAME.slurm
+  cp slurm/modes_small_square.slurm small_square_auto_generated/$NEW_NAME.slurm
   sed -i "s|#SBATCH --job-name=modes|#SBATCH --job-name=$NEW_NAME|" small_square_auto_generated/$NEW_NAME.slurm
   sed -i "s|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/small_modes_output.txt|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/small_square_output_$NEW_NAME.txt|" small_square_auto_generated/$NEW_NAME.slurm
   sed -i "s|mpirun ./build/main params/small_square.config|mpirun ./build/main small_square_auto_generated/$NEW_NAME.config|" small_square_auto_generated/$NEW_NAME.slurm

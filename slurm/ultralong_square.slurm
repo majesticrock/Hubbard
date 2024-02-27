@@ -6,8 +6,8 @@
 ## Mandatory:
 #SBATCH --job-name=modes
 #SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt
-#SBATCH --time=24:00:00         ## maximum runtime; hours:minutes:seconds
-#SBATCH --partition=long       ## choose queue
+#SBATCH --time=168:00:00         ## maximum runtime; hours:minutes:seconds
+#SBATCH --partition=ultralong       ## choose queue
 
 #SBATCH --ntasks=1             ## sets number of total mpi processes
 #SBATCH --tasks-per-node=1    ## mpi processes spawned per node
@@ -32,7 +32,7 @@ date
 echo "--- START ---"
 
 ## execute binary using mpirun on the allocated computation resource; the number of cores is $
-mpirun ./build/main params/cluster.config
+mpirun ./build/main params/cluster_ul_square.config
 
 echo "--- END ---"
 date

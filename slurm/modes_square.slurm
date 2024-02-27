@@ -4,20 +4,20 @@
 ## or look up the slurm documentation under https://slurm.schedmed.com/sbatch.html
 
 ## Mandatory:
-#SBATCH --job-name=small_modes
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/small_modes_output.txt
-#SBATCH --time=12:00:00         ## maximum runtime; hours:minutes:seconds
+#SBATCH --job-name=modes
+#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt
+#SBATCH --time=24:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=long       ## choose queue
 
 #SBATCH --ntasks=1             ## sets number of total mpi processes
 #SBATCH --tasks-per-node=1    ## mpi processes spawned per node
 #SBATCH --cpus-per-task=8       ## logical cores used per mpi process: should be 1, except if you want to combine OpenMP with$
 
-#SBATCH --mem=36gb               ## sets maximum allowed memory per node
+#SBATCH --mem=128gb               ## sets maximum allowed memory per node
 ##SBATCH --mem-per-cpu=100mb    ## sets maximum allowed memory per mpi process
 
 #SBATCH --mail-user=joshua.althueser@tu-dortmund.de     ## replace mail by personal mail address
-#SBATCH --mail-type=FAIL ## most relevant options: NONE, BEGIN, END, FAIL
+#SBATCH --mail-type=END ## most relevant options: NONE, BEGIN, END, FAIL
 
 ## Optional:
 #SBATCH --hint=nomultithread    ## deactivate Hyperthreading (recommended); for Hyperthreading comment out this line
@@ -32,7 +32,7 @@ date
 echo "--- START ---"
 
 ## execute binary using mpirun on the allocated computation resource; the number of cores is $
-mpirun ./build/main params/small_cluster.config
+mpirun ./build/main params/cluster_square.config
 
 echo "--- END ---"
 date
