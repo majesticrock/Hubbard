@@ -25,7 +25,7 @@ namespace Hubbard::Helper {
 			return (abs(val) < DEFAULT_PRECISION ? typename EigenMatrixType::Scalar{} : val);
 			});
 	};
-
+	
 	class ModeHelper {
 	protected:
 		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M{}, wicks_N{};

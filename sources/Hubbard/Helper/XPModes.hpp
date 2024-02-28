@@ -2,6 +2,26 @@
 #include "ModeHelper.hpp"
 
 namespace Hubbard::Helper {
+	struct matrix_wrapper {
+		Matrix_L eigenvectors;
+		Vector_L eigenvalues;
+
+		inline matrix_wrapper() {};
+
+		inline explicit matrix_wrapper(Eigen::Index size)
+			: eigenvectors(Matrix_L::Zero(size, size)), eigenvalues(Vector_L::Zero(size))
+		{};
+
+		inline Matrix_L reconstruct_matrix() const
+		{
+			return eigenvectors * eigenvalues.asDiagonal() * eigenvectors.adjoint();
+		};
+
+		static matrix_wrapper pivot_and_solve(Matrix_L& toSolve);
+	};
+
+	
+
 	class XPModes : public ModeHelper
 	{
 	protected:
