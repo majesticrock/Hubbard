@@ -4,8 +4,8 @@
 ## or look up the slurm documentation under https://slurm.schedmed.com/sbatch.html
 
 ## Mandatory:
-#SBATCH --job-name=modes
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt
+#SBATCH --job-name=ul_cube
+#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_ul_cube.txt
 #SBATCH --time=168:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=ultralong       ## choose queue
 
