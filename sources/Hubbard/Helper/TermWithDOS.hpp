@@ -165,7 +165,7 @@ namespace Hubbard::Helper {
 
 			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
-			    //std::cout << i << "\t" << this->model->getGammaFromIndex(i) << "\t" << this->model->getGammaFromIndex(this->model->shiftByQ(i)) << std::endl;
+				//std::cout << i << "\t" << this->model->getGammaFromIndex(i) << "\t" << this->model->getGammaFromIndex(this->model->shiftByQ(i)) << std::endl;
 				approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
 #ifdef _CLOSED_FORMULA
 				if (i == 0 || i == Constants::BASIS_SIZE - 1) {

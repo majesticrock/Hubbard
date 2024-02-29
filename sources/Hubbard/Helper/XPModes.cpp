@@ -69,7 +69,7 @@ namespace Hubbard::Helper {
 		this->startingState_AFM = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		this->startingState_AFM_transversal = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 
-		const double norm_constant = 
+		const double norm_constant =
 #ifdef _EXACT_DOS
 			sqrt(1. / ((double)Constants::BASIS_SIZE));
 #else
@@ -146,7 +146,7 @@ namespace Hubbard::Helper {
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_+: "
 					<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
-				
+
 				// free the allocated memory
 				K_plus.conservativeResize(0, 0);
 			}
