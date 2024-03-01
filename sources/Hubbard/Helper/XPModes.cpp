@@ -5,7 +5,7 @@
 #include <Eigen/Sparse>
 
 namespace Hubbard::Helper {
-	matrix_wrapper matrix_wrapper::pivot_and_solve(Matrix_L& toSolve)
+	XPModes::matrix_wrapper XPModes::matrix_wrapper::pivot_and_solve(Matrix_L& toSolve)
 	{
 		auto pivot = Utility::pivot_to_block_structure(toSolve);
 		toSolve = pivot.transpose() * toSolve * pivot;
@@ -21,6 +21,21 @@ namespace Hubbard::Helper {
 		}
 		solution.eigenvectors.applyOnTheLeft(pivot);
 		return solution;
+	}
+	bool XPModes::matrix_wrapper::is_non_negative(Matrix_L& toSolve)
+	{
+		auto pivot = Utility::pivot_to_block_structure(toSolve);
+		toSolve = pivot.transpose() * toSolve * pivot;
+		auto blocks = Utility::identify_hermitian_blocks(toSolve);
+
+		for (int i = 0; i < blocks.size(); ++i)
+		{
+			Eigen::SelfAdjointEigenSolver<Matrix_L> solver(toSolve.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size), Eigen::EigenvaluesOnly);
+			if (ModeHelper::contains_negative(solver.eigenvalues())) {
+				return false;
+			}
+		}
+		return true;
 	};
 
 	void XPModes::fillMatrices()
@@ -103,25 +118,23 @@ namespace Hubbard::Helper {
 				}
 			}
 		}
+#ifdef _DEBUG
 		if ((K_plus - K_plus.adjoint()).norm() > ERROR_MARGIN * K_plus.rows() * K_plus.cols())
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_plus - K_plus.adjoint()).norm()));
 		if ((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols())
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
-
-		K_plus = removeNoise(K_plus);
-		K_minus = removeNoise(K_minus);
-
-		try {
-			auto solution = matrix_wrapper::pivot_and_solve(K_minus);
-			applyMatrixOperation<OPERATION_NONE>(solution.eigenvalues);
-
-			solution = matrix_wrapper::pivot_and_solve(K_plus);
-			applyMatrixOperation<OPERATION_NONE>(solution.eigenvalues);
-		}
-		catch (const MatrixIsNegativeException& ex) {
+#endif
+		if (contains_negative(K_minus.diagonal()) || contains_negative(K_plus.diagonal())) {
 			return true;
 		}
-
+		K_minus = removeNoise(K_minus);
+		if (not matrix_wrapper::is_non_negative(K_minus)) {
+			return true;
+		}
+		K_plus = removeNoise(K_plus);
+		if (not matrix_wrapper::is_non_negative(K_plus)) {
+			return true;
+		}
 		return false;
 	};
 

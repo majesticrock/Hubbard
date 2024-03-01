@@ -118,5 +118,9 @@ namespace Hubbard::Helper {
 		DOS_XP(Utility::InputFileReader& input, const ModelParameters& modelParameters) : TermWithDOS<DOS>(input, modelParameters), XPModes(input) {
 			this->TOTAL_BASIS = this->number_of_basis_terms * Constants::BASIS_SIZE;
 		};
+
+		void setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters) override {
+			this->internal_setNewModelParameters(input, modelParameters);
+		};
 	};
 }

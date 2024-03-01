@@ -95,7 +95,7 @@ namespace Hubbard {
 
 		inline size_t getIndex() const {
 			assert(k[0] + Constants::K_DISCRETIZATION >= 0);
-;			size_t index{ static_cast<size_t>(k[0] + Constants::K_DISCRETIZATION) };
+			;			size_t index{ static_cast<size_t>(k[0] + Constants::K_DISCRETIZATION) };
 			for (unsigned int i = 1U; i < Dimension; ++i)
 			{
 				index += 2 * i * Constants::K_DISCRETIZATION * (k[i] + Constants::K_DISCRETIZATION);
@@ -130,9 +130,9 @@ namespace Hubbard {
 			for (size_t i = 0U; i < Dimension; ++i)
 			{
 				this->k[i] += rhs.k[i];
-				if(this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
+				if (this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
 				else if (this->k[i] >= Constants::K_DISCRETIZATION) this->k[i] -= TWO_K_DISC;
-		
+
 				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
 			}
 			return *this;
@@ -142,9 +142,9 @@ namespace Hubbard {
 			for (size_t i = 0U; i < Dimension; ++i)
 			{
 				this->k[i] -= rhs.k[i];
-				if(this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
+				if (this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
 				else if (this->k[i] >= Constants::K_DISCRETIZATION) this->k[i] -= TWO_K_DISC;
-		
+
 				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
 			}
 			return *this;

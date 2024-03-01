@@ -136,8 +136,10 @@ namespace Hubbard::DOSModels {
 			F -= x;
 		};
 	public:
+		static constexpr SystemType SYSTEM_TYPE = static_cast<SystemType>(DOS::DIMENSION);
+
 		DOSBasedModel(const ModelParameters& _params)
-			: BaseModel<DataType>(_params, static_cast<SystemType>(DOS::DIMENSION)),
+			: BaseModel<DataType>(_params, SYSTEM_TYPE),
 			SET_DELTA_GAMMA
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{
@@ -146,7 +148,7 @@ namespace Hubbard::DOSModels {
 
 		template<typename StartingValuesDataType>
 		DOSBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
-			: BaseModel<DataType>(_params, startingValues), 
+			: BaseModel<DataType>(_params, startingValues),
 			SET_DELTA_GAMMA
 			_self_consistency_integrator(ComplexParameterVector::Zero(NUMBER_OF_PARAMETERS))
 		{

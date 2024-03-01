@@ -11,7 +11,7 @@ namespace Hubbard {
 		*  ---All Delta_CDW for different momenta  (N entries)
 		*/
 		static constexpr int Dimension = 2;
-		
+
 		inline size_t get_sc_index(const NumericalMomentum<Dimension>& q) const {
 			return q.getIndex();
 		};

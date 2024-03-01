@@ -14,7 +14,7 @@ namespace Hubbard::Helper {
 	public:
 		global_floating_type negative_eigenvalue{};
 		MatrixIsNegativeException(const global_floating_type& _negative_eigenvalue)
-			: std::runtime_error("The matrix M is negative! First negative eigenvalue = " + Utility::better_to_string(_negative_eigenvalue, std::chars_format::scientific, 6)),
+			: std::runtime_error("The matrix M is negative! Most negative eigenvalue = " + Utility::better_to_string(_negative_eigenvalue, std::chars_format::scientific, 6)),
 			negative_eigenvalue(_negative_eigenvalue)
 		{};
 	};
@@ -60,6 +60,10 @@ namespace Hubbard::Helper {
 		void loadWick(const std::string& filename);
 
 		virtual void fillMatrices() = 0;
+
+		inline static bool contains_negative(const Vector_L& vector) {
+			return (vector.array() < -SQRT_SALT).any();
+		};
 		/* Takes a positive semidefinite vector (the idea is that this contains eigenvalues) and applies an operation on it
 		* 0: Correct for negative eigenvalues
 		* 1: Compute the pseudoinverse
@@ -67,12 +71,10 @@ namespace Hubbard::Helper {
 		* 3: Compute the pseudoinverse square root
 		*/
 		template<Operation option>
-		void applyMatrixOperation(Vector_L& evs) const {
+		static void applyMatrixOperation(Vector_L& evs) {
+			if (contains_negative(evs)) throw MatrixIsNegativeException(evs.minCoeff());
 			for (auto& ev : evs)
 			{
-				if (ev < -SQRT_SALT) {
-					throw MatrixIsNegativeException(ev);
-				}
 				if (ev < SQRT_SALT) {
 #ifdef _PSEUDO_INVERSE
 					ev = 0;
@@ -123,5 +125,6 @@ namespace Hubbard::Helper {
 		virtual bool matrix_is_negative() = 0;
 		// does the full iEoM resolvent computations
 		virtual std::vector<ResolventReturnData> computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) = 0;
+		virtual void setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters) = 0;
 	};
 }

@@ -27,7 +27,6 @@ std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
 #include <Eigen/Sparse>
 using namespace Eigen;
 
-
 void TestHandler::execute(Utility::InputFileReader& input) const
 {
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();

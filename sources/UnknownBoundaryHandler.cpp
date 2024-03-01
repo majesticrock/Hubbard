@@ -75,7 +75,7 @@ void UnknownBoundaryHandler::execute(Utility::InputFileReader& input) const {
 		for (size_t iter = 0U; iter < MAX_ITERATIONS && abs(upper - lower) > ERROR_MARGIN; ++iter) {
 			center = 0.5 * (lower + upper);
 			modelParameters.setSecondIteratorExact(center);
-			modeHelper_upper = getHelper(input, modelParameters);
+			modeHelper_upper->setNewModelParameters(input, modelParameters);
 			if (modeHelper_upper->matrix_is_negative()) {
 				upper = center;
 			}

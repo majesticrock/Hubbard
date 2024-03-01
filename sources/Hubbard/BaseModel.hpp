@@ -169,6 +169,13 @@ namespace Hubbard {
 		};
 		virtual ~BaseModel() = default;
 
+		void setNewModelParameters(const ModelParameters& params, SystemType systemType) {
+			this->temperature = params.temperature;
+			this->U = params.U;
+			this->V = params.V;
+			this->model_attributes.reset(params, systemType);
+		};
+
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) = 0;
 
 		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = NoWarning) = 0;

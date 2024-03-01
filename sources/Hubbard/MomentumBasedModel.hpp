@@ -12,6 +12,8 @@ namespace Hubbard {
 		virtual void fillHamiltonian(const NumericalMomentum<Dimension>& k_values) = 0;
 		virtual void addToParameterSet(ComplexParameterVector& F, const NumericalMomentum<Dimension>& k_values) = 0;
 	public:
+		static constexpr SystemType SYSTEM_TYPE = static_cast<SystemType>(Dimension);
+
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(DataType{});
 			std::conditional_t<Utility::is_complex<DataType>(),

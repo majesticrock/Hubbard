@@ -13,38 +13,8 @@ namespace Hubbard::Helper {
 
 	template <class Model>
 	class DetailModelConstructor {
-	protected:
-		std::vector<ValueArray> expecs{};
-		ValueArray sum_of_all;
-		std::unique_ptr<Model> model{};
-
-		// We can cast enums to int without any issue
-		//const std::map<SymbolicOperators::Number_Type, int> wick_map = 
-		//	{ {SymbolicOperators::Number_Type, 0}, 
-		//		{SymbolicOperators::CDW_Type, 1},
-		//		{SymbolicOperators::SC_Type, 2},
-		//		{SymbolicOperators::Eta_Type, 3} };
-		const std::map<std::string, int> wick_spin_offset = { {"\\uparrow", 0}, {"\\downarrow", 4}, {"\\sigma", 6} };
-
-		inline complex_prec getSumOfAll(const SymbolicOperators::WickOperator& op, int cos_modulation = 0) const {
-			assert(op.type < SymbolicOperators::Undefined_Type);
-
-			int index = static_cast<int>(op.type);
-			if (op.type == SymbolicOperators::CDW_Type || op.type == SymbolicOperators::Number_Type) {
-				auto jt = wick_spin_offset.find(op.indizes[0]);
-				if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
-				index += jt->second;
-			}
-
-			if (op.isDaggered) return std::conj(sum_of_all(index, cos_modulation));
-			return sum_of_all(index, cos_modulation);
-		};
-
-	public:
-		virtual ~DetailModelConstructor() = default;
-
-		DetailModelConstructor(Utility::InputFileReader& input, const ModelParameters& modelParameters) 
-			: model(std::make_unique<Model>(modelParameters)) {
+	private:
+		void initialize_model(Utility::InputFileReader& input, const ModelParameters& modelParameters) {
 			if (input.getString("ratio_CDW_SC") != "-1") {
 				model->set_CDW_SC_ratio(input.getDouble("ratio_CDW_SC"));
 			}
@@ -73,7 +43,41 @@ namespace Hubbard::Helper {
 			}
 			if (DetailModelConstructorSettings::print_mean_field_result) model->getAttributes().print();
 			model->computeExpectationValues(expecs, sum_of_all);
-		}
+		};
+	protected:
+		std::vector<ValueArray> expecs{};
+		ValueArray sum_of_all;
+		std::unique_ptr<Model> model{};
+
+		const std::map<std::string, int> wick_spin_offset = { {"\\uparrow", 0}, {"\\downarrow", 4}, {"\\sigma", 6} };
+
+		inline complex_prec getSumOfAll(const SymbolicOperators::WickOperator& op, int cos_modulation = 0) const {
+			assert(op.type < SymbolicOperators::Undefined_Type);
+
+			int index = static_cast<int>(op.type);
+			if (op.type == SymbolicOperators::CDW_Type || op.type == SymbolicOperators::Number_Type) {
+				auto jt = wick_spin_offset.find(op.indizes[0]);
+				if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
+				index += jt->second;
+			}
+
+			if (op.isDaggered) return std::conj(sum_of_all(index, cos_modulation));
+			return sum_of_all(index, cos_modulation);
+		};
+		void internal_setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters)
+		{
+			this->model->setNewModelParameters(modelParameters, Model::SYSTEM_TYPE);
+			this->initialize_model(input, modelParameters);
+		};
+
+	public:
+		virtual ~DetailModelConstructor() = default;
+
+		DetailModelConstructor(Utility::InputFileReader& input, const ModelParameters& modelParameters)
+			: model(std::make_unique<Model>(modelParameters))
+		{
+			this->initialize_model(input, modelParameters);
+		};
 
 		DetailModelConstructor(std::unique_ptr<Model>&& model_ptr) : model{ std::move(model_ptr) }
 		{

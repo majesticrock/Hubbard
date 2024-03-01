@@ -44,4 +44,8 @@ namespace Hubbard::Helper {
 			}
 		}
 	}
+	void SquareGeneral::setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters)
+	{
+		this->internal_setNewModelParameters(input, modelParameters);
+	}
 }

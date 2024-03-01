@@ -199,6 +199,17 @@ namespace Hubbard {
 			converged = false;
 			std::fill(begin(), end(), DataType{});
 		}
+		inline void reset(const ModelParameters& params, SystemType systemType) {
+			if (systemType == SystemSquare) {
+				this->initializeParamters_2d(params);
+			}
+			else if (systemType == SystemCube) {
+				this->initializeParamters_3d(params);
+			}
+			else {
+				this->initializeParamters(params);
+			}
+		};
 
 		inline bool isOrdered() const {
 			for (const auto& value : selfconsistency_values)

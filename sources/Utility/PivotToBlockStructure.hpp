@@ -26,12 +26,12 @@ namespace Utility {
 		return P;
 	};
 
-	struct HermitianBlock{
+	struct HermitianBlock {
 		Eigen::Index position{};
 		Eigen::Index size{};
 	};
 
-	inline std::ostream& operator<<(std::ostream& os, const HermitianBlock& block){
+	inline std::ostream& operator<<(std::ostream& os, const HermitianBlock& block) {
 		os << block.position << "\t" << block.size;
 		return os;
 	};

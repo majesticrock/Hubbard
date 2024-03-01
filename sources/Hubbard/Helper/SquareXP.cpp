@@ -74,4 +74,8 @@ namespace Hubbard::Helper {
 			} // end k-loop
 		} // end term-loop
 	}
+	void SquareXP::setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters)
+	{
+		this->internal_setNewModelParameters(input, modelParameters);
+	}
 }
