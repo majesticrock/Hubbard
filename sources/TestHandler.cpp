@@ -25,6 +25,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
 }
 
 #include <Eigen/Sparse>
+#include "Utility/PivotToBlockStructure.hpp"
 using namespace Eigen;
 
 void TestHandler::execute(Utility::InputFileReader& input) const

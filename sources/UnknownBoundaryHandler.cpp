@@ -46,37 +46,36 @@ void UnknownBoundaryHandler::execute(Utility::InputFileReader& input) const {
 	std::chrono::steady_clock::time_point begin, end;
 	for (int i = 0; i < FIRST_IT_STEPS; ++i) {
 		begin = std::chrono::steady_clock::now();
-		std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper_lower, modeHelper_upper;
+		std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper;
 		lower = SECOND_IT_MIN;
 		upper = SECOND_IT_MAX;
 
 		modelParameters.setSecondIteratorExact(lower);
-		modeHelper_lower = getHelper(input, modelParameters);
-		modelParameters.setSecondIteratorExact(upper);
-		modeHelper_upper = getHelper(input, modelParameters);
+		modeHelper = getHelper(input, modelParameters);
+		bool result_lower = modeHelper->matrix_is_negative();
 
-		{
-			bool result_lower = modeHelper_lower->matrix_is_negative();
-			bool result_upper = modeHelper_upper->matrix_is_negative();
-			if (result_lower == result_upper) {
-				// There is no phase transition to be found here
-				local_data[i] = std::numeric_limits<double>::quiet_NaN();
-				modelParameters.incrementGlobalIterator();
-				continue;
-			}
-			else {
-				if (result_lower) {
-					// we want the lower value to be the one, where we can actually do the computations
-					std::swap(lower, upper);
-				}
+		modelParameters.setSecondIteratorExact(upper);
+		modeHelper->setNewModelParameters(input, modelParameters);
+		bool result_upper = modeHelper->matrix_is_negative();
+
+		if (result_lower == result_upper) {
+			// There is no phase transition to be found here
+			local_data[i] = std::numeric_limits<double>::quiet_NaN();
+			modelParameters.incrementGlobalIterator();
+			continue;
+		}
+		else {
+			if (result_lower) {
+				// we want the lower value to be the one, where we can actually do the computations
+				std::swap(lower, upper);
 			}
 		}
 
 		for (size_t iter = 0U; iter < MAX_ITERATIONS && abs(upper - lower) > ERROR_MARGIN; ++iter) {
 			center = 0.5 * (lower + upper);
 			modelParameters.setSecondIteratorExact(center);
-			modeHelper_upper->setNewModelParameters(input, modelParameters);
-			if (modeHelper_upper->matrix_is_negative()) {
+			modeHelper->setNewModelParameters(input, modelParameters);
+			if (modeHelper->matrix_is_negative()) {
 				upper = center;
 			}
 			else {
