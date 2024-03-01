@@ -27,7 +27,6 @@ namespace Hubbard::Helper {
 		auto pivot = Utility::pivot_to_block_structure(toSolve);
 		toSolve = pivot.transpose() * toSolve * pivot;
 		auto blocks = Utility::identify_hermitian_blocks(toSolve);
-
 		for (const auto& block : blocks)
 		{
 			Eigen::LDLT<Matrix_L> cholesky(toSolve.block(block.position, block.position, block.size, block.size));
