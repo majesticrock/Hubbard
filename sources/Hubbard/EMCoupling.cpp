@@ -77,7 +77,7 @@ namespace Hubbard {
 	EMCoupling::EMCoupling(const ModelParameters& _params)
 		: BaseModel(_params, static_cast<size_t>(2 * Constants::BASIS_SIZE), static_cast<size_t>(2 * Constants::BASIS_SIZE))
 	{
-		auto guess = [&]() -> double {
+		auto guess = [&]() -> global_floating_type {
 			if (std::abs(this->U) > 1e-12) {
 				return std::abs(this->U) * 4. * exp(-2 * 3.1415926 / sqrt(std::abs(this->U)));
 			}

@@ -23,7 +23,7 @@ namespace Hubbard::Helper {
 		// discretization that omits 0 (which is problematic when we need to compute k+Q for gamma(k) = 0
 		// [n] = -gamma_max + Delta gamma * (n + 1/2)
 		std::vector<global_floating_type> approximate_dos;
-		const double INV_GAMMA_DISC;
+		const global_floating_type INV_GAMMA_DISC;
 
 		inline global_floating_type getWeightFromIndex(size_t gamma_idx) {
 			if (gamma_idx < Constants::HALF_BASIS) {

@@ -33,7 +33,7 @@ namespace Hubbard {
 		}
 	}
 
-	ModelParameters::ModelParameters(double _temperature, double _U, double _V, double _global_step, double _second_step,
+	ModelParameters::ModelParameters(coefficient_type _temperature, coefficient_type _U, coefficient_type _V, coefficient_type _global_step, coefficient_type _second_step,
 		std::string _global_iterator_type, std::string _second_iterator_type)
 		: global_iterator_type(_global_iterator_type), second_iterator_type(_second_iterator_type),
 		global_step(_global_step), second_step(_second_step), temperature(_temperature), U(_U), V(_V)
@@ -41,14 +41,14 @@ namespace Hubbard {
 		init();
 	}
 
-	ModelParameters::ModelParameters(const std::vector<double>& params, double _global_step, double _second_step, std::string _global_iterator_type, std::string _second_iterator_type)
+	ModelParameters::ModelParameters(const std::vector<coefficient_type >& params, coefficient_type _global_step, coefficient_type  _second_step, std::string _global_iterator_type, std::string _second_iterator_type)
 		: global_iterator_type(_global_iterator_type), second_iterator_type(_second_iterator_type),
 		global_step(_global_step), second_step(_second_step), temperature(params[0]), U(params[1]), V(params[2])
 	{
 		init();
 	}
 
-	void ModelParameters::incrementer(std::string& s, const double step)
+	void ModelParameters::incrementer(std::string& s, const coefficient_type  step)
 	{
 		if (s == "T") {
 			temperature += step;
@@ -60,7 +60,7 @@ namespace Hubbard {
 			V += step;
 		}
 	}
-	double ModelParameters::setGlobalIterator(int it_num)
+	coefficient_type  ModelParameters::setGlobalIterator(int it_num)
 	{
 		if (global_iterator_type == "T") {
 			temperature = global_it_min + it_num * global_step;
@@ -73,7 +73,7 @@ namespace Hubbard {
 		}
 		return getGlobal();
 	}
-	double ModelParameters::setGlobalIteratorExact(double newValue)
+	coefficient_type  ModelParameters::setGlobalIteratorExact(coefficient_type  newValue)
 	{
 		if (global_iterator_type == "T") {
 			temperature = newValue;
@@ -86,7 +86,7 @@ namespace Hubbard {
 		}
 		return getGlobal();
 	}
-	double ModelParameters::setSecondIterator(int it_num)
+	coefficient_type  ModelParameters::setSecondIterator(int it_num)
 	{
 		if (second_iterator_type == "T") {
 			temperature = second_it_min + it_num * second_step;
@@ -99,7 +99,7 @@ namespace Hubbard {
 		}
 		return getSecond();
 	}
-	double Hubbard::ModelParameters::setSecondIteratorExact(double newValue)
+	coefficient_type  Hubbard::ModelParameters::setSecondIteratorExact(coefficient_type  newValue)
 	{
 		if (second_iterator_type == "T") {
 			temperature = newValue;
@@ -135,7 +135,7 @@ namespace Hubbard {
 	}
 	std::string ModelParameters::getFolderName() const
 	{
-		auto improved_string = [](double number) -> std::string {
+		auto improved_string = [](coefficient_type number) -> std::string {
 			if (std::floor(number) == number) {
 				// If the number is a whole number, format it with one decimal place
 				std::ostringstream out;

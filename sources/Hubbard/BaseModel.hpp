@@ -45,12 +45,12 @@ namespace Hubbard {
 		SpinorMatrix rho;
 		HamiltonSolver hamilton_solver;
 
-		double temperature{};
-		double U{};
-		double V{};
-		double U_OVER_N{ U / Constants::BASIS_SIZE };
-		double V_OVER_N{ V / Constants::BASIS_SIZE };
-		double chemical_potential{};
+		coefficient_type temperature{};
+		coefficient_type U{};
+		coefficient_type V{};
+		coefficient_type U_OVER_N{ U / Constants::BASIS_SIZE };
+		coefficient_type V_OVER_N{ V / Constants::BASIS_SIZE };
+		coefficient_type chemical_potential{};
 
 		size_t SPINOR_SIZE{ 4U };
 
@@ -182,7 +182,7 @@ namespace Hubbard {
 			return this->model_attributes;
 		}
 
-		inline void set_CDW_SC_ratio(double cdw_ratio) {
+		inline void set_CDW_SC_ratio(global_floating_type cdw_ratio) {
 			auto buffer = this->model_attributes[0] + this->model_attributes[2];
 			this->model_attributes[0] = buffer * cdw_ratio;
 			this->model_attributes[2] = buffer * (1. - cdw_ratio);

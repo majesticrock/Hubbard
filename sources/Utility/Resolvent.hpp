@@ -80,6 +80,7 @@ namespace Utility {
 	{
 	private:
 		using ComputationType = std::conditional_t<isComplex, std::complex<RealType>, RealType>;
+		using error_type = std::conditional_t< sizeof(RealType) >= sizeof(double), double, RealType >;
 
 		typedef Eigen::Matrix<ComputationType, Eigen::Dynamic, Eigen::Dynamic> matrix_t;
 		typedef Eigen::Vector<ComputationType, Eigen::Dynamic> vector_t;
@@ -102,7 +103,7 @@ namespace Utility {
 
 		// Computes the resolvent's parameters a_i and b_i
 		// Symplectic needs to be atleast positive semidefinite!
-		void compute(const matrix_t& toSolve, const matrix_t& symplectic, int maxIter, double errorMargin = 1e-10)
+		void compute(const matrix_t& toSolve, const matrix_t& symplectic, int maxIter, error_type errorMargin = 1e-10)
 		{
 			size_t matrixSize = toSolve.rows();
 
@@ -203,7 +204,7 @@ namespace Utility {
 		};
 
 		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
-		void compute(const matrix_t& toSolve, int maxIter, double errorMargin = 1e-10)
+		void compute(const matrix_t& toSolve, int maxIter, error_type errorMargin = 1e-10)
 		{
 			const size_t matrixSize = toSolve.rows();
 
@@ -296,7 +297,7 @@ namespace Utility {
 		};
 
 		// Computes the resolvent directly from M and N. This might be more stable for complex matrices
-		void computeFromNM(const matrix_t& toSolve, const matrix_t& symplectic, const matrix_t& N, int maxIter, double errorMargin = 1e-10)
+		void computeFromNM(const matrix_t& toSolve, const matrix_t& symplectic, const matrix_t& N, int maxIter, error_type errorMargin = 1e-10)
 		{
 			auto matrixSize = toSolve.rows();
 
@@ -398,7 +399,7 @@ namespace Utility {
 
 		// Computes the resolvent for a Hermitian problem (i.e. the symplectic matrix is the identity)
 		// Additionally, this function orthogonalizes the Krylov basis each step
-		void computeWithReorthogonalization(const matrix_t& toSolve, int maxIter, double errorMargin = 1e-10)
+		void computeWithReorthogonalization(const matrix_t& toSolve, int maxIter, error_type errorMargin = 1e-10)
 		{
 			const size_t matrixSize = toSolve.rows();
 

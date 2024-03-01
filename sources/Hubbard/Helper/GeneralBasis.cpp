@@ -188,9 +188,9 @@ namespace Hubbard::Helper {
 		* 2 - CDW
 		* 3 - AFM
 		*/
-		const double norm_constant = this->usingDOS
+		const global_floating_type norm_constant = this->usingDOS
 			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
-			: sqrt(1. / ((double)Constants::BASIS_SIZE));
+			: sqrt(1. / ((global_floating_type)Constants::BASIS_SIZE));
 		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
 		for (int i = 0; i < Constants::BASIS_SIZE; i++)
 		{

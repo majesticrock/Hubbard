@@ -83,11 +83,11 @@ namespace Hubbard::Helper {
 		this->startingState_AFM = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 		this->startingState_AFM_transversal = { Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) };
 
-		const double norm_constant =
+		const global_floating_type norm_constant =
 #ifdef _EXACT_DOS
-			sqrt(1. / ((double)Constants::BASIS_SIZE));
+			sqrt(1. / ((global_floating_type)Constants::BASIS_SIZE));
 #else
-			this->usingDOS ? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE) : sqrt(1. / ((double)Constants::BASIS_SIZE));
+			this->usingDOS ? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE) : sqrt(1. / ((global_floating_type)Constants::BASIS_SIZE));
 #endif
 		for (int j = 0; j < 2; ++j)
 		{

@@ -16,7 +16,7 @@ namespace Hubbard {
 	struct ModelAttributes {
 	private:
 		void initializeParamters_3d(const ModelParameters& _params) {
-			auto guess = [&]() -> double {
+			auto guess = [&]() -> global_floating_type {
 				if (std::abs(_params.U) > DEFAULT_PRECISION) {
 					return std::abs(_params.U) * exp(0.5 * log(36.)) * exp(-2. / (0.2887312107205692 * std::abs(_params.U)));
 				}
@@ -47,7 +47,7 @@ namespace Hubbard {
 			this->selfconsistency_values[8] = _params.V >= 0 ? 0.0 : guess() + std::abs(_params.V);
 		};
 		void initializeParamters_2d(const ModelParameters& _params) {
-			auto guess = [&]() -> double {
+			auto guess = [&]() -> global_floating_type {
 				if (std::abs(_params.U) > 1e-12) {
 					return std::abs(_params.U) * 4. * exp(-2 * 3.1415926 / sqrt(std::abs(_params.U)));
 				}

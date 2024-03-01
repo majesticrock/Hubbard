@@ -26,7 +26,7 @@ namespace Hubbard::Selfconsistency {
 			}
 			return false;
 		};
-		bool procedureIterative(const PhaseDebuggingPolicy& debugPolicy, const size_t MAX_STEPS, const double EPSILON)
+		bool procedureIterative(const PhaseDebuggingPolicy& debugPolicy, const size_t MAX_STEPS, const coefficient_type EPSILON)
 		{
 			Utility::UnderlyingFloatingPoint_t<DataType> error{ 100 };
 
@@ -68,7 +68,7 @@ namespace Hubbard::Selfconsistency {
 	public:
 		virtual const ModelAttributes<DataType>& computePhases(const PhaseDebuggingPolicy& debugPolicy)
 		{
-			constexpr double EPSILON = DEFAULT_PRECISION;
+			constexpr coefficient_type EPSILON = DEFAULT_PRECISION;
 			constexpr size_t MAX_STEPS = 1500;
 			this->_attr->converged = true;
 			if (!procedureIterative(debugPolicy, MAX_STEPS, EPSILON)) {

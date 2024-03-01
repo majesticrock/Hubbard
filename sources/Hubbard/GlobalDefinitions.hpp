@@ -3,9 +3,11 @@
 #include <stddef.h>
 #include "../Utility/Resolvent.hpp"
 #include <boost/math/constants/constants.hpp>
+#include <type_traits>
 
 //#define _BOOST_PRECISION
 //#define _LONG_PRECISION
+//#define _USE_FLOAT_32 // This is a pain
 #ifdef _BOOST_PRECISION
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #define SQUARE_QUAD_CUT_OFF -30
@@ -39,29 +41,37 @@ namespace Hubbard {
 	constexpr PhaseDebuggingPolicy PrintSteps{ true, true };
 
 #ifdef _BOOST_PRECISION
-#define _NO_MPI
+	#define _NO_MPI
 	typedef boost::multiprecision::cpp_bin_float_100 global_floating_type;
 	// At least long double, but maybe larger
 	typedef boost::multiprecision::cpp_bin_float_100 long_double_t;
-#define _CONST_FLOATING const long_double_t
-#define _CONST_LONG_FLOATING const long_double_t
+	#define _CONST_FLOATING const long_double_t
+	#define _CONST_LONG_FLOATING const long_double_t
 	_CONST_FLOATING DEFAULT_PRECISION{ 1e-15 };
 #else
-#ifdef _LONG_PRECISION
-#define _CONST_FLOATING constexpr long double
-#define _MPI_RETURN_TYPE MPI_LONG_DOUBLE
-	typedef long double global_floating_type;
-	_CONST_FLOATING DEFAULT_PRECISION{ 1e-15 };
-#else
-#define _CONST_FLOATING constexpr double
+	#ifdef _LONG_PRECISION
+		#define _CONST_FLOATING constexpr long double
+		#define _MPI_RETURN_TYPE MPI_LONG_DOUBLE
+		typedef long double global_floating_type;
+		_CONST_FLOATING DEFAULT_PRECISION{ 1e-15 };
+	#else
+		#ifdef _USE_FLOAT_32
+			typedef float global_floating_type;
+			#define _MPI_RETURN_TYPE MPI_FLOAT
+		#else
+			typedef double global_floating_type;
+			#define _MPI_RETURN_TYPE MPI_DOUBLE
+		#endif
+	#define _CONST_FLOATING constexpr global_floating_type
 	_CONST_FLOATING DEFAULT_PRECISION{ 1e-12 };
-#define _MPI_RETURN_TYPE MPI_DOUBLE
-	typedef double global_floating_type;
-#endif // _LONG_PRECISION
-	// At least long double, but maybe larger
-	typedef long double long_double_t;
+	
+	#endif // _LONG_PRECISION
+// At least long double, but maybe larger
+typedef long double long_double_t;
 #define _CONST_LONG_FLOATING constexpr long_double_t
 #endif // _BOOST_PRECISION
+
+	typedef std::conditional_t< sizeof(global_floating_type) >= sizeof(double), double, global_floating_type > coefficient_type;
 
 	_CONST_LONG_FLOATING LONG_PI = boost::math::constants::pi<long_double_t>(); // pi
 	// tak, v kancelari mam boost 1.71 a ten nedefinuje 1/pi ale 2/pi. je to na hovno ale nelze delat nic

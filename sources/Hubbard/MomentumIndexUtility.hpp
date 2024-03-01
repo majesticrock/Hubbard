@@ -12,7 +12,7 @@ namespace Hubbard {
 	inline int y(int idx) {
 		return idx % (2 * Constants::K_DISCRETIZATION) - Constants::K_DISCRETIZATION;
 	};
-	inline double gammaFromIndex(int index) {
+	inline global_floating_type gammaFromIndex(int index) {
 		return cos(Constants::PI_DIV_DISCRETIZATION * x(index)) + cos(Constants::PI_DIV_DISCRETIZATION * y(index));
 	};
 	inline int equal_up_to_Q(const Eigen::Vector2i& l, const Eigen::Vector2i& r) {

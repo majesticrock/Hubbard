@@ -6,7 +6,7 @@ namespace Hubbard::DensityOfStates {
 		static std::vector<abscissa_t> upper_border_to_abscissa;
 		static dos_precision b_minus_a_halved;
 
-		static constexpr double LOWER_BORDER = -2;
+		static constexpr coefficient_type LOWER_BORDER = -2;
 		static constexpr int DIMENSION = 2;
 		static constexpr int COORDINATION_NUMBER = 4;
 

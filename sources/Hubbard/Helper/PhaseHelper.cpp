@@ -45,8 +45,8 @@ namespace Hubbard::Helper {
 		// Setup the number of steps
 		int GLOBAL_IT_STEPS = input.getInt("global_iterator_steps");
 		FIRST_IT_STEPS = GLOBAL_IT_STEPS / numberOfRanks;
-		double GLOBAL_IT_LIMS[2] = { 0, input.getDouble("global_iterator_upper_limit") };
-		double FIRST_IT_RANGE = 0;
+		coefficient_type GLOBAL_IT_LIMS[2] = { 0, input.getDouble("global_iterator_upper_limit") };
+		coefficient_type FIRST_IT_RANGE = 0;
 		FIRST_IT_MIN = 0, FIRST_IT_MAX = 0;
 
 		for (int i = 0; i < option_list.size(); i++)
@@ -268,18 +268,18 @@ namespace Hubbard::Helper {
 			recieve_data.resize(3U, data_vector(FIRST_IT_STEPS));
 		}
 
-		auto base_U = [this](int it) -> double {
+		auto base_U = [this](int it) -> coefficient_type {
 			return FIRST_IT_MIN + ((FIRST_IT_MAX - FIRST_IT_MIN) * it) / FIRST_IT_STEPS;
 			};
-		auto base_V = [](double U) -> double {
+		auto base_V = [](coefficient_type U) -> coefficient_type {
 			return 0.25 * U;
 			};
 
-		constexpr double PRECISION = 1e-6;
-		constexpr double EPSILON = 1e-10;
+		constexpr coefficient_type PRECISION = 1e-6;
+		constexpr coefficient_type EPSILON = DEFAULT_PRECISION * 1e2;
 		for (int i = 0; i < FIRST_IT_STEPS; ++i) {
 			ModelParameters local{ modelParameters };
-			const double U = base_U(i);
+			const coefficient_type U = base_U(i);
 			recieve_data[0][i] = U;
 			local.setGlobalIteratorExact(U);
 			local.setSecondIteratorExact(base_V(U));
@@ -290,15 +290,15 @@ namespace Hubbard::Helper {
 
 			// If there is no cdw nor afm order, we save NaN to the array and remove it later
 			if (std::abs(base_gap[0]) < EPSILON) {
-				recieve_data[0][i] = std::numeric_limits<double>::quiet_NaN();
-				recieve_data[1][i] = std::numeric_limits<double>::quiet_NaN();
-				recieve_data[2][i] = std::numeric_limits<double>::quiet_NaN();
+				recieve_data[0][i] = std::numeric_limits<global_floating_type>::quiet_NaN();
+				recieve_data[1][i] = std::numeric_limits<global_floating_type>::quiet_NaN();
+				recieve_data[2][i] = std::numeric_limits<global_floating_type>::quiet_NaN();
 				continue;
 			}
 
-			double h{ 0.5 };
-			double a{ base_V(U) };
-			double b{ a - h };
+			coefficient_type h{ 0.5 };
+			coefficient_type a{ base_V(U) };
+			coefficient_type b{ a - h };
 			ModelAttributes<global_floating_type> gap_b{ base_gap };
 
 			while (a - b > PRECISION) {

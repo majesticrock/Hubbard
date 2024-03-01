@@ -42,16 +42,16 @@ namespace Hubbard::Helper {
 		* 7 - g_up + g_down
 		*/
 
-		static constexpr double SQRT_SALT = 1e-6;
-		static constexpr double SALT = SQRT_SALT * SQRT_SALT;
-		static constexpr double ERROR_MARGIN = DEFAULT_PRECISION;
+		static constexpr coefficient_type SQRT_SALT = 1e-6;
+		static constexpr coefficient_type SALT = SQRT_SALT * SQRT_SALT;
+		static constexpr coefficient_type ERROR_MARGIN = DEFAULT_PRECISION;
 
 		enum Operation { OPERATION_NONE, OPERATION_INVERSE, OPERATION_SQRT, OPERATION_INVERSE_SQRT };
 
 		int number_of_basis_terms{};
 		int start_basis_at{};
 
-		double dos_dimension{};
+		coefficient_type dos_dimension{};
 		bool usingDOS{};
 
 		/////////////

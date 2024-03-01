@@ -12,10 +12,10 @@ namespace Hubbard::Helper {
 		std::array<ModelAttributes<global_floating_type>, 4> attributes;
 		PhaseHelper* parent{};
 
-		double lowerFirst{};
-		double upperFirst{};
-		double lowerSecond{};
-		double upperSecond{};
+		coefficient_type lowerFirst{};
+		coefficient_type upperFirst{};
+		coefficient_type lowerSecond{};
+		coefficient_type upperSecond{};
 		int value_index{};
 
 		inline global_floating_type& operator()(const size_t i, const size_t j) {
@@ -40,13 +40,13 @@ namespace Hubbard::Helper {
 			}
 			return false;
 		};
-		inline double getCenterFirst() const noexcept {
+		inline coefficient_type getCenterFirst() const noexcept {
 			return 0.5 * (lowerFirst + upperFirst);
 		};
-		inline double getCenterSecond() const noexcept {
+		inline coefficient_type getCenterSecond() const noexcept {
 			return 0.5 * (lowerSecond + upperSecond);
 		};
-		inline double size() const noexcept {
+		inline coefficient_type size() const noexcept {
 			return 0.5 * (abs(upperFirst - lowerFirst) + abs(upperSecond - lowerSecond));
 		}
 		// Devides *this into 4 equally sized plaquettes

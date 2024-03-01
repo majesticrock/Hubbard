@@ -20,8 +20,8 @@ namespace Hubbard::Helper {
 		*/
 
 		ModelParameters mp{ parent->modelParameters };
-		const double centerFirst{ this->getCenterFirst() };
-		const double centerSecond{ this->getCenterSecond() };
+		const coefficient_type centerFirst{ this->getCenterFirst() };
+		const coefficient_type centerSecond{ this->getCenterSecond() };
 		ModelAttributes<global_floating_type> averageParameters{ this->attributes[0] };
 		int finiteCount = averageParameters.isOrdered() ? 1 : 0;
 		for (const auto& attr : this->attributes)

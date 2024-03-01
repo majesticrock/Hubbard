@@ -13,10 +13,10 @@ namespace Hubbard::Helper {
 	private:
 		friend struct Plaquette;
 		ModelParameters modelParameters;
-		double FIRST_IT_MIN{};
-		double FIRST_IT_MAX{};
-		double SECOND_IT_MIN{};
-		double SECOND_IT_MAX{};
+		coefficient_type FIRST_IT_MIN{};
+		coefficient_type FIRST_IT_MAX{};
+		coefficient_type SECOND_IT_MIN{};
+		coefficient_type SECOND_IT_MAX{};
 
 		int FIRST_IT_STEPS{};
 		int SECOND_IT_STEPS{};
