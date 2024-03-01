@@ -6,7 +6,7 @@
 ## Mandatory:
 #SBATCH --job-name=u_boundary
 #SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/u_boundary_output.txt
-#SBATCH --time=96:00:00         ## maximum runtime; hours:minutes:seconds
+#SBATCH --time=168:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=ultralong       ## choose queue
 
 #SBATCH --ntasks=2            ## sets number of total mpi processes
