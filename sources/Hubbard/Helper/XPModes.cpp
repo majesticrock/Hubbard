@@ -28,10 +28,10 @@ namespace Hubbard::Helper {
 		toSolve = pivot.transpose() * toSolve * pivot;
 		auto blocks = Utility::identify_hermitian_blocks(toSolve);
 
-		for (int i = 0; i < blocks.size(); ++i)
+		for (const auto& block : blocks)
 		{
-			Eigen::SelfAdjointEigenSolver<Matrix_L> solver(toSolve.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size), Eigen::EigenvaluesOnly);
-			if (ModeHelper::contains_negative(solver.eigenvalues())) {
+			Eigen::LDLT<Matrix_L> cholesky(toSolve.block(block.position, block.position, block.size, block.size));
+			if (ModeHelper::contains_negative(cholesky.vectorD())) {
 				return false;
 			}
 		}

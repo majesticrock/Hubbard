@@ -5,7 +5,7 @@ namespace Hubbard::SquareLattice {
 	class UsingBroyden : public Model2D<global_floating_type>
 	{
 	private:
-		void init();
+		void init() override;
 		const size_t _MaxPreBroydenIterations;
 	protected:
 		virtual void fillHamiltonian(const NumericalMomentum<2>& k_values) override;

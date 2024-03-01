@@ -6,7 +6,7 @@ namespace Hubbard::ChainLattice {
 		public Model1D<complex_prec>
 	{
 	private:
-		void init();
+		void init() override;
 	protected:
 
 		virtual void fillHamiltonian(const NumericalMomentum<1>& k_x) override;

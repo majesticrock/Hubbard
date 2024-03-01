@@ -2,6 +2,28 @@
 #include "Selfconsistency/IterativeSolver.hpp"
 
 namespace Hubbard {
+	void EMCoupling::init()
+	{
+		this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+		this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+
+		this->computeChemicalPotential();
+		this->parameterCoefficients = {
+			0.5 * this->U_OVER_N - 4. * this->V_OVER_N, // CDW
+			0.5 * this->U_OVER_N, // AFM
+			this->U_OVER_N, // SC
+			this->V_OVER_N, // Gamma SC
+			this->V_OVER_N, // Xi SC
+			this->U_OVER_N, // Eta
+			this->V_OVER_N, // Occupation Up
+			this->V_OVER_N, // Occupation Down
+			(0.5 * this->U_OVER_N + 4. * this->V_OVER_N) // Phase seperation
+		};
+	}
+	void EMCoupling::computeChemicalPotential()
+	{
+		this->chemical_potential = 0.5 * this->U + (2 * Dimension) * this->V;
+	}
 	void EMCoupling::fillHamiltonian()
 	{
 		hamilton.fill(global_floating_type{});

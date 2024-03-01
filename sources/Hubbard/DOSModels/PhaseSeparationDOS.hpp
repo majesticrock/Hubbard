@@ -10,10 +10,12 @@ namespace Hubbard::DOSModels {
 		const size_t _MaxPreBroydenIterations;
 		int _extra_dimensions{};
 
-		void init() {
+		void init() override {
 			this->SPINOR_SIZE = 4 + 4 * _extra_dimensions;
 			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+
+			this->DOSBasedModel<global_floating_type, DOS>::init();
 		};
 
 		inline void fillHamiltonian(const global_floating_type& gamma) {

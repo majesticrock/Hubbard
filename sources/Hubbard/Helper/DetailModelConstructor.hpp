@@ -41,7 +41,11 @@ namespace Hubbard::Helper {
 					}
 				}
 			}
-			if (DetailModelConstructorSettings::print_mean_field_result) model->getAttributes().print();
+			if (DetailModelConstructorSettings::print_mean_field_result) 
+			{ 
+				std::cout << "Solution for " << model->parametersAsTriplet() << std::endl;
+				model->getAttributes().print();
+			}
 			model->computeExpectationValues(expecs, sum_of_all);
 		};
 	protected:

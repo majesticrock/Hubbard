@@ -6,6 +6,7 @@ constexpr size_t NUMBER_OF_PARAMETERS = 18;
 namespace Hubbard::SquareLattice {
 	void SquareTripletPairing::init()
 	{
+		HubbardCDW::init();
 		this->SPINOR_SIZE = 8U;
 		hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 		rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);

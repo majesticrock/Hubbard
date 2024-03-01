@@ -8,9 +8,32 @@ namespace Hubbard {
 	class MomentumBasedModel : public BaseModel<DataType>
 	{
 	protected:
+		void init() override {
+			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
+
+			this->computeChemicalPotential();
+			this->parameterCoefficients = {
+				0.5 * this->U_OVER_N - 4. * this->V_OVER_N, // CDW
+				0.5 * this->U_OVER_N, // AFM
+				this->U_OVER_N, // SC
+				this->V_OVER_N, // Gamma SC
+				this->V_OVER_N, // Xi SC
+				this->U_OVER_N, // Eta
+				this->V_OVER_N, // Occupation Up
+				this->V_OVER_N, // Occupation Down
+				(0.5 * this->U_OVER_N + 4. * this->V_OVER_N) // Phase seperation
+			};
+		};
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 		virtual void fillHamiltonian(const NumericalMomentum<Dimension>& k_values) = 0;
 		virtual void addToParameterSet(ComplexParameterVector& F, const NumericalMomentum<Dimension>& k_values) = 0;
+
+		void computeChemicalPotential() override
+		{
+			this->chemical_potential = 0.5 * this->U + (2 * Dimension) * this->V;
+		};
+
 	public:
 		static constexpr SystemType SYSTEM_TYPE = static_cast<SystemType>(Dimension);
 
@@ -37,11 +60,17 @@ namespace Hubbard {
 		};
 
 		MomentumBasedModel(const ModelParameters& _params)
-			: BaseModel<DataType>(_params) {};
+			: BaseModel<DataType>(_params)
+		{
+			computeChemicalPotential();
+		};
 
 		template<typename StartingValuesDataType>
 		MomentumBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
-			: BaseModel<DataType>(_params, startingValues) {};
+			: BaseModel<DataType>(_params, startingValues)
+		{
+			computeChemicalPotential();
+		};
 
 		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {

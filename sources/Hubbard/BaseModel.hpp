@@ -27,25 +27,9 @@ namespace Hubbard {
 		using ParameterVector = Eigen::Vector<DataType, Eigen::Dynamic>;
 		using BaseAttributes = ModelAttributes<DataType>;
 		using HamiltonSolver = Eigen::SelfAdjointEigenSolver<SpinorMatrix>;
-	private:
-		inline void init()
-		{
-			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
-			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 
-			computeChemicalPotential();
-			this->parameterCoefficients = {
-				0.5 * this->U_OVER_N - 4. * this->V_OVER_N, // CDW
-				0.5 * this->U_OVER_N, // AFM
-				this->U_OVER_N, // SC
-				this->V_OVER_N, // Gamma SC
-				this->V_OVER_N, // Xi SC
-				this->U_OVER_N, // Eta
-				this->V_OVER_N, // Occupation Up
-				this->V_OVER_N, // Occupation Down
-				(0.5 * this->U_OVER_N + 4. * this->V_OVER_N) // Phase seperation
-			};
-		};
+	protected:
+		virtual void init() = 0;
 		inline void multiplyParametersByCoefficients(ParameterVector& F) const {
 			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
 			{
@@ -53,7 +37,6 @@ namespace Hubbard {
 			}
 		};
 
-	protected:
 		ModelAttributes<DataType> model_attributes;
 		// Stores the coefficients for the parameters (e.g. V/N) with the appropriate index
 		std::vector<global_floating_type> parameterCoefficients = std::vector<global_floating_type>(9U);
@@ -81,9 +64,7 @@ namespace Hubbard {
 			}
 		};
 
-		virtual void computeChemicalPotential() {
-			this->chemical_potential = 0.5 * U + 4 * V;
-		};
+		virtual void computeChemicalPotential() = 0;
 
 		inline global_floating_type fermi_dirac(global_floating_type energy) const {
 			if (temperature > DEFAULT_PRECISION) {
@@ -149,31 +130,30 @@ namespace Hubbard {
 	public:
 		explicit BaseModel(const ModelParameters& params, SystemType sytemType = SystemUndefined)
 			: model_attributes(params, sytemType), temperature(params.temperature), U(params.U), V(params.V)
-		{
-			init();
-		};
+		{ };
 
 		BaseModel(const ModelParameters& params, const size_t _spinor_size, const size_t number_of_attributes)
 			: model_attributes(number_of_attributes), parameterCoefficients(_spinor_size), temperature(params.temperature), U(params.U), V(params.V), SPINOR_SIZE(_spinor_size)
 		{
 			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			this->rho = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
-
-			computeChemicalPotential();
 		};
 
 		BaseModel(const ModelParameters& _params, const ModelAttributes<DataType>& startingValues)
 			: model_attributes(startingValues), temperature(_params.temperature), U(_params.U), V(_params.V)
-		{
-			init();
-		};
+		{};
 		virtual ~BaseModel() = default;
 
 		void setNewModelParameters(const ModelParameters& params, SystemType systemType) {
 			this->temperature = params.temperature;
 			this->U = params.U;
 			this->V = params.V;
+			this->U_OVER_N = params.U / Constants::BASIS_SIZE;
+			this->V_OVER_N = params.V / Constants::BASIS_SIZE;
+			this->init();
+
 			this->model_attributes.reset(params, systemType);
+			computeChemicalPotential();
 		};
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) = 0;

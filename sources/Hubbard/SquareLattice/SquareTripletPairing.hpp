@@ -6,7 +6,7 @@ namespace Hubbard::SquareLattice {
 		public HubbardCDW
 	{
 	private:
-		void init();
+		void init() override;
 	protected:
 		complex_prec tau_sc, theta_sc;
 

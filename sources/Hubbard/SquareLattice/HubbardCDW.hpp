@@ -4,9 +4,8 @@
 namespace Hubbard::SquareLattice {
 	class HubbardCDW : public Model2D<complex_prec>
 	{
-	private:
-		void init();
 	protected:
+		void init() override;
 		virtual void fillHamiltonian(const NumericalMomentum<2>& k_values) override;
 
 		virtual void addToParameterSet(ParameterVector& F, const NumericalMomentum<2>& k_values) override;
