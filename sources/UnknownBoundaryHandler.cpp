@@ -90,7 +90,9 @@ void UnknownBoundaryHandler::execute(Utility::InputFileReader& input) const {
 		local_data[i] = center;
 		modelParameters.incrementGlobalIterator();
 		end = std::chrono::steady_clock::now();
-		std::cout << "Rank #" << rank << ": Runtime for iteration #" << i << ": " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+		std::cout << "Rank #" << rank << ": Runtime for iteration #" << i << ": "
+			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" 
+			 << " - " << modelParameters << std::endl;
 	}
 
 #ifndef _NO_MPI
