@@ -29,8 +29,9 @@ namespace Hubbard::Helper {
 		auto blocks = Utility::identify_hermitian_blocks(toSolve);
 		for (const auto& block : blocks)
 		{
-			Eigen::LDLT<Matrix_L> cholesky(toSolve.block(block.position, block.position, block.size, block.size));
-			if (ModeHelper::contains_negative(cholesky.vectorD())) {
+			Eigen::SelfAdjointEigenSolver<Matrix_L> solver(toSolve.block(block.position, block.position, block.size, block.size), Eigen::EigenvaluesOnly);
+			//Eigen::LDLT<Matrix_L> cholesky(toSolve.block(block.position, block.position, block.size, block.size));
+			if (ModeHelper::contains_negative(solver.eigenvalues())) {
 				return false;
 			}
 		}

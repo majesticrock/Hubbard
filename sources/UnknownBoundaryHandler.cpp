@@ -61,9 +61,10 @@ void UnknownBoundaryHandler::execute(Utility::InputFileReader& input) const {
 		if (result_lower == result_upper) {
 			// There is no phase transition to be found here
 			local_data[i] = std::numeric_limits<double>::quiet_NaN();
-			modelParameters.incrementGlobalIterator();
 			end = std::chrono::steady_clock::now();
-			std::cout << "Rank #" << rank << ": skipped iteration #" << i << " with runtime " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+			std::cout << "Rank #" << rank << ": skipped iteration #" << i << " with runtime " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]";
+			std::cout << " - both are " << (result_lower ? "negative" : "positive") << " - " << modelParameters << std::endl;
+			modelParameters.incrementGlobalIterator();
 			continue;
 		}
 		else {
