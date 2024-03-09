@@ -53,7 +53,8 @@ namespace Hubbard::Helper {
 		ValueArray sum_of_all;
 		std::unique_ptr<Model> model{};
 
-		const std::map<std::string, int> wick_spin_offset = { {"\\uparrow", 0}, {"\\downarrow", 4}, {"\\sigma", 6} };
+		const std::map<SymbolicOperators::Index, int> wick_spin_offset = { 
+			{SymbolicOperators::UP, 0}, {SymbolicOperators::DOWN, 4}, {SymbolicOperators::Sigma, 6} };
 
 		inline complex_prec getSumOfAll(const SymbolicOperators::WickOperator& op, int cos_modulation = 0) const {
 			assert(op.type < SymbolicOperators::Undefined_Type);
