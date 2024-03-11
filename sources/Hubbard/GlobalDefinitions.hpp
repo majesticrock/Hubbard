@@ -1,7 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 #include <stddef.h>
-#include "../Utility/Resolvent.hpp"
+#include "../../../Utility/sources/Resolvent.hpp"
 #include <boost/math/constants/constants.hpp>
 #include <type_traits>
 
@@ -41,33 +41,33 @@ namespace Hubbard {
 	constexpr PhaseDebuggingPolicy PrintSteps{ true, true };
 
 #ifdef _BOOST_PRECISION
-	#define _NO_MPI
+#define _NO_MPI
 	typedef boost::multiprecision::cpp_bin_float_100 global_floating_type;
 	// At least long double, but maybe larger
 	typedef boost::multiprecision::cpp_bin_float_100 long_double_t;
-	#define _CONST_FLOATING const long_double_t
-	#define _CONST_LONG_FLOATING const long_double_t
+#define _CONST_FLOATING const long_double_t
+#define _CONST_LONG_FLOATING const long_double_t
 	_CONST_FLOATING DEFAULT_PRECISION{ 1e-15 };
 #else
-	#ifdef _LONG_PRECISION
-		#define _CONST_FLOATING constexpr long double
-		#define _MPI_RETURN_TYPE MPI_LONG_DOUBLE
-		typedef long double global_floating_type;
-		_CONST_FLOATING DEFAULT_PRECISION{ 1e-15 };
-	#else
-		#ifdef _USE_FLOAT_32
-			typedef float global_floating_type;
-			#define _MPI_RETURN_TYPE MPI_FLOAT
-		#else
-			typedef double global_floating_type;
-			#define _MPI_RETURN_TYPE MPI_DOUBLE
-		#endif
-	#define _CONST_FLOATING constexpr global_floating_type
+#ifdef _LONG_PRECISION
+#define _CONST_FLOATING constexpr long double
+#define _MPI_RETURN_TYPE MPI_LONG_DOUBLE
+	typedef long double global_floating_type;
+	_CONST_FLOATING DEFAULT_PRECISION{ 1e-15 };
+#else
+#ifdef _USE_FLOAT_32
+	typedef float global_floating_type;
+#define _MPI_RETURN_TYPE MPI_FLOAT
+#else
+	typedef double global_floating_type;
+#define _MPI_RETURN_TYPE MPI_DOUBLE
+#endif
+#define _CONST_FLOATING constexpr global_floating_type
 	_CONST_FLOATING DEFAULT_PRECISION{ 1e-12 };
-	
-	#endif // _LONG_PRECISION
-// At least long double, but maybe larger
-typedef long double long_double_t;
+
+#endif // _LONG_PRECISION
+	// At least long double, but maybe larger
+	typedef long double long_double_t;
 #define _CONST_LONG_FLOATING constexpr long_double_t
 #endif // _BOOST_PRECISION
 

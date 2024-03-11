@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include "../BaseModel.hpp"
-#include "../../Utility/InputFileReader.hpp"
+#include "../../../../Utility/sources/InputFileReader.hpp"
 #include "../SquareLattice/UsingBroyden.hpp"
 #include <map>
 #include "../../../../FermionCommute/sources/WickTerm.hpp"
@@ -41,8 +41,8 @@ namespace Hubbard::Helper {
 					}
 				}
 			}
-			if (DetailModelConstructorSettings::print_mean_field_result) 
-			{ 
+			if (DetailModelConstructorSettings::print_mean_field_result)
+			{
 				std::cout << "Solution for " << model->parametersAsTriplet() << std::endl;
 				model->getAttributes().print();
 			}
@@ -53,8 +53,8 @@ namespace Hubbard::Helper {
 		ValueArray sum_of_all;
 		std::unique_ptr<Model> model{};
 
-		const std::map<SymbolicOperators::Index, int> wick_spin_offset = { 
-			{SymbolicOperators::UP, 0}, {SymbolicOperators::DOWN, 4}, {SymbolicOperators::Sigma, 6} };
+		const std::map<SymbolicOperators::Index, int> wick_spin_offset = {
+			{SymbolicOperators::SpinUp, 0}, {SymbolicOperators::SpinDown, 4}, {SymbolicOperators::Sigma, 6} };
 
 		inline complex_prec getSumOfAll(const SymbolicOperators::WickOperator& op, int cos_modulation = 0) const {
 			assert(op.type < SymbolicOperators::Undefined_Type);

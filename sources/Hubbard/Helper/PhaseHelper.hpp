@@ -3,7 +3,7 @@
 #include <array>
 #include <cassert>
 #include <memory>
-#include "../../Utility/InputFileReader.hpp"
+#include "../../../../Utility/sources/InputFileReader.hpp"
 #include "../BaseModel.hpp"
 
 namespace Hubbard::Helper {

@@ -1,7 +1,7 @@
 #include "XPModes.hpp"
 #include <chrono>
 #include <omp.h>
-#include "../../Utility/PivotToBlockStructure.hpp"
+#include "../../../../Utility/sources/PivotToBlockStructure.hpp"
 #include <Eigen/Sparse>
 
 namespace Hubbard::Helper {

@@ -5,7 +5,7 @@
 #include "Hubbard/Helper/SquareXP.hpp"
 #include "Hubbard/Helper/DOSGeneral.hpp"
 #include "Hubbard/Helper/DOS_XP.hpp"
-#include "Utility/OutputConvenience.hpp"
+#include "../../Utility/sources/OutputConvenience.hpp"
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"

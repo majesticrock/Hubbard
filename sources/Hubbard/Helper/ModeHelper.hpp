@@ -1,9 +1,9 @@
 #pragma once
 #include "../../../../FermionCommute/sources/WickTerm.hpp"
-#include "../../Utility/InputFileReader.hpp"
+#include "../../../../Utility/sources/InputFileReader.hpp"
 #include "../GlobalDefinitions.hpp"
 #include "../BaseModel.hpp"
-#include "../../Utility/better_to_string.hpp"
+#include "../../../../Utility/sources/better_to_string.hpp"
 #include <utility>
 
 // Both methods yield precisely the same data!

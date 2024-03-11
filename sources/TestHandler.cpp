@@ -7,7 +7,7 @@
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
-#include "Utility/GramSchmidt.hpp"
+#include "../../Utility/sources/GramSchmidt.hpp"
 #include "Hubbard/DOSModels/PhaseSeparationDOS.hpp"
 #include "Hubbard/EMCoupling.hpp"
 
@@ -23,10 +23,6 @@ std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
 	}
 	return os;
 }
-
-#include <Eigen/Sparse>
-#include "Utility/PivotToBlockStructure.hpp"
-using namespace Eigen;
 
 void TestHandler::execute(Utility::InputFileReader& input) const
 {

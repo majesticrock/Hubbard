@@ -1,5 +1,5 @@
 #include "BroydenSolver.hpp"
-#include "../../Utility/BroydensMethodEigen.hpp"
+#include "../../../../Utility/sources/BroydensMethodEigen.hpp"
 
 namespace Hubbard::Selfconsistency {
 	const ModelAttributes<global_floating_type>& BroydenSolver::computePhases(const PhaseDebuggingPolicy& debugPolicy)

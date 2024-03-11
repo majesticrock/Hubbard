@@ -5,8 +5,8 @@
 #define XI_CDW this->model_attributes[9]
 #define GAMMA_AFM this->model_attributes[10]
 #define XI_AFM this->model_attributes[11]
-#define XI_OCCUPATiON_UP this->model_attributes[12]
-#define XI_OCCUPATiON_DOWN this->model_attributes[13]
+#define XI_OCCSpinUpATiON_SpinUp this->model_attributes[12]
+#define XI_OCCSpinUpATiON_SpinDown this->model_attributes[13]
 #define GAMMA_ETA this->model_attributes[14]
 #define XI_ETA this->model_attributes[15]
 

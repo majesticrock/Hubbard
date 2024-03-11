@@ -7,8 +7,8 @@
 #define GAMMA_SC this->model_attributes[3]
 #define XI_SC this->model_attributes[4]
 #define DELTA_ETA this->model_attributes[5]
-#define GAMMA_OCCUPATION_UP this->model_attributes[6]
-#define GAMMA_OCCUPATION_DOWN this->model_attributes[7]
+#define GAMMA_OCCSpinUpATION_SpinUp this->model_attributes[6]
+#define GAMMA_OCCSpinUpATION_SpinDown this->model_attributes[7]
 
 namespace Hubbard::SquareLattice
 {

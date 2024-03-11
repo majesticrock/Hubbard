@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
-#include "../Utility/better_to_string.hpp"
+#include "../../../Utility/sources/better_to_string.hpp"
 
 namespace Hubbard {
 	void ModelParameters::init()

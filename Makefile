@@ -27,7 +27,7 @@ SRCS=$(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMM
 
 OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))
 
-all: sources/SymbolicOperators build build/main 
+all: sources/SymbolicOperators sources/Utility build build/main 
 
 debug: CXXFLAGS += -g -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment
 debug: build build/main
@@ -37,6 +37,9 @@ build/main: $(OBJS) | build
 
 build/%.o: sources/%.cpp# sources/%.hpp
 	$(CXX) $(INCLUDEFLAGS) $< -o $@ -c $(CXXFLAGS)
+
+sources/Utility:
+	ln -s ../../Utility/sources sources/Utility
 
 sources/SymbolicOperators:
 	ln -s ../../FermionCommute/sources sources/SymbolicOperators
