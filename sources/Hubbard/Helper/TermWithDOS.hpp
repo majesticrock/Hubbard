@@ -93,7 +93,7 @@ namespace Hubbard::Helper {
 				}
 				return term.getFactor();
 			}
-			if (term.sum_momenta.size() > 0U) {
+			if (term.sums.momenta.size() > 0U) {
 				if (term.isBilinear()) {
 					// bilinear
 					return getCoefficient() * this->getSumOfAll(term.operators.front(), term.getFirstCoefficient().dependsOn('q'));

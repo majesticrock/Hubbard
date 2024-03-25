@@ -70,7 +70,7 @@ namespace Hubbard::Helper {
 			return term.getFactor() * returnBuffer;
 			};
 
-		if (term.sum_momenta.size() > 0U) {
+		if (term.sums.momenta.size() > 0U) {
 			if (term.isBilinear()) {
 				// bilinear term
 				if (term.hasSingleCoefficient()) {
