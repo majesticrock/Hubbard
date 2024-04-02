@@ -10,6 +10,7 @@
 #include "../../Utility/sources/GramSchmidt.hpp"
 #include "Hubbard/DOSModels/PhaseSeparationDOS.hpp"
 #include "Hubbard/EMCoupling.hpp"
+#include "Hubbard/NumericalMomentum.hpp"
 
 using namespace Hubbard;
 
@@ -24,10 +25,31 @@ std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
 	return os;
 }
 
+#include <cmath>
+global_floating_type compute_phi_k(NumericalMomentum<2> const& k){
+	// Starting value: j=0, i=1 and j=1, i=0, maybe, we can omit it, claiming to incorporate it within V.
+	// j=0, i=0 cannot be included here, we need to include it in U
+	global_floating_type result{ std::cos(k.momenta[0]) + std::cos(k.momenta[1]) + 2.0 };
+	for(int i = 1; i < Constants::K_DISCRETIZATION; ++i){
+		for (int j = 1; j < Constants::K_DISCRETIZATION; ++j){
+			result += (std::cos(i * k.momenta[0]) + std::cos(j * k.momenta[1])) / (i*i + j*j);
+		}
+	}
+	result *= (2.0 / Constants::BASIS_SIZE);
+	return result;
+}
+
 void TestHandler::execute(Utility::InputFileReader& input) const
 {
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 	std::chrono::steady_clock::time_point test_e;
+
+	NumericalMomentum<2> k{};
+
+	do{
+		std::cout << compute_phi_k(k) << std::endl;
+	}while(k.iterateFullBZ());
+	return;
 
 	if (input.getBool("em_coupling")) {
 		Constants::setDiscretization(input.getInt("k_discretization"));

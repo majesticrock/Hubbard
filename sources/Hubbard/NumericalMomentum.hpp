@@ -93,9 +93,16 @@ namespace Hubbard {
 			return (k[Dimension - 1] < Constants::K_DISCRETIZATION);
 		};
 
+		template <unsigned int d>
+		inline bool increase_d(){
+			static_assert(d < Dimension, "NumericalMomentum out of bounds!");
+			momenta[d] = (++k[d]) * Constants::PI_DIV_DISCRETIZATION;
+			return (k[d] < Constants::K_DISCRETIZATION);
+		}
+
 		inline size_t getIndex() const {
 			assert(k[0] + Constants::K_DISCRETIZATION >= 0);
-			;			size_t index{ static_cast<size_t>(k[0] + Constants::K_DISCRETIZATION) };
+			size_t index{ static_cast<size_t>(k[0] + Constants::K_DISCRETIZATION) };
 			for (unsigned int i = 1U; i < Dimension; ++i)
 			{
 				index += 2 * i * Constants::K_DISCRETIZATION * (k[i] + Constants::K_DISCRETIZATION);
