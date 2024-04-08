@@ -94,7 +94,7 @@ namespace Hubbard {
 		};
 
 		template <unsigned int d>
-		inline bool increase_d(){
+		inline bool increase_d() {
 			static_assert(d < Dimension, "NumericalMomentum out of bounds!");
 			momenta[d] = (++k[d]) * Constants::PI_DIV_DISCRETIZATION;
 			return (k[d] < Constants::K_DISCRETIZATION);
