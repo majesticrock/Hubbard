@@ -53,6 +53,13 @@ namespace Hubbard {
 			}
 		};
 
+		inline static NumericalMomentum<Dimension> GammaPoint() {
+			return NumericalMomentum<Dimension>(0);
+		};
+		inline static NumericalMomentum<Dimension> Q() {
+			return NumericalMomentum<Dimension>(-Constants::K_DISCRETIZATION);
+		}
+
 		inline global_floating_type tau() const {
 			return std::accumulate(std::begin(momenta), std::end(momenta), global_floating_type{}, [](global_floating_type current, global_floating_type toAdd) {
 				return current + sin(toAdd);

@@ -28,7 +28,7 @@ namespace Hubbard::Helper {
 
 	class ModeHelper {
 	protected:
-		std::vector<std::vector<SymbolicOperators::WickTerm>> wicks_M{}, wicks_N{};
+		std::vector<SymbolicOperators::WickTermCollector> wicks_M{}, wicks_N{};
 
 		size_t TOTAL_BASIS{};
 		/*

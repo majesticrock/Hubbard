@@ -64,6 +64,11 @@ namespace Hubbard {
 		{
 			computeChemicalPotential();
 		};
+		MomentumBasedModel(const ModelParameters& _params, const size_t _spinor_size, const size_t number_of_attributes)
+			: BaseModel<DataType>(_params, _spinor_size, number_of_attributes)
+		{
+			computeChemicalPotential();
+		};
 
 		template<typename StartingValuesDataType>
 		MomentumBasedModel(const ModelParameters& _params, const ModelAttributes<StartingValuesDataType>& startingValues)
@@ -71,6 +76,7 @@ namespace Hubbard {
 		{
 			computeChemicalPotential();
 		};
+		
 
 		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {

@@ -5,8 +5,6 @@
 #define XI_CDW this->model_attributes[9]
 #define GAMMA_AFM this->model_attributes[10]
 #define XI_AFM this->model_attributes[11]
-#define XI_OCCSpinUpATiON_SpinUp this->model_attributes[12]
-#define XI_OCCSpinUpATiON_SpinDown this->model_attributes[13]
 #define GAMMA_ETA this->model_attributes[14]
 #define XI_ETA this->model_attributes[15]
 
@@ -28,7 +26,7 @@ namespace Hubbard::SquareLattice {
 		model_attributes.push_back(I * static_cast<global_floating_type>(0. * V));
 		model_attributes.push_back(static_cast<global_floating_type>(0. * V));
 
-		this->hamilton = SpinorMatrix::Zero(4, 4);
+		this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 
 		parameterCoefficients = {
 			0.5 * U_OVER_N - 4. * V_OVER_N, // CDW - 0
