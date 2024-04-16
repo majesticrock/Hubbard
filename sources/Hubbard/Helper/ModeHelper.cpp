@@ -91,6 +91,7 @@ namespace Hubbard::Helper {
 		}
 
 		const std::string prefix = this->start_basis_at < 0 ? "XP_" : "";
-		loadWick("../commutators/" + prefix + "wick_");
+		const std::string subfolder = input.getString("compute_what") == "dispersions" ? "dispersions/" : "";
+		loadWick("../commutators/" + subfolder + prefix + "wick_");
 	}
 }
