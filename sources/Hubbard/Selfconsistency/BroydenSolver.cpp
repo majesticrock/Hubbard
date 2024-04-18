@@ -16,9 +16,9 @@ namespace Hubbard::Selfconsistency {
 
 		if (!broyden_solver.compute(func, x0, 400)) {
 			if (debugPolicy.convergenceWarning) {
-				std::cerr << std::fixed << std::setprecision(8) << "No convergence for " << _model->parametersAsTriplet() << std::endl;
+				std::cerr << std::fixed << std::setprecision(8) << "No convergence for " << _model->info() << std::endl;
 			}
-			_attr->reset();
+			_attr->setZero();
 		}
 		else {
 			_attr->converged = true;
@@ -27,7 +27,7 @@ namespace Hubbard::Selfconsistency {
 		if (debugPolicy.printAll) {
 			ParameterVector f0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
 			_model->iterationStep(x0, f0);
-			std::cout << _model->parametersAsTriplet() << "\n";
+			std::cout << _model->info() << "\n";
 			std::cout << "x0 = (";
 			for (const auto& x : x0)
 			{

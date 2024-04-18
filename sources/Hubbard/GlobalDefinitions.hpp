@@ -25,9 +25,6 @@
 #include <string>
 
 namespace Hubbard {
-	using std::abs;
-	using std::to_string;
-
 	struct PhaseDebuggingPolicy {
 		bool printAll{ false };
 		bool convergenceWarning{ true };
@@ -39,6 +36,9 @@ namespace Hubbard {
 	constexpr PhaseDebuggingPolicy WarnNoConvergence{ false, true };
 	constexpr PhaseDebuggingPolicy NoWarning{ false, false };
 	constexpr PhaseDebuggingPolicy PrintSteps{ true, true };
+
+	using std::abs;
+	using std::to_string;
 
 #ifdef _BOOST_PRECISION
 #define _NO_MPI

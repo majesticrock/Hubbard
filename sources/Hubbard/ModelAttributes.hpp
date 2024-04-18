@@ -198,7 +198,7 @@ namespace Hubbard {
 		inline void reset() {
 			converged = false;
 			std::fill(begin(), end(), DataType{});
-		}
+		};
 		inline void reset(const ModelParameters& params, SystemType systemType) {
 			if (systemType == SystemSquare) {
 				this->initializeParamters_2d(params);
@@ -209,6 +209,9 @@ namespace Hubbard {
 			else {
 				this->initializeParamters(params);
 			}
+		};
+		inline void setZero() {
+			this->reset();
 		};
 
 		inline bool isOrdered() const {

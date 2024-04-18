@@ -6,6 +6,7 @@
 #include "../../../../Utility/sources/UnderlyingFloatingPoint.hpp"
 
 namespace Hubbard::Selfconsistency {
+
 	template <typename DataType>
 	class IterativeSolver {
 	protected:
@@ -14,6 +15,7 @@ namespace Hubbard::Selfconsistency {
 		const size_t NUMBER_OF_PARAMETERS;
 
 		using ParameterVector = Eigen::Vector<DataType, Eigen::Dynamic>;
+		using RealType = Utility::UnderlyingFloatingPoint_t<DataType>;
 
 		inline bool hasSignFlippingBehaviour(const ParameterVector& x0) {
 			for (size_t j = 0U; j < this->NUMBER_OF_PARAMETERS; ++j)
@@ -26,7 +28,7 @@ namespace Hubbard::Selfconsistency {
 			}
 			return false;
 		};
-		bool procedureIterative(const PhaseDebuggingPolicy& debugPolicy, const size_t MAX_STEPS, const coefficient_type EPSILON)
+		bool procedureIterative(const PhaseDebuggingPolicy& debugPolicy, const size_t MAX_STEPS, const RealType EPSILON)
 		{
 			Utility::UnderlyingFloatingPoint_t<DataType> error{ 100 };
 
@@ -44,9 +46,9 @@ namespace Hubbard::Selfconsistency {
 				this->_model->iterationStep(x0, f0);
 				if (hasSignFlippingBehaviour(x0)) {
 					if (debugPolicy.convergenceWarning) {
-						std::cerr << "Sign flipper for " << this->_model->parametersAsTriplet() << std::endl;
+						std::cerr << "Sign flipper for " << this->_model->info() << std::endl;
 					}
-					this->_attr->reset();
+					this->_attr->setZero();
 					return false;
 				}
 
@@ -73,9 +75,9 @@ namespace Hubbard::Selfconsistency {
 			this->_attr->converged = true;
 			if (!procedureIterative(debugPolicy, MAX_STEPS, EPSILON)) {
 				if (debugPolicy.convergenceWarning) {
-					std::cerr << "No convergence for " << this->_model->parametersAsTriplet() << std::endl;
+					std::cerr << "No convergence for " << this->_model->info() << std::endl;
 				}
-				this->_attr->reset();
+				this->_attr->setZero();
 			}
 
 			return *this->_attr;
