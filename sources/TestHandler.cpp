@@ -7,7 +7,6 @@
 #include "Hubbard/DOSModels/BroydenDOS.hpp"
 #include "Hubbard/DensityOfStates/Square.hpp"
 #include "Hubbard/DensityOfStates/SimpleCubic.hpp"
-#include "../../Utility/sources/GramSchmidt.hpp"
 #include "Hubbard/DOSModels/PhaseSeparationDOS.hpp"
 #include "Hubbard/EMCoupling.hpp"
 #include "Hubbard/NumericalMomentum.hpp"
@@ -45,7 +44,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 	std::chrono::steady_clock::time_point test_e;
 
 	NumericalMomentum<2> q = NumericalMomentum<2>::Q();
-	std::cout << q << ": " << compute_phi_k(q) << "\t" 
+	std::cout << q << ": " << compute_phi_k(q) << "\t"
 		<< 3.1415926 / (sqrt(2.) * Constants::K_DISCRETIZATION) - 2 * 3.14145926 / Constants::BASIS_SIZE << std::endl;
 	//NumericalMomentum<2> k{};
 	//do {

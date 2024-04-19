@@ -1,5 +1,5 @@
 #include "BroydenSolver.hpp"
-#include "../../../../Utility/sources/BroydensMethodEigen.hpp"
+#include "../../../../Utility/sources/Numerics/BroydensMethodEigen.hpp"
 
 namespace Hubbard::Selfconsistency {
 	const ModelAttributes<global_floating_type>& BroydenSolver::computePhases(const PhaseDebuggingPolicy& debugPolicy)
@@ -12,7 +12,7 @@ namespace Hubbard::Selfconsistency {
 
 		ParameterVector x0{ ParameterVector::Zero(NUMBER_OF_PARAMETERS) };
 		std::copy(_attr->begin(), _attr->end(), x0.begin());
-		Utility::NumericalSolver::Roots::BroydensMethodEigen<global_floating_type, -1> broyden_solver;
+		Utility::Numerics::Roots::BroydensMethodEigen<global_floating_type, -1> broyden_solver;
 
 		if (!broyden_solver.compute(func, x0, 400)) {
 			if (debugPolicy.convergenceWarning) {

@@ -6,7 +6,6 @@
 #include "../../../../Utility/sources/UnderlyingFloatingPoint.hpp"
 
 namespace Hubbard::Selfconsistency {
-
 	template <typename DataType>
 	class IterativeSolver {
 	protected:

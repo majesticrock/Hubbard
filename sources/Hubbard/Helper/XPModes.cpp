@@ -1,15 +1,15 @@
 #include "XPModes.hpp"
 #include <chrono>
 #include <omp.h>
-#include "../../../../Utility/sources/PivotToBlockStructure.hpp"
+#include "../../../../Utility/sources/Numerics/PivotToBlockStructure.hpp"
 #include <Eigen/Sparse>
 
 namespace Hubbard::Helper {
 	XPModes::matrix_wrapper XPModes::matrix_wrapper::pivot_and_solve(Matrix_L& toSolve)
 	{
-		auto pivot = Utility::pivot_to_block_structure(toSolve);
+		auto pivot = Utility::Numerics::pivot_to_block_structure(toSolve);
 		toSolve = pivot.transpose() * toSolve * pivot;
-		auto blocks = Utility::identify_hermitian_blocks(toSolve);
+		auto blocks = Utility::Numerics::identify_hermitian_blocks(toSolve);
 		matrix_wrapper solution(toSolve.rows());
 
 #pragma omp parallel for
@@ -24,9 +24,9 @@ namespace Hubbard::Helper {
 	}
 	bool XPModes::matrix_wrapper::is_non_negative(Matrix_L& toSolve)
 	{
-		auto pivot = Utility::pivot_to_block_structure(toSolve);
+		auto pivot = Utility::Numerics::pivot_to_block_structure(toSolve);
 		toSolve = pivot.transpose() * toSolve * pivot;
-		auto blocks = Utility::identify_hermitian_blocks(toSolve);
+		auto blocks = Utility::Numerics::identify_hermitian_blocks(toSolve);
 		for (const auto& block : blocks)
 		{
 			Eigen::SelfAdjointEigenSolver<Matrix_L> solver(toSolve.block(block.position, block.position, block.size, block.size), Eigen::EigenvaluesOnly);

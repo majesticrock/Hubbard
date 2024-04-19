@@ -76,7 +76,6 @@ namespace Hubbard {
 		{
 			computeChemicalPotential();
 		};
-		
 
 		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {
