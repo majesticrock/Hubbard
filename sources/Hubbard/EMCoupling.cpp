@@ -61,14 +61,13 @@ namespace Hubbard {
 			q_plus_k = q + k;
 			q_minus_k = q - k;
 
-			for(int i = 0; i < N_PARAMETERS; ++i){
-				F(q.getIndex() + static_cast<size_t>(i * Constants::BASIS_SIZE)) += 
-						(this->phis[q.getIndex()] + parameterCoefficients[i] + 0.5 * V_OVER_N * q.gamma()) 
-						* (this->expectation_values(q_plus_k.getIndex(), i) + this->expectation_values(q_minus_k.getIndex()), i);
+			for (int i = 0; i < N_PARAMETERS; ++i) {
+				F(q.getIndex() + static_cast<size_t>(i * Constants::BASIS_SIZE)) +=
+					(this->phis[q.getIndex()] + parameterCoefficients[i] + 0.5 * V_OVER_N * q.gamma())
+					* (this->expectation_values(q_plus_k.getIndex(), i) + this->expectation_values(q_minus_k.getIndex()), i);
 			}
-		} while(q.iterateFullBZ());
+		} while (q.iterateFullBZ());
 		q = NumericalMomentum<2>::GammaPoint();
-
 	}
 
 	EMCoupling::EMCoupling(const ModelParameters& _params)

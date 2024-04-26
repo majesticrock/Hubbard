@@ -13,7 +13,8 @@ namespace Hubbard::Helper {
 
 		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const;
 
-		Eigen::Vector2i computeMomentum(const SymbolicOperators::Momentum& momentum, const std::vector<Eigen::Vector2i>& indizes, const std::vector<char>& momenta) const;
+		Eigen::Vector2i computeMomentum(const SymbolicOperators::MomentumList& momentum, const std::vector<Eigen::Vector2i>& indizes, 
+			const std::vector<char>& momenta) const;
 
 		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 

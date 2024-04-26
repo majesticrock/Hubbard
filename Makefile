@@ -4,7 +4,7 @@ CXX = mpicxx
 # the compilation of the eigen library (I cant fix them anyways)
 INCLUDEFLAGS = -isystem ~/usr/local/include
 
-CXXFLAGS = $(WARNINGS) -std=c++20 $(OPT) -fopenmp
+CXXFLAGS = $(WARNINGS) -std=c++17 $(OPT) -fopenmp
 
 LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -lboost_serialization -lboost_iostreams -lz
 
@@ -12,7 +12,7 @@ WARNINGS = -Wall -Wno-sign-compare
 
 OPT = -march=native -O3# -ffast-math
 
-COMMUTE_SRCS=Coefficient.cpp IndexWrapper.cpp Momentum.cpp Operator.cpp Term.cpp WickCleaner.cpp WickOperator.cpp WickOperatorTemplate.cpp WickTerm.cpp 
+COMMUTE_SRCS=Coefficient.cpp IndexWrapper.cpp Momentum.cpp MomentumList.cpp Operator.cpp Term.cpp WickCleaner.cpp WickOperator.cpp WickOperatorTemplate.cpp WickTerm.cpp 
 
 HELPER_SRCS=PhaseHelper.cpp Plaquette.cpp ModeHelper.cpp XPModes.cpp GeneralBasis.cpp TermOnSquare.cpp SquareXP.cpp SquareGeneral.cpp
 SQUARE_SRCS=HubbardCDW.cpp UsingBroyden.cpp SquareTripletPairing.cpp

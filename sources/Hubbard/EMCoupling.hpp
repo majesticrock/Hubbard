@@ -34,7 +34,7 @@ namespace Hubbard {
 		inline size_t get_eta_index(const NumericalMomentum<2>& q) const {
 			return q.getIndex() + static_cast<size_t>(4 * Constants::BASIS_SIZE);
 		};
-		
+
 	protected:
 		virtual void fillHamiltonian(const NumericalMomentum<2>& k) override;
 		void addToParameterSet(ComplexParameterVector& F, const NumericalMomentum<2>& k) override;

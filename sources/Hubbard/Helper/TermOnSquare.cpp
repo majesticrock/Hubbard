@@ -16,18 +16,22 @@ namespace Hubbard::Helper {
 		return expecs[index](momentum_value(0), momentum_value(1));
 	}
 
-	Eigen::Vector2i TermOnSquare::computeMomentum(const SymbolicOperators::Momentum& momentum,
+	Eigen::Vector2i TermOnSquare::computeMomentum(const SymbolicOperators::MomentumList& momentum,
 		const std::vector<Eigen::Vector2i>& indizes, const std::vector<char>& momenta) const
 	{
-		int mom_idx = momentum.isUsed('x');
-		Eigen::Vector2i buffer = mom_idx > 0 ? (momentum.momentum_list[mom_idx].first * this->mode_momentum).eval() : Eigen::Vector2i::Zero();
+		if (momentum.empty()) {
+			return Eigen::Vector2i::Zero();
+		}
+		const SymbolicOperators::Momentum& mom = momentum.front();
+		int mom_idx = mom.isUsed('x');
+		Eigen::Vector2i buffer = mom_idx > 0 ? (mom.momentum_list[mom_idx].first * this->mode_momentum).eval() : Eigen::Vector2i::Zero();
 		for (int i = 0; i < momenta.size(); ++i)
 		{
-			int mom_idx = momentum.isUsed(momenta[i]);
+			int mom_idx = mom.isUsed(momenta[i]);
 			if (mom_idx < 0) continue;
-			buffer += momentum.momentum_list[mom_idx].first * indizes[i];
+			buffer += mom.momentum_list[mom_idx].first * indizes[i];
 		}
-		if (momentum.add_Q) {
+		if (mom.add_Q) {
 			buffer(0) += Constants::K_DISCRETIZATION;
 			buffer(1) += Constants::K_DISCRETIZATION;
 		}
@@ -44,7 +48,7 @@ namespace Hubbard::Helper {
 
 		if (term.isIdentity()) {
 			if (term.hasSingleCoefficient()) {
-				coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, momenta_plain);
+				coeff_momentum = computeMomentum(term.coefficients[0].momenta, indizes, momenta_plain);
 				return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 			}
 			return term.getFactor();
@@ -62,7 +66,7 @@ namespace Hubbard::Helper {
 					momentum_value = computeMomentum(term.operators[i].momentum, indizes, momenta_summed);
 					sumBuffer *= getExpectationValue(term.operators[i], momentum_value);
 				}
-				coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, momenta_summed);
+				coeff_momentum = computeMomentum(term.coefficients[0].momenta, indizes, momenta_summed);
 				if (term.hasSingleCoefficient()) {
 					sumBuffer *= this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 				}
@@ -79,7 +83,7 @@ namespace Hubbard::Helper {
 						return compute_single_sum();
 					}
 					else {
-						coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, momenta_plain);
+						coeff_momentum = computeMomentum(term.coefficients[0].momenta, indizes, momenta_plain);
 						return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * getSumOfAll(term.operators[0]);
 					}
 				}
@@ -98,7 +102,7 @@ namespace Hubbard::Helper {
 			returnBuffer *= getExpectationValue(term.operators[i], momentum_value);
 		}
 		if (term.hasSingleCoefficient()) {
-			coeff_momentum = computeMomentum(term.coefficients[0].momentum, indizes, momenta_plain);
+			coeff_momentum = computeMomentum(term.coefficients[0].momenta, indizes, momenta_plain);
 			return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}
 		return term.getFactor() * returnBuffer;

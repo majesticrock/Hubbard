@@ -190,14 +190,12 @@ namespace Hubbard::DOSModels {
 		inline global_floating_type computeCoefficient(const SymbolicOperators::Coefficient& coeff, const global_floating_type& gamma) const {
 			if (coeff.name == "\\epsilon_0") {
 				if (!coeff.dependsOn('k')) throw std::runtime_error("Epsilon should always be k-dependent.");
-				if (coeff.momentum.momentum_list.size() > 1U) throw std::runtime_error("Epsilon depends on more than k.");
-				return ((coeff.momentum.add_Q ? 2 * gamma : -2 * gamma) - this->chemical_potential);
+				return ((coeff.momenta.front().add_Q ? 2 * gamma : -2 * gamma) - this->chemical_potential);
 			}
 			if (coeff.name == "\\frac{U}{N}") {
 				return this->U_OVER_N;
 			}
 			if (coeff.name == "\\tilde{V}") {
-				if (coeff.momentum.add_Q) throw std::runtime_error("V includes Q, this should not occur.");
 				if (coeff.dependsOnMomentum()) {
 					return  this->V_OVER_N * (coeff.dependsOnTwoMomenta() ? (gamma / DOS::DIMENSION) : gamma);
 				}

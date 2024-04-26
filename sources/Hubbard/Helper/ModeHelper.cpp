@@ -61,6 +61,8 @@ namespace Hubbard::Helper {
 			if (term.getFirstCoefficient().dependsOnMomentum()) {
 				if (!(term.getFirstCoefficient().dependsOn('k'))) throw std::invalid_argument("Each momentum dependent term should have a k-depedance.");
 			}
+			if (term.getFirstCoefficient().momenta.size() > 1U)
+				throw std::invalid_argument("There must not be more than 1 momentum in coefficient!");
 		}
 	}
 
