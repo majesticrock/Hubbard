@@ -63,7 +63,7 @@ namespace Hubbard::Helper {
 				sumBuffer = 1;
 				for (size_t i = 0; i < term.operators.size(); i++)
 				{
-					momentum_value = computeMomentum(term.operators[i].momentum, indizes, momenta_summed);
+					momentum_value = computeMomentum(SymbolicOperators::MomentumList(term.operators[i].momentum), indizes, momenta_summed);
 					sumBuffer *= getExpectationValue(term.operators[i], momentum_value);
 				}
 				coeff_momentum = computeMomentum(term.coefficients[0].momenta, indizes, momenta_summed);
@@ -98,7 +98,7 @@ namespace Hubbard::Helper {
 		complex_prec returnBuffer{ 1, 0 };
 		for (size_t i = 0U; i < term.operators.size(); ++i)
 		{
-			Eigen::Vector2i momentum_value = computeMomentum(term.operators[i].momentum, indizes, momenta_plain);
+			Eigen::Vector2i momentum_value = computeMomentum(SymbolicOperators::MomentumList(term.operators[i].momentum), indizes, momenta_plain);
 			returnBuffer *= getExpectationValue(term.operators[i], momentum_value);
 		}
 		if (term.hasSingleCoefficient()) {
