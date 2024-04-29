@@ -130,7 +130,7 @@ namespace Hubbard::Helper {
 		return false;
 	}
 
-	std::vector<ResolventReturnData> GeneralBasis::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) {
+	std::vector<ResolventReturnData> GeneralBasis::computeCollectiveModes() {
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		std::chrono::time_point end = std::chrono::steady_clock::now();
 

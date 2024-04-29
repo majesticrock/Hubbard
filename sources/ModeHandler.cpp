@@ -62,7 +62,6 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 {
 	using std::to_string;
 
-	std::vector<data_vector> reciever;
 	data_vector oneParticleEnergies;
 	Hubbard::global_floating_type totalGapValue;
 	std::vector<Hubbard::ResolventReturnData> resolvents;
@@ -71,7 +70,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 
 	totalGapValue = modeHelper->getModel().getTotalGapValue();
 	modeHelper->getModel().getAllEnergies(oneParticleEnergies);
-	resolvents = modeHelper->computeCollectiveModes(reciever);
+	resolvents = modeHelper->computeCollectiveModes();
 
 	if (rank == 0) {
 		std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };
@@ -84,9 +83,6 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		comments.push_back("Lattice type: " + input.getString("lattice_type"));
 		comments.push_back("Total Gap: " + to_string(totalGapValue));
 
-		if (!(reciever.empty())) {
-			Utility::saveData(reciever, BASE_FOLDER + output_folder + ".dat.gz", comments);
-		}
 		if (resolvents.size() > 0U) {
 			std::vector<std::string> names;
 			if (input.getInt("start_basis_at") == -1) {

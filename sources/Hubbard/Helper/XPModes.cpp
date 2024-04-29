@@ -5,39 +5,6 @@
 #include <Eigen/Sparse>
 
 namespace Hubbard::Helper {
-	XPModes::matrix_wrapper XPModes::matrix_wrapper::pivot_and_solve(Matrix_L& toSolve)
-	{
-		auto pivot = Utility::Numerics::pivot_to_block_structure(toSolve);
-		toSolve = pivot.transpose() * toSolve * pivot;
-		auto blocks = Utility::Numerics::identify_hermitian_blocks(toSolve);
-		matrix_wrapper solution(toSolve.rows());
-
-#pragma omp parallel for
-		for (int i = 0; i < blocks.size(); ++i)
-		{
-			Eigen::SelfAdjointEigenSolver<Matrix_L> solver(toSolve.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size));
-			solution.eigenvalues.segment(blocks[i].position, blocks[i].size) = solver.eigenvalues();
-			solution.eigenvectors.block(blocks[i].position, blocks[i].position, blocks[i].size, blocks[i].size) = solver.eigenvectors();
-		}
-		solution.eigenvectors.applyOnTheLeft(pivot);
-		return solution;
-	}
-	bool XPModes::matrix_wrapper::is_non_negative(Matrix_L& toSolve)
-	{
-		auto pivot = Utility::Numerics::pivot_to_block_structure(toSolve);
-		toSolve = pivot.transpose() * toSolve * pivot;
-		auto blocks = Utility::Numerics::identify_hermitian_blocks(toSolve);
-		for (const auto& block : blocks)
-		{
-			Eigen::SelfAdjointEigenSolver<Matrix_L> solver(toSolve.block(block.position, block.position, block.size, block.size), Eigen::EigenvaluesOnly);
-			//Eigen::LDLT<Matrix_L> cholesky(toSolve.block(block.position, block.position, block.size, block.size));
-			if (ModeHelper::contains_negative(solver.eigenvalues())) {
-				return false;
-			}
-		}
-		return true;
-	};
-
 	void XPModes::fillMatrices()
 	{
 		std::chrono::time_point begin = std::chrono::steady_clock::now();
@@ -128,23 +95,23 @@ namespace Hubbard::Helper {
 			return true;
 		}
 		K_minus = removeNoise(K_minus);
-		if (not matrix_wrapper::is_non_negative(K_minus)) {
+		if (not Utility::Numerics::matrix_wrapper<global_floating_type>::is_non_negative(K_minus, SQRT_SALT)) {
 			return true;
 		}
 		K_plus = removeNoise(K_plus);
-		if (not matrix_wrapper::is_non_negative(K_plus)) {
+		if (not Utility::Numerics::matrix_wrapper<global_floating_type>::is_non_negative(K_plus, SQRT_SALT)) {
 			return true;
 		}
 		return false;
 	};
 
-	std::vector<ResolventReturnData> XPModes::computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever)
+	std::vector<ResolventReturnData> XPModes::computeCollectiveModes()
 	{
 		fillMatrices();
 		createStartingStates();
 
 		Matrix_L solver_matrix;
-		matrix_wrapper k_solutions[2];
+		Utility::Numerics::matrix_wrapper<global_floating_type> k_solutions[2];
 
 		omp_set_nested(2);
 		Eigen::initParallel();
@@ -154,7 +121,7 @@ namespace Hubbard::Helper {
 #pragma omp section
 			{
 				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
-				k_solutions[0] = matrix_wrapper::pivot_and_solve(K_plus);
+				k_solutions[0] = Utility::Numerics::matrix_wrapper<global_floating_type>::pivot_and_solve(K_plus);
 				applyMatrixOperation<OPERATION_NONE>(k_solutions[0].eigenvalues);
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_+: "
@@ -166,7 +133,7 @@ namespace Hubbard::Helper {
 #pragma omp section
 			{
 				std::chrono::time_point begin_in = std::chrono::steady_clock::now();
-				k_solutions[1] = matrix_wrapper::pivot_and_solve(K_minus);
+				k_solutions[1] = Utility::Numerics::matrix_wrapper<global_floating_type>::pivot_and_solve(K_minus);
 				applyMatrixOperation<OPERATION_NONE>(k_solutions[1].eigenvalues);
 				std::chrono::time_point end_in = std::chrono::steady_clock::now();
 				std::cout << "Time for solving K_-: "
@@ -197,7 +164,7 @@ namespace Hubbard::Helper {
 				<< std::chrono::duration_cast<std::chrono::milliseconds>(end_in - begin_in).count() << "[ms]" << std::endl;
 			begin_in = std::chrono::steady_clock::now();
 
-			matrix_wrapper n_solution = matrix_wrapper::pivot_and_solve(N_new);
+			auto n_solution = Utility::Numerics::matrix_wrapper<global_floating_type>::pivot_and_solve(N_new);
 			applyMatrixOperation<OPERATION_INVERSE_SQRT>(n_solution.eigenvalues);
 
 			// Starting here, N_new = 1/sqrt(N_new)

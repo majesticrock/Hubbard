@@ -5,25 +5,6 @@ namespace Hubbard::Helper {
 	class XPModes : public ModeHelper
 	{
 	protected:
-		struct matrix_wrapper {
-			Matrix_L eigenvectors;
-			Vector_L eigenvalues;
-
-			inline matrix_wrapper() {};
-
-			inline explicit matrix_wrapper(Eigen::Index size)
-				: eigenvectors(Matrix_L::Zero(size, size)), eigenvalues(Vector_L::Zero(size))
-			{};
-
-			inline Matrix_L reconstruct_matrix() const
-			{
-				return eigenvectors * eigenvalues.asDiagonal() * eigenvectors.adjoint();
-			};
-
-			static matrix_wrapper pivot_and_solve(Matrix_L& toSolve);
-			static bool is_non_negative(Matrix_L& toSolve);
-		};
-
 		static constexpr size_t hermitian_size = 7U;
 		static constexpr size_t antihermitian_size = 5U;
 
@@ -55,6 +36,6 @@ namespace Hubbard::Helper {
 		{ };
 
 		virtual bool matrix_is_negative() override;
-		virtual std::vector<ResolventReturnData> computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) override;
+		virtual std::vector<ResolventReturnData> computeCollectiveModes() override;
 	};
 }

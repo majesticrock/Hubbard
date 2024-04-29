@@ -14,7 +14,8 @@ namespace Hubbard::Helper {
 	public:
 		global_floating_type negative_eigenvalue{};
 		MatrixIsNegativeException(const global_floating_type& _negative_eigenvalue)
-			: std::runtime_error("The matrix M is negative! Most negative eigenvalue = " + Utility::better_to_string(_negative_eigenvalue, std::chars_format::scientific, 6)),
+			: std::runtime_error("The matrix M is negative! Most negative eigenvalue = " 
+				+ Utility::better_to_string(_negative_eigenvalue, std::chars_format::scientific, 6)),
 			negative_eigenvalue(_negative_eigenvalue)
 		{};
 	};
@@ -124,7 +125,7 @@ namespace Hubbard::Helper {
 		// Merely checks whether the dynamical matrix M is negative or not
 		virtual bool matrix_is_negative() = 0;
 		// does the full iEoM resolvent computations
-		virtual std::vector<ResolventReturnData> computeCollectiveModes(std::vector<std::vector<global_floating_type>>& reciever) = 0;
+		virtual std::vector<ResolventReturnData> computeCollectiveModes() = 0;
 		virtual void setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters) = 0;
 	};
 }
