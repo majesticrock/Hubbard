@@ -4,6 +4,18 @@
 #include "../MomentumIndexUtility.hpp"
 
 namespace Hubbard::Helper {
+	void GeneralBasis::fill_M()
+	{
+		M = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
+
+		for (int i = 0; i < number_of_basis_terms; ++i)
+		{
+			for (int j = 0; j < number_of_basis_terms; ++j)
+			{
+				fill_block_M(i, j);
+			}
+		}
+	}
 	void GeneralBasis::fillMatrices()
 	{
 		M = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
@@ -14,6 +26,37 @@ namespace Hubbard::Helper {
 			for (int j = 0; j < number_of_basis_terms; ++j)
 			{
 				fillBlock(i, j);
+			}
+		}
+	}
+
+	void GeneralBasis::createStartingStates()
+	{
+		/*
+		* 0 - SC Higgs
+		* 1 - SC Phase
+		* 2 - CDW
+		* 3 - AFM
+		*/
+		const global_floating_type norm_constant = this->usingDOS
+			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
+			: sqrt(1. / ((global_floating_type)Constants::BASIS_SIZE));
+
+		this->starting_states.resize(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
+		for (int i = 0; i < Constants::BASIS_SIZE; i++)
+		{
+			this->starting_states[0](i* number_of_basis_terms) = norm_constant;
+			this->starting_states[0](i* number_of_basis_terms + 1) = norm_constant;
+
+			this->starting_states[1](i* number_of_basis_terms) = norm_constant;
+			this->starting_states[1](i* number_of_basis_terms + 1) = -norm_constant;
+
+			if (number_of_basis_terms >= 6) {
+				this->starting_states[2](i* number_of_basis_terms + 4) = norm_constant;
+				this->starting_states[2](i* number_of_basis_terms + 5) = norm_constant;
+
+				this->starting_states[3](i* number_of_basis_terms + 4) = norm_constant;
+				this->starting_states[3](i* number_of_basis_terms + 5) = -norm_constant;
 			}
 		}
 	}
@@ -105,138 +148,10 @@ namespace Hubbard::Helper {
 	}
 
 	bool GeneralBasis::matrix_is_negative() {
-		M = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
-		for (int i = 0; i < number_of_basis_terms; ++i)
-		{
-			for (int j = 0; j < number_of_basis_terms; ++j)
-			{
-				fill_block_M(i, j);
-			}
-		}
-
-		if ((M - M.adjoint()).norm() > 1e-8) {
-			throw std::runtime_error("M is not Hermitian!");
-		}
-
-		Eigen::SelfAdjointEigenSolver<MatrixCL> M_solver(M);
-		Vector_L& evs_M = const_cast<Vector_L&>(M_solver.eigenvalues());
-		try {
-			applyMatrixOperation<OPERATION_NONE>(evs_M);
-		}
-		catch (const MatrixIsNegativeException& ex) {
-			return true;
-		}
-
-		return false;
+		return _parent_algorithm::dynamic_matrix_is_negative();
 	}
 
 	std::vector<ResolventReturnData> GeneralBasis::computeCollectiveModes() {
-		std::chrono::time_point begin = std::chrono::steady_clock::now();
-		std::chrono::time_point end = std::chrono::steady_clock::now();
-
-		fillMatrices();
-		if ((M - M.adjoint()).norm() > 1e-8) {
-			throw std::runtime_error("M is not Hermitian!");
-		}
-		if ((N - N.adjoint()).norm() > 1e-8) {
-			throw std::runtime_error("N is not Hermitian!");
-		}
-
-		end = std::chrono::steady_clock::now();
-		std::cout << "Time for filling of M and N: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-		begin = std::chrono::steady_clock::now();
-
-		Eigen::SelfAdjointEigenSolver<MatrixCL> M_solver(M);
-		Vector_L& evs_M = const_cast<Vector_L&>(M_solver.eigenvalues());
-		applyMatrixOperation<OPERATION_NONE>(evs_M);
-		//std::cout << "dim(kern(M)) = " << std::count_if(evs_M.begin(), evs_M.end(), [](const global_floating_type& value) { return abs(value) < 1e-16; }) << std::endl;
-		//std::cout << "dim(kern(N)) = " << N.fullPivLu().kernel().cols() << std::endl;
-
-		auto bufferMatrix = N * M_solver.eigenvectors();
-		// = N * 1/M * N
-		MatrixCL n_hacek = bufferMatrix
-			* evs_M.unaryExpr([](global_floating_type x) { return abs(x) < SALT ? 0 : 1. / x; }).asDiagonal()
-			* bufferMatrix.adjoint();
-
-		Eigen::SelfAdjointEigenSolver<MatrixCL> norm_solver(n_hacek);
-		Vector_L& evs_norm = const_cast<Vector_L&>(norm_solver.eigenvalues());
-		applyMatrixOperation<OPERATION_SQRT>(evs_norm);
-
-		// n_hacek -> n_hacek^(-1/2)
-		n_hacek = norm_solver.eigenvectors()
-			* evs_norm.unaryExpr([](global_floating_type x) { return abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
-			* norm_solver.eigenvectors().adjoint();
-		// Starting here M is the adjusted solver matrix (s s hackem)
-		// n_hacek * M * n_hacek
-		M = n_hacek * M_solver.eigenvectors() * evs_M.asDiagonal() * M_solver.eigenvectors().adjoint() * n_hacek;
-		// Starting here N is the extra matrix that defines |a> (n s hackem N)
-		N.applyOnTheLeft(n_hacek);
-
-		// Starting here h_hacek is its own inverse (defining |b>)
-		n_hacek = norm_solver.eigenvectors() * evs_norm.asDiagonal() * norm_solver.eigenvectors().adjoint();
-
-		end = std::chrono::steady_clock::now();
-		std::cout << "Time for adjusting of the matrices: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-		begin = std::chrono::steady_clock::now();
-
-		constexpr int NUMBER_OF_GREENSFUNCTIONS = 4;
-		/*
-		* 0 - SC Higgs
-		* 1 - SC Phase
-		* 2 - CDW
-		* 3 - AFM
-		*/
-		const global_floating_type norm_constant = this->usingDOS
-			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
-			: sqrt(1. / ((global_floating_type)Constants::BASIS_SIZE));
-		std::vector<VectorCL> psis(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
-		for (int i = 0; i < Constants::BASIS_SIZE; i++)
-		{
-			psis[0](i* number_of_basis_terms) = norm_constant;
-			psis[0](i* number_of_basis_terms + 1) = norm_constant;
-
-			psis[1](i* number_of_basis_terms) = norm_constant;
-			psis[1](i* number_of_basis_terms + 1) = -norm_constant;
-
-			if (number_of_basis_terms >= 6) {
-				psis[2](i* number_of_basis_terms + 4) = norm_constant;
-				psis[2](i* number_of_basis_terms + 5) = norm_constant;
-
-				psis[3](i* number_of_basis_terms + 4) = norm_constant;
-				psis[3](i* number_of_basis_terms + 5) = -norm_constant;
-			}
-		}
-
-		std::vector<ResolventComplex> resolvents{ 3 * NUMBER_OF_GREENSFUNCTIONS };
-
-#pragma omp parallel for
-		for (int i = 0; i < NUMBER_OF_GREENSFUNCTIONS; i++)
-		{
-			VectorCL a = N * psis[i];
-			VectorCL b = n_hacek * psis[i];
-
-			resolvents[3 * i].setStartingState(a);
-			resolvents[3 * i + 1].setStartingState(0.5 * (a + b));
-			resolvents[3 * i + 2].setStartingState(0.5 * (a + I * b));
-		}
-#pragma omp parallel for
-		for (int i = 0; i < 3 * NUMBER_OF_GREENSFUNCTIONS; i++)
-		{
-			resolvents[i].compute(M, this->usingDOS ? 50 : 2 * Constants::K_DISCRETIZATION);
-		}
-
-		end = std::chrono::steady_clock::now();
-		std::cout << "Time for resolventes: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-
-		std::vector<ResolventReturnData> ret;
-		ret.reserve(resolvents.size());
-		for (const auto& re : resolvents)
-		{
-			ret.push_back(re.getData());
-		}
-		return ret;
+		return _parent_algorithm::computeCollectiveModes(this->usingDOS ? 150 : 2 * Constants::K_DISCRETIZATION);
 	}
 }

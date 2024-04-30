@@ -14,7 +14,7 @@ namespace Hubbard::Helper {
 	public:
 		global_floating_type negative_eigenvalue{};
 		MatrixIsNegativeException(const global_floating_type& _negative_eigenvalue)
-			: std::runtime_error("The matrix M is negative! Most negative eigenvalue = " 
+			: std::runtime_error("The matrix M is negative! Most negative eigenvalue = "
 				+ Utility::better_to_string(_negative_eigenvalue, std::chars_format::scientific, 6)),
 			negative_eigenvalue(_negative_eigenvalue)
 		{};
