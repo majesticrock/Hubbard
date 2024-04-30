@@ -156,7 +156,7 @@ namespace Hubbard::Helper {
 		auto bufferMatrix = N * M_solver.eigenvectors();
 		// = N * 1/M * N
 		MatrixCL n_hacek = bufferMatrix
-			* evs_M.unaryExpr([](global_floating_type x) { return abs(x < SALT) ? 0 : 1. / x; }).asDiagonal()
+			* evs_M.unaryExpr([](global_floating_type x) { return abs(x) < SALT ? 0 : 1. / x; }).asDiagonal()
 			* bufferMatrix.adjoint();
 
 		Eigen::SelfAdjointEigenSolver<MatrixCL> norm_solver(n_hacek);
