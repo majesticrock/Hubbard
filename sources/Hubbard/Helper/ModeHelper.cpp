@@ -1,45 +1,6 @@
 #include "ModeHelper.hpp"
 
 namespace Hubbard::Helper {
-	void ModeHelper::loadWick(const std::string& filename)
-	{
-		wicks_M.resize(number_of_basis_terms * number_of_basis_terms);
-		wicks_N.resize(number_of_basis_terms * number_of_basis_terms);
-		const int name_offset = (start_basis_at < 0) ? 0 : start_basis_at;
-
-		for (int i = 0; i < number_of_basis_terms; i++)
-		{
-			for (int j = 0; j < number_of_basis_terms; j++)
-			{
-				const std::string suffix = std::to_string(j + name_offset) + "_" + std::to_string(i + name_offset) + ".txt";
-				{
-					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "M_" + suffix);
-					boost::archive::text_iarchive ia(ifs);
-					wicks_M[j * number_of_basis_terms + i].clear();
-					ia >> wicks_M[j * number_of_basis_terms + i];
-					ifs.close();
-
-					for (const auto& term : wicks_M[j * number_of_basis_terms + i]) {
-						checkTermValidity(term);
-					}
-				}
-				{
-					// create an input file stream and a text archive to deserialize the vector
-					std::ifstream ifs(filename + "N_" + suffix);
-					boost::archive::text_iarchive ia(ifs);
-					wicks_N[j * number_of_basis_terms + i].clear();
-					ia >> wicks_N[j * number_of_basis_terms + i];
-					ifs.close();
-
-					for (const auto& term : wicks_N[j * number_of_basis_terms + i]) {
-						checkTermValidity(term);
-					}
-				}
-			}
-		}
-	}
-
 	void ModeHelper::checkTermValidity(const SymbolicOperators::WickTerm& term)
 	{
 		if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
@@ -67,8 +28,7 @@ namespace Hubbard::Helper {
 	}
 
 	ModeHelper::ModeHelper(Utility::InputFileReader& input)
-		: number_of_basis_terms{ input.getInt("number_of_basis_terms") }, start_basis_at{ input.getInt("start_basis_at") },
-		usingDOS(input.getBool("use_DOS"))
+		: number_of_basis_terms{ input.getInt("number_of_basis_terms") }, start_basis_at{ input.getInt("start_basis_at") }, usingDOS(input.getBool("use_DOS"))
 	{
 		if (this->usingDOS) {
 			const auto lattice = input.getString("lattice_type");
@@ -94,6 +54,16 @@ namespace Hubbard::Helper {
 
 		const std::string prefix = this->start_basis_at < 0 ? "XP_" : "";
 		const std::string subfolder = input.getString("compute_what") == "dispersions" ? "dispersions/" : "";
-		loadWick("../commutators/hubbard/" + subfolder + prefix + "wick_");
+		wicks.load("../commutators/hubbard/" + subfolder, this->start_basis_at < 0, this->number_of_basis_terms, this->start_basis_at);
+		for(const auto& collector : wicks.M){
+			for(const auto& term : collector){
+				this->checkTermValidity(term);
+			}
+		}
+		for(const auto& collector : wicks.N){
+			for(const auto& term : collector){
+				this->checkTermValidity(term);
+			}
+		}
 	}
 }

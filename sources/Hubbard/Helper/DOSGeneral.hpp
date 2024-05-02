@@ -10,7 +10,7 @@ namespace Hubbard::Helper {
 		virtual void fill_block_M(int i, int j) override
 		{
 			// fill M
-			for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
+			for (const auto& term : wicks.M[number_of_basis_terms * j + i]) {
 				for (int k = 0; k < Constants::BASIS_SIZE; ++k)
 				{
 					if (term.delta_momenta.size() > 0U) {
@@ -36,7 +36,7 @@ namespace Hubbard::Helper {
 		virtual void fill_block_N(int i, int j) override
 		{
 			// fill N
-			for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
+			for (const auto& term : wicks.N[number_of_basis_terms * j + i]) {
 				for (int k = 0; k < Constants::BASIS_SIZE; ++k)
 				{
 					if (term.delta_momenta.size() > 0U) {

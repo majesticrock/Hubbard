@@ -1,5 +1,6 @@
 #pragma once
 #include "../../../../FermionCommute/sources/WickTerm.hpp"
+#include "../../../../FermionCommute/sources/TermLoader.hpp"
 #include "../../../../Utility/sources/InputFileReader.hpp"
 #include "../GlobalDefinitions.hpp"
 #include "../BaseModel.hpp"
@@ -29,7 +30,7 @@ namespace Hubbard::Helper {
 
 	class ModeHelper {
 	protected:
-		std::vector<SymbolicOperators::WickTermCollector> wicks_M{}, wicks_N{};
+		SymbolicOperators::TermLoader wicks;
 
 		size_t TOTAL_BASIS{};
 		/*
@@ -47,8 +48,6 @@ namespace Hubbard::Helper {
 		static constexpr coefficient_type SALT = SQRT_SALT * SQRT_SALT;
 		static constexpr coefficient_type ERROR_MARGIN = DEFAULT_PRECISION;
 
-		enum Operation { OPERATION_NONE, OPERATION_INVERSE, OPERATION_SQRT, OPERATION_INVERSE_SQRT };
-
 		int number_of_basis_terms{};
 		int start_basis_at{};
 
@@ -58,52 +57,7 @@ namespace Hubbard::Helper {
 		/////////////
 		// methods //
 		/////////////
-		void loadWick(const std::string& filename);
-
 		virtual void fillMatrices() = 0;
-
-		inline static bool contains_negative(const Vector_L& vector) {
-			return (vector.array() < -SQRT_SALT).any();
-		};
-		/* Takes a positive semidefinite vector (the idea is that this contains eigenvalues) and applies an operation on it
-		* 0: Correct for negative eigenvalues
-		* 1: Compute the pseudoinverse
-		* 2: Compute the square root
-		* 3: Compute the pseudoinverse square root
-		*/
-		template<Operation option>
-		static void applyMatrixOperation(Vector_L& evs) {
-			if (contains_negative(evs)) throw MatrixIsNegativeException(evs.minCoeff());
-			for (auto& ev : evs)
-			{
-				if (ev < SQRT_SALT) {
-#ifdef _PSEUDO_INVERSE
-					ev = 0;
-#else
-					if constexpr (option == OPERATION_INVERSE) {
-						ev = (1. / SALT);
-					}
-					else if constexpr (option == OPERATION_SQRT) {
-						ev = SQRT_SALT;
-					}
-					else if constexpr (option == OPERATION_INVERSE_SQRT) {
-						ev = (1. / SQRT_SALT);
-					}
-#endif
-				}
-				else {
-					if constexpr (option == OPERATION_INVERSE) {
-						ev = 1. / ev;
-					}
-					else if constexpr (option == OPERATION_SQRT) {
-						ev = sqrt(ev);
-					}
-					else if constexpr (option == OPERATION_INVERSE_SQRT) {
-						ev = 1. / sqrt(ev);
-					}
-				}
-			}
-		};
 
 		// Throws an exception if the passed term is not valid or of a type that is not implemented yet,
 		// otherwise it does nothing

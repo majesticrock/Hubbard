@@ -9,7 +9,7 @@ namespace Hubbard::Helper {
 		const int inner_sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), j) == cdw_basis_positions.end()
 			? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
 
-		for (const auto& term : wicks_M[number_of_basis_terms * j + i]) {
+		for (const auto& term : wicks.M[number_of_basis_terms * j + i]) {
 			for (int k = 0; k < sum_limit; ++k)
 			{
 				if (term.delta_momenta.size() > 0U) {
@@ -51,7 +51,7 @@ namespace Hubbard::Helper {
 		const int inner_sum_limit = std::find(cdw_basis_positions.begin(), cdw_basis_positions.end(), j) == cdw_basis_positions.end()
 			? Constants::BASIS_SIZE : Constants::BASIS_SIZE / 2;
 
-		for (const auto& term : wicks_N[number_of_basis_terms * j + i]) {
+		for (const auto& term : wicks.N[number_of_basis_terms * j + i]) {
 			for (int k = 0; k < sum_limit; ++k)
 			{
 				if (term.delta_momenta.size() > 0U) {
