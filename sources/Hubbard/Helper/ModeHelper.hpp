@@ -4,34 +4,14 @@
 #include "../../../../Utility/sources/InputFileReader.hpp"
 #include "../GlobalDefinitions.hpp"
 #include "../BaseModel.hpp"
-#include "../../../../Utility/sources/better_to_string.hpp"
-#include <utility>
 
 // Both methods yield precisely the same data!
 #define _PSEUDO_INVERSE
 
 namespace Hubbard::Helper {
-	class MatrixIsNegativeException : public std::runtime_error {
-	public:
-		global_floating_type negative_eigenvalue{};
-		MatrixIsNegativeException(const global_floating_type& _negative_eigenvalue)
-			: std::runtime_error("The matrix M is negative! Most negative eigenvalue = "
-				+ Utility::better_to_string(_negative_eigenvalue, std::chars_format::scientific, 6)),
-			negative_eigenvalue(_negative_eigenvalue)
-		{};
-	};
-
-	template <class EigenMatrixType>
-	inline EigenMatrixType removeNoise(EigenMatrixType const& matrix) {
-		return matrix.unaryExpr([](typename EigenMatrixType::Scalar const& val) {
-			return (abs(val) < DEFAULT_PRECISION ? typename EigenMatrixType::Scalar{} : val);
-			});
-	};
-
 	class ModeHelper {
 	protected:
 		SymbolicOperators::TermLoader wicks;
-
 		size_t TOTAL_BASIS{};
 		/*
 		* 0 - n
