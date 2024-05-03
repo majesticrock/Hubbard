@@ -4,7 +4,7 @@ CXX = mpicxx
 # the compilation of the eigen library (I cant fix them anyways)
 INCLUDEFLAGS = -isystem ~/usr/local/include
 
-CXXFLAGS = $(WARNINGS) -std=gnu++17 $(OPT) -fopenmp
+CXXFLAGS = $(WARNINGS) -std=c++17 $(OPT) -fopenmp
 
 LDLIBS = -L/sw/gcc/5.3.0/rtf/lib64 -L/home/joshua/usr/local/include/boost_lib/ -lboost_serialization -lboost_iostreams -lz
 
@@ -12,7 +12,7 @@ WARNINGS = -Wall -Wno-sign-compare
 
 OPT = -march=cascadelake -O3# -ffast-math
 
-COMMUTE_SRCS=IndexWrapper.cpp Momentum.cpp Coefficient.cpp Operator.cpp Term.cpp WickOperator.cpp WickTerm.cpp WickCleaner.cpp
+COMMUTE_SRCS=TermLoader.cpp Coefficient.cpp IndexWrapper.cpp Momentum.cpp MomentumList.cpp Operator.cpp Term.cpp WickCleaner.cpp WickOperator.cpp WickOperatorTemplate.cpp WickTerm.cpp 
 
 HELPER_SRCS=PhaseHelper.cpp Plaquette.cpp ModeHelper.cpp XPModes.cpp GeneralBasis.cpp TermOnSquare.cpp SquareXP.cpp SquareGeneral.cpp
 SQUARE_SRCS=HubbardCDW.cpp UsingBroyden.cpp SquareTripletPairing.cpp
@@ -38,10 +38,10 @@ build/main: $(OBJS) | build
 build/%.o: sources/%.cpp# sources/%.hpp
 	$(CXX) $(INCLUDEFLAGS) $< -o $@ -c $(CXXFLAGS)
 
-sources/SymbolicOperators:
-	ln -s ../../FermionCommute/sources sources/SymbolicOperators
-
 sources/Utility:
+	ln -s ../../Utility/sources sources/Utility
+
+sources/SymbolicOperators:
 	ln -s ../../FermionCommute/sources sources/SymbolicOperators
 
 build:
