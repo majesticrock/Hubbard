@@ -23,7 +23,6 @@ namespace Hubbard::Helper {
 	}
 	void XPModes::fillMatrices()
 	{
-		std::chrono::time_point begin = std::chrono::steady_clock::now();
 		constexpr int a = hermitian_size - 1;
 		constexpr int b = antihermitian_size - 1;
 
@@ -50,14 +49,6 @@ namespace Hubbard::Helper {
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_plus - K_plus.adjoint()).norm()));
 		if ((K_minus - K_minus.adjoint()).norm() > ERROR_MARGIN * K_minus.rows() * K_minus.cols())
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
-
-		L = removeNoise(L);
-		K_plus = removeNoise(K_plus);
-		K_minus = removeNoise(K_minus);
-
-		std::chrono::time_point end = std::chrono::steady_clock::now();
-		std::cout << "Time for filling of M and N: "
-			<< std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 	}
 
 	void XPModes::createStartingStates()
