@@ -13,7 +13,7 @@ namespace Hubbard::Helper {
 			for (const auto& term : wicks.M[number_of_basis_terms * j + i]) {
 				for (int k = 0; k < Constants::BASIS_SIZE; ++k)
 				{
-					if (term.delta_momenta.size() > 0U) {
+					if (!term.delta_momenta.empty()) {
 						int l{ k };
 						if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 							// delta gamma, -gamma'
@@ -39,7 +39,7 @@ namespace Hubbard::Helper {
 			for (const auto& term : wicks.N[number_of_basis_terms * j + i]) {
 				for (int k = 0; k < Constants::BASIS_SIZE; ++k)
 				{
-					if (term.delta_momenta.size() > 0U) {
+					if (!term.delta_momenta.empty()) {
 						int l{ k };
 						if (term.delta_momenta[0].first.add_Q != term.delta_momenta[0].second.add_Q) {
 							// delta gamma, -gamma'
