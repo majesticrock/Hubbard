@@ -55,13 +55,13 @@ namespace Hubbard::Helper {
 		const std::string prefix = this->start_basis_at < 0 ? "XP_" : "";
 		const std::string subfolder = input.getString("compute_what") == "dispersions" ? "dispersions/" : "";
 		wicks.load("../commutators/hubbard/" + subfolder, this->start_basis_at < 0, this->number_of_basis_terms, this->start_basis_at);
-		for(const auto& collector : wicks.M){
-			for(const auto& term : collector){
+		for (const auto& collector : wicks.M) {
+			for (const auto& term : collector) {
 				this->checkTermValidity(term);
 			}
 		}
-		for(const auto& collector : wicks.N){
-			for(const auto& term : collector){
+		for (const auto& collector : wicks.N) {
+			for (const auto& term : collector) {
 				this->checkTermValidity(term);
 			}
 		}

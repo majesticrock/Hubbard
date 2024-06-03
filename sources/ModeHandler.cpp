@@ -83,7 +83,7 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		comments.push_back("Lattice type: " + input.getString("lattice_type"));
 		comments.push_back("Total Gap: " + to_string(totalGapValue));
 
-		if (! resolvents.empty()) {
+		if (!resolvents.empty()) {
 			std::vector<std::string> names;
 			if (input.getInt("start_basis_at") == -1) {
 				names = { "phase_SC", "phase_CDW", "phase_AFM", "phase_AFM_trans", "higgs_SC", "higgs_CDW", "higgs_AFM", "higgs_AFM_trans" };
