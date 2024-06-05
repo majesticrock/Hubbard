@@ -1,7 +1,7 @@
 #pragma once
 #include "../../../../FermionCommute/sources/WickTerm.hpp"
 #include "../../../../FermionCommute/sources/TermLoader.hpp"
-#include "../../../../Utility/sources/InputFileReader.hpp"
+#include <Utility/InputFileReader.hpp>
 #include "../GlobalDefinitions.hpp"
 #include "../BaseModel.hpp"
 

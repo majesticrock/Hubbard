@@ -13,7 +13,7 @@
 #include <vector>
 #include <filesystem>
 #include "Hubbard/Constants.hpp"
-#include "../../Utility/sources/OutputConvenience.hpp"
+#include <Utility/OutputConvenience.hpp>
 #include "Hubbard/Helper/DetailModelConstructor.hpp"
 
 using data_vector = std::vector<double>;

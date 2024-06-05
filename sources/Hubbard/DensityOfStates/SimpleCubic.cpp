@@ -6,7 +6,7 @@
 #include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 #include "tanh_sinh_helper.hpp"
-#include "../../../../Utility/sources/FunctionTime.hpp"
+#include <Utility/FunctionTime.hpp>
 #include <filesystem>
 
 namespace Hubbard::DensityOfStates {

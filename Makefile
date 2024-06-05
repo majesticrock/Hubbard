@@ -2,7 +2,7 @@ CXX = mpicxx
 
 # -isystem rather than -I as this supresses warnings that occur during
 # the compilation of the eigen library (I cant fix them anyways)
-INCLUDEFLAGS = -isystem ~/usr/local/include
+INCLUDEFLAGS = -isystem ~/usr/local/include -I ../
 
 CXXFLAGS = $(WARNINGS) -std=c++17 $(OPT) -fopenmp
 
@@ -20,14 +20,13 @@ CHAIN_SRCS=ChainTripletPairing.cpp
 DOS_SRCS=BaseDOS.cpp Square.cpp SimpleCubic.cpp
 SELFCON_SRCS=Selfconsistency/BroydenSolver.cpp
 HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(SELFCON_SRCS) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) ModelParameters.cpp EMCoupling.cpp
-UTIL_SRCS=Utility/InputFileReader.cpp
 
 PART_SRCS=HandlerBase.cpp TestHandler.cpp ModeHandler.cpp PhaseHandler.cpp UnknownBoundaryHandler.cpp Hubbard_Mean_Field.cpp
-SRCS=$(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS) $(UTIL_SRCS)
+SRCS=$(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS)
 
 OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))
 
-all: sources/SymbolicOperators sources/Utility build build/main 
+all: sources/SymbolicOperators build build/main 
 
 debug: CXXFLAGS += -g -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment
 debug: build build/main
@@ -37,9 +36,6 @@ build/main: $(OBJS) | build
 
 build/%.o: sources/%.cpp# sources/%.hpp
 	$(CXX) $(INCLUDEFLAGS) $< -o $@ -c $(CXXFLAGS)
-
-sources/Utility:
-	ln -s ../../Utility/sources sources/Utility
 
 sources/SymbolicOperators:
 	ln -s ../../FermionCommute/sources sources/SymbolicOperators
@@ -52,7 +48,6 @@ build:
 	mkdir -p build/Hubbard/SquareLattice
 	mkdir -p build/Hubbard/ChainLattice
 	mkdir -p build/Hubbard/DensityOfStates
-	mkdir -p build/Utility
 	mkdir -p build/SymbolicOperators
 
 clean:

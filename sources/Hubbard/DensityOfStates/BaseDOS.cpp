@@ -1,7 +1,7 @@
 #include "BaseDOS.hpp"
 #include <iostream>
 #include <numeric>
-#include "../../../../Utility/sources/BinaryIO.hpp"
+#include <Utility/BinaryIO.hpp>
 
 namespace Hubbard::DensityOfStates {
 	std::vector<dos_precision> BaseDOS::values;

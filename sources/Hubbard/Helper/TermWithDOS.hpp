@@ -5,7 +5,7 @@
 #include <complex>
 #include <cmath>
 #include <filesystem>
-#include "../../../../Utility/sources/BinaryIO.hpp"
+#include <Utility/BinaryIO.hpp>
 
 namespace Hubbard::Helper {
 	template <class DOS>

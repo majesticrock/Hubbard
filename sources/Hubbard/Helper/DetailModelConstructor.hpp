@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include "../BaseModel.hpp"
-#include "../../../../Utility/sources/InputFileReader.hpp"
+#include <Utility/InputFileReader.hpp>
 #include "../SquareLattice/UsingBroyden.hpp"
 #include <map>
 #include "../../../../FermionCommute/sources/WickTerm.hpp"

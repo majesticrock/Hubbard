@@ -1,7 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 #include <stddef.h>
-#include "../../../Utility/sources/Numerics/Resolvent.hpp"
+#include <Utility/Numerics/Resolvent.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <type_traits>
 

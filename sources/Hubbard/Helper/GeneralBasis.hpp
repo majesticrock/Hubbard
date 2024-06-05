@@ -1,6 +1,6 @@
 #pragma once
 #include "ModeHelper.hpp"
-#include "../../../../Utility/sources/Numerics/iEoM/GeneralResolvent.hpp"
+#include <Utility/Numerics/iEoM/GeneralResolvent.hpp>
 
 namespace Hubbard::Helper {
 	class GeneralBasis : public ModeHelper, protected Utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, complex_prec>

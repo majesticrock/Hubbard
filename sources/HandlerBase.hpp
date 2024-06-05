@@ -1,5 +1,5 @@
 #pragma once
-#include "../../Utility/sources/InputFileReader.hpp"
+#include <Utility/InputFileReader.hpp>
 #include "Hubbard/ModelParameters.hpp"
 #include <string>
 

@@ -1,6 +1,6 @@
 #pragma once
 #include "ModeHelper.hpp"
-#include "../../../../Utility/sources/Numerics/iEoM/XPResolvent.hpp"
+#include <Utility/Numerics/iEoM/XPResolvent.hpp>
 
 namespace Hubbard::Helper {
 	class XPModes : public ModeHelper, protected Utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>
