@@ -114,6 +114,9 @@ namespace Hubbard::DOSModels {
 			this->hamilton(3, 3) = eps;
 		};
 
+	public:
+		static constexpr SystemType SYSTEM_TYPE = static_cast<SystemType>(DOS::DIMENSION);
+
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(DataType{});
 			std::conditional_t<Utility::is_complex<DataType>(), ComplexParameterVector&, ComplexParameterVector> complex_F = F;
@@ -134,8 +137,6 @@ namespace Hubbard::DOSModels {
 			this->applyIteration(F);
 			F -= x;
 		};
-	public:
-		static constexpr SystemType SYSTEM_TYPE = static_cast<SystemType>(DOS::DIMENSION);
 
 		DOSBasedModel(const ModelParameters& _params)
 			: BaseModel<DataType>(_params, SYSTEM_TYPE),

@@ -1,5 +1,5 @@
 #pragma once
-#include "../Selfconsistency/BroydenSolver.hpp"
+#include <Utility/Selfconsistency/BroydenSolver.hpp>
 #include "DOSBasedModel.hpp"
 
 namespace Hubbard::DOSModels {
@@ -16,8 +16,9 @@ namespace Hubbard::DOSModels {
 
 		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = PrintSteps) override
 		{
-			Selfconsistency::BroydenSolver solver(this, &this->model_attributes, _MaxPreBroydenIterations);
-			return solver.computePhases(debugPolicy);
+			Utility::Selfconsistency::BroydenSolver<global_floating_type, BroydenDOS<DOS>, decltype(this->model_attributes), Utility::Selfconsistency::PrintEverything> 
+				solver(this, &this->model_attributes, _MaxPreBroydenIterations);
+			return solver.compute(true);
 		};
 	};
 }
