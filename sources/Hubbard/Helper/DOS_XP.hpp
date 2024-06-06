@@ -124,3 +124,6 @@ namespace Hubbard::Helper {
 		};
 	};
 }
+
+#undef _FACTOR_DIAG
+#undef _FACTOR_OFF_DIAG
