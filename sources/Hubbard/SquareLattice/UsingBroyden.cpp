@@ -4,6 +4,7 @@
 namespace Hubbard::SquareLattice {
 	void UsingBroyden::init()
 	{
+		this->SPINOR_SIZE = 4;
 		this->hamilton = SpinorMatrix::Zero(4, 4);
 
 		parameterCoefficients = {

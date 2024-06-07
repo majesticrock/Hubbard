@@ -79,7 +79,7 @@ namespace Hubbard {
 		};
 		inline void fillRho() {
 			this->hamilton_solver.compute(this->hamilton);
-			rho.fill(DataType{});
+			rho.setZero(this->SPINOR_SIZE, this->SPINOR_SIZE);
 			for (size_t i = 0U; i < this->SPINOR_SIZE; ++i)
 			{
 				rho(i, i) = 1 - fermi_dirac(hamilton_solver.eigenvalues()(i));

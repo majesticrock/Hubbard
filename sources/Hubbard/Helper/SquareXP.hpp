@@ -26,7 +26,8 @@ namespace Hubbard::Helper {
 			return *model;
 		};
 
-		SquareXP(Utility::InputFileReader& input, const ModelParameters& modelParameters) : TermOnSquare(input, modelParameters), XPModes(input)
+		SquareXP(Utility::InputFileReader& input, const ModelParameters& modelParameters, const Eigen::Vector2i& _mode_momentum = { 0, 0 }) 
+			: TermOnSquare(input, modelParameters, _mode_momentum), XPModes(input)
 		{};
 
 		void setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters) override;

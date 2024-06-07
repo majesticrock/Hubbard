@@ -16,6 +16,7 @@
 #include "PhaseHandler.hpp"
 #include "ModeHandler.hpp"
 #include "UnknownBoundaryHandler.hpp"
+#include "ModeDispersionHandler.hpp"
 #include <Eigen/Dense>
 
 using namespace Hubbard;
@@ -80,6 +81,10 @@ int main(int argc, char** argv)
 	else if (input.getString("compute_what") == "unknown_boundary") {
 		UnknownBoundaryHandler u_boundary(input, rank, numberOfRanks);
 		u_boundary.execute(input);
+	}
+	else if (input.getString("compute_what") == "dispersions") {
+		ModeDispersionHandler dispersions(input, rank, numberOfRanks);
+		dispersions.execute(input);
 	}
 
 	if (rank == 0) {

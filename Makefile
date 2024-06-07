@@ -21,7 +21,7 @@ DOS_SRCS=BaseDOS.cpp Square.cpp SimpleCubic.cpp
 SELFCON_SRCS=Selfconsistency/BroydenSolver.cpp
 HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(SELFCON_SRCS) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) ModelParameters.cpp EMCoupling.cpp
 
-PART_SRCS=HandlerBase.cpp TestHandler.cpp ModeHandler.cpp PhaseHandler.cpp UnknownBoundaryHandler.cpp Hubbard_Mean_Field.cpp
+PART_SRCS=HandlerBase.cpp TestHandler.cpp ModeHandler.cpp PhaseHandler.cpp UnknownBoundaryHandler.cpp ModeDispersionHandler.cpp Hubbard_Mean_Field.cpp
 SRCS=$(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS)
 
 OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))

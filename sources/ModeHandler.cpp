@@ -58,30 +58,35 @@ std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(Utility::Inp
 	return getHelper(input, modelParameters);
 }
 
+std::vector<std::string> ModeHandler::getFileComments(Utility::InputFileReader& input, Hubbard::Helper::ModeHelper* modeHelper) const
+{
+	using std:: to_string;
+
+	std::vector<std::string> comments;
+	comments.push_back("Used DOS: " + input.getString("use_DOS"));
+	comments.push_back("Discretization: " + input.getString("k_discretization"));
+	comments.push_back("Lattice type: " + input.getString("lattice_type"));
+	comments.push_back("Total Gap: " + to_string(modeHelper->getModel().getTotalGapValue()));
+	return comments;
+}
+
 void ModeHandler::execute(Utility::InputFileReader& input) const
 {
 	using std::to_string;
 
 	data_vector oneParticleEnergies;
-	Hubbard::global_floating_type totalGapValue;
 	std::vector<Hubbard::ResolventReturnData> resolvents;
 
 	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper{ getHelper(input) };
 
-	totalGapValue = modeHelper->getModel().getTotalGapValue();
 	modeHelper->getModel().getAllEnergies(oneParticleEnergies);
 	resolvents = modeHelper->computeCollectiveModes();
 
 	if (rank == 0) {
-		std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };
+		const std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };
 		std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;
 		std::filesystem::create_directories(BASE_FOLDER + output_folder);
-
-		std::vector<std::string> comments;
-		comments.push_back("Used DOS: " + input.getString("use_DOS"));
-		comments.push_back("Discretization: " + input.getString("k_discretization"));
-		comments.push_back("Lattice type: " + input.getString("lattice_type"));
-		comments.push_back("Total Gap: " + to_string(totalGapValue));
+		const std::vector<std::string> comments = getFileComments(input, modeHelper.get());
 
 		if (!resolvents.empty()) {
 			std::vector<std::string> names;
