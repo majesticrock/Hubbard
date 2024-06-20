@@ -1,4 +1,4 @@
-make -j
+make -j16
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 n_mpi=8
