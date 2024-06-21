@@ -1,6 +1,6 @@
 #pragma once
 #include <Utility/InputFileReader.hpp>
-#include "Hubbard/ModelParameters.hpp"
+#include "../Hubbard/ModelParameters.hpp"
 #include <string>
 
 class HandlerBase

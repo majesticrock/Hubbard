@@ -2,7 +2,7 @@ CXX = mpicxx
 
 # -isystem rather than -I as this supresses warnings that occur during
 # the compilation of the eigen library (I cant fix them anyways)
-INCLUDEFLAGS = -isystem ~/usr/local/include -I ../
+INCLUDEFLAGS = -isystem ~/usr/local/include -I ../../../PhdUtility/Utility/include -I ../../../PhdUtility/FermionCommute/sources
 
 CXXFLAGS = $(WARNINGS) -std=c++20 $(OPT) -fopenmp
 
@@ -21,7 +21,7 @@ DOS_SRCS=BaseDOS.cpp Square.cpp SimpleCubic.cpp
 SELFCON_SRCS=Selfconsistency/BroydenSolver.cpp
 HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(SELFCON_SRCS) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) ModelParameters.cpp EMCoupling.cpp
 
-PART_SRCS=HandlerBase.cpp TestHandler.cpp ModeHandler.cpp PhaseHandler.cpp UnknownBoundaryHandler.cpp ModeDispersionHandler.cpp Hubbard_Mean_Field.cpp
+PART_SRCS=Handler/HandlerBase.cpp Handler/TestHandler.cpp Handler/ModeHandler.cpp Handler/PhaseHandler.cpp Handler/UnknownBoundaryHandler.cpp Handler/ModeDispersionHandler.cpp HubbardMeanField.cpp
 SRCS=$(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS)
 
 OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))
@@ -38,10 +38,11 @@ build/%.o: sources/%.cpp# sources/%.hpp
 	$(CXX) $(INCLUDEFLAGS) $< -o $@ -c $(CXXFLAGS)
 
 sources/SymbolicOperators:
-	ln -s ../../FermionCommute/sources sources/SymbolicOperators
+	ln -s ../../../../PhdUtility/FermionCommute/sources/SymbolicOperators sources/SymbolicOperators
 
 build:
 	mkdir -p build
+	mkdir -p build/Handler
 	mkdir -p build/Hubbard
 	mkdir -p build/Hubbard/Helper
 	mkdir -p build/Hubbard/Selfconsistency

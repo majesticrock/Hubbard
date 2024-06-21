@@ -1,15 +1,15 @@
 #include "TestHandler.hpp"
 #include <chrono>
 #include <iostream>
-#include "Hubbard/ModelParameters.hpp"
-#include "Hubbard/SquareLattice/UsingBroyden.hpp"
-#include "Hubbard/SquareLattice/HubbardCDW.hpp"
-#include "Hubbard/DOSModels/BroydenDOS.hpp"
-#include "Hubbard/DensityOfStates/Square.hpp"
-#include "Hubbard/DensityOfStates/SimpleCubic.hpp"
-#include "Hubbard/DOSModels/PhaseSeparationDOS.hpp"
-#include "Hubbard/EMCoupling.hpp"
-#include "Hubbard/NumericalMomentum.hpp"
+#include "../Hubbard/ModelParameters.hpp"
+#include "../Hubbard/SquareLattice/UsingBroyden.hpp"
+#include "../Hubbard/SquareLattice/HubbardCDW.hpp"
+#include "../Hubbard/DOSModels/BroydenDOS.hpp"
+#include "../Hubbard/DensityOfStates/Square.hpp"
+#include "../Hubbard/DensityOfStates/SimpleCubic.hpp"
+#include "../Hubbard/DOSModels/PhaseSeparationDOS.hpp"
+#include "../Hubbard/EMCoupling.hpp"
+#include "../Hubbard/NumericalMomentum.hpp"
 
 using namespace Hubbard;
 

@@ -4,7 +4,7 @@
 #include <Utility/InputFileReader.hpp>
 #include "../SquareLattice/UsingBroyden.hpp"
 #include <map>
-#include "../../../../FermionCommute/sources/WickTerm.hpp"
+#include <SymbolicOperators/WickTerm.hpp>
 
 namespace Hubbard::Helper {
 	namespace DetailModelConstructorSettings {

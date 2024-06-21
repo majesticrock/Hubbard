@@ -1,14 +1,14 @@
 #include "ModeHandler.hpp"
 #include <vector>
 #include <filesystem>
-#include "Hubbard/Helper/SquareGeneral.hpp"
-#include "Hubbard/Helper/SquareXP.hpp"
-#include "Hubbard/Helper/DOSGeneral.hpp"
-#include "Hubbard/Helper/DOS_XP.hpp"
+#include "../Hubbard/Helper/SquareGeneral.hpp"
+#include "../Hubbard/Helper/SquareXP.hpp"
+#include "../Hubbard/Helper/DOSGeneral.hpp"
+#include "../Hubbard/Helper/DOS_XP.hpp"
+#include "../Hubbard/DOSModels/BroydenDOS.hpp"
+#include "../Hubbard/DensityOfStates/Square.hpp"
+#include "../Hubbard/DensityOfStates/SimpleCubic.hpp"
 #include <Utility/OutputConvenience.hpp>
-#include "Hubbard/DOSModels/BroydenDOS.hpp"
-#include "Hubbard/DensityOfStates/Square.hpp"
-#include "Hubbard/DensityOfStates/SimpleCubic.hpp"
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
 const std::string BASE_FOLDER = "../../data/modes/";

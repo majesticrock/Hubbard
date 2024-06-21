@@ -1,6 +1,6 @@
 #pragma once
 #include "../BaseModel.hpp"
-#include "../../../../FermionCommute/sources/Coefficient.hpp"
+#include <SymbolicOperators/Coefficient.hpp>
 #include "../DensityOfStates/BaseDOS.hpp"
 #include "../DensityOfStates/Square.hpp"
 #include "../DensityOfStates/SimpleCubic.hpp"

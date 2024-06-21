@@ -12,11 +12,11 @@
 
 #include <chrono>
 #include "Hubbard/Constants.hpp"
-#include "TestHandler.hpp"
-#include "PhaseHandler.hpp"
-#include "ModeHandler.hpp"
-#include "UnknownBoundaryHandler.hpp"
-#include "ModeDispersionHandler.hpp"
+#include "Handler/TestHandler.hpp"
+#include "Handler/PhaseHandler.hpp"
+#include "Handler/ModeHandler.hpp"
+#include "Handler/UnknownBoundaryHandler.hpp"
+#include "Handler/ModeDispersionHandler.hpp"
 #include <Eigen/Dense>
 
 using namespace Hubbard;

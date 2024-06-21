@@ -8,8 +8,8 @@
 #endif
 
 #include "PhaseHandler.hpp"
-#include "Hubbard/Constants.hpp"
-#include "Hubbard/Helper/PhaseHelper.hpp"
+#include "../Hubbard/Constants.hpp"
+#include "../Hubbard/Helper/PhaseHelper.hpp"
 #include <Utility/OutputConvenience.hpp>
 #include <vector>
 #include <chrono>

@@ -1,5 +1,5 @@
 #include "ModeDispersionHandler.hpp"
-#include "Hubbard/Helper/SquareXP.hpp"
+#include "../Hubbard/Helper/SquareXP.hpp"
 #include <vector>
 #include <array>
 #include <filesystem>

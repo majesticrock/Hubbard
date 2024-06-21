@@ -1,6 +1,6 @@
 #pragma once
 #include "HandlerBase.hpp"
-#include "Hubbard/Constants.hpp"
+#include "../Hubbard/Constants.hpp"
 
 class PhaseHandler : virtual public HandlerBase
 {

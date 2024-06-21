@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ModeHandler.hpp"
-#include "Hubbard/Constants.hpp"
+#include "../Hubbard/Constants.hpp"
 #include <Eigen/Dense>
 
 class ModeDispersionHandler : public ModeHandler {
