@@ -1,5 +1,5 @@
 #include "UsingBroyden.hpp"
-#include "../Selfconsistency/BroydenSolver.hpp"
+#include <Utility/Selfconsistency/BroydenSolver.hpp>
 
 namespace Hubbard::SquareLattice {
 	void UsingBroyden::init()
@@ -69,9 +69,9 @@ namespace Hubbard::SquareLattice {
 		init();
 	}
 
-	ModelAttributes<global_floating_type> UsingBroyden::computePhases(const PhaseDebuggingPolicy debugPolicy)
+	ModelAttributes<global_floating_type> UsingBroyden::computePhases()
 	{
-		Selfconsistency::BroydenSolver solver(this, &model_attributes, _MaxPreBroydenIterations);
-		return solver.computePhases(debugPolicy);
+		auto solver = Utility::Selfconsistency::make_broyden<global_floating_type>(this, &this->model_attributes, _MaxPreBroydenIterations);
+		return solver.compute(true);
 	}
 }

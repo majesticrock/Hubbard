@@ -15,6 +15,6 @@ namespace Hubbard::SquareLattice {
 		UsingBroyden(const ModelParameters& _params, size_t MaxPreBroydenIterations = 300U);
 		UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, size_t MaxPreBroydenIterations = 300U);
 
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = WarnNoConvergence) override;
+		virtual ModelAttributes<global_floating_type> computePhases() override;
 	};
 }

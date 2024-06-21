@@ -41,41 +41,41 @@ namespace Hubbard::Helper {
 
 		mp.setGlobalIteratorExact(this->upperFirst);
 		mp.setSecondIteratorExact(centerSecond);
-		new_attributes[0] = parent->computeDataPoint(mp, std::nullopt, NoWarning);
+		new_attributes[0] = parent->computeDataPoint(mp, std::nullopt);
 		if (!new_attributes[0].converged) {
-			parent->computeDataPoint(mp, std::nullopt, PrintSteps);
+			parent->computeDataPoint(mp, std::nullopt);
 		}
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
 		mp.setSecondIteratorExact(this->lowerSecond);
-		new_attributes[1] = parent->computeDataPoint(mp, std::nullopt, NoWarning);
+		new_attributes[1] = parent->computeDataPoint(mp, std::nullopt);
 		if (!new_attributes[1].converged) {
-			parent->computeDataPoint(mp, std::nullopt, PrintSteps);
+			parent->computeDataPoint(mp, std::nullopt);
 		}
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
 		mp.setSecondIteratorExact(centerSecond);
-		new_attributes[2] = parent->computeDataPoint(mp, std::nullopt, NoWarning);
+		new_attributes[2] = parent->computeDataPoint(mp, std::nullopt);
 		if (!new_attributes[2].converged) {
-			parent->computeDataPoint(mp, std::nullopt, PrintSteps);
+			parent->computeDataPoint(mp, std::nullopt);
 		}
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(centerFirst);
 		mp.setSecondIteratorExact(this->upperSecond);
-		new_attributes[3] = parent->computeDataPoint(mp, std::nullopt, NoWarning);
+		new_attributes[3] = parent->computeDataPoint(mp, std::nullopt);
 		if (!new_attributes[3].converged) {
-			parent->computeDataPoint(mp, std::nullopt, PrintSteps);
+			parent->computeDataPoint(mp, std::nullopt);
 		}
 
 		mp = parent->modelParameters;
 		mp.setGlobalIteratorExact(this->lowerFirst);
 		mp.setSecondIteratorExact(centerSecond);
-		new_attributes[4] = parent->computeDataPoint(mp, std::nullopt, NoWarning);
+		new_attributes[4] = parent->computeDataPoint(mp, std::nullopt);
 		if (!new_attributes[4].converged) {
-			parent->computeDataPoint(mp, std::nullopt, PrintSteps);
+			parent->computeDataPoint(mp, std::nullopt);
 		}
 
 		//int count = 0;

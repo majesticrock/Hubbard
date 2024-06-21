@@ -1,5 +1,5 @@
 #include "DOSBasedModel.hpp"
-#include "../Selfconsistency/BroydenSolver.hpp"
+#include <Utility/Selfconsistency/BroydenSolver.hpp>
 
 namespace Hubbard::DOSModels {
 	template <class DOS>
@@ -51,6 +51,7 @@ namespace Hubbard::DOSModels {
 			F(8) += -this->rho(idx[0], idx[0] + 4).real() - this->rho(idx[1], idx[1] + 4).real() + this->rho(idx[2], idx[2] + 4).real() + this->rho(idx[3], idx[3] + 4).real(); // PS
 		};
 
+	public:
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(global_floating_type{});
 			ComplexParameterVector complex_F = F;
@@ -69,7 +70,7 @@ namespace Hubbard::DOSModels {
 			this->applyIteration(F);
 			F -= x;
 		};
-	public:
+	
 		PhaseSeparationDOS(const ModelParameters& _params, int extra_dimensions, size_t MaxPreBroydenIterations = 300U)
 			: DOSBasedModel<global_floating_type, DOS>(_params), _MaxPreBroydenIterations(MaxPreBroydenIterations), _extra_dimensions(extra_dimensions)
 		{
@@ -83,10 +84,10 @@ namespace Hubbard::DOSModels {
 			init();
 		};
 
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = WarnNoConvergence) override
+		virtual ModelAttributes<global_floating_type> computePhases() override
 		{
-			Selfconsistency::BroydenSolver solver(this, &this->model_attributes, _MaxPreBroydenIterations);
-			return solver.computePhases(debugPolicy);
+			auto solver = Utility::Selfconsistency::make_broyden<global_floating_type>(this, &this->model_attributes, _MaxPreBroydenIterations);
+			return solver.compute(true);
 		};
 	};
 }

@@ -1,5 +1,5 @@
 #include "HubbardCDW.hpp"
-#include "../Selfconsistency/IterativeSolver.hpp"
+#include <Utility/Selfconsistency/IterativeSolver.hpp>
 
 #define GAMMA_CDW this->model_attributes[8]
 #define XI_CDW this->model_attributes[9]
@@ -101,9 +101,9 @@ namespace Hubbard::SquareLattice {
 	{
 		init();
 	}
-	ModelAttributes<global_floating_type> HubbardCDW::computePhases(const PhaseDebuggingPolicy debugPolicy)
+	ModelAttributes<global_floating_type> HubbardCDW::computePhases()
 	{
-		Selfconsistency::IterativeSolver<complex_prec> solver(this, &model_attributes);
-		return ModelAttributes<global_floating_type>(solver.computePhases(debugPolicy), Magnitude);
+		auto solver = Utility::Selfconsistency::make_iterative<complex_prec>(this, &model_attributes);
+		return ModelAttributes<global_floating_type>(solver.compute(), Magnitude);
 	}
 }

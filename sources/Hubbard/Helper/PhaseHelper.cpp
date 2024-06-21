@@ -8,8 +8,6 @@
 #include "../DensityOfStates/Square.hpp"
 #include "../DensityOfStates/SimpleCubic.hpp"
 
-#include "../Selfconsistency/BroydenSolver.hpp"
-#include "../Selfconsistency/IterativeSolver.hpp"
 #include "../Constants.hpp"
 #include <omp.h>
 #include <limits>
@@ -121,10 +119,10 @@ namespace Hubbard::Helper {
 	}
 
 	ModelAttributes<global_floating_type> PhaseHelper::computeDataPoint(const ModelParameters& mp,
-		std::optional<ModelAttributes<global_floating_type>> startingValues /*= std::nullopt*/, PhaseDebuggingPolicy debug_messages /*= WarnNoConvergence*/)
+		std::optional<ModelAttributes<global_floating_type>> startingValues /*= std::nullopt*/)
 	{
 		auto model_ptr{ getModelType(mp, startingValues) };
-		ModelAttributes<global_floating_type> result{ model_ptr->computePhases(debug_messages) };
+		ModelAttributes<global_floating_type> result{ model_ptr->computePhases() };
 
 		if (mp.U < 0 || mp.V < 0) return result;
 		// Remember: [0] returns the cdw and [1] the afm gap
@@ -140,7 +138,7 @@ namespace Hubbard::Helper {
 			}
 
 			auto model_copy_ptr = getModelType(mp, copy);
-			copy = model_copy_ptr->computePhases(NoWarning);
+			copy = model_copy_ptr->computePhases();
 			if (copy.converged) {
 				if (model_copy_ptr->freeEnergyPerSite() < model_ptr->freeEnergyPerSite()) {
 					return copy;
@@ -151,9 +149,9 @@ namespace Hubbard::Helper {
 	}
 
 	ModelAttributes<global_floating_type> PhaseHelper::computeDataPoint_No_AFM_CDW_Fix(const ModelParameters& mp,
-		std::optional<ModelAttributes<global_floating_type>> startingValues, PhaseDebuggingPolicy debug_messages)
+		std::optional<ModelAttributes<global_floating_type>> startingValues)
 	{
-		return getModelType(mp, startingValues)->computePhases(debug_messages);
+		return getModelType(mp, startingValues)->computePhases();
 	}
 
 	void PhaseHelper::compute_crude(std::vector<data_vector>& data_mapper)
@@ -303,7 +301,7 @@ namespace Hubbard::Helper {
 
 			while (a - b > PRECISION) {
 				local.setSecondIteratorExact(b);
-				gap_b = computeDataPoint_No_AFM_CDW_Fix(local, base_gap, NoWarning);
+				gap_b = computeDataPoint_No_AFM_CDW_Fix(local, base_gap);
 				if (std::abs(gap_b[0]) > EPSILON) {
 					a = b;
 					b -= h;
@@ -322,7 +320,7 @@ namespace Hubbard::Helper {
 			b = a + h;
 			while (b - a > PRECISION) {
 				local.setSecondIteratorExact(b);
-				gap_b = computeDataPoint_No_AFM_CDW_Fix(local, base_gap, NoWarning);
+				gap_b = computeDataPoint_No_AFM_CDW_Fix(local, base_gap);
 				if (std::abs(gap_b[1]) > EPSILON) {
 					a = b;
 					b += h;

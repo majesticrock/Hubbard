@@ -1,5 +1,5 @@
 #include "EMCoupling.hpp"
-#include "Selfconsistency/IterativeSolver.hpp"
+#include <Utility/Selfconsistency/IterativeSolver.hpp>
 
 #define DELTA_SC(k) this->model_attributes[this->get_sc_index((k))]
 #define DELTA_N(k) this->model_attributes[this->get_n_index((k))]
@@ -123,11 +123,10 @@ namespace Hubbard {
 		return 0;
 	}
 
-	ModelAttributes<global_floating_type> EMCoupling::computePhases(const PhaseDebuggingPolicy debugPolicy/*=NoWarning*/)
+	ModelAttributes<global_floating_type> EMCoupling::computePhases()
 	{
-		Selfconsistency::IterativeSolver<global_floating_type> solver(this, &model_attributes);
-
-		return ModelAttributes<global_floating_type>(solver.computePhases(debugPolicy));
+		auto solver = Utility::Selfconsistency::make_iterative<global_floating_type>(this, &model_attributes);
+		return solver.compute();
 	}
 
 	void EMCoupling::computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all)

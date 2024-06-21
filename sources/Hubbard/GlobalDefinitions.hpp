@@ -25,18 +25,6 @@
 #include <string>
 
 namespace Hubbard {
-	struct PhaseDebuggingPolicy {
-		bool printAll{ false };
-		bool convergenceWarning{ true };
-
-		constexpr PhaseDebuggingPolicy() = default;
-		constexpr PhaseDebuggingPolicy(bool _printAll, bool _convergenceWarning)
-			: printAll{ _printAll }, convergenceWarning(_convergenceWarning) {};
-	};
-	constexpr PhaseDebuggingPolicy WarnNoConvergence{ false, true };
-	constexpr PhaseDebuggingPolicy NoWarning{ false, false };
-	constexpr PhaseDebuggingPolicy PrintSteps{ true, true };
-
 	using std::abs;
 	using std::to_string;
 

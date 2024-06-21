@@ -18,8 +18,7 @@ HELPER_SRCS=PhaseHelper.cpp Plaquette.cpp ModeHelper.cpp XPModes.cpp GeneralBasi
 SQUARE_SRCS=HubbardCDW.cpp UsingBroyden.cpp SquareTripletPairing.cpp
 CHAIN_SRCS=ChainTripletPairing.cpp
 DOS_SRCS=BaseDOS.cpp Square.cpp SimpleCubic.cpp
-SELFCON_SRCS=Selfconsistency/BroydenSolver.cpp
-HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(SELFCON_SRCS) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) ModelParameters.cpp EMCoupling.cpp
+HBBRD_SRCS=$(addprefix Helper/, $(HELPER_SRCS)) $(addprefix SquareLattice/, $(SQUARE_SRCS)) $(addprefix ChainLattice/, $(CHAIN_SRCS)) $(addprefix DensityOfStates/, $(DOS_SRCS)) ModelParameters.cpp EMCoupling.cpp
 
 PART_SRCS=Handler/HandlerBase.cpp Handler/TestHandler.cpp Handler/ModeHandler.cpp Handler/PhaseHandler.cpp Handler/UnknownBoundaryHandler.cpp Handler/ModeDispersionHandler.cpp HubbardMeanField.cpp
 SRCS=$(addprefix Hubbard/, $(HBBRD_SRCS)) $(addprefix SymbolicOperators/, $(COMMUTE_SRCS)) $(PART_SRCS)
@@ -45,7 +44,6 @@ build:
 	mkdir -p build/Handler
 	mkdir -p build/Hubbard
 	mkdir -p build/Hubbard/Helper
-	mkdir -p build/Hubbard/Selfconsistency
 	mkdir -p build/Hubbard/SquareLattice
 	mkdir -p build/Hubbard/ChainLattice
 	mkdir -p build/Hubbard/DensityOfStates

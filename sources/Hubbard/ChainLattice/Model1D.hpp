@@ -30,6 +30,7 @@ namespace Hubbard::ChainLattice
 	protected:
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
+	public:
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(global_floating_type{});
 			std::conditional_t<Utility::is_complex<DataType>(),
@@ -52,7 +53,7 @@ namespace Hubbard::ChainLattice
 			this->applyIteration(F);
 			F -= x;
 		};
-	public:
+	
 		Model1D(const ModelParameters& _params) : MomentumBasedModel<DataType, 1>(_params) {};
 
 		template<typename StartingValuesDataType>

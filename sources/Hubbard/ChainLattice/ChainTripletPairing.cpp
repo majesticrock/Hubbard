@@ -1,5 +1,5 @@
 #include "ChainTripletPairing.hpp"
-#include "../Selfconsistency/IterativeSolver.hpp"
+#include <Utility/Selfconsistency/IterativeSolver.hpp>
 
 namespace Hubbard::ChainLattice {
 	void ChainTripletPairing::init()
@@ -18,6 +18,7 @@ namespace Hubbard::ChainLattice {
 			2 * V_OVER_N, // Occupation Down
 		};
 	}
+
 	void ChainTripletPairing::fillHamiltonian(const NumericalMomentum<1>& k_x)
 	{
 		hamilton.fill(global_floating_type{});
@@ -74,9 +75,10 @@ namespace Hubbard::ChainLattice {
 	{
 		init();
 	}
-	ModelAttributes<global_floating_type> ChainTripletPairing::computePhases(const PhaseDebuggingPolicy debugPolicy)
+	
+	ModelAttributes<global_floating_type> ChainTripletPairing::computePhases()
 	{
-		Selfconsistency::IterativeSolver<complex_prec> solver(this, &model_attributes);
-		return ModelAttributes<global_floating_type>(solver.computePhases(debugPolicy), Magnitude);
+		auto solver = Utility::Selfconsistency::make_iterative<complex_prec>(this, &model_attributes);
+		return ModelAttributes<global_floating_type>(solver.compute(), Magnitude);
 	}
 }

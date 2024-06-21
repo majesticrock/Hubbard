@@ -158,7 +158,7 @@ namespace Hubbard {
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) = 0;
 
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = NoWarning) = 0;
+		virtual ModelAttributes<global_floating_type> computePhases() = 0;
 
 		// saves all one particle energies to reciever
 		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) = 0;

@@ -53,7 +53,7 @@ namespace Hubbard {
 
 		virtual global_floating_type internalEnergyPerSite() override;
 
-		virtual ModelAttributes<global_floating_type> computePhases(const PhaseDebuggingPolicy debugPolicy = NoWarning) override;
+		virtual ModelAttributes<global_floating_type> computePhases() override;
 
 		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override;
 	};

@@ -33,7 +33,7 @@ namespace Hubbard::Helper {
 					}
 
 					decltype(model) model_copy_ptr = std::make_unique<Model>(modelParameters, copy);
-					copy = model_copy_ptr->computePhases(NoWarning);
+					copy = model_copy_ptr->computePhases();
 					if (copy.converged) {
 						if (model_copy_ptr->freeEnergyPerSite() <= model->freeEnergyPerSite()) {
 							model = std::move(model_copy_ptr);

@@ -64,13 +64,13 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 		if (input.getBool("use_DOS")) {
 			if (input.getString("lattice_type") == "square") {
 				DOSModels::BroydenDOS<DensityOfStates::Square> model(modelParameters);
-				model.computePhases(WarnNoConvergence).print();
+				model.computePhases().print();
 				std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 				std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
 			}
 			else if (input.getString("lattice_type") == "cube") {
 				DOSModels::PhaseSeparationDOS<DensityOfStates::SimpleCubic> model(modelParameters, 1);
-				model.computePhases(WarnNoConvergence).print();
+				model.computePhases().print();
 				std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
 				std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
 			}
@@ -81,7 +81,7 @@ void TestHandler::execute(Utility::InputFileReader& input) const
 
 			SquareLattice::UsingBroyden model2(modelParameters);
 			test_b = std::chrono::steady_clock::now();
-			model2.computePhases({ false, true }).print();
+			model2.computePhases().print();
 			std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
 
 			std::cout << "Sum rule: " << model2.cdw_in_sc_sum_rule() << std::endl;
