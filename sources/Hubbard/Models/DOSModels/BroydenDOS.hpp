@@ -2,7 +2,7 @@
 #include <Utility/Selfconsistency/BroydenSolver.hpp>
 #include "DOSBasedModel.hpp"
 
-namespace Hubbard::DOSModels {
+namespace Hubbard::Models::DOSModels {
 	template <class DOS>
 	class BroydenDOS : public DOSBasedModel<global_floating_type, DOS> {
 	private:

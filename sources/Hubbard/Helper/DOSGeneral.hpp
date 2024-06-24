@@ -60,18 +60,18 @@ namespace Hubbard::Helper {
 		}
 
 	public:
-		virtual const BaseModel<global_floating_type>& getModel() const override {
+		virtual const Models::BaseModel<global_floating_type>& getModel() const override {
 			return *(this->model);
 		};
-		virtual BaseModel<global_floating_type>& getModel() override {
+		virtual Models::BaseModel<global_floating_type>& getModel() override {
 			return *(this->model);
 		};
 
-		DOSGeneral(Utility::InputFileReader& input, const ModelParameters& modelParameters) : TermWithDOS<DOS>(input, modelParameters), GeneralBasis(input) {
+		DOSGeneral(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) : TermWithDOS<DOS>(input, modelParameters), GeneralBasis(input) {
 			this->TOTAL_BASIS = this->number_of_basis_terms * Constants::BASIS_SIZE;
 		};
 
-		void setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters) override {
+		void setNewModelParameters(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override {
 			this->internal_setNewModelParameters(input, modelParameters);
 		};
 	};

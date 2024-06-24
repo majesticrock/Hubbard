@@ -1,7 +1,7 @@
 #include "ChainTripletPairing.hpp"
 #include <Utility/Selfconsistency/IterativeSolver.hpp>
 
-namespace Hubbard::ChainLattice {
+namespace Hubbard::Models::ChainLattice {
 	void ChainTripletPairing::init()
 	{
 		hamilton = SpinorMatrix::Zero(8, 8);

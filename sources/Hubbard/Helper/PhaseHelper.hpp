@@ -4,7 +4,7 @@
 #include <cassert>
 #include <memory>
 #include <Utility/InputFileReader.hpp>
-#include "../BaseModel.hpp"
+#include "../Models/BaseModel.hpp"
 
 namespace Hubbard::Helper {
 	typedef std::vector<global_floating_type> data_vector;
@@ -12,7 +12,7 @@ namespace Hubbard::Helper {
 	{
 	private:
 		friend struct Plaquette;
-		ModelParameters modelParameters;
+		Models::ModelParameters modelParameters;
 		coefficient_type FIRST_IT_MIN{};
 		coefficient_type FIRST_IT_MAX{};
 		coefficient_type SECOND_IT_MIN{};
@@ -26,12 +26,12 @@ namespace Hubbard::Helper {
 		bool use_broyden{};
 		unsigned char _internal_lattice_type{};
 
-		std::unique_ptr<BaseModel<global_floating_type>> getModelType(const ModelParameters& mp, std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt);
+		std::unique_ptr<Models::BaseModel<global_floating_type>> getModelType(const Models::ModelParameters& mp, std::optional<Models::ModelAttributes<global_floating_type>> startingValues = std::nullopt);
 
-		ModelAttributes<global_floating_type> computeDataPoint(const ModelParameters& mp,
-			std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt);
-		ModelAttributes<global_floating_type> computeDataPoint_No_AFM_CDW_Fix(const ModelParameters& mp,
-			std::optional<ModelAttributes<global_floating_type>> startingValues = std::nullopt);
+		Models::ModelAttributes<global_floating_type> computeDataPoint(const Models::ModelParameters& mp,
+			std::optional<Models::ModelAttributes<global_floating_type>> startingValues = std::nullopt);
+		Models::ModelAttributes<global_floating_type> computeDataPoint_No_AFM_CDW_Fix(const Models::ModelParameters& mp,
+			std::optional<Models::ModelAttributes<global_floating_type>> startingValues = std::nullopt);
 	public:
 		PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks);
 

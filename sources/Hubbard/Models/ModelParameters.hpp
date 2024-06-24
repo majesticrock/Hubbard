@@ -2,9 +2,9 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include "GlobalDefinitions.hpp"
+#include "../GlobalDefinitions.hpp"
 
-namespace Hubbard {
+namespace Hubbard::Models {
 	class ModelParameters {
 	private:
 		std::string global_iterator_type{ "N/A" };

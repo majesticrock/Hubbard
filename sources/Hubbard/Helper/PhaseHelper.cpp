@@ -1,10 +1,10 @@
 #include "PhaseHelper.hpp"
 #include "Plaquette.hpp"
-#include "../SquareLattice/HubbardCDW.hpp"
-#include "../SquareLattice/UsingBroyden.hpp"
-#include "../ChainLattice/ChainTripletPairing.hpp"
-#include "../DOSModels/BroydenDOS.hpp"
-#include "../DOSModels/PhaseSeparationDOS.hpp"
+#include "../Models/SquareLattice/HubbardCDW.hpp"
+#include "../Models/SquareLattice/UsingBroyden.hpp"
+#include "../Models/ChainLattice/ChainTripletPairing.hpp"
+#include "../Models/DOSModels/BroydenDOS.hpp"
+#include "../Models/DOSModels/PhaseSeparationDOS.hpp"
 #include "../DensityOfStates/Square.hpp"
 #include "../DensityOfStates/SimpleCubic.hpp"
 
@@ -13,6 +13,8 @@
 #include <limits>
 #include <mutex>
 #include <algorithm>
+
+using namespace Hubbard::Models;
 
 namespace Hubbard::Helper {
 	using Constants::option_list;

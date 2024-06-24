@@ -1,10 +1,7 @@
 #pragma once
 #include "../BaseModel.hpp"
+#include "../../DensityOfStates/BaseDOS.hpp"
 #include <SymbolicOperators/Coefficient.hpp>
-#include "../DensityOfStates/BaseDOS.hpp"
-#include "../DensityOfStates/Square.hpp"
-#include "../DensityOfStates/SimpleCubic.hpp"
-#include "../DensityOfStates/DOSIntegrator.hpp"
 #include <algorithm>
 #include <mutex>
 #include <numeric>
@@ -29,7 +26,7 @@
 #endif
 #endif
 
-namespace Hubbard::DOSModels {
+namespace Hubbard::Models::DOSModels {
 	template <typename DataType, class DOS>
 	class DOSBasedModel : public BaseModel<DataType>
 	{

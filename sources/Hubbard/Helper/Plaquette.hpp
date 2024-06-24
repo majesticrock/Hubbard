@@ -1,6 +1,6 @@
 #pragma once
 #include "../GlobalDefinitions.hpp"
-#include "../ModelAttributes.hpp"
+#include "../Models/ModelAttributes.hpp"
 #include "PhaseHelper.hpp"
 
 namespace Hubbard::Helper {
@@ -9,7 +9,7 @@ namespace Hubbard::Helper {
 		*  0 1
 		*  2 3
 		*/
-		std::array<ModelAttributes<global_floating_type>, 4> attributes;
+		std::array<Models::ModelAttributes<global_floating_type>, 4> attributes;
 		PhaseHelper* parent{};
 
 		coefficient_type lowerFirst{};

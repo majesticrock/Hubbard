@@ -1,17 +1,18 @@
 #include "TestHandler.hpp"
 #include <chrono>
 #include <iostream>
-#include "../Hubbard/ModelParameters.hpp"
-#include "../Hubbard/SquareLattice/UsingBroyden.hpp"
-#include "../Hubbard/SquareLattice/HubbardCDW.hpp"
-#include "../Hubbard/DOSModels/BroydenDOS.hpp"
+#include "../Hubbard/Models/ModelParameters.hpp"
+#include "../Hubbard/Models/SquareLattice/UsingBroyden.hpp"
+#include "../Hubbard/Models/SquareLattice/HubbardCDW.hpp"
+#include "../Hubbard/Models/DOSModels/BroydenDOS.hpp"
+#include "../Hubbard/Models/DOSModels/PhaseSeparationDOS.hpp"
+#include "../Hubbard/Models/EMCoupling.hpp"
+#include "../Hubbard/NumericalMomentum.hpp"
 #include "../Hubbard/DensityOfStates/Square.hpp"
 #include "../Hubbard/DensityOfStates/SimpleCubic.hpp"
-#include "../Hubbard/DOSModels/PhaseSeparationDOS.hpp"
-#include "../Hubbard/EMCoupling.hpp"
-#include "../Hubbard/NumericalMomentum.hpp"
 
 using namespace Hubbard;
+using namespace Hubbard::Models;
 
 std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
 	for (size_t i = 0U; i < data.size(); ++i)

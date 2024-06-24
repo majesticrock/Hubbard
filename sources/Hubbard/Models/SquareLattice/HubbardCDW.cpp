@@ -8,7 +8,7 @@
 #define GAMMA_ETA this->model_attributes[14]
 #define XI_ETA this->model_attributes[15]
 
-namespace Hubbard::SquareLattice {
+namespace Hubbard::Models::SquareLattice {
 	void HubbardCDW::init()
 	{
 		DELTA_ETA *= I;

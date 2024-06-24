@@ -3,7 +3,7 @@
 
 constexpr size_t NUMBER_OF_PARAMETERS = 18;
 
-namespace Hubbard::SquareLattice {
+namespace Hubbard::Models::SquareLattice {
 	void SquareTripletPairing::init()
 	{
 		HubbardCDW::init();

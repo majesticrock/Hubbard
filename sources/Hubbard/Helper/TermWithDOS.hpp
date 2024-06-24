@@ -1,7 +1,6 @@
 #pragma once
 #include "DetailModelConstructor.hpp"
-#include "../DOSModels/BroydenDOS.hpp"
-#include "../NumericalMomentum.hpp"
+#include "../Models/DOSModels/BroydenDOS.hpp"
 #include <complex>
 #include <cmath>
 #include <filesystem>
@@ -9,7 +8,7 @@
 
 namespace Hubbard::Helper {
 	template <class DOS>
-	class TermWithDOS : protected DetailModelConstructor<DOSModels::BroydenDOS<DOS>>
+	class TermWithDOS : protected DetailModelConstructor<Models::DOSModels::BroydenDOS<DOS>>
 	{
 	private:
 		using Integrator = typename DOS::Integrator<complex_prec>;
@@ -126,8 +125,8 @@ namespace Hubbard::Helper {
 		};
 
 	public:
-		TermWithDOS(Utility::InputFileReader& input, const ModelParameters& modelParameters)
-			: DetailModelConstructor<DOSModels::BroydenDOS<DOS>>(input, modelParameters),
+		TermWithDOS(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
+			: DetailModelConstructor<Models::DOSModels::BroydenDOS<DOS>>(input, modelParameters),
 			approximate_dos(Constants::BASIS_SIZE, global_floating_type{}),
 			INV_GAMMA_DISC(1. / this->model->getDeltaGamma())
 		{

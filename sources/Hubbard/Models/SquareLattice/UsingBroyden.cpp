@@ -1,7 +1,7 @@
 #include "UsingBroyden.hpp"
 #include <Utility/Selfconsistency/BroydenSolver.hpp>
 
-namespace Hubbard::SquareLattice {
+namespace Hubbard::Models::SquareLattice {
 	void UsingBroyden::init()
 	{
 		this->SPINOR_SIZE = 4;

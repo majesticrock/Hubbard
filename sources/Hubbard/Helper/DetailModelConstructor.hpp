@@ -1,10 +1,10 @@
 #pragma once
-#include <memory>
-#include "../BaseModel.hpp"
 #include <Utility/InputFileReader.hpp>
-#include "../SquareLattice/UsingBroyden.hpp"
-#include <map>
 #include <SymbolicOperators/WickTerm.hpp>
+#include <map>
+#include <memory>
+#include "../Models/ModelParameters.hpp"
+#include "../Models/ModelAttributes.hpp"
 
 namespace Hubbard::Helper {
 	namespace DetailModelConstructorSettings {
@@ -14,11 +14,11 @@ namespace Hubbard::Helper {
 	template <class Model>
 	class DetailModelConstructor {
 	private:
-		void initialize_model(Utility::InputFileReader& input, const ModelParameters& modelParameters) {
+		void initialize_model(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) {
 			if (input.getString("ratio_CDW_SC") != "-1") {
 				model->set_CDW_SC_ratio(input.getDouble("ratio_CDW_SC"));
 			}
-			ModelAttributes<global_floating_type> result = model->computePhases();
+			Models::ModelAttributes<global_floating_type> result = model->computePhases();
 
 			if (modelParameters.U > 0 && modelParameters.V > 0) { // only for U>0 and V>0
 				if (result.isFinite(0) || result.isFinite(1)) {
@@ -69,7 +69,7 @@ namespace Hubbard::Helper {
 			if (op.isDaggered) return std::conj(sum_of_all(index, cos_modulation));
 			return sum_of_all(index, cos_modulation);
 		};
-		void internal_setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters)
+		void internal_setNewModelParameters(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
 		{
 			this->model->setNewModelParameters(modelParameters, Model::SYSTEM_TYPE);
 			this->initialize_model(input, modelParameters);
@@ -78,7 +78,7 @@ namespace Hubbard::Helper {
 	public:
 		virtual ~DetailModelConstructor() = default;
 
-		DetailModelConstructor(Utility::InputFileReader& input, const ModelParameters& modelParameters)
+		DetailModelConstructor(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
 			: model(std::make_unique<Model>(modelParameters))
 		{
 			this->initialize_model(input, modelParameters);

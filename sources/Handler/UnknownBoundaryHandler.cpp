@@ -32,7 +32,7 @@ void UnknownBoundaryHandler::execute(Utility::InputFileReader& input) const {
 			SECOND_IT_MIN = model_params[i];
 		}
 	}
-	Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
+	Hubbard::Models::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 		(FIRST_IT_MAX - FIRST_IT_MIN) / FIRST_IT_STEPS, 0.0,
 		input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 

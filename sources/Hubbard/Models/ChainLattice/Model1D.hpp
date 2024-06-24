@@ -11,7 +11,7 @@
 #define GAMMA_OCCSpinUpATION_SpinUp this->model_attributes[6]
 #define GAMMA_OCCSpinUpATION_SpinDown this->model_attributes[7]
 
-namespace Hubbard::ChainLattice
+namespace Hubbard::Models::ChainLattice
 {
 	inline void complexParametersToReal(const ComplexParameterVector& c, Vector_L& r) {
 		r(0) = c(0).real(); // CDW

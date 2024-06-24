@@ -5,7 +5,6 @@
 #include "../Hubbard/Helper/SquareXP.hpp"
 #include "../Hubbard/Helper/DOSGeneral.hpp"
 #include "../Hubbard/Helper/DOS_XP.hpp"
-#include "../Hubbard/DOSModels/BroydenDOS.hpp"
 #include "../Hubbard/DensityOfStates/Square.hpp"
 #include "../Hubbard/DensityOfStates/SimpleCubic.hpp"
 #include <Utility/OutputConvenience.hpp>
@@ -13,7 +12,7 @@
 using data_vector = std::vector<Hubbard::global_floating_type>;
 const std::string BASE_FOLDER = "../../data/modes/";
 
-std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(Utility::InputFileReader& input, Hubbard::ModelParameters& modelParameters) const
+std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(Utility::InputFileReader& input, Hubbard::Models::ModelParameters& modelParameters) const
 {
 	if (input.getInt("start_basis_at") == -1) {
 		if (input.getBool("use_DOS")) {
@@ -53,7 +52,7 @@ std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(Utility::Inp
 std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(Utility::InputFileReader& input) const
 {
 	std::vector<double> model_params = input.getDoubleList("model_parameters");
-	Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
+	Hubbard::Models::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 		0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 	return getHelper(input, modelParameters);
 }

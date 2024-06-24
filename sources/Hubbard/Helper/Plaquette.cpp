@@ -19,10 +19,10 @@ namespace Hubbard::Helper {
 		*	New values are at the position ABCDE (01234 as indizes)
 		*/
 
-		ModelParameters mp{ parent->modelParameters };
+		Models::ModelParameters mp{ parent->modelParameters };
 		const coefficient_type centerFirst{ this->getCenterFirst() };
 		const coefficient_type centerSecond{ this->getCenterSecond() };
-		ModelAttributes<global_floating_type> averageParameters{ this->attributes[0] };
+		Models::ModelAttributes<global_floating_type> averageParameters{ this->attributes[0] };
 		int finiteCount = averageParameters.isOrdered() ? 1 : 0;
 		for (const auto& attr : this->attributes)
 		{
@@ -35,9 +35,9 @@ namespace Hubbard::Helper {
 			averageParameters /= finiteCount;
 		}
 		else {
-			averageParameters = ModelAttributes<global_floating_type>(mp);
+			averageParameters = Models::ModelAttributes<global_floating_type>(mp);
 		}
-		std::array<ModelAttributes<global_floating_type>, 5> new_attributes;
+		std::array<Models::ModelAttributes<global_floating_type>, 5> new_attributes;
 
 		mp.setGlobalIteratorExact(this->upperFirst);
 		mp.setSecondIteratorExact(centerSecond);

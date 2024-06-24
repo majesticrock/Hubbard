@@ -1,7 +1,7 @@
 #pragma once
 #include "MomentumBasedModel.hpp"
 
-namespace Hubbard {
+namespace Hubbard::Models {
 	class EMCoupling : public MomentumBasedModel<global_floating_type, 2>
 	{
 	private:

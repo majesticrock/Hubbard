@@ -19,17 +19,17 @@ namespace Hubbard::Helper {
 		virtual void fill_block_N(int i, int j) override;
 
 	public:
-		virtual const BaseModel<global_floating_type>& getModel() const override {
+		virtual const Models::BaseModel<global_floating_type>& getModel() const override {
 			return *model;
 		};
-		virtual BaseModel<global_floating_type>& getModel() override {
+		virtual Models::BaseModel<global_floating_type>& getModel() override {
 			return *model;
 		};
 
-		SquareXP(Utility::InputFileReader& input, const ModelParameters& modelParameters, const Eigen::Vector2i& _mode_momentum = { 0, 0 }) 
+		SquareXP(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters, const Eigen::Vector2i& _mode_momentum = { 0, 0 }) 
 			: TermOnSquare(input, modelParameters, _mode_momentum), XPModes(input)
 		{};
 
-		void setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters) override;
+		void setNewModelParameters(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override;
 	};
 }

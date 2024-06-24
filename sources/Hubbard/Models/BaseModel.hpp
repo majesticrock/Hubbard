@@ -1,11 +1,11 @@
 #pragma once
-#include "GlobalDefinitions.hpp"
-#include "Constants.hpp"
+#include "../GlobalDefinitions.hpp"
+#include "../Constants.hpp"
 #include "ModelAttributes.hpp"
 #include <string>
 #include <memory>
 
-namespace Hubbard {
+namespace Hubbard::Models {
 	// maps an index; [0, N_K) -> [-pi, pi)
 	inline global_floating_type index_to_k_vector(const int index) {
 		return ((index * Constants::PI_DIV_DISCRETIZATION) - BASE_PI);

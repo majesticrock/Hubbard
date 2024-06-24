@@ -1,7 +1,7 @@
 #pragma once
 #include "Model1D.hpp"
 
-namespace Hubbard::ChainLattice {
+namespace Hubbard::Models::ChainLattice {
 	class ChainTripletPairing :
 		public Model1D<complex_prec>
 	{

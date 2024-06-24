@@ -8,7 +8,7 @@
 #include <initializer_list>
 #include <type_traits>
 
-namespace Hubbard {
+namespace Hubbard::Models {
 	enum SystemType { SystemUndefined, SystemChain, SystemSquare, SystemCube };
 	enum ComplexAttributePolicy { Magnitude, SeperateRealAndImaginary };
 

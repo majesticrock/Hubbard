@@ -1,7 +1,7 @@
 #pragma once
 #include "Model2D.hpp"
 
-namespace Hubbard::SquareLattice {
+namespace Hubbard::Models::SquareLattice {
 	class HubbardCDW : public Model2D<complex_prec>
 	{
 	protected:

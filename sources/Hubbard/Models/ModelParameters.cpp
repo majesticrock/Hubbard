@@ -4,7 +4,7 @@
 #include <cmath>
 #include <Utility/better_to_string.hpp>
 
-namespace Hubbard {
+namespace Hubbard::Models {
 	void ModelParameters::init()
 	{
 		if (global_iterator_type == "T") {
@@ -86,7 +86,7 @@ namespace Hubbard {
 		}
 		return getGlobal();
 	}
-	coefficient_type  ModelParameters::setSecondIterator(int it_num)
+	coefficient_type ModelParameters::setSecondIterator(int it_num)
 	{
 		if (second_iterator_type == "T") {
 			temperature = second_it_min + it_num * second_step;
@@ -99,7 +99,7 @@ namespace Hubbard {
 		}
 		return getSecond();
 	}
-	coefficient_type  Hubbard::ModelParameters::setSecondIteratorExact(coefficient_type  newValue)
+	coefficient_type ModelParameters::setSecondIteratorExact(coefficient_type  newValue)
 	{
 		if (second_iterator_type == "T") {
 			temperature = newValue;

@@ -1,7 +1,7 @@
 #pragma once
 #include "Model2D.hpp"
 
-namespace Hubbard::SquareLattice {
+namespace Hubbard::Models::SquareLattice {
 	class UsingBroyden : public Model2D<global_floating_type>
 	{
 	private:

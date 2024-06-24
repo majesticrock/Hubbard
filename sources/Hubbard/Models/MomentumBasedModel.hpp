@@ -1,9 +1,9 @@
 #pragma once
 #include "BaseModel.hpp"
 #include <SymbolicOperators/Coefficient.hpp>
-#include "NumericalMomentum.hpp"
+#include "../NumericalMomentum.hpp"
 
-namespace Hubbard {
+namespace Hubbard::Models {
 	template <typename DataType, size_t Dimension>
 	class MomentumBasedModel : public BaseModel<DataType>
 	{

@@ -8,7 +8,7 @@
 class ModeHandler : virtual public HandlerBase
 {
 protected:
-	std::unique_ptr<Hubbard::Helper::ModeHelper> getHelper(Utility::InputFileReader& input, Hubbard::ModelParameters& modelParameters) const;
+	std::unique_ptr<Hubbard::Helper::ModeHelper> getHelper(Utility::InputFileReader& input, Hubbard::Models::ModelParameters& modelParameters) const;
 	std::unique_ptr<Hubbard::Helper::ModeHelper> getHelper(Utility::InputFileReader& input) const;
 
 	std::vector<std::string> getFileComments(Utility::InputFileReader& input, Hubbard::Helper::ModeHelper* modeHelper) const;

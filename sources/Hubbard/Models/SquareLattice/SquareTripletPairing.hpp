@@ -1,7 +1,7 @@
 #pragma once
 #include "HubbardCDW.hpp"
 
-namespace Hubbard::SquareLattice {
+namespace Hubbard::Models::SquareLattice {
 	class SquareTripletPairing :
 		public HubbardCDW
 	{

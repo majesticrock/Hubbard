@@ -10,17 +10,17 @@ namespace Hubbard::Helper {
 		virtual void fill_block_N(int i, int j) override;
 
 	public:
-		virtual const BaseModel<global_floating_type>& getModel() const override {
+		virtual const Models::BaseModel<global_floating_type>& getModel() const override {
 			return *model;
 		};
-		virtual BaseModel<global_floating_type>& getModel() override {
+		virtual Models::BaseModel<global_floating_type>& getModel() override {
 			return *model;
 		};
 
-		SquareGeneral(Utility::InputFileReader& input, const ModelParameters& modelParameters) : TermOnSquare(input, modelParameters), GeneralBasis(input) {};
-		SquareGeneral(Utility::InputFileReader& input, std::unique_ptr<Hubbard::SquareLattice::UsingBroyden>&& model_ptr)
+		SquareGeneral(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) : TermOnSquare(input, modelParameters), GeneralBasis(input) {};
+		SquareGeneral(Utility::InputFileReader& input, std::unique_ptr<Hubbard::Models::SquareLattice::UsingBroyden>&& model_ptr)
 			: TermOnSquare(std::move(model_ptr)), GeneralBasis(input) {};
 
-		void setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters) override;
+		void setNewModelParameters(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override;
 	};
 }

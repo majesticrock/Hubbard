@@ -1,12 +1,12 @@
 #pragma once
 #include <Utility/InputFileReader.hpp>
-#include "../Hubbard/ModelParameters.hpp"
+#include "../Hubbard/Models/ModelParameters.hpp"
 #include <string>
 
 class HandlerBase
 {
 protected:
-	Hubbard::ModelParameters modelParameters;
+	Hubbard::Models::ModelParameters modelParameters;
 	int rank{};
 	int numberOfRanks{ 1 };
 

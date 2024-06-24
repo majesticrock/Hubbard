@@ -7,7 +7,7 @@
 #define DELTA_CDW(k) this->model_attributes[this->get_cdw_index((k))]
 #define DELTA_ETA(k) this->model_attributes[this->get_eta_index((k))]
 
-namespace Hubbard {
+namespace Hubbard::Models {
 	void EMCoupling::init()
 	{
 		this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);

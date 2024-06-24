@@ -11,7 +11,7 @@ void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
     using std::to_string;
 
     std::vector<double> model_params = input.getDoubleList("model_parameters");
-	Hubbard::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
+	Hubbard::Models::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 		0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
     std::vector<Hubbard::ResolventReturnData> resolvents;

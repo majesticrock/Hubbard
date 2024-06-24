@@ -3,7 +3,7 @@
 #include <SymbolicOperators/TermLoader.hpp>
 #include <Utility/InputFileReader.hpp>
 #include "../GlobalDefinitions.hpp"
-#include "../BaseModel.hpp"
+#include "../Models/BaseModel.hpp"
 
 // Both methods yield precisely the same data!
 #define _PSEUDO_INVERSE
@@ -53,13 +53,13 @@ namespace Hubbard::Helper {
 		ModeHelper(Utility::InputFileReader& input);
 		virtual ~ModeHelper() = default;
 
-		virtual const BaseModel<global_floating_type>& getModel() const = 0;
-		virtual BaseModel<global_floating_type>& getModel() = 0;
+		virtual const Models::BaseModel<global_floating_type>& getModel() const = 0;
+		virtual Models::BaseModel<global_floating_type>& getModel() = 0;
 
 		// Merely checks whether the dynamical matrix M is negative or not
 		virtual bool matrix_is_negative() = 0;
 		// does the full iEoM resolvent computations
 		virtual std::vector<ResolventReturnData> computeCollectiveModes() = 0;
-		virtual void setNewModelParameters(Utility::InputFileReader& input, const ModelParameters& modelParameters) = 0;
+		virtual void setNewModelParameters(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) = 0;
 	};
 }

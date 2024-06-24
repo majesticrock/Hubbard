@@ -10,7 +10,7 @@
 #define GAMMA_OCCSpinUpATION_SpinUp this->model_attributes[6]
 #define GAMMA_OCCSpinUpATION_SpinDown this->model_attributes[7]
 
-namespace Hubbard::SquareLattice
+namespace Hubbard::Models::SquareLattice
 {
 	inline global_floating_type xi(global_floating_type k_x, global_floating_type k_y) {
 		return cos(k_x) - cos(k_y);
