@@ -31,7 +31,7 @@ cd /home/althueser/phd/cpp/HubbardMeanField/        ## go to working directory
 date
 echo "--- START ---"
 
-mpirun ./build/main params/U_negative.config            ## execute binary using mpirun on the allocated computation resource; the number of cores is $
+mpirun ./build/HubbardMeanField params/U_negative.config            ## execute binary using mpirun on the allocated computation resource; the number of cores is $
 
 echo "--- END ---"
 date

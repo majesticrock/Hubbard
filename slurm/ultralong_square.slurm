@@ -32,7 +32,7 @@ date
 echo "--- START ---"
 
 ## execute binary using mpirun on the allocated computation resource; the number of cores is $
-mpirun ./build/main params/ul_square.config
+mpirun ./build/HubbardMeanField params/ul_square.config
 
 echo "--- END ---"
 date

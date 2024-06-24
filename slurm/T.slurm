@@ -31,7 +31,7 @@ cd /home/althueser/phd/cpp/HubbardMeanField/        ## go to working directory
 date
 echo "--- START ---"
 
-mpirun ./build/main params/T.config            ## execute binary using mpirun on the allocated computation resource; the number of cores is $
+mpirun ./build/HubbardMeanField params/T.config            ## execute binary using mpirun on the allocated computation resource; the number of cores is $
 
 echo "--- END ---"
 date

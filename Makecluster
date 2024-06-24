@@ -24,13 +24,13 @@ SRCS=$(addprefix Hubbard/, $(HBBRD_SRCS)) $(PART_SRCS)
 
 OBJS=$(addprefix build/, $(subst .cpp,.o,$(SRCS)))
 
-all: build build/main 
+all: build build/HubbardMeanField 
 
 debug: CXXFLAGS += -g -fsanitize=address -fsanitize=undefined -fno-sanitize-recover=all -fsanitize=float-divide-by-zero -fsanitize=float-cast-overflow -fno-sanitize=null -fno-sanitize=alignment
-debug: build build/main
+debug: build build/HubbardMeanField
 
-build/main: $(OBJS) | build 
-	$(CXX) $(INCLUDEFLAGS) -o build/main $(OBJS) $(CXXFLAGS) $(LDLIBS)
+build/HubbardMeanField: $(OBJS) | build 
+	$(CXX) $(INCLUDEFLAGS) -o build/HubbardMeanField $(OBJS) $(CXXFLAGS) $(LDLIBS)
 
 build/%.o: sources/%.cpp# sources/%.hpp
 	$(CXX) $(INCLUDEFLAGS) $< -o $@ -c $(CXXFLAGS)

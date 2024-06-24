@@ -34,6 +34,6 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
   done < params/auto_2.config
   
   # Execute the program
-  mpirun -n $n_mpi --map-by node:PE=$n_omp --bind-to core ./build/main params/auto_2.config 2> >(while read line; do echo -e "${RED}$line${NC}"; done)
+  mpirun -n $n_mpi --map-by node:PE=$n_omp --bind-to core ./build/HubbardMeanField params/auto_2.config 2> >(while read line; do echo -e "${RED}$line${NC}"; done)
   wait
 done
