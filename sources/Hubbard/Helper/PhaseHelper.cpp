@@ -247,7 +247,7 @@ namespace Hubbard::Helper {
 
 			if (totalSize > (8 * this->FIRST_IT_STEPS > 200 ? 8 * this->FIRST_IT_STEPS : 200)) {
 				// remove every second element
-				const int offset = plaqs.size() % 2 == 0 ? 0 : 1;
+				const int offset = plaqs.size() & 1U;
 				for (auto it = plaqs.begin() + offset; it != plaqs.end(); ++it)
 				{
 					it = plaqs.erase(it);

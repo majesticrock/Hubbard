@@ -131,7 +131,7 @@ namespace Hubbard::DensityOfStates {
 #pragma omp parallel for reduction(+:new_integral) schedule(dynamic)
 				for (int k = 0; k < buf_values.size(); ++k)
 				{
-					if (k % 2 != 0) {
+					if (k & 1) {
 						tsh.compute_step(compute_DOS, k, buffer_vectors);
 					}
 					else {

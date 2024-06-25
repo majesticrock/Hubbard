@@ -97,7 +97,7 @@ namespace Hubbard {
 		for (size_t i = 0U; i < printer.size(); ++i)
 		{
 			std::cout << " \t" << printer(i);
-			if ((i + 1U) % 4U == 0U) {
+			if (!((i + 1U) & 3U)) {
 				std::cout << "\n\t    ";
 			}
 		}
