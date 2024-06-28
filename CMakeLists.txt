@@ -18,13 +18,18 @@ add_executable(HubbardMeanField
     sources/HubbardMeanField.cpp
 )
 
-option(CLUSTER_BUILD "Enable cluster build settings" OFF)
-
+if(NOT WIN32)
+    set(BoldCyan "${Esc}[1;36m")
+    set(ColourReset "${Esc}[m")
+endif()
 if(CLUSTER_BUILD)
     include(${CMAKE_SOURCE_DIR}/cmake/ClusterCompilerFlags.cmake)
+    message("${BoldCyan}Building for cascadelake!${ColourReset}")
 else()
     include(${CMAKE_SOURCE_DIR}/cmake/DefaultCompilerFlags.cmake)
+    message("${BoldCyan}Building for the local machine!${ColourReset}")
 endif()
+SET_COMPILER_FLAGS(ContinuumSystem)
 
 add_subdirectory(sources/Handler)
 
