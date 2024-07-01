@@ -9,6 +9,7 @@ set(MODEL_SOURCES
 
 add_library(Models STATIC ${MODEL_SOURCES})
 target_include_directories(Models PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+SET_COMPILER_FLAGS(Models)
 
 find_package(SymbolicOperators REQUIRED CONFIG)
 if(NOT SymbolicOperators_FOUND)

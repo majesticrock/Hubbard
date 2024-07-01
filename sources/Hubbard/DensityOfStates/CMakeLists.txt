@@ -6,6 +6,7 @@ set(DOS_SOURCES
 
 add_library(DensityOfStates STATIC ${DOS_SOURCES})
 target_include_directories(DensityOfStates PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+SET_COMPILER_FLAGS(DensityOfStates)
 
 find_package(Utility REQUIRED)
 if(NOT Utility_FOUND)

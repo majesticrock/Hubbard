@@ -29,7 +29,7 @@ else()
     include(${CMAKE_SOURCE_DIR}/cmake/DefaultCompilerFlags.cmake)
     message("${BoldCyan}Building for the local machine!${ColourReset}")
 endif()
-SET_COMPILER_FLAGS(ContinuumSystem)
+SET_COMPILER_FLAGS(HubbardMeanField)
 
 add_subdirectory(sources/Handler)
 
