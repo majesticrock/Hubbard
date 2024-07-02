@@ -4,6 +4,7 @@
 #include "ModelAttributes.hpp"
 #include <string>
 #include <memory>
+#include <algorithm>
 
 namespace Hubbard::Models {
 	// maps an index; [0, N_K) -> [-pi, pi)
@@ -162,6 +163,12 @@ namespace Hubbard::Models {
 
 		// saves all one particle energies to reciever
 		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) = 0;
+
+		std::vector<global_floating_type> continuum_boundaries() {
+			std::vector<global_floating_type> energy;
+			this->getAllEnergies(energy);
+			return { 2. * (*std::ranges::min_element(energy)), 2. * (*std::ranges::max_element(energy)) };
+		}
 
 		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) = 0;
 

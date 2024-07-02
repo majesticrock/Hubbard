@@ -8,6 +8,7 @@
 #include "../Hubbard/DensityOfStates/Square.hpp"
 #include "../Hubbard/DensityOfStates/SimpleCubic.hpp"
 #include <Utility/OutputConvenience.hpp>
+#include <nlohmann/json.hpp>
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
 const std::string BASE_FOLDER = "../../data/modes/";
@@ -74,12 +75,9 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 	using std::to_string;
 
 	data_vector oneParticleEnergies;
-	std::vector<Hubbard::ResolventReturnData> resolvents;
-
 	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper{ getHelper(input) };
-
 	modeHelper->getModel().getAllEnergies(oneParticleEnergies);
-	resolvents = modeHelper->computeCollectiveModes();
+	std::vector<Hubbard::ResolventReturnData> resolvents = modeHelper->computeCollectiveModes();
 
 	if (rank == 0) {
 		const std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };
@@ -92,6 +90,17 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 			{
 				resolvents[i].writeDataToFile(BASE_FOLDER + output_folder + "resolvent_" + resolvents[i].name, comments);
 			}
+
+			nlohmann::json jResolvents = {
+				{ "resolvents", resolvents },
+				{ "time", Utility::time_stamp() },
+				{ "Used DOS", input.getBool("use_DOS") },
+				{ "Discretization", input.getInt("k_discretization") },
+				{ "Lattice type", input.getString("lattice_type") },
+				{ "Total Gap", modeHelper->getModel().getTotalGapValue() },
+				{ "Continuum Boundaries", modeHelper->getModel().continuum_boundaries() }
+			};
+			Utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + "resolvents.json.gz");
 		}
 		else {
 			std::cout << "Resolvent returned an empty vector." << std::endl;
