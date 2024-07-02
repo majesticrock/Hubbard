@@ -21,6 +21,7 @@ namespace Hubbard::Helper {
 			}
 		}
 	}
+
 	void XPModes::fillMatrices()
 	{
 		constexpr int a = hermitian_size - 1;
@@ -54,10 +55,10 @@ namespace Hubbard::Helper {
 	void XPModes::createStartingStates()
 	{
 		this->starting_states.reserve(4);
-		this->starting_states.push_back({ Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) }); // SC
-		this->starting_states.push_back({ Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) }); // CDW
-		this->starting_states.push_back({ Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) }); // AFM
-		this->starting_states.push_back({ Vector_L::Zero(K_minus.rows()),  Vector_L::Zero(K_plus.rows()) }); // AFM transversal
+		this->starting_states.push_back({ Vector_L::Zero(K_minus.rows()), Vector_L::Zero(K_plus.rows()), "SC"}); // SC
+		this->starting_states.push_back( _parent_algorithm::OnlyAmplitude(K_plus.rows(), "CDW") ); // CDW
+		this->starting_states.push_back( _parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM") ); // AFM
+		this->starting_states.push_back( _parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM_transversal") ); // AFM transversal
 
 		const global_floating_type norm_constant =
 #ifdef _EXACT_DOS
@@ -65,15 +66,13 @@ namespace Hubbard::Helper {
 #else
 			this->usingDOS ? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE) : sqrt(1. / ((global_floating_type)Constants::BASIS_SIZE));
 #endif
-		for (int j = 0; j < 2; ++j)
+		for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 		{
-			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
-			{
-				starting_states[0][j](i) = norm_constant;
-				starting_states[1][j](2 * Constants::BASIS_SIZE + i) = norm_constant;
-				starting_states[2][j](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? norm_constant : -norm_constant;
-				starting_states[3][j](3 * Constants::BASIS_SIZE + i) = norm_constant;
-			}
+			starting_states[0][0](i) = norm_constant;
+			starting_states[0][1](i) = norm_constant;
+			starting_states[1][1](2 * Constants::BASIS_SIZE + i) = norm_constant;
+			starting_states[2][1](2 * Constants::BASIS_SIZE + i) = (i < Constants::BASIS_SIZE / 2) ? norm_constant : -norm_constant;
+			starting_states[3][1](3 * Constants::BASIS_SIZE + i) = norm_constant;
 		}
 	}
 

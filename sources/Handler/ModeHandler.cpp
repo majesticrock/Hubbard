@@ -88,20 +88,9 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		const std::vector<std::string> comments = getFileComments(input, modeHelper.get());
 
 		if (!resolvents.empty()) {
-			std::vector<std::string> names;
-			if (input.getInt("start_basis_at") == -1) {
-				names = { "phase_SC", "phase_CDW", "phase_AFM", "phase_AFM_trans", "higgs_SC", "higgs_CDW", "higgs_AFM", "higgs_AFM_trans" };
-			}
-			else {
-				names = { "higgs_SC_a", "higgs_SC_a+b", "higgs_SC_a+ib",
-					"phase_SC_a", "phase_SC_a+b", "phase_SC_a+ib",
-					"CDW_a", "CDW_a+b", "CDW_a+ib",
-					"AFM_a", "AFM_a+b", "AFM_a+ib" };
-			}
-
 			for (size_t i = 0U; i < resolvents.size(); ++i)
 			{
-				resolvents[i].writeDataToFile(BASE_FOLDER + output_folder + "resolvent_" + names[i], comments);
+				resolvents[i].writeDataToFile(BASE_FOLDER + output_folder + "resolvent_" + resolvents[i].name, comments);
 			}
 		}
 		else {
