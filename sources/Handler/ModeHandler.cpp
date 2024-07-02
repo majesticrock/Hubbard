@@ -86,11 +86,6 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		const std::vector<std::string> comments = getFileComments(input, modeHelper.get());
 
 		if (!resolvents.empty()) {
-			for (size_t i = 0U; i < resolvents.size(); ++i)
-			{
-				resolvents[i].writeDataToFile(BASE_FOLDER + output_folder + "resolvent_" + resolvents[i].name, comments);
-			}
-
 			nlohmann::json jResolvents = {
 				{ "resolvents", resolvents },
 				{ "time", Utility::time_stamp() },
@@ -105,7 +100,5 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 		else {
 			std::cout << "Resolvent returned an empty vector." << std::endl;
 		}
-
-		Utility::saveData(oneParticleEnergies, BASE_FOLDER + output_folder + "one_particle.dat.gz", comments);
 	}
 }
