@@ -4,7 +4,7 @@
 #include <array>
 #include <filesystem>
 
-const std::string BASE_FOLDER = "../../data/dispersions/";
+const std::string BASE_FOLDER = "../../data/hubbard/";
 
 void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
 {
@@ -17,10 +17,6 @@ void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
     std::vector<Hubbard::ResolventReturnData> resolvents;
     Hubbard::Helper::SquareXP modeHelper(input, modelParameters);
 
-    const std::vector<std::string> names{ "phase_SC", "phase_CDW", "phase_AFM", "phase_AFM_trans", "higgs_SC", "higgs_CDW", "higgs_AFM", "higgs_AFM_trans" };
-    const std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };
-    std::filesystem::create_directories(BASE_FOLDER + output_folder);
-
     const int TOTAL_EVAL_POINTS = 3 * Hubbard::Constants::K_DISCRETIZATION;
     for(int i = 0; i < TOTAL_EVAL_POINTS; ++i)
     {
@@ -30,11 +26,24 @@ void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
         }
     }
 
-    if (!resolvents.empty()) {
-        const std::vector<std::string> comments = getFileComments(input, &modeHelper);
-        for (size_t i = 0U; i < resolvents.size(); ++i) {
-			resolvents[i].writeDataToFile(BASE_FOLDER + output_folder + "resolvent_" + names[i], comments);
-		}
+	const std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };
+	std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;
+	std::filesystem::create_directories(BASE_FOLDER + output_folder);
+	const std::vector<std::string> comments = getFileComments(input, modeHelper.get());
+	if (!resolvents.empty()) {
+		nlohmann::json jResolvents = {
+			{ "resolvents", resolvents },
+			{ "time", Utility::time_stamp() },
+			{ "Used DOS", input.getBool("use_DOS") },
+			{ "Discretization", input.getInt("k_discretization") },
+			{ "Lattice type", input.getString("lattice_type") },
+			{ "Total Gap", modeHelper->getModel().getTotalGapValue() },
+			{ "Continuum Boundaries", modeHelper->getModel().continuum_boundaries() },
+			{ "T", modeHelper->getModel().temperature }, 
+			{ "U", modeHelper->getModel().U }, 
+			{ "V", modeHelper->getModel().V }
+		};
+		Utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + "resolvents.json.gz");
 	}
 	else {
 		std::cout << "Resolvent returned an empty vector." << std::endl;

@@ -46,9 +46,11 @@ namespace Hubbard::Models {
 		SpinorMatrix rho;
 		HamiltonSolver hamilton_solver;
 
+	public:
 		coefficient_type temperature{};
 		coefficient_type U{};
 		coefficient_type V{};
+	protected:
 		coefficient_type U_OVER_N{ U / Constants::BASIS_SIZE };
 		coefficient_type V_OVER_N{ V / Constants::BASIS_SIZE };
 		coefficient_type chemical_potential{};
@@ -167,6 +169,9 @@ namespace Hubbard::Models {
 		std::vector<global_floating_type> continuum_boundaries() {
 			std::vector<global_floating_type> energy;
 			this->getAllEnergies(energy);
+			for(auto& en : energy) {
+				if(en < 0) en = std::abs(en);
+			}
 			return { 2. * (*std::ranges::min_element(energy)), 2. * (*std::ranges::max_element(energy)) };
 		}
 

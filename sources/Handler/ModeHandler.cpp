@@ -11,7 +11,7 @@
 #include <nlohmann/json.hpp>
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
-const std::string BASE_FOLDER = "../../data/modes/";
+const std::string BASE_FOLDER = "../../data/hubbard/";
 
 std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(Utility::InputFileReader& input, Hubbard::Models::ModelParameters& modelParameters) const
 {
@@ -93,7 +93,10 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 				{ "Discretization", input.getInt("k_discretization") },
 				{ "Lattice type", input.getString("lattice_type") },
 				{ "Total Gap", modeHelper->getModel().getTotalGapValue() },
-				{ "Continuum Boundaries", modeHelper->getModel().continuum_boundaries() }
+				{ "Continuum Boundaries", modeHelper->getModel().continuum_boundaries() },
+				{ "T", modeHelper->getModel().temperature }, 
+				{ "U", modeHelper->getModel().U }, 
+				{ "V", modeHelper->getModel().V }
 			};
 			Utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + "resolvents.json.gz");
 		}
