@@ -8,7 +8,7 @@ const std::string BASE_FOLDER = "../../data/hubbard/";
 
 void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
 {
-    using std::to_string;
+/*    using std::to_string;
 
     std::vector<double> model_params = input.getDoubleList("model_parameters");
 	Hubbard::Models::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
@@ -47,5 +47,5 @@ void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
 	}
 	else {
 		std::cout << "Resolvent returned an empty vector." << std::endl;
-	}
+	}*/
 }

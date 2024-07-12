@@ -89,14 +89,16 @@ void ModeHandler::execute(Utility::InputFileReader& input) const
 			nlohmann::json jResolvents = {
 				{ "resolvents", resolvents },
 				{ "time", Utility::time_stamp() },
-				{ "Used DOS", input.getBool("use_DOS") },
-				{ "Discretization", input.getInt("k_discretization") },
-				{ "Lattice type", input.getString("lattice_type") },
-				{ "Total Gap", modeHelper->getModel().getTotalGapValue() },
-				{ "Continuum Boundaries", modeHelper->getModel().continuum_boundaries() },
+				{ "used_dos", input.getBool("use_DOS") },
+				{ "discretization", input.getInt("k_discretization") },
+				{ "lattice_type", input.getString("lattice_type") },
+				{ "total_gap", modeHelper->getModel().getTotalGapValue() },
+				{ "continuum_boundaries", modeHelper->getModel().continuum_boundaries() },
 				{ "T", modeHelper->getModel().temperature }, 
 				{ "U", modeHelper->getModel().U }, 
-				{ "V", modeHelper->getModel().V }
+				{ "V", modeHelper->getModel().V },
+				{ "XP_basis", (input.getInt("start_basis_at") < 0 ? 1 : 0) },
+				{ "start_ratio_cdw_sc", input.getDouble("ratio_CDW_SC") }
 			};
 			Utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + "resolvents.json.gz");
 		}
