@@ -259,7 +259,7 @@ namespace Hubbard::Models {
 			return (abs(selfconsistency_values[i]) > DEFAULT_PRECISION);
 		}
 		inline void print() const {
-			std::cout << *this << "\n    Delta_tot = " << getTotalGapValue() << std::endl;
+			std::cout << *this << "\n	Delta_tot = " << getTotalGapValue() << std::endl;
 		};
 
 		/*

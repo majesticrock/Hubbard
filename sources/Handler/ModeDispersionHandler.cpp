@@ -8,23 +8,23 @@ const std::string BASE_FOLDER = "../../data/hubbard/";
 
 void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
 {
-/*    using std::to_string;
+/*	using std::to_string;
 
-    std::vector<double> model_params = input.getDoubleList("model_parameters");
+	std::vector<double> model_params = input.getDoubleList("model_parameters");
 	Hubbard::Models::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
 		0, 0, input.getString("global_iterator_type"), input.getString("second_iterator_type"));
 
-    std::vector<Hubbard::ResolventReturnData> resolvents;
-    Hubbard::Helper::SquareXP modeHelper(input, modelParameters);
+	std::vector<Hubbard::ResolventReturnData> resolvents;
+	Hubbard::Helper::SquareXP modeHelper(input, modelParameters);
 
-    const int TOTAL_EVAL_POINTS = 3 * Hubbard::Constants::K_DISCRETIZATION;
-    for(int i = 0; i < TOTAL_EVAL_POINTS; ++i)
-    {
-        modeHelper.computeCollectiveModes();
-        if(i == TOTAL_EVAL_POINTS - 1){
-            resolvents = modeHelper.computeCollectiveModes();
-        }
-    }
+	const int TOTAL_EVAL_POINTS = 3 * Hubbard::Constants::K_DISCRETIZATION;
+	for(int i = 0; i < TOTAL_EVAL_POINTS; ++i)
+	{
+		modeHelper.computeCollectiveModes();
+		if(i == TOTAL_EVAL_POINTS - 1){
+			resolvents = modeHelper.computeCollectiveModes();
+		}
+	}
 
 	const std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };
 	std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;

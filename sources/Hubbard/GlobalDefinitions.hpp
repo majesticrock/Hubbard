@@ -98,7 +98,7 @@ namespace Hubbard {
 		{
 			std::cout << " \t" << printer(i);
 			if (!((i + 1U) & 3U)) {
-				std::cout << "\n\t    ";
+				std::cout << "\n\t	";
 			}
 		}
 		std::cout << std::endl;

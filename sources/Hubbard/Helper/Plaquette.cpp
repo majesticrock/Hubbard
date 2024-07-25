@@ -13,7 +13,7 @@ namespace Hubbard::Helper {
 		*			|   |   |
 		*	  . 	x---E---x
 		*	 /|\
-		*     |
+		*	 |
 		*   First / Second ->
 		*
 		*	New values are at the position ABCDE (01234 as indizes)
