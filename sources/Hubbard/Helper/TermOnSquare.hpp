@@ -18,7 +18,7 @@ namespace Hubbard::Helper {
 
 	public:
 		Eigen::Vector2i mode_momentum;
-		
+
 		TermOnSquare(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters, const Eigen::Vector2i& _mode_momentum = { 0, 0 })
 			: DetailModelConstructor(input, modelParameters), mode_momentum(_mode_momentum) {};
 		TermOnSquare(std::unique_ptr<Hubbard::Models::SquareLattice::UsingBroyden>&& model_ptr)

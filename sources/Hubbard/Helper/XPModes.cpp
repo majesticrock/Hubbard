@@ -55,10 +55,10 @@ namespace Hubbard::Helper {
 	void XPModes::createStartingStates()
 	{
 		this->starting_states.reserve(4);
-		this->starting_states.push_back({ Vector_L::Zero(K_minus.rows()), Vector_L::Zero(K_plus.rows()), "SC"}); // SC
-		this->starting_states.push_back( _parent_algorithm::OnlyAmplitude(K_plus.rows(), "CDW") ); // CDW
-		this->starting_states.push_back( _parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM") ); // AFM
-		this->starting_states.push_back( _parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM_transversal") ); // AFM transversal
+		this->starting_states.push_back({ Vector_L::Zero(K_minus.rows()), Vector_L::Zero(K_plus.rows()), "SC" }); // SC
+		this->starting_states.push_back(_parent_algorithm::OnlyAmplitude(K_plus.rows(), "CDW")); // CDW
+		this->starting_states.push_back(_parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM")); // AFM
+		this->starting_states.push_back(_parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM_transversal")); // AFM transversal
 
 		const global_floating_type norm_constant =
 #ifdef _EXACT_DOS

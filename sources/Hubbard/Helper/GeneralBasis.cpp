@@ -59,8 +59,6 @@ namespace Hubbard::Helper {
 				this->starting_states[3](i* number_of_basis_terms + 5) = -norm_constant;
 			}
 		}
-
-		
 	}
 
 	void GeneralBasis::printM(int i, int j) const
