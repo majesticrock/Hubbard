@@ -17,7 +17,7 @@ void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
 	std::vector<Hubbard::ResolventReturnData> resolvents;
 	Hubbard::Helper::SquareXP modeHelper(input, modelParameters);
 
-	const int TOTAL_EVAL_POINTS = 3 * Hubbard::Constants::K_DISCRETIZATION;
+	//const int TOTAL_EVAL_POINTS = 3 * Hubbard::Constants::K_DISCRETIZATION;
 	for(int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
 	{
 		modeHelper.computeCollectiveModes();

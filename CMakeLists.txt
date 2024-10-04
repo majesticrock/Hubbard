@@ -31,19 +31,35 @@ else()
 endif()
 SET_COMPILER_FLAGS(HubbardMeanField)
 
-add_subdirectory(sources/Handler)
-
 find_package(MPI REQUIRED)
 message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
 
-find_package(Boost REQUIRED COMPONENTS serialization iostreams)
-if(NOT Boost_FOUND)
-    message(FATAL_ERROR "Boost libraries not found")
-endif()
-target_include_directories(HubbardMeanField PRIVATE ${Boost_INCLUDE_DIRS})
-
-find_package(ZLIB REQUIRED)
+find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED)
+find_package(Boost REQUIRED COMPONENTS serialization iostreams)
+find_package(ZLIB REQUIRED)
+find_package(Utility REQUIRED)
+find_package(SymbolicOperators REQUIRED)
 
-target_link_libraries(HubbardMeanField PRIVATE MPI::MPI_CXX OpenMP::OpenMP_CXX ${Boost_LIBRARIES} ZLIB::ZLIB Handler Helper Models)
+add_library(Utility INTERFACE)
+target_include_directories(Utility INTERFACE)
 
+add_subdirectory(sources/Hubbard/Helper)
+add_subdirectory(sources/Handler)
+add_subdirectory(sources/Hubbard/Models)
+add_subdirectory(sources/Hubbard/DensityOfStates)
+
+target_link_libraries(HubbardMeanField PRIVATE 
+    Models
+    DensityOfStates
+    Handler
+    Helper
+    SymbolicOperators
+    Boost::iostreams
+    Boost::serialization
+    MPI::MPI_CXX
+    OpenMP::OpenMP_CXX
+    ZLIB::ZLIB
+)
+
+target_link_options(HubbardMeanField PRIVATE "-Wl,--trace-symbol")
