@@ -47,4 +47,17 @@ namespace Hubbard {
 		clean_factor_2pi(l_buf_vec);
 		return l_buf_vec(0) * 2 * Constants::K_DISCRETIZATION + l_buf_vec(1);
 	};
+	inline int add_index_momenta(int in, int add, int factor) {
+		Eigen::Vector2i in_vec = { x(in), y(in) };
+		const Eigen::Vector2i add_vec = { x(add), y(add) };
+		in_vec += factor * add_vec;
+		clean_factor_2pi(in_vec);
+		return in_vec(0) * 2 * Constants::K_DISCRETIZATION + in_vec(1);
+	}
+	inline int add_index_momenta(int in, const Eigen::Vector2i& add, int factor) {
+		Eigen::Vector2i in_vec = { x(in), y(in) };
+		in_vec += factor * add;
+		clean_factor_2pi(in_vec);
+		return in_vec(0) * 2 * Constants::K_DISCRETIZATION + in_vec(1);
+	}
 }

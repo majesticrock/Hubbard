@@ -1,13 +1,19 @@
 #include "SimpleCubic.hpp"
-#include <omp.h>
+
 #include <cmath>
 #include <algorithm>
+#include <filesystem>
+
+#include <omp.h>
 #include <boost/math/special_functions/pow.hpp>
 #include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/gauss_kronrod.hpp>
-#include "tanh_sinh_helper.hpp"
+
 #include <Utility/FunctionTime.hpp>
-#include <filesystem>
+
+#include "tanh_sinh_helper.hpp"
+
+
 
 namespace Hubbard::DensityOfStates {
 	const std::string DATA_FILE_NAME{ "../../data/dos_simple_cubic.bin" };

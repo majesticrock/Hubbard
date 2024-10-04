@@ -9,8 +9,6 @@ namespace Hubbard::Helper {
 	protected:
 		using _parent_algorithm = Utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, complex_prec>;
 
-		static constexpr int NUMBER_OF_GREENSFUNCTIONS = 4;
-
 		void fill_M();
 		virtual void fillMatrices() override;
 		void createStartingStates();

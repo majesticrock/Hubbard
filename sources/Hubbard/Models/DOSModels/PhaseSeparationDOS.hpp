@@ -70,7 +70,7 @@ namespace Hubbard::Models::DOSModels {
 			this->applyIteration(F);
 			F -= x;
 		};
-	
+
 		PhaseSeparationDOS(const ModelParameters& _params, int extra_dimensions, size_t MaxPreBroydenIterations = 300U)
 			: DOSBasedModel<global_floating_type, DOS>(_params), _MaxPreBroydenIterations(MaxPreBroydenIterations), _extra_dimensions(extra_dimensions)
 		{

@@ -30,7 +30,7 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
   cp slurm/modes_cube.slurm cube_auto_generated/$NEW_NAME.slurm
   sed -i "s|#SBATCH --job-name=modes|#SBATCH --job-name=$NEW_NAME|" cube_auto_generated/$NEW_NAME.slurm
   sed -i "s|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/modes_output.txt|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/cube_output_$NEW_NAME.txt|" cube_auto_generated/$NEW_NAME.slurm
-  sed -i "s|mpirun ./build/HubbardMeanField params/cluster_cube.config|mpirun ./build/HubbardMeanField cube_auto_generated/$NEW_NAME.config|" cube_auto_generated/$NEW_NAME.slurm
+  sed -i "s|mpirun ./build_cluster/HubbardMeanField params/cluster_cube.config|mpirun ./build_cluster/HubbardMeanField cube_auto_generated/$NEW_NAME.config|" cube_auto_generated/$NEW_NAME.slurm
 
   # Execute the program
   sbatch cube_auto_generated/$NEW_NAME.slurm

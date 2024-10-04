@@ -12,9 +12,11 @@
 #include <limits>
 #include <vector>
 #include <filesystem>
+
+#include <Utility/OutputConvenience.hpp>
+
 #include "../Hubbard/Constants.hpp"
 #include "../Hubbard/Helper/DetailModelConstructor.hpp"
-#include <Utility/OutputConvenience.hpp>
 
 using data_vector = std::vector<double>;
 constexpr size_t MAX_ITERATIONS = 30U;

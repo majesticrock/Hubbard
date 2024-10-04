@@ -169,8 +169,8 @@ namespace Hubbard::Models {
 		std::vector<global_floating_type> continuum_boundaries() {
 			std::vector<global_floating_type> energy;
 			this->getAllEnergies(energy);
-			for(auto& en : energy) {
-				if(en < 0) en = std::abs(en);
+			for (auto& en : energy) {
+				if (en < 0) en = std::abs(en);
 			}
 			return { 2. * (*std::ranges::min_element(energy)), 2. * (*std::ranges::max_element(energy)) };
 		}

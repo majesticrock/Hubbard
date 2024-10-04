@@ -32,7 +32,7 @@ date
 echo "--- START ---"
 
 ## execute binary using mpirun on the allocated computation resource; the number of cores is $
-mpirun ./build/HubbardMeanField params/cluster_square.config
+mpirun ./build_cluster/HubbardMeanField params/cluster_square.config
 
 echo "--- END ---"
 date

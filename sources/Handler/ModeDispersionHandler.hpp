@@ -7,16 +7,16 @@
 class ModeDispersionHandler : public ModeHandler {
 private:
 	static inline Eigen::Vector2i path_Gamma_to_X(int i) {
-		return {0, i};
+		return { 0, i };
 	}
 	static inline Eigen::Vector2i path_X_to_R(int i) {
-		return {i, Hubbard::Constants::K_DISCRETIZATION - 1};
+		return { i, Hubbard::Constants::K_DISCRETIZATION - 1 };
 	}
 	static inline Eigen::Vector2i path_R_to_Gamma(int i) {
-		return {Hubbard::Constants::K_DISCRETIZATION - 1 - i, Hubbard::Constants::K_DISCRETIZATION - 1 - i};
+		return { Hubbard::Constants::K_DISCRETIZATION - 1 - i, Hubbard::Constants::K_DISCRETIZATION - 1 - i };
 	}
 	static inline Eigen::Vector2i eval_point(int i) {
-		switch(i / Hubbard::Constants::K_DISCRETIZATION) {
+		switch (i / Hubbard::Constants::K_DISCRETIZATION) {
 		case 0:
 			return path_Gamma_to_X(i);
 			break;

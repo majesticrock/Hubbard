@@ -11,7 +11,7 @@ namespace Hubbard::Helper {
 	class TermWithDOS : protected DetailModelConstructor<Models::DOSModels::BroydenDOS<DOS>>
 	{
 	private:
-		using Integrator = typename DOS::Integrator<complex_prec>;
+		using Integrator = DOS::template Integrator<complex_prec>;
 		Integrator _integrator{};
 
 		// The non-summing terms (except for the epsilon terms) are proportioal to 1/#lattice sites

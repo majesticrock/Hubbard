@@ -53,7 +53,7 @@ namespace Hubbard::Models::ChainLattice
 			this->applyIteration(F);
 			F -= x;
 		};
-	
+
 		Model1D(const ModelParameters& _params) : MomentumBasedModel<DataType, 1>(_params) {};
 
 		template<typename StartingValuesDataType>

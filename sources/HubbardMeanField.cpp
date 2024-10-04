@@ -1,7 +1,6 @@
 #ifdef _DEBUG
 #define _NO_MPI
 #endif
-#include "Hubbard/GlobalDefinitions.hpp"
 
 #ifndef _NO_MPI
 #define _DEFAULT_EXIT MPI_Finalize()
@@ -9,27 +8,26 @@
 #else
 #define _DEFAULT_EXIT 0
 #endif
-
 #include <chrono>
+#include <Eigen/Dense>
+#include "Hubbard/GlobalDefinitions.hpp"
 #include "Hubbard/Constants.hpp"
 #include "Handler/TestHandler.hpp"
 #include "Handler/PhaseHandler.hpp"
 #include "Handler/ModeHandler.hpp"
 #include "Handler/UnknownBoundaryHandler.hpp"
 #include "Handler/ModeDispersionHandler.hpp"
-#include <Eigen/Dense>
 
-using namespace Hubbard;
-
-int Constants::K_DISCRETIZATION = -1;
-int Constants::BASIS_SIZE = -1;
-int Constants::HALF_BASIS = -1;
-int Constants::QUARTER_BASIS = -1;
-int Constants::EIGHTH_BASIS = -1;
-global_floating_type Constants::PI_DIV_DISCRETIZATION = -1;
+int Hubbard::Constants::K_DISCRETIZATION = -1;
+int Hubbard::Constants::BASIS_SIZE = -1;
+int Hubbard::Constants::HALF_BASIS = -1;
+int Hubbard::Constants::QUARTER_BASIS = -1;
+int Hubbard::Constants::EIGHTH_BASIS = -1;
+Hubbard::global_floating_type Hubbard::Constants::PI_DIV_DISCRETIZATION = -1;
 
 int main(int argc, char** argv)
 {
+	using namespace Hubbard;
 #ifndef _NO_MPI
 	if (argc < 2) {
 		std::cerr << "Invalid number of arguments: Use mpirun -n <threads> <path_to_executable> <configfile>" << std::endl;

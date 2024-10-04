@@ -3,27 +3,27 @@
 namespace Hubbard::Helper {
 	void ModeHelper::checkTermValidity(const SymbolicOperators::WickTerm& term)
 	{
-		if (term.delta_momenta.size() > 1) throw std::invalid_argument("Too many deltas: " + term.delta_momenta.size());
+		if (term.delta_momenta.size() > 1) throw SymbolicOperators::bad_term_exception("Too many deltas: " + term.delta_momenta.size(), term);
 		if (term.delta_momenta.size() == 1) {
-			if (term.delta_momenta[0].first.momentum_list.size() != 1) throw std::invalid_argument("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size());
-			if (term.delta_momenta[0].second.momentum_list.size() != 1) throw std::invalid_argument("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size());
+			if (term.delta_momenta[0].first.momentum_list.size() != 1) throw SymbolicOperators::bad_term_exception("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size(), term);
+			//if (term.delta_momenta[0].second.momentum_list.size() != 1) throw SymbolicOperators::bad_term_exception("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size(), term);
 		}
 
-		if (term.coefficients.size() > 1U) throw std::invalid_argument("Undefined number of coefficients: " + std::to_string(term.coefficients.size()));
-		if (term.operators.size() > 2U) throw std::invalid_argument("There are more than 2 WickOperators: " + term.operators.size());
+		if (term.coefficients.size() > 1U) throw SymbolicOperators::bad_term_exception("Undefined number of coefficients: " + std::to_string(term.coefficients.size()), term);
+		if (term.operators.size() > 2U) throw SymbolicOperators::bad_term_exception("There are more than 2 WickOperators: " + term.operators.size(), term);
 		if (term.sums.momenta.size() > 0U) {
-			if (!term.hasSingleCoefficient()) throw std::invalid_argument("Too many sums: " + term.sums.momenta.size());
-			if (term.delta_momenta.empty()) throw std::invalid_argument("There is a summation without delta_kl.");
+			if (!term.hasSingleCoefficient()) throw SymbolicOperators::bad_term_exception("Too many sums: " + term.sums.momenta.size(), term);
+			if (term.delta_momenta.empty()) throw SymbolicOperators::bad_term_exception("There is a summation without delta_kl.", term);
 		}
 		else {
-			if (term.operators.size() > 2U) throw std::invalid_argument("A term without a sum can only be bilinear, quartic or an identity.");
+			if (term.operators.size() > 2U) throw SymbolicOperators::bad_term_exception("A term without a sum can only be bilinear, quartic or an identity.", term);
 		}
 		if (!(term.coefficients.empty())) {
-			if (term.getFirstCoefficient().dependsOnMomentum()) {
-				if (!(term.getFirstCoefficient().dependsOn('k'))) throw std::invalid_argument("Each momentum dependent term should have a k-depedance.");
-			}
+			//if (term.getFirstCoefficient().dependsOnMomentum()) {
+			//	if (!(term.getFirstCoefficient().dependsOn('k'))) throw SymbolicOperators::bad_term_exception("Each momentum dependent term should have a k-depedance.", term);
+			//}
 			if (term.getFirstCoefficient().momenta.size() > 1U)
-				throw std::invalid_argument("There must not be more than 1 momentum in coefficient!");
+				throw SymbolicOperators::bad_term_exception("There must not be more than 1 momentum in coefficient!", term);
 		}
 	}
 
@@ -55,15 +55,20 @@ namespace Hubbard::Helper {
 		const std::string prefix = this->start_basis_at < 0 ? "XP_" : "";
 		const std::string subfolder = input.getString("compute_what") == "dispersions" ? "dispersions/" : "";
 		wicks.load("../commutators/hubbard/" + subfolder, this->start_basis_at < 0, this->number_of_basis_terms, this->start_basis_at);
-		for (const auto& collector : wicks.M) {
-			for (const auto& term : collector) {
-				this->checkTermValidity(term);
+		try {
+			for (const auto& collector : wicks.M) {
+				for (const auto& term : collector) {
+					this->checkTermValidity(term);
+				}
 			}
-		}
-		for (const auto& collector : wicks.N) {
-			for (const auto& term : collector) {
-				this->checkTermValidity(term);
+			for (const auto& collector : wicks.N) {
+				for (const auto& term : collector) {
+					this->checkTermValidity(term);
+				}
 			}
+		} catch (SymbolicOperators::bad_term_exception const& ex) {
+			std::cout << "Encountered exception on term " << ex.which_term() << std::endl;
+			throw ex;
 		}
 	}
 }

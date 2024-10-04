@@ -83,8 +83,8 @@ namespace Hubbard::Models::DOSModels {
 			//F(8) = -this->rho(0, 4).real() - this->rho(1, 5).real() + this->rho(2, 6).real() + this->rho(3, 7).real(); // PS
 		};
 
-		using _scalar_integrator = typename DOS::Integrator<global_floating_type>;
-		typename DOS::Integrator<ComplexParameterVector> _self_consistency_integrator;
+		using _scalar_integrator = typename DOS::template Integrator<global_floating_type>;
+		typename DOS::template Integrator<ComplexParameterVector> _self_consistency_integrator;
 
 		virtual void computeChemicalPotential() override {
 			this->chemical_potential = 0.5 * this->U + DOS::COORDINATION_NUMBER * this->V;
@@ -294,7 +294,7 @@ namespace Hubbard::Models::DOSModels {
 				return ret;
 				};
 
-			typename DOS::Integrator<ValueArray> integrator;
+			typename DOS::template Integrator<ValueArray> integrator;
 			sum_of_all = integrator.integrate_by_value(func_sum);
 		};
 
@@ -334,7 +334,7 @@ namespace Hubbard::Models::DOSModels {
 				return values;
 				};
 
-			typename DOS::Integrator<Eigen::Vector4d> integ;
+			typename DOS::template Integrator<Eigen::Vector4d> integ;
 			Eigen::Vector4d res = integ.integrate_by_value(compute_values);
 			res(0) *= 4 * res(0);
 
@@ -355,7 +355,7 @@ namespace Hubbard::Models::DOSModels {
 				return values;
 				};
 
-			typename DOS::Integrator<Eigen::Vector2d> integ;
+			typename DOS::template Integrator<Eigen::Vector2d> integ;
 			Eigen::Vector2d res = integ.integrate_by_value(compute_values);
 
 			std::cout << res(0) << "   " << res(1) << std::endl;

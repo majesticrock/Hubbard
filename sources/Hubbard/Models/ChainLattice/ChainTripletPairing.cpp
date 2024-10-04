@@ -75,7 +75,7 @@ namespace Hubbard::Models::ChainLattice {
 	{
 		init();
 	}
-	
+
 	ModelAttributes<global_floating_type> ChainTripletPairing::computePhases()
 	{
 		auto solver = Utility::Selfconsistency::make_iterative<complex_prec>(this, &model_attributes);

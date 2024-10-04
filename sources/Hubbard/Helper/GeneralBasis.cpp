@@ -42,7 +42,7 @@ namespace Hubbard::Helper {
 			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
 			: sqrt(1. / ((global_floating_type)Constants::BASIS_SIZE));
 
-		this->starting_states.resize(NUMBER_OF_GREENSFUNCTIONS, VectorCL::Zero(TOTAL_BASIS));
+		this->starting_states.resize(number_of_basis_terms >= 6 ? 4 : 2, VectorCL::Zero(TOTAL_BASIS));
 		for (int i = 0; i < Constants::BASIS_SIZE; i++)
 		{
 			this->starting_states[0](i* number_of_basis_terms) = norm_constant;
@@ -58,6 +58,12 @@ namespace Hubbard::Helper {
 				this->starting_states[3](i* number_of_basis_terms + 4) = norm_constant;
 				this->starting_states[3](i* number_of_basis_terms + 5) = -norm_constant;
 			}
+		}
+		this->resolvent_names.push_back("amplitude_SC");
+		this->resolvent_names.push_back("phase_SC");
+		if(number_of_basis_terms >= 6) {
+			this->resolvent_names.push_back("amplitude_CDW");
+			this->resolvent_names.push_back("amplitude_AFM");
 		}
 	}
 

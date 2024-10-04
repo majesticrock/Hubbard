@@ -1,4 +1,7 @@
-set(HANDLER_SOURCES
+# CMake for Handler
+# requires: MPI, Utility, Models, DensityOfStates, Helper
+
+add_library(Handler 
     HandlerBase.cpp
     ModeDispersionHandler.cpp
     ModeHandler.cpp
@@ -6,14 +9,6 @@ set(HANDLER_SOURCES
     TestHandler.cpp
     UnknownBoundaryHandler.cpp
 )
-
-#add_subdirectory(../Hubbard/Helper ${CMAKE_BINARY_DIR}/Hubbard/Helper)
-
-add_library(Handler STATIC ${HANDLER_SOURCES})
-target_include_directories(Handler PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 SET_COMPILER_FLAGS(Handler)
-target_link_libraries(Handler PRIVATE MPI::MPI_CXX)
-
-#find_package(MPI REQUIRED)
-#message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
-#target_link_libraries(Handler PUBLIC MPI::MPI_CXX Models)
+target_include_directories(Handler PUBLIC ${Boost_INCLUDE_DIRS})
+target_link_libraries(Handler PUBLIC ZLIB::ZLIB ${Boost_LIBRARIES} MPI::MPI_CXX)
