@@ -10,10 +10,10 @@ private:
 		return { 0, i };
 	}
 	static inline Eigen::Vector2i path_X_to_R(int i) {
-		return { i, Hubbard::Constants::K_DISCRETIZATION - 1 };
+		return { i, Hubbard::Constants::K_DISCRETIZATION };
 	}
 	static inline Eigen::Vector2i path_R_to_Gamma(int i) {
-		return { Hubbard::Constants::K_DISCRETIZATION - 1 - i, Hubbard::Constants::K_DISCRETIZATION - 1 - i };
+		return { Hubbard::Constants::K_DISCRETIZATION - i, Hubbard::Constants::K_DISCRETIZATION - i };
 	}
 	static inline Eigen::Vector2i eval_point(int i) {
 		switch (i / Hubbard::Constants::K_DISCRETIZATION) {
