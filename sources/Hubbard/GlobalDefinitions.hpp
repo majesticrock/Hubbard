@@ -76,11 +76,11 @@ namespace Hubbard {
 	typedef std::complex<global_floating_type> complex_prec;
 	typedef Eigen::Matrix<complex_prec, Eigen::Dynamic, Eigen::Dynamic> MatrixCL;
 	typedef Eigen::Vector<complex_prec, Eigen::Dynamic> VectorCL;
-	typedef Eigen::Array<complex_prec, Eigen::Dynamic, Eigen::Dynamic> ValueArray;
+	typedef Eigen::Array<global_floating_type, Eigen::Dynamic, Eigen::Dynamic> ValueArray;
 	using SpinorMatrix = MatrixCL;
 
-	using ResolventReal = Utility::Numerics::Resolvent<global_floating_type, false>;
-	using ResolventComplex = Utility::Numerics::Resolvent<global_floating_type, true>;
+	//	using ResolventReal = Utility::Numerics::Resolvent<Matrix_L, Vector_L>;
+	//	using ResolventComplex = Utility::Numerics::Resolvent<Matrix_L, Vector_L>;
 	using ResolventReturnData = Utility::Numerics::ResolventDataWrapper<global_floating_type>;
 
 	template <int vector_size = Eigen::Dynamic>

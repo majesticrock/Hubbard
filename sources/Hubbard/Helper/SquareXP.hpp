@@ -9,10 +9,10 @@ namespace Hubbard::Helper {
 	private:
 		inline global_floating_type computeRealTerm(const SymbolicOperators::WickTerm& term, int k, int l) const {
 			const auto result = this->computeTerm(term, k, l);
-			if (abs(result.imag()) > ERROR_MARGIN) {
+			if (abs(std::imag(result)) > ERROR_MARGIN) {
 				throw std::runtime_error("computeRealTerm() encountered a complex value!");
 			}
-			return result.real();
+			return std::real(result);
 		};
 
 		virtual void fill_block_M(int i, int j) override;

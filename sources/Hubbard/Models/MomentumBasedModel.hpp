@@ -156,8 +156,8 @@ namespace Hubbard::Models {
 				this->fillRho();
 				occ_sum += this->get_n_down();
 				occ_squared += this->get_n_down() * this->get_n_down();
-				f += this->get_f().real();
-				f_squared += this->get_f().real() * this->get_f().real();
+				f += std::real(this->get_f());
+				f_squared += std::real(this->get_f()) * std::real(this->get_f());
 			} while (ks.iterateFullBZ());
 			occ_sum /= Constants::BASIS_SIZE;
 			occ_squared /= Constants::BASIS_SIZE;
@@ -179,7 +179,7 @@ namespace Hubbard::Models {
 				this->fillHamiltonian(ks);
 				this->fillRho();
 				occ += this->get_n_down() * this->get_n_down_Q();
-				f += this->get_f().real() * this->get_f_Q().real();
+				f += std::real(this->get_f()) * std::real(this->get_f());
 			} while (ks.iterateFullBZ());
 			occ /= Constants::BASIS_SIZE;
 			f /= Constants::BASIS_SIZE;

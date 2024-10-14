@@ -56,7 +56,7 @@ namespace Hubbard::Helper {
 		const std::map<SymbolicOperators::Index, int> wick_spin_offset = {
 			{SymbolicOperators::SpinUp, 0}, {SymbolicOperators::SpinDown, 4}, {SymbolicOperators::Sigma, 6} };
 
-		inline complex_prec getSumOfAll(const SymbolicOperators::WickOperator& op, int cos_modulation = 0) const {
+		inline global_floating_type getSumOfAll(const SymbolicOperators::WickOperator& op, int cos_modulation = 0) const {
 			assert(op.type < SymbolicOperators::Undefined_Type);
 
 			int index = static_cast<int>(op.type);
@@ -66,7 +66,7 @@ namespace Hubbard::Helper {
 				index += jt->second;
 			}
 
-			if (op.isDaggered) return std::conj(sum_of_all(index, cos_modulation));
+			if (op.isDaggered) return sum_of_all(index, cos_modulation);
 			return sum_of_all(index, cos_modulation);
 		};
 		void internal_setNewModelParameters(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)

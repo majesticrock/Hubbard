@@ -13,8 +13,6 @@
 
 #include "tanh_sinh_helper.hpp"
 
-
-
 namespace Hubbard::DensityOfStates {
 	const std::string DATA_FILE_NAME{ "../../data/dos_simple_cubic.bin" };
 

@@ -3,11 +3,11 @@
 #include <Utility/Numerics/iEoM/GeneralResolvent.hpp>
 
 namespace Hubbard::Helper {
-	class GeneralBasis : public ModeHelper, protected Utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, complex_prec>
+	class GeneralBasis : public ModeHelper, protected Utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, global_floating_type>
 	{
-		friend struct Utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, complex_prec>;
+		friend struct Utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, global_floating_type>;
 	protected:
-		using _parent_algorithm = Utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, complex_prec>;
+		using _parent_algorithm = Utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, global_floating_type>;
 
 		void fill_M();
 		virtual void fillMatrices() override;

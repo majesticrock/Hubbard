@@ -111,23 +111,48 @@ namespace Hubbard::Models {
 		inline global_floating_type get_n_up_plus_down() const {
 			return get_n_up() + get_n_down();
 		};
-		inline complex_prec get_g_up() const {
-			return -this->rho(1, 0);
+		inline DataType get_g_up() const {
+			if constexpr (Utility::is_complex<DataType>()) {
+				return -this->rho(1, 0);
+			}
+			else {
+				return -std::real(this->rho(1, 0));
+			}
 		};
-		inline complex_prec get_g_down() const {
-			return this->rho(2, 3);
+		inline DataType get_g_down() const {
+			if constexpr (Utility::is_complex<DataType>()) {
+				return this->rho(2, 3);
+			}
+			else {
+				return std::real(this->rho(2, 3));
+			}
 		};
-		inline complex_prec get_g_up_plus_down() const {
+		inline DataType get_g_up_plus_down() const {
 			return get_g_up() + get_g_down();
 		};
-		inline complex_prec get_f() const {
-			return -this->rho(0, 2);
+		inline DataType get_f() const {
+			if constexpr (Utility::is_complex<DataType>()) {
+				return -this->rho(0, 2);
+			}
+			else {
+				return -std::real(this->rho(0, 2));
+			}
 		};
-		inline complex_prec get_f_Q() const {
-			return -this->rho(1, 3);
+		inline DataType get_f_Q() const {
+			if constexpr (Utility::is_complex<DataType>()) {
+				return -this->rho(1, 3);
+			}
+			else {
+				return -std::real(this->rho(1, 3));
+			}
 		};
-		inline complex_prec get_eta() const {
-			return -this->rho(0, 3);
+		inline DataType get_eta() const {
+			if constexpr (Utility::is_complex<DataType>()) {
+				return -this->rho(0, 3);
+			}
+			else {
+				return -std::real(this->rho(0, 3));
+			}
 		};
 
 	public:

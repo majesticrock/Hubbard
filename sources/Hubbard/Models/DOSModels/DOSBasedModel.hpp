@@ -251,19 +251,19 @@ namespace Hubbard::Models::DOSModels {
 				// n_up
 				expecs[0](i, 0) = this->get_n_up();
 				// g_up
-				expecs[1](i, 0) = this->get_g_up();
+				expecs[1](i, 0) = std::real(this->get_g_up());
 				// f
-				expecs[2](i, 0) = this->get_f();
+				expecs[2](i, 0) = std::real(this->get_f());
 				// eta
-				expecs[3](i, 0) = this->get_eta();
+				expecs[3](i, 0) = std::real(this->get_eta());
 				// n_down
 				expecs[4](i, 0) = this->get_n_down();
 				// g_down
-				expecs[5](i, 0) = this->get_g_down();
+				expecs[5](i, 0) = std::real(this->get_g_down());
 				// n_up + n_down
 				expecs[6](i, 0) = this->get_n_up_plus_down();
 				// g_up + g_down
-				expecs[7](i, 0) = this->get_g_up_plus_down();
+				expecs[7](i, 0) = std::real(this->get_g_up_plus_down());
 				if (abs(this->rho(3, 0)) > 1e-10) {
 					std::cerr << "Warning: <eta> does not vanish! " << this->rho(3, 0) << std::endl;
 				}
@@ -326,10 +326,10 @@ namespace Hubbard::Models::DOSModels {
 				this->fillHamiltonian(gamma);
 				this->fillRho();
 
-				values(0) = this->get_f().real(); // f
+				values(0) = this->get_f(); // f
 				values(1) = this->get_n_down(); // n
 				values(2) = this->get_n_down() * this->get_n_down(); // n^2
-				values(3) = this->get_f().real() * this->get_f().real(); // f^2
+				values(3) = this->get_f() * this->get_f(); // f^2
 
 				return values;
 				};
@@ -349,7 +349,7 @@ namespace Hubbard::Models::DOSModels {
 				this->fillHamiltonian(gamma);
 				this->fillRho();
 
-				values(0) = this->get_f().real() * this->get_f_Q().real(); // f_k * f_k+q
+				values(0) = this->get_f() * this->get_f_Q(); // f_k * f_k+q
 				values(1) = this->get_n_down() * this->get_n_down_Q(); // n_k * n_k+q
 
 				return values;

@@ -1,7 +1,7 @@
 #include "TermOnSquare.hpp"
 
 namespace Hubbard::Helper {
-	complex_prec TermOnSquare::getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const
+	global_floating_type TermOnSquare::getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const
 	{
 		assert(op.type < SymbolicOperators::Undefined_Type);
 
@@ -12,7 +12,7 @@ namespace Hubbard::Helper {
 			index += jt->second;
 		}
 
-		if (op.isDaggered) return std::conj(expecs[index](momentum_value(0), momentum_value(1)));
+		if (op.isDaggered) return expecs[index](momentum_value(0), momentum_value(1));
 		return expecs[index](momentum_value(0), momentum_value(1));
 	}
 
@@ -39,7 +39,7 @@ namespace Hubbard::Helper {
 		return buffer;
 	}
 
-	complex_prec TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, int k, int l) const
+	global_floating_type TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, int k, int l) const
 	{
 		const std::vector<char>& momenta_plain = { 'k', 'l' };
 		const std::vector<char>& momenta_summed = { 'k', 'l', 'q' };
@@ -54,9 +54,9 @@ namespace Hubbard::Helper {
 			return term.getFactor();
 		}
 
-		auto compute_single_sum = [&]() -> complex_prec {
-			complex_prec sumBuffer{};
-			complex_prec returnBuffer{};
+		auto compute_single_sum = [&]() -> global_floating_type {
+			global_floating_type sumBuffer{};
+			global_floating_type returnBuffer{};
 			for (int q = 0; q < Constants::BASIS_SIZE; q++)
 			{
 				indizes[2] = { x(q), y(q) };
@@ -95,7 +95,7 @@ namespace Hubbard::Helper {
 			}
 		}
 
-		complex_prec returnBuffer{ 1, 0 };
+		global_floating_type returnBuffer{ 1 };
 		for (size_t i = 0U; i < term.operators.size(); ++i)
 		{
 			Eigen::Vector2i momentum_value = computeMomentum(SymbolicOperators::MomentumList(term.operators[i].momentum), indizes, momenta_plain);

@@ -39,7 +39,7 @@ namespace Hubbard::Helper {
 			//return DOS::weights_v(index);
 		};
 
-		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, int gamma_idx) const {
+		global_floating_type getExpectationValue(const SymbolicOperators::WickOperator& op, int gamma_idx) const {
 			assert(op.type < SymbolicOperators::Undefined_Type);
 
 			int index = static_cast<int>(op.type);
@@ -56,20 +56,20 @@ namespace Hubbard::Helper {
 				return gamma_idx;
 				};
 
-			if (op.isDaggered) return std::conj(this->expecs[index](offset(), 0));
+			//if (op.isDaggered) return std::conj(this->expecs[index](offset(), 0));
 			return this->expecs[index](offset(), 0);
 		};
 
-		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) const {
+		global_floating_type computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) const {
 			auto attributeVanishes = [this](int index) -> bool {
 				return (!this->model->getAttributes().isFinite(index));
 				};
 
 			if (attributeVanishes(0) && attributeVanishes(1) && term.includesType(SymbolicOperators::CDW_Type)) {
-				return complex_prec{};
+				return global_floating_type{};
 			}
 			if (attributeVanishes(2) && term.includesType(SymbolicOperators::SC_Type)) {
-				return complex_prec{};
+				return global_floating_type{};
 			}
 
 			const global_floating_type& gamma{ this->model->getGammaFromIndex(gamma_idx) };
@@ -108,7 +108,7 @@ namespace Hubbard::Helper {
 
 			if (term.hasSingleCoefficient()) {
 				// Can never be an identity (checked above) and only be bilinear or quartic (checked in validity)
-				complex_prec ret{};
+				global_floating_type ret{};
 				if (term.isBilinear()) {
 					const auto& op = term.operators.front();
 					ret = (op.dependsOn('l') ? getExpectationValue(op, gamma_prime_idx) : getExpectationValue(op, gamma_idx));

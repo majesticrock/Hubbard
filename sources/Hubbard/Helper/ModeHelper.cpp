@@ -66,7 +66,8 @@ namespace Hubbard::Helper {
 					this->checkTermValidity(term);
 				}
 			}
-		} catch (SymbolicOperators::bad_term_exception const& ex) {
+		}
+		catch (SymbolicOperators::bad_term_exception const& ex) {
 			std::cout << "Encountered exception on term " << ex.which_term() << std::endl;
 			throw ex;
 		}

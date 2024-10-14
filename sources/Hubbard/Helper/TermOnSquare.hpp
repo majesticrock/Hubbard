@@ -9,12 +9,12 @@ namespace Hubbard::Helper {
 	class TermOnSquare : protected DetailModelConstructor<Hubbard::Models::SquareLattice::UsingBroyden>
 	{
 	protected:
-		complex_prec getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const;
+		global_floating_type getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const;
 
 		Eigen::Vector2i computeMomentum(const SymbolicOperators::MomentumList& momentum, const std::vector<Eigen::Vector2i>& indizes,
 			const std::vector<char>& momenta) const;
 
-		complex_prec computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
+		global_floating_type computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 
 	public:
 		Eigen::Vector2i mode_momentum;

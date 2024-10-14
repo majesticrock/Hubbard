@@ -55,8 +55,8 @@ void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
 			{ "gap_parameters", modeHelper.getModel().getAttributes().selfconsistency_values },
 			{ "total_gap", modeHelper.getModel().getTotalGapValue() },
 			{ "continuum_boundaries", modeHelper.getModel().continuum_boundaries() },
-			{ "T", modeHelper.getModel().temperature }, 
-			{ "U", modeHelper.getModel().U }, 
+			{ "T", modeHelper.getModel().temperature },
+			{ "U", modeHelper.getModel().U },
 			{ "V", modeHelper.getModel().V },
 			{ "XP_basis", (input.getInt("start_basis_at") < 0 ? 1 : 0) },
 			{ "start_ratio_cdw_sc", input.getDouble("ratio_CDW_SC") }

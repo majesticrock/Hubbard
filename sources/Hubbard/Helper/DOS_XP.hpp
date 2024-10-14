@@ -17,10 +17,10 @@ namespace Hubbard::Helper {
 	protected:
 		inline global_floating_type computeRealTerm(const SymbolicOperators::WickTerm& term, int k, int l) const {
 			const auto result = this->computeTerm(term, k, l);
-			if (abs(result.imag()) > ERROR_MARGIN) {
+			if (abs(std::imag(result)) > ERROR_MARGIN) {
 				throw std::runtime_error("computeRealTerm() encountered a complex value!");
 			}
-			return result.real();
+			return result;
 		};
 
 		// K_+ / K_-

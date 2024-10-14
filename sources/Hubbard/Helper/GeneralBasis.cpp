@@ -1,12 +1,10 @@
 #include "GeneralBasis.hpp"
-#include <chrono>
-#include <algorithm>
 #include "../MomentumIndexUtility.hpp"
 
 namespace Hubbard::Helper {
 	void GeneralBasis::fill_M()
 	{
-		M = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		M = decltype(M)::Zero(TOTAL_BASIS, TOTAL_BASIS);
 
 		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
@@ -18,8 +16,8 @@ namespace Hubbard::Helper {
 	}
 	void GeneralBasis::fillMatrices()
 	{
-		M = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
-		N = MatrixCL::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		M = decltype(M)::Zero(TOTAL_BASIS, TOTAL_BASIS);
+		N = decltype(N)::Zero(TOTAL_BASIS, TOTAL_BASIS);
 
 		for (int i = 0; i < number_of_basis_terms; ++i)
 		{
@@ -42,7 +40,7 @@ namespace Hubbard::Helper {
 			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
 			: sqrt(1. / ((global_floating_type)Constants::BASIS_SIZE));
 
-		this->starting_states.resize(number_of_basis_terms >= 6 ? 4 : 2, VectorCL::Zero(TOTAL_BASIS));
+		this->starting_states.resize(number_of_basis_terms >= 6 ? 4 : 2, Vector_L::Zero(TOTAL_BASIS));
 		for (int i = 0; i < Constants::BASIS_SIZE; i++)
 		{
 			this->starting_states[0](i* number_of_basis_terms) = norm_constant;
@@ -61,7 +59,7 @@ namespace Hubbard::Helper {
 		}
 		this->resolvent_names.push_back("amplitude_SC");
 		this->resolvent_names.push_back("phase_SC");
-		if(number_of_basis_terms >= 6) {
+		if (number_of_basis_terms >= 6) {
 			this->resolvent_names.push_back("amplitude_CDW");
 			this->resolvent_names.push_back("amplitude_AFM");
 		}
@@ -73,7 +71,7 @@ namespace Hubbard::Helper {
 			std::cout << 0 << "\t";
 		}
 		else {
-			std::cout << M(j, i).real() << "\t";
+			std::cout << M(j, i) << "\t";
 		}
 	}
 

@@ -45,19 +45,19 @@ namespace Hubbard::Models::SquareLattice
 					// n_up
 					expecs[0](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_n_up();
 					// g_up
-					expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_g_up();
+					expecs[1](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = std::real(this->get_g_up());
 					// f
-					expecs[2](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_f();
+					expecs[2](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = std::real(this->get_f());
 					// eta
-					expecs[3](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_eta();
+					expecs[3](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = std::real(this->get_eta());
 					// n_down
 					expecs[4](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_n_down();
 					// g_down
-					expecs[5](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_g_down();
+					expecs[5](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = std::real(this->get_g_down());
 					// n_up + n_down
 					expecs[6](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_n_up_plus_down();
 					// g_up + g_down
-					expecs[7](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_g_up_plus_down();
+					expecs[7](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = std::real(this->get_g_up_plus_down());
 					for (size_t idx = 0U; idx < 8U; ++idx)
 					{
 						sum_of_all(idx, 0) += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
