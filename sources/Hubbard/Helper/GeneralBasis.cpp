@@ -40,28 +40,41 @@ namespace Hubbard::Helper {
 			? sqrt((2.0 * this->dos_dimension) / Constants::BASIS_SIZE)
 			: sqrt(1. / ((global_floating_type)Constants::BASIS_SIZE));
 
-		this->starting_states.resize(number_of_basis_terms >= 6 ? 4 : 2, Vector_L::Zero(TOTAL_BASIS));
+		int n_starting_states = 2; // SC Higgs and Phase
+		if(number_of_basis_terms >= 6) n_starting_states += 2; // AFM longitudinal and CDW
+		if(number_of_basis_terms >= 10) ++n_starting_states; // AFM transversal
+		this->starting_states.resize(n_starting_states, Vector_L::Zero(TOTAL_BASIS));
+
 		for (int i = 0; i < Constants::BASIS_SIZE; i++)
 		{
-			this->starting_states[0](i* number_of_basis_terms) = norm_constant;
-			this->starting_states[0](i* number_of_basis_terms + 1) = norm_constant;
+			this->starting_states[0](i * number_of_basis_terms) = norm_constant;
+			this->starting_states[0](i * number_of_basis_terms + 1) = norm_constant;
 
-			this->starting_states[1](i* number_of_basis_terms) = norm_constant;
-			this->starting_states[1](i* number_of_basis_terms + 1) = -norm_constant;
+			this->starting_states[1](i * number_of_basis_terms) = norm_constant;
+			this->starting_states[1](i * number_of_basis_terms + 1) = -norm_constant;
 
 			if (number_of_basis_terms >= 6) {
-				this->starting_states[2](i* number_of_basis_terms + 4) = norm_constant;
-				this->starting_states[2](i* number_of_basis_terms + 5) = norm_constant;
+				this->starting_states[2](i * number_of_basis_terms + 4) = norm_constant;
+				this->starting_states[2](i * number_of_basis_terms + 5) = norm_constant;
 
-				this->starting_states[3](i* number_of_basis_terms + 4) = norm_constant;
-				this->starting_states[3](i* number_of_basis_terms + 5) = -norm_constant;
+				this->starting_states[3](i * number_of_basis_terms + 4) = norm_constant;
+				this->starting_states[3](i * number_of_basis_terms + 5) = -norm_constant;
+			}
+			if(number_of_basis_terms >= 10) {
+				this->starting_states[4](i * number_of_basis_terms + 8) = norm_constant;
+				this->starting_states[4](i * number_of_basis_terms + 9) = norm_constant;
 			}
 		}
+		
+		this->resolvent_names.reserve(n_starting_states);
 		this->resolvent_names.push_back("amplitude_SC");
 		this->resolvent_names.push_back("phase_SC");
 		if (number_of_basis_terms >= 6) {
 			this->resolvent_names.push_back("amplitude_CDW");
 			this->resolvent_names.push_back("amplitude_AFM");
+		}
+		if(number_of_basis_terms >= 10) {
+			this->resolvent_names.push_back("amplitude_AFM_transversal");
 		}
 	}
 

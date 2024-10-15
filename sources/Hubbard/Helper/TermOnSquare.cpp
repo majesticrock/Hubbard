@@ -39,6 +39,21 @@ namespace Hubbard::Helper {
 		return buffer;
 	}
 
+	global_floating_type TermOnSquare::compute_simple_sum(const SymbolicOperators::WickTerm& term, int k, int l) const {
+		const int q_dependend = term.whichOperatorDependsOn('q');
+		SymbolicOperators::WickOperator const* const summed_op = &(term.operators[q_dependend]);
+		SymbolicOperators::WickOperator const* const other_op = term.isBilinear() ? nullptr : &(term.operators[q_dependend == 0]);
+
+		int index = static_cast<int>(summed_op->type);
+		if (summed_op->type == SymbolicOperators::CDW_Type || summed_op->type == SymbolicOperators::Number_Type) {
+			auto jt = wick_spin_offset.find(op.indizes[0]);
+			if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
+			index += jt->second;
+		}
+		global_floating_type value{ term.multiplicity * sum_of_all(index, 0) };
+		
+	}
+
 	global_floating_type TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, int k, int l) const
 	{
 		const std::vector<char>& momenta_plain = { 'k', 'l' };

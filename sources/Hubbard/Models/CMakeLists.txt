@@ -10,5 +10,5 @@ add_library(Models
     ChainLattice/ChainTripletPairing.cpp
 )
 SET_COMPILER_FLAGS(Models)
-target_include_directories(Models PUBLIC ${Boost_INCLUDE_DIRS})
-target_link_libraries(Models PUBLIC ZLIB::ZLIB ${Boost_LIBRARIES})
+target_include_directories(Models PUBLIC DensityOfStates)
+target_link_libraries(Models PUBLIC DensityOfStates)

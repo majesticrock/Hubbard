@@ -25,8 +25,7 @@ include_directories(
 # System libraries
 find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED)
-find_package(ZLIB REQUIRED)
-find_package(Boost REQUIRED COMPONENTS serialization iostreams)
+find_package(Boost REQUIRED)
 
 # SymbolicOperators library
 find_package(SymbolicOperators REQUIRED CONFIG)
@@ -48,9 +47,6 @@ add_executable(HubbardMeanField
 SET_COMPILER_FLAGS(HubbardMeanField)
 target_link_libraries(HubbardMeanField PUBLIC
     Handler
-    Helper
-    Models
-    DensityOfStates
     MPI::MPI_CXX
 )
 

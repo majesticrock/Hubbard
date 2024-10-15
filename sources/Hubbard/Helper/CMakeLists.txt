@@ -12,5 +12,5 @@ add_library(Helper
     XPModes.cpp
 )
 SET_COMPILER_FLAGS(Helper)
-target_include_directories(Helper PUBLIC ${Boost_INCLUDE_DIRS})
-target_link_libraries(Helper PUBLIC ZLIB::ZLIB ${Boost_LIBRARIES} SymbolicOperators::SymbolicOperators OpenMP::OpenMP_CXX)
+target_include_directories(Helper PUBLIC ${SymbolicOperators_INCLUDE_DIRS})
+target_link_libraries(Helper PUBLIC OpenMP::OpenMP_CXX SymbolicOperators::SymbolicOperators Models)

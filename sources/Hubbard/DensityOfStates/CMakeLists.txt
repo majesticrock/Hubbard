@@ -7,5 +7,5 @@ add_library(DensityOfStates
     Square.cpp
 )
 SET_COMPILER_FLAGS(DensityOfStates)
-target_include_directories(DensityOfStates PUBLIC ${Boost_INCLUDE_DIRS})
-target_link_libraries(DensityOfStates PUBLIC ZLIB::ZLIB ${Boost_LIBRARIES})
+target_include_directories(DensityOfStates PUBLIC Boost::headers ${Utility_INCLUDE_DIRS})
+target_link_libraries(DensityOfStates PUBLIC Utility::Utility)

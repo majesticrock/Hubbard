@@ -64,7 +64,7 @@ namespace Hubbard::Models {
 			for (int i = 0; i < N_PARAMETERS; ++i) {
 				F(q.getIndex() + static_cast<size_t>(i * Constants::BASIS_SIZE)) +=
 					(this->phis[q.getIndex()] + parameterCoefficients[i] + 0.5 * V_OVER_N * q.gamma())
-					* (this->expectation_values(q_plus_k.getIndex(), i) + this->expectation_values(q_minus_k.getIndex()), i);
+					* (this->expectation_values(q_plus_k.getIndex(), i) + this->expectation_values(q_minus_k.getIndex(), i));
 			}
 		} while (q.iterateFullBZ());
 		q = NumericalMomentum<2>::GammaPoint();

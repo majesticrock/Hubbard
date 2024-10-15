@@ -14,6 +14,8 @@ namespace Hubbard::Helper {
 		Eigen::Vector2i computeMomentum(const SymbolicOperators::MomentumList& momentum, const std::vector<Eigen::Vector2i>& indizes,
 			const std::vector<char>& momenta) const;
 
+		global_floating_type compute_simple_sum(const SymbolicOperators::WickTerm& term, int k, int l) const;
+
 		global_floating_type computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
 
 	public:
