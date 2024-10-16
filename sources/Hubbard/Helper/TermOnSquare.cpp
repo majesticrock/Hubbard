@@ -16,108 +16,103 @@ namespace Hubbard::Helper {
 		return expecs[index](momentum_value(0), momentum_value(1));
 	}
 
-	Eigen::Vector2i TermOnSquare::computeMomentum(const SymbolicOperators::MomentumList& momentum,
-		const std::vector<Eigen::Vector2i>& indizes, const std::vector<char>& momenta) const
+	Eigen::Vector2i TermOnSquare::compute_momentum_list(const SymbolicOperators::MomentumList& momentum, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const
 	{
 		if (momentum.empty()) {
 			return Eigen::Vector2i::Zero();
 		}
-		const SymbolicOperators::Momentum& mom = momentum.front();
-		int mom_idx = mom.isUsed('x');
-		Eigen::Vector2i buffer = mom_idx > 0 ? (mom.momentum_list[mom_idx].first * this->mode_momentum).eval() : Eigen::Vector2i::Zero();
-		for (int i = 0; i < momenta.size(); ++i)
-		{
-			int mom_idx = mom.isUsed(momenta[i]);
-			if (mom_idx < 0) continue;
-			buffer += mom.momentum_list[mom_idx].first * indizes[i];
-		}
-		if (mom.add_Q) {
-			buffer(0) += Constants::K_DISCRETIZATION;
-			buffer(1) += Constants::K_DISCRETIZATION;
-		}
-		clean_factor_2pi(buffer);
-		return buffer;
+		return compute_momentum_no_q(momentum.front(), k, l);
 	}
 
-	global_floating_type TermOnSquare::compute_simple_sum(const SymbolicOperators::WickTerm& term, int k, int l) const {
+	Eigen::Vector2i TermOnSquare::compute_momentum_no_q(const SymbolicOperators::Momentum& momentum, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const
+	{
+		Eigen::Vector2i momentum_value = Eigen::Vector2i::Zero();
+		for (const auto& momentum_pair : momentum.momentum_list) {
+			switch(momentum_pair.second){
+			case 'k':
+				momentum_value += momentum_pair.first * k;
+				break;
+			case 'l':
+				momentum_value += momentum_pair.first * l;
+				break;
+			case 'x':
+				momentum_value += momentum_pair.first * this->mode_momentum;
+				break;
+			default:
+				break;
+			}
+		}
+		if(momentum.add_Q){
+			momentum_value(0) += Constants::K_DISCRETIZATION;
+			momentum_value(1) += Constants::K_DISCRETIZATION;
+		}
+		clean_factor_2pi(momentum_value);
+		return momentum_value;
+	}
+
+	global_floating_type TermOnSquare::compute_sum(const SymbolicOperators::WickTerm& term, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const {
+		global_floating_type value{ static_cast<global_floating_type>(term.multiplicity) };
+
+		// Compute coefficient
+		assert(term.hasSingleCoefficient());
+		int sum_of_all_index{ 0 };
+		SymbolicOperators::Coefficient const& coeff = term.coefficients.front();
+		if(coeff.momenta.empty()){
+			value *= this->model->computeCoefficient(coeff, Eigen::Vector2i::Zero());
+		}
+		else {
+			value *= this->model->computeCoefficient(coeff, compute_momentum_no_q(coeff.momenta.front(), k, l));
+			if(coeff.dependsOn('q')) sum_of_all_index = 1;
+		}
+
+		// Compute sum
 		const int q_dependend = term.whichOperatorDependsOn('q');
 		SymbolicOperators::WickOperator const* const summed_op = &(term.operators[q_dependend]);
 		SymbolicOperators::WickOperator const* const other_op = term.isBilinear() ? nullptr : &(term.operators[q_dependend == 0]);
-
 		int index = static_cast<int>(summed_op->type);
 		if (summed_op->type == SymbolicOperators::CDW_Type || summed_op->type == SymbolicOperators::Number_Type) {
-			auto jt = wick_spin_offset.find(op.indizes[0]);
+			auto jt = wick_spin_offset.find(summed_op->indizes[0]);
 			if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
 			index += jt->second;
 		}
-		global_floating_type value{ term.multiplicity * sum_of_all(index, 0) };
-		
+		value *= sum_of_all(index, sum_of_all_index);
+
+		// Compute the expectation value that is not summed over, if it exists
+		if (other_op) {
+			value *= this->getExpectationValue(*other_op, compute_momentum_no_q(other_op->momentum, k, l));
+		}
+		return value;
 	}
 
-	global_floating_type TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, int k, int l) const
+	global_floating_type TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, const int k, const int l) const
 	{
+		const OrderType model_order = this->model->get_order();
+		if(term.includesType(SymbolicOperators::CDW_Type) && !(model_order & (OrderType::CDW | OrderType::AFM))) return global_floating_type{};
+		if(term.includesType(SymbolicOperators::SC_Type)  && !(model_order & OrderType::SC)) return global_floating_type{};
+
 		const std::vector<char>& momenta_plain = { 'k', 'l' };
-		const std::vector<char>& momenta_summed = { 'k', 'l', 'q' };
-		std::vector<Eigen::Vector2i> indizes = { { x(k), y(k) }, { x(l), y(l) }, { 0, 0 } };
-		Eigen::Vector2i momentum_value, coeff_momentum;
+		std::vector<Eigen::Vector2i> indizes = { { x(k), y(k) }, { x(l), y(l) } };
+		Eigen::Vector2i coeff_momentum;
 
 		if (term.isIdentity()) {
 			if (term.hasSingleCoefficient()) {
-				coeff_momentum = computeMomentum(term.coefficients[0].momenta, indizes, momenta_plain);
+				coeff_momentum = compute_momentum_list(term.coefficients[0].momenta, indizes[0], indizes[1]);
 				return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 			}
 			return term.getFactor();
 		}
 
-		auto compute_single_sum = [&]() -> global_floating_type {
-			global_floating_type sumBuffer{};
-			global_floating_type returnBuffer{};
-			for (int q = 0; q < Constants::BASIS_SIZE; q++)
-			{
-				indizes[2] = { x(q), y(q) };
-				sumBuffer = 1;
-				for (size_t i = 0; i < term.operators.size(); i++)
-				{
-					momentum_value = computeMomentum(SymbolicOperators::MomentumList(term.operators[i].momentum), indizes, momenta_summed);
-					sumBuffer *= getExpectationValue(term.operators[i], momentum_value);
-				}
-				coeff_momentum = computeMomentum(term.coefficients[0].momenta, indizes, momenta_summed);
-				if (term.hasSingleCoefficient()) {
-					sumBuffer *= this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
-				}
-				returnBuffer += sumBuffer;
-			}
-			return term.getFactor() * returnBuffer;
-			};
-
-		if (term.sums.momenta.size() > 0U) {
-			if (term.isBilinear()) {
-				// bilinear term
-				if (term.hasSingleCoefficient()) {
-					if (term.coefficients.back().dependsOnMomentum()) {
-						return compute_single_sum();
-					}
-					else {
-						coeff_momentum = computeMomentum(term.coefficients[0].momenta, indizes, momenta_plain);
-						return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * getSumOfAll(term.operators[0]);
-					}
-				}
-				return term.getFactor() * getSumOfAll(term.operators[0]);
-			}
-			if (term.isQuartic()) {
-				// quartic term
-				return compute_single_sum();
-			}
+		if (term.sums.has_momentum()) {
+			return compute_sum(term, indizes[0], indizes[1]);
 		}
 
 		global_floating_type returnBuffer{ 1 };
-		for (size_t i = 0U; i < term.operators.size(); ++i)
+		for (const auto& op : term.operators)
 		{
-			Eigen::Vector2i momentum_value = computeMomentum(SymbolicOperators::MomentumList(term.operators[i].momentum), indizes, momenta_plain);
-			returnBuffer *= getExpectationValue(term.operators[i], momentum_value);
+			returnBuffer *= getExpectationValue(op, compute_momentum_no_q(op.momentum, indizes[0], indizes[1]));
 		}
 		if (term.hasSingleCoefficient()) {
-			coeff_momentum = computeMomentum(term.coefficients[0].momenta, indizes, momenta_plain);
+			coeff_momentum = compute_momentum_list(term.coefficients[0].momenta, indizes[0], indizes[1]);
 			return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}
 		return term.getFactor() * returnBuffer;

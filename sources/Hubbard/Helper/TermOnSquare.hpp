@@ -11,12 +11,12 @@ namespace Hubbard::Helper {
 	protected:
 		global_floating_type getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const;
 
-		Eigen::Vector2i computeMomentum(const SymbolicOperators::MomentumList& momentum, const std::vector<Eigen::Vector2i>& indizes,
-			const std::vector<char>& momenta) const;
+		Eigen::Vector2i compute_momentum_list(const SymbolicOperators::MomentumList& momentum, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const;
+		Eigen::Vector2i compute_momentum_no_q(const SymbolicOperators::Momentum& momentum, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const;
 
-		global_floating_type compute_simple_sum(const SymbolicOperators::WickTerm& term, int k, int l) const;
+		global_floating_type compute_sum(const SymbolicOperators::WickTerm& term, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const;
 
-		global_floating_type computeTerm(const SymbolicOperators::WickTerm& term, int l, int k) const;
+		global_floating_type computeTerm(const SymbolicOperators::WickTerm& term, const int l, const int k) const;
 
 	public:
 		Eigen::Vector2i mode_momentum;

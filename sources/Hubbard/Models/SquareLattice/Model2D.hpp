@@ -32,7 +32,8 @@ namespace Hubbard::Models::SquareLattice
 
 		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override {
 			expecs = std::vector<ValueArray>(8U, ValueArray::Zero(2 * Constants::K_DISCRETIZATION, 2 * Constants::K_DISCRETIZATION));
-			sum_of_all = ValueArray::Zero(8, 1);
+			// The first column saves the plain sums sum_q <expec>. The second column contains 0.5 * sum_q gamma(q) <expec>
+			sum_of_all = ValueArray::Zero(8, 2);
 
 			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
 			{
@@ -61,6 +62,7 @@ namespace Hubbard::Models::SquareLattice
 					for (size_t idx = 0U; idx < 8U; ++idx)
 					{
 						sum_of_all(idx, 0) += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
+						sum_of_all(idx, 1) += 0.5 * ks.gamma() * expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
 					}
 
 					if (abs(this->rho(3, 0)) > 1e-10) {

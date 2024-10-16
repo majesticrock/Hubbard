@@ -1,6 +1,7 @@
 #pragma once
 #include "../GlobalDefinitions.hpp"
 #include "../Constants.hpp"
+#include "../OrderType.hpp"
 #include "ModelAttributes.hpp"
 #include <string>
 #include <memory>
@@ -171,6 +172,14 @@ namespace Hubbard::Models {
 			: model_attributes(startingValues), temperature(_params.temperature), U(_params.U), V(_params.V)
 		{};
 		virtual ~BaseModel() = default;
+
+		inline OrderType get_order() const {
+			OrderType order{};
+			if (this->model_attributes.isFinite(0)) order |= OrderType::CDW;
+			if (this->model_attributes.isFinite(1)) order |= OrderType::AFM;
+			if (this->model_attributes.isFinite(2)) order |= OrderType::SC;
+			return order;
+		}
 
 		void setNewModelParameters(const ModelParameters& params, SystemType systemType) {
 			this->temperature = params.temperature;
