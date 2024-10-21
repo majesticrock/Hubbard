@@ -58,24 +58,24 @@ namespace Hubbard::Helper {
 		if(number_of_basis_terms >= 10) ++n_starting_states; // AFM transversal
 		this->starting_states.resize(n_starting_states, Vector_L::Zero(TOTAL_BASIS));
 
-		for (int i = 0; i < Constants::BASIS_SIZE; i++)
+		for (int k = 0; k < Constants::BASIS_SIZE; k++)
 		{
-			this->starting_states[0](i * number_of_basis_terms) = norm_constant;
-			this->starting_states[0](i * number_of_basis_terms + 1) = norm_constant;
+			this->starting_states[0](get_index(0, k)) = norm_constant;
+			this->starting_states[0](get_index(1, k)) = norm_constant;
 
-			this->starting_states[1](i * number_of_basis_terms) = norm_constant;
-			this->starting_states[1](i * number_of_basis_terms + 1) = -norm_constant;
+			this->starting_states[1](get_index(0, k)) = norm_constant;
+			this->starting_states[1](get_index(1, k)) = -norm_constant;
 
 			if (number_of_basis_terms >= 6) {
-				this->starting_states[2](i * number_of_basis_terms + 4) = norm_constant;
-				this->starting_states[2](i * number_of_basis_terms + 5) = norm_constant;
+				this->starting_states[2](get_index(4, k)) = norm_constant;
+				this->starting_states[2](get_index(5, k)) = norm_constant;
 
-				this->starting_states[3](i * number_of_basis_terms + 4) = norm_constant;
-				this->starting_states[3](i * number_of_basis_terms + 5) = -norm_constant;
+				this->starting_states[3](get_index(4, k)) = norm_constant;
+				this->starting_states[3](get_index(5, k)) = -norm_constant;
 			}
 			if(number_of_basis_terms >= 10) {
-				this->starting_states[4](i * number_of_basis_terms + 8) = norm_constant;
-				this->starting_states[4](i * number_of_basis_terms + 9) = norm_constant;
+				this->starting_states[4](get_index(8, k)) = norm_constant;
+				this->starting_states[4](get_index(9, k)) = norm_constant;
 			}
 		}
 

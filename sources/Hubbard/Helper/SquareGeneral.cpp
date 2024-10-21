@@ -37,12 +37,12 @@ namespace Hubbard::Helper {
 					if (term.delta_momenta[0].second.momentum_list.size() == 2U) {
 						l = add_index_momenta(l, this->mode_momentum, term.delta_momenta[0].second.momentum_list[1].first);
 					}
-					M(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l);
+					M(get_index(i, k), get_index(j, l)) += computeTerm(term, k, l);
 				}
 				else {
 					for (int l = 0; l < Constants::BASIS_SIZE; l++)
 					{
-						M(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l);
+						M(get_index(i, k), get_index(j, l)) += computeTerm(term, k, l);
 					}
 				}
 			}
@@ -62,13 +62,13 @@ namespace Hubbard::Helper {
 					if (term.delta_momenta[0].second.momentum_list.size() == 2U) {
 						l = add_index_momenta(l, this->mode_momentum, term.delta_momenta[0].second.momentum_list[1].first);
 					}
-					N(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l);
+					N(get_index(i, k), get_index(j, l)) += computeTerm(term, k, l);
 				}
 				else {
 					throw std::runtime_error("Offdiagonal term in N!");
 					//for (int l = 0; l < Constants::BASIS_SIZE; l++)
 					//{
-					//	N(i + k * number_of_basis_terms, j + l * number_of_basis_terms) += computeTerm(term, k, l);
+					//	N(get_index(i, k), get_index(j, l)) += computeTerm(term, k, l);
 					//}
 				}
 			}

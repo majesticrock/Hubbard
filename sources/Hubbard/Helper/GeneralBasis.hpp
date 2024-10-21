@@ -17,6 +17,10 @@ namespace Hubbard::Helper {
 		void printM(int i, int j) const;
 		void printMomentumBlocks() const;
 		void printDOSBlocks() const;
+
+		inline Eigen::Index get_index(int basis_term, int momentum_index) const {
+			return basis_term * Constants::BASIS_SIZE + momentum_index;
+		}
 	public:
 		GeneralBasis(Utility::InputFileReader& input)
 			: ModeHelper(input), _parent_algorithm(this, SQRT_SALT) { };
