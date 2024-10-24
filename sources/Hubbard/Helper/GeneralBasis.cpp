@@ -20,6 +20,7 @@ namespace Hubbard::Helper {
 		M.setZero(TOTAL_BASIS, TOTAL_BASIS);
 		N.setZero(TOTAL_BASIS, TOTAL_BASIS);
 
+#pragma omp parallel for
 		for (int i = 0; i < std::min(9, number_of_basis_terms); ++i)
 		{
 			for (int j = 0; j < std::min(9, number_of_basis_terms); ++j)

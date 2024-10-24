@@ -24,35 +24,9 @@ include_directories(
 
 option(USE_MKL "Use Intel MKL for LAPACK" OFF)
 if(USE_MKL)
-    #find_package(MKL REQUIRED)
-    #if(MKL_FOUND)
-    #    message(STATUS "Using Intel MKL for LAPACK")
-    #    set(BLAS_LIBRARIES ${MKL_LIBRARIES})
-    #    set(LAPACK_LIBRARIES ${MKL_LIBRARIES})
-    #    add_definitions(-DEIGEN_USE_LAPACKE)  # Enable Eigen's LAPACK support
-    #else()
-    #    message(FATAL_ERROR "MKL requested but not found")
-    #endif()
+    list(APPEND CMAKE_PREFIX_PATH "/opt/intel/oneapi/mkl/latest")
+    find_package(MKL CONFIG REQUIRED)
 endif()
-
-if(USE_MKL)
-    #set(MKL_THREADING "SEQ")  # You can also choose "TBB" or "OMP" for multithreading
-    #set(MKL_INTERFACE "LP64") # Or "ILP64" depending on your integer size preference
-    #include_directories(${MKL_INCLUDE_DIR})
-
-    set(MKL_LIBRARIES
-        -lmkl_intel_lp64
-        -lmkl_sequential
-        -lmkl_core
-        #${MKLROOT}/lib/intel64/libmkl_intel_${MKL_INTERFACE}.a
-        #${MKLROOT}/lib/intel64/libmkl_sequential.a
-        #${MKLROOT}/lib/intel64/libmkl_core.a
-        #-lpthread
-        #-lm
-        #-ldl
-    )
-endif()
-
 
 # System libraries
 find_package(MPI REQUIRED)
@@ -71,11 +45,11 @@ add_subdirectory(sources/Handler)
 add_subdirectory(sources/Hubbard/Models)
 add_subdirectory(sources/Hubbard/DensityOfStates)
 
-
 # Configure main
 add_executable(HubbardMeanField 
     sources/HubbardMeanField.cpp
 )
+
 SET_COMPILER_FLAGS(HubbardMeanField)
 target_link_libraries(HubbardMeanField PUBLIC
     Handler
