@@ -30,8 +30,11 @@ private:
 			throw std::runtime_error("Could not find eval point!");
 		}
 	}
+
+	const int eval_index{};
+	inline std::string name_prefix() const { return (eval_index < 0 ? "" : (std::to_string(eval_index) + "_"));}
 public:
-	ModeDispersionHandler(Utility::InputFileReader& input, int _rank, int _numberOfRanks)
-		: HandlerBase(input, _rank, _numberOfRanks), ModeHandler(input, _rank, _numberOfRanks) {};
+	ModeDispersionHandler(Utility::InputFileReader& input, int _rank, int _numberOfRanks, int _eval_index)
+		: HandlerBase(input, _rank, _numberOfRanks), ModeHandler(input, _rank, _numberOfRanks), eval_index{_eval_index} {};
 	virtual void execute(Utility::InputFileReader& input) const override;
 };

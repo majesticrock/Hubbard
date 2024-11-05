@@ -17,29 +17,28 @@ void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
 	std::vector<Hubbard::ResolventReturnData> resolvents;
 	Hubbard::Helper::SquareGeneral modeHelper(input, modelParameters);
 
-	const int TOTAL_EVAL_POINTS = 3 * Hubbard::Constants::K_DISCRETIZATION;
-	const int EVAL_POINTS_PER_RANK = TOTAL_EVAL_POINTS / numberOfRanks;
-	for (int i = 0; i < EVAL_POINTS_PER_RANK; ++i) {
-		modeHelper.mode_momentum = eval_point(i + rank * EVAL_POINTS_PER_RANK);
+	if(eval_index < 0) {
+		for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
+		{
+			Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
+			modeHelper.mode_momentum.x() += 1;
+		}
+		for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
+		{
+			Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
+			modeHelper.mode_momentum.y() += 1;
+		}
+		for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
+		{
+			Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
+			modeHelper.mode_momentum.x() -= 1;
+			modeHelper.mode_momentum.y() -= 1;
+		}
+	} 
+	else {
+		modeHelper.mode_momentum = eval_point(eval_index);
 		Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
 	}
-
-	/*for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
-	{
-		Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
-		modeHelper.mode_momentum.x() += 1;
-	}
-	for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
-	{
-		Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
-		modeHelper.mode_momentum.y() += 1;
-	}
-	for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
-	{
-		Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
-		modeHelper.mode_momentum.x() -= 1;
-		modeHelper.mode_momentum.y() -= 1;
-	}*/
 
 	const std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };
 	std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;
@@ -61,7 +60,7 @@ void ModeDispersionHandler::execute(Utility::InputFileReader& input) const
 			{ "XP_basis", (input.getInt("start_basis_at") < 0 ? 1 : 0) },
 			{ "start_ratio_cdw_sc", input.getDouble("ratio_CDW_SC") }
 		};
-		Utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + "dispersions.json.gz");
+		Utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + std::to_string(eval_index) + "dispersions.json.gz");
 	}
 	else {
 		std::cout << "Resolvent returned an empty vector." << std::endl;

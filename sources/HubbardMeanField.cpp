@@ -81,7 +81,8 @@ int main(int argc, char** argv)
 		u_boundary.execute(input);
 	}
 	else if (input.getString("compute_what") == "dispersions") {
-		ModeDispersionHandler dispersions(input, rank, numberOfRanks);
+		assert(argc > 2);
+		ModeDispersionHandler dispersions(input, rank, numberOfRanks, std::stoi(argv[2]));
 		dispersions.execute(input);
 	}
 
