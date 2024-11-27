@@ -28,7 +28,7 @@ namespace Hubbard::Helper {
 	{
 		Eigen::Vector2i momentum_value = Eigen::Vector2i::Zero();
 		for (const auto& momentum_pair : momentum.momentum_list) {
-			switch(momentum_pair.second){
+			switch(momentum_pair.second) {
 			case 'k':
 				momentum_value += momentum_pair.first * k;
 				break;
@@ -42,7 +42,7 @@ namespace Hubbard::Helper {
 				break;
 			}
 		}
-		if(momentum.add_Q){
+		if(momentum.add_Q) {
 			momentum_value(0) += Constants::K_DISCRETIZATION;
 			momentum_value(1) += Constants::K_DISCRETIZATION;
 		}
@@ -57,7 +57,7 @@ namespace Hubbard::Helper {
 		assert(term.hasSingleCoefficient());
 		int sum_of_all_index{ 0 };
 		SymbolicOperators::Coefficient const& coeff = term.coefficients.front();
-		if(coeff.momenta.empty()){
+		if(coeff.momenta.empty()) {
 			value *= this->model->computeCoefficient(coeff, Eigen::Vector2i::Zero());
 		}
 		else {
