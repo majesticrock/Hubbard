@@ -56,7 +56,7 @@ namespace Hubbard::Helper {
 				return gamma_idx;
 				};
 
-			//if (op.isDaggered) return std::conj(this->expecs[index](offset(), 0));
+			//if (op.is_daggered) return std::conj(this->expecs[index](offset(), 0));
 			return this->expecs[index](offset(), 0);
 		};
 

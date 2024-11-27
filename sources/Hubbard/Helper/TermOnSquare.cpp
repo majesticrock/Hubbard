@@ -12,7 +12,7 @@ namespace Hubbard::Helper {
 			index += jt->second;
 		}
 
-		if (op.isDaggered) return expecs[index](momentum_value(0), momentum_value(1));
+		if (op.is_daggered) return expecs[index](momentum_value(0), momentum_value(1));
 		return expecs[index](momentum_value(0), momentum_value(1));
 	}
 

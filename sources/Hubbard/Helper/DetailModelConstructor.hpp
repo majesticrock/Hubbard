@@ -66,7 +66,7 @@ namespace Hubbard::Helper {
 				index += jt->second;
 			}
 
-			if (op.isDaggered) return sum_of_all(index, cos_modulation);
+			if (op.is_daggered) return sum_of_all(index, cos_modulation);
 			return sum_of_all(index, cos_modulation);
 		};
 		void internal_setNewModelParameters(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
