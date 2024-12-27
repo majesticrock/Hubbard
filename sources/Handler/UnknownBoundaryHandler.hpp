@@ -5,7 +5,7 @@
 class UnknownBoundaryHandler : public PhaseHandler, public ModeHandler
 {
 public:
-	UnknownBoundaryHandler(Utility::InputFileReader& input, int _rank, int _numberOfRanks)
+	UnknownBoundaryHandler(mrock::Utility::InputFileReader& input, int _rank, int _numberOfRanks)
 		: HandlerBase(input, _rank, _numberOfRanks), PhaseHandler(input, _rank, _numberOfRanks), ModeHandler(input, _rank, _numberOfRanks) {};
-	virtual void execute(Utility::InputFileReader& input) const override;
+	virtual void execute(mrock::Utility::InputFileReader& input) const override;
 };

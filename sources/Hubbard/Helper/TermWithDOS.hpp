@@ -4,7 +4,7 @@
 #include <complex>
 #include <cmath>
 #include <filesystem>
-#include <Utility/BinaryIO.hpp>
+#include <mrock/Utility/BinaryIO.hpp>
 
 namespace Hubbard::Helper {
 	template <class DOS>
@@ -39,11 +39,13 @@ namespace Hubbard::Helper {
 			//return DOS::weights_v(index);
 		};
 
-		global_floating_type getExpectationValue(const SymbolicOperators::WickOperator& op, int gamma_idx) const {
-			assert(op.type < SymbolicOperators::Undefined_Type);
+		global_floating_type getExpectationValue(const mrock::SymbolicOperators::WickOperator& op, int gamma_idx) const {
+			assert(op.type < mrock::SymbolicOperators::OperatorType::Undefined_Type);
 
 			int index = static_cast<int>(op.type);
-			if (op.type == SymbolicOperators::CDW_Type || op.type == SymbolicOperators::Number_Type) {
+			if (op.type == mrock::SymbolicOperators::OperatorType::CDW_Type 
+				|| op.type == mrock::SymbolicOperators::OperatorType::Number_Type)
+			{
 				auto jt = this->wick_spin_offset.find(op.indizes[0]);
 				if (jt == this->wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
 				index += jt->second;
@@ -60,15 +62,15 @@ namespace Hubbard::Helper {
 			return this->expecs[index](offset(), 0);
 		};
 
-		global_floating_type computeTerm(const SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) const {
+		global_floating_type computeTerm(const mrock::SymbolicOperators::WickTerm& term, int gamma_idx, int gamma_prime_idx) const {
 			auto attributeVanishes = [this](int index) -> bool {
 				return (!this->model->getAttributes().isFinite(index));
 				};
 
-			if (attributeVanishes(0) && attributeVanishes(1) && term.includesType(SymbolicOperators::CDW_Type)) {
+			if (attributeVanishes(0) && attributeVanishes(1) && term.includesType(mrock::SymbolicOperators::OperatorType::CDW_Type)) {
 				return global_floating_type{};
 			}
-			if (attributeVanishes(2) && term.includesType(SymbolicOperators::SC_Type)) {
+			if (attributeVanishes(2) && term.includesType(mrock::SymbolicOperators::OperatorType::SC_Type)) {
 				return global_floating_type{};
 			}
 
@@ -125,7 +127,7 @@ namespace Hubbard::Helper {
 		};
 
 	public:
-		TermWithDOS(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
+		TermWithDOS(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
 			: DetailModelConstructor<Models::DOSModels::BroydenDOS<DOS>>(input, modelParameters),
 			approximate_dos(Constants::BASIS_SIZE, global_floating_type{}),
 			INV_GAMMA_DISC(1. / this->model->getDeltaGamma())
@@ -147,7 +149,7 @@ namespace Hubbard::Helper {
 
 			const std::string filename = "../../data/approx_dos_dim_" + std::to_string(DOS::DIMENSION) + "_disc_" + std::to_string(Constants::BASIS_SIZE) + ".bin";
 			if (std::filesystem::exists(filename)) {
-				std::ifstream reader = Utility::BinaryIO::readSerializedVector(approximate_dos, filename);
+				std::ifstream reader = mrock::Utility::BinaryIO::readSerializedVector(approximate_dos, filename);
 				if (reader.good() && std::abs(dos_norm() - 1.) < 1e-7) {
 					return;
 				}
@@ -187,7 +189,7 @@ namespace Hubbard::Helper {
 			std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 			std::cout << "Computed DOS for iEoM in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
-			if (!(Utility::BinaryIO::serializeVector(approximate_dos, filename).good())) {
+			if (!(mrock::Utility::BinaryIO::serializeVector(approximate_dos, filename).good())) {
 				std::cerr << "Error while writing dos data to " << filename << std::endl;
 			}
 		};

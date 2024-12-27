@@ -1,33 +1,33 @@
 #include "ModeHelper.hpp"
 
 namespace Hubbard::Helper {
-	void ModeHelper::checkTermValidity(const SymbolicOperators::WickTerm& term)
+	void ModeHelper::checkTermValidity(const mrock::SymbolicOperators::WickTerm& term)
 	{
-		if (term.delta_momenta.size() > 1) throw SymbolicOperators::bad_term_exception("Too many deltas: " + term.delta_momenta.size(), term);
+		if (term.delta_momenta.size() > 1) throw mrock::SymbolicOperators::bad_term_exception("Too many deltas: " + term.delta_momenta.size(), term);
 		if (term.delta_momenta.size() == 1) {
-			if (term.delta_momenta[0].first.momentum_list.size() != 1) throw SymbolicOperators::bad_term_exception("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size(), term);
-			//if (term.delta_momenta[0].second.momentum_list.size() != 1) throw SymbolicOperators::bad_term_exception("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size(), term);
+			if (term.delta_momenta[0].first.momentum_list.size() != 1) throw mrock::SymbolicOperators::bad_term_exception("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size(), term);
+			//if (term.delta_momenta[0].second.momentum_list.size() != 1) throw mrock::SymbolicOperators::bad_term_exception("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size(), term);
 		}
 
-		if (term.coefficients.size() > 1U) throw SymbolicOperators::bad_term_exception("Undefined number of coefficients: " + std::to_string(term.coefficients.size()), term);
-		if (term.operators.size() > 2U) throw SymbolicOperators::bad_term_exception("There are more than 2 WickOperators: " + term.operators.size(), term);
+		if (term.coefficients.size() > 1U) throw mrock::SymbolicOperators::bad_term_exception("Undefined number of coefficients: " + std::to_string(term.coefficients.size()), term);
+		if (term.operators.size() > 2U) throw mrock::SymbolicOperators::bad_term_exception("There are more than 2 WickOperators: " + term.operators.size(), term);
 		if (term.sums.momenta.size() > 0U) {
-			if (!term.hasSingleCoefficient()) throw SymbolicOperators::bad_term_exception("Too many sums: " + term.sums.momenta.size(), term);
-			if (term.delta_momenta.empty()) throw SymbolicOperators::bad_term_exception("There is a summation without delta_kl.", term);
+			if (!term.hasSingleCoefficient()) throw mrock::SymbolicOperators::bad_term_exception("Too many sums: " + term.sums.momenta.size(), term);
+			if (term.delta_momenta.empty()) throw mrock::SymbolicOperators::bad_term_exception("There is a summation without delta_kl.", term);
 		}
 		else {
-			if (term.operators.size() > 2U) throw SymbolicOperators::bad_term_exception("A term without a sum can only be bilinear, quartic or an identity.", term);
+			if (term.operators.size() > 2U) throw mrock::SymbolicOperators::bad_term_exception("A term without a sum can only be bilinear, quartic or an identity.", term);
 		}
 		if (!(term.coefficients.empty())) {
 			//if (term.getFirstCoefficient().dependsOnMomentum()) {
-			//	if (!(term.getFirstCoefficient().dependsOn('k'))) throw SymbolicOperators::bad_term_exception("Each momentum dependent term should have a k-depedance.", term);
+			//	if (!(term.getFirstCoefficient().dependsOn('k'))) throw mrock::SymbolicOperators::bad_term_exception("Each momentum dependent term should have a k-depedance.", term);
 			//}
 			if (term.getFirstCoefficient().momenta.size() > 1U)
-				throw SymbolicOperators::bad_term_exception("There must not be more than 1 momentum in coefficient!", term);
+				throw mrock::SymbolicOperators::bad_term_exception("There must not be more than 1 momentum in coefficient!", term);
 		}
 	}
 
-	ModeHelper::ModeHelper(Utility::InputFileReader& input)
+	ModeHelper::ModeHelper(mrock::Utility::InputFileReader& input)
 		: number_of_basis_terms{ input.getInt("number_of_basis_terms") }, start_basis_at{ input.getInt("start_basis_at") }, usingDOS(input.getBool("use_DOS"))
 	{
 		if (this->usingDOS) {
@@ -67,7 +67,7 @@ namespace Hubbard::Helper {
 				}
 			}
 		}
-		catch (SymbolicOperators::bad_term_exception const& ex) {
+		catch (mrock::SymbolicOperators::bad_term_exception const& ex) {
 			std::cout << "Encountered exception on term " << ex.which_term() << std::endl;
 			throw ex;
 		}

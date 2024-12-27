@@ -24,5 +24,5 @@ if(USE_MKL)
     target_compile_definitions(Helper PUBLIC EIGEN_USE_LAPACKE)
 endif()
 
-target_include_directories(Helper PUBLIC ${SymbolicOperators_INCLUDE_DIRS})
-target_link_libraries(Helper PUBLIC OpenMP::OpenMP_CXX SymbolicOperators::SymbolicOperators Models)
+target_include_directories(Helper PUBLIC ${mrock_INCLUDE_DIRS})
+target_link_libraries(Helper PUBLIC OpenMP::OpenMP_CXX mrock::SymbolicOperators Models)

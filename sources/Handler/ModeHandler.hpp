@@ -8,12 +8,12 @@
 class ModeHandler : virtual public HandlerBase
 {
 protected:
-	std::unique_ptr<Hubbard::Helper::ModeHelper> getHelper(Utility::InputFileReader& input, Hubbard::Models::ModelParameters& modelParameters) const;
-	std::unique_ptr<Hubbard::Helper::ModeHelper> getHelper(Utility::InputFileReader& input) const;
+	std::unique_ptr<Hubbard::Helper::ModeHelper> getHelper(mrock::Utility::InputFileReader& input, Hubbard::Models::ModelParameters& modelParameters) const;
+	std::unique_ptr<Hubbard::Helper::ModeHelper> getHelper(mrock::Utility::InputFileReader& input) const;
 
-	std::vector<std::string> getFileComments(Utility::InputFileReader& input, Hubbard::Helper::ModeHelper* modeHelper) const;
+	std::vector<std::string> getFileComments(mrock::Utility::InputFileReader& input, Hubbard::Helper::ModeHelper* modeHelper) const;
 public:
-	ModeHandler(Utility::InputFileReader& input, int _rank, int _numberOfRanks)
+	ModeHandler(mrock::Utility::InputFileReader& input, int _rank, int _numberOfRanks)
 		: HandlerBase(input, _rank, _numberOfRanks) {};
-	virtual void execute(Utility::InputFileReader& input) const override;
+	virtual void execute(mrock::Utility::InputFileReader& input) const override;
 };

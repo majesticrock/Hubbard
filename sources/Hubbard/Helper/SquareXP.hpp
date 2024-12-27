@@ -7,7 +7,7 @@ namespace Hubbard::Helper {
 	class SquareXP : public TermOnSquare, public XPModes
 	{
 	private:
-		inline global_floating_type computeRealTerm(const SymbolicOperators::WickTerm& term, int k, int l) const {
+		inline global_floating_type computeRealTerm(const mrock::SymbolicOperators::WickTerm& term, int k, int l) const {
 			const auto result = this->computeTerm(term, k, l);
 			if (abs(std::imag(result)) > ERROR_MARGIN) {
 				throw std::runtime_error("computeRealTerm() encountered a complex value!");
@@ -26,10 +26,10 @@ namespace Hubbard::Helper {
 			return *model;
 		};
 
-		SquareXP(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters, const Eigen::Vector2i& _mode_momentum = { 0, 0 })
+		SquareXP(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters, const Eigen::Vector2i& _mode_momentum = { 0, 0 })
 			: TermOnSquare(input, modelParameters, _mode_momentum), XPModes(input)
 		{};
 
-		void setNewModelParameters(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override;
+		void setNewModelParameters(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override;
 	};
 }

@@ -33,7 +33,7 @@ namespace Hubbard::Models::ChainLattice
 	public:
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(global_floating_type{});
-			std::conditional_t<Utility::is_complex<DataType>(),
+			std::conditional_t<mrock::Utility::is_complex<DataType>(),
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
@@ -47,7 +47,7 @@ namespace Hubbard::Models::ChainLattice
 				this->addToParameterSet(complex_F, k_x);
 			}
 
-			if constexpr (!Utility::is_complex<DataType>()) {
+			if constexpr (!mrock::Utility::is_complex<DataType>()) {
 				complexParametersToReal(complex_F, F);
 			}
 			this->applyIteration(F);

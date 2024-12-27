@@ -19,7 +19,7 @@ using namespace Hubbard::Models;
 namespace Hubbard::Helper {
 	using Constants::option_list;
 
-	PhaseHelper::PhaseHelper(Utility::InputFileReader& input, int _rank, int _nRanks)
+	PhaseHelper::PhaseHelper(mrock::Utility::InputFileReader& input, int _rank, int _nRanks)
 		: rank(_rank), numberOfRanks(_nRanks), use_broyden(input.getBool("use_broyden"))
 	{
 		std::string lattice_type = input.getString("lattice_type");

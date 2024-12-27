@@ -1,12 +1,14 @@
 #include "TermOnSquare.hpp"
 
 namespace Hubbard::Helper {
-	global_floating_type TermOnSquare::getExpectationValue(const SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const
+	global_floating_type TermOnSquare::getExpectationValue(const mrock::SymbolicOperators::WickOperator& op, const Eigen::Vector2i& momentum_value) const
 	{
-		assert(op.type < SymbolicOperators::Undefined_Type);
+		assert(op.type < mrock::SymbolicOperators::OperatorType::Undefined_Type);
 
 		int index = static_cast<int>(op.type);
-		if (op.type == SymbolicOperators::CDW_Type || op.type == SymbolicOperators::Number_Type) {
+		if (op.type == mrock::SymbolicOperators::OperatorType::CDW_Type 
+			|| op.type == mrock::SymbolicOperators::OperatorType::Number_Type) 
+		{
 			auto jt = wick_spin_offset.find(op.indizes[0]);
 			if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
 			index += jt->second;
@@ -16,7 +18,7 @@ namespace Hubbard::Helper {
 		return expecs[index](momentum_value(0), momentum_value(1));
 	}
 
-	Eigen::Vector2i TermOnSquare::compute_momentum_list(const SymbolicOperators::MomentumList& momentum, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const
+	Eigen::Vector2i TermOnSquare::compute_momentum_list(const mrock::SymbolicOperators::MomentumList& momentum, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const
 	{
 		if (momentum.empty()) {
 			return Eigen::Vector2i::Zero();
@@ -24,7 +26,7 @@ namespace Hubbard::Helper {
 		return compute_momentum_no_q(momentum.front(), k, l);
 	}
 
-	Eigen::Vector2i TermOnSquare::compute_momentum_no_q(const SymbolicOperators::Momentum& momentum, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const
+	Eigen::Vector2i TermOnSquare::compute_momentum_no_q(const mrock::SymbolicOperators::Momentum& momentum, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const
 	{
 		Eigen::Vector2i momentum_value = Eigen::Vector2i::Zero();
 		for (const auto& momentum_pair : momentum.momentum_list) {
@@ -50,13 +52,13 @@ namespace Hubbard::Helper {
 		return momentum_value;
 	}
 
-	global_floating_type TermOnSquare::compute_sum(const SymbolicOperators::WickTerm& term, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const {
+	global_floating_type TermOnSquare::compute_sum(const mrock::SymbolicOperators::WickTerm& term, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const {
 		global_floating_type value{ static_cast<global_floating_type>(term.multiplicity) };
 
 		// Compute coefficient
 		assert(term.hasSingleCoefficient());
 		int sum_of_all_index{ 0 };
-		SymbolicOperators::Coefficient const& coeff = term.coefficients.front();
+		mrock::SymbolicOperators::Coefficient const& coeff = term.coefficients.front();
 		if(coeff.momenta.empty()) {
 			value *= this->model->computeCoefficient(coeff, Eigen::Vector2i::Zero());
 		}
@@ -67,10 +69,12 @@ namespace Hubbard::Helper {
 
 		// Compute sum
 		const int q_dependend = term.whichOperatorDependsOn('q');
-		SymbolicOperators::WickOperator const* const summed_op = &(term.operators[q_dependend]);
-		SymbolicOperators::WickOperator const* const other_op = term.isBilinear() ? nullptr : &(term.operators[q_dependend == 0]);
+		mrock::SymbolicOperators::WickOperator const* const summed_op = &(term.operators[q_dependend]);
+		mrock::SymbolicOperators::WickOperator const* const other_op = term.isBilinear() ? nullptr : &(term.operators[q_dependend == 0]);
 		int index = static_cast<int>(summed_op->type);
-		if (summed_op->type == SymbolicOperators::CDW_Type || summed_op->type == SymbolicOperators::Number_Type) {
+		if (summed_op->type == mrock::SymbolicOperators::OperatorType::CDW_Type 
+			|| summed_op->type == mrock::SymbolicOperators::OperatorType::Number_Type) 
+		{
 			auto jt = wick_spin_offset.find(summed_op->indizes[0]);
 			if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
 			index += jt->second;
@@ -84,11 +88,11 @@ namespace Hubbard::Helper {
 		return value;
 	}
 
-	global_floating_type TermOnSquare::computeTerm(const SymbolicOperators::WickTerm& term, const int k, const int l) const
+	global_floating_type TermOnSquare::computeTerm(const mrock::SymbolicOperators::WickTerm& term, const int k, const int l) const
 	{
 		const OrderType model_order = this->model->get_order();
-		if(term.includesType(SymbolicOperators::CDW_Type) && !(model_order & (OrderType::CDW | OrderType::AFM))) return global_floating_type{};
-		if(term.includesType(SymbolicOperators::SC_Type)  && !(model_order & OrderType::SC)) return global_floating_type{};
+		if(term.includesType(mrock::SymbolicOperators::OperatorType::CDW_Type) && !(model_order & (OrderType::CDW | OrderType::AFM))) return global_floating_type{};
+		if(term.includesType(mrock::SymbolicOperators::OperatorType::SC_Type)  && !(model_order & OrderType::SC)) return global_floating_type{};
 
 		const std::vector<char>& momenta_plain = { 'k', 'l' };
 		std::vector<Eigen::Vector2i> indizes = { { x(k), y(k) }, { x(l), y(l) } };

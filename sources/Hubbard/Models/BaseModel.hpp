@@ -113,7 +113,7 @@ namespace Hubbard::Models {
 			return get_n_up() + get_n_down();
 		};
 		inline DataType get_g_up() const {
-			if constexpr (Utility::is_complex<DataType>()) {
+			if constexpr (mrock::Utility::is_complex<DataType>()) {
 				return -this->rho(1, 0);
 			}
 			else {
@@ -121,7 +121,7 @@ namespace Hubbard::Models {
 			}
 		};
 		inline DataType get_g_down() const {
-			if constexpr (Utility::is_complex<DataType>()) {
+			if constexpr (mrock::Utility::is_complex<DataType>()) {
 				return this->rho(2, 3);
 			}
 			else {
@@ -132,7 +132,7 @@ namespace Hubbard::Models {
 			return get_g_up() + get_g_down();
 		};
 		inline DataType get_f() const {
-			if constexpr (Utility::is_complex<DataType>()) {
+			if constexpr (mrock::Utility::is_complex<DataType>()) {
 				return -this->rho(0, 2);
 			}
 			else {
@@ -140,7 +140,7 @@ namespace Hubbard::Models {
 			}
 		};
 		inline DataType get_f_Q() const {
-			if constexpr (Utility::is_complex<DataType>()) {
+			if constexpr (mrock::Utility::is_complex<DataType>()) {
 				return -this->rho(1, 3);
 			}
 			else {
@@ -148,7 +148,7 @@ namespace Hubbard::Models {
 			}
 		};
 		inline DataType get_eta() const {
-			if constexpr (Utility::is_complex<DataType>()) {
+			if constexpr (mrock::Utility::is_complex<DataType>()) {
 				return -this->rho(0, 3);
 			}
 			else {

@@ -33,11 +33,7 @@ find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(Boost REQUIRED)
 
-# SymbolicOperators library
-find_package(SymbolicOperators REQUIRED CONFIG)
-# Utility library
-find_package(Utility REQUIRED)
-
+find_package(mrock REQUIRED CONFIG)
 
 # subdirs
 add_subdirectory(sources/Hubbard/Helper)

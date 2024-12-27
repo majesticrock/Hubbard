@@ -67,11 +67,11 @@ namespace Hubbard::Helper {
 			return *(this->model);
 		};
 
-		DOSGeneral(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) : TermWithDOS<DOS>(input, modelParameters), GeneralBasis(input) {
+		DOSGeneral(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) : TermWithDOS<DOS>(input, modelParameters), GeneralBasis(input) {
 			this->TOTAL_BASIS = this->number_of_basis_terms * Constants::BASIS_SIZE;
 		};
 
-		void setNewModelParameters(Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override {
+		void setNewModelParameters(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override {
 			this->internal_setNewModelParameters(input, modelParameters);
 		};
 	};

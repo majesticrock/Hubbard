@@ -1,5 +1,5 @@
 #include "SquareTripletPairing.hpp"
-#include <Utility/Selfconsistency/IterativeSolver.hpp>
+#include <mrock/Utility/Selfconsistency/IterativeSolver.hpp>
 
 constexpr size_t NUMBER_OF_PARAMETERS = 18;
 
@@ -80,7 +80,7 @@ namespace Hubbard::Models::SquareLattice {
 	}
 	ModelAttributes<global_floating_type> SquareTripletPairing::computePhases()
 	{
-		auto solver = Utility::Selfconsistency::make_iterative<complex_prec>(this, &model_attributes);
+		auto solver = mrock::Utility::Selfconsistency::make_iterative<complex_prec>(this, &model_attributes);
 		return ModelAttributes<global_floating_type>(solver.compute(), Magnitude);
 	}
 }

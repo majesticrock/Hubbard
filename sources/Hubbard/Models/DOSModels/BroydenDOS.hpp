@@ -1,5 +1,5 @@
 #pragma once
-#include <Utility/Selfconsistency/BroydenSolver.hpp>
+#include <mrock/Utility/Selfconsistency/BroydenSolver.hpp>
 #include "DOSBasedModel.hpp"
 
 namespace Hubbard::Models::DOSModels {
@@ -16,7 +16,7 @@ namespace Hubbard::Models::DOSModels {
 
 		virtual ModelAttributes<global_floating_type> computePhases() override
 		{
-			auto solver = Utility::Selfconsistency::make_broyden<global_floating_type>(this, &this->model_attributes, _MaxPreBroydenIterations);
+			auto solver = mrock::Utility::Selfconsistency::make_broyden<global_floating_type>(this, &this->model_attributes, _MaxPreBroydenIterations);
 			return solver.compute(true);
 		};
 	};

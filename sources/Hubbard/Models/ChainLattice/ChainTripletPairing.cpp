@@ -1,5 +1,5 @@
 #include "ChainTripletPairing.hpp"
-#include <Utility/Selfconsistency/IterativeSolver.hpp>
+#include <mrock/Utility/Selfconsistency/IterativeSolver.hpp>
 
 namespace Hubbard::Models::ChainLattice {
 	void ChainTripletPairing::init()
@@ -78,7 +78,7 @@ namespace Hubbard::Models::ChainLattice {
 
 	ModelAttributes<global_floating_type> ChainTripletPairing::computePhases()
 	{
-		auto solver = Utility::Selfconsistency::make_iterative<complex_prec>(this, &model_attributes);
+		auto solver = mrock::Utility::Selfconsistency::make_iterative<complex_prec>(this, &model_attributes);
 		return ModelAttributes<global_floating_type>(solver.compute(), Magnitude);
 	}
 }
