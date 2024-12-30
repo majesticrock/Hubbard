@@ -74,7 +74,7 @@ namespace Hubbard::Helper {
 			}
 		}
 	}
-	void SquareGeneral::setNewModelParameters(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
+	void SquareGeneral::setNewModelParameters(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
 	{
 		this->internal_setNewModelParameters(input, modelParameters);
 	}

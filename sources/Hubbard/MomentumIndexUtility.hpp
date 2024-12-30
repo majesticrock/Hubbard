@@ -1,7 +1,7 @@
 #include "Constants.hpp"
 
 ///////////////////////
-// Utility functions //
+// utility functions //
 ///////////////////////
 
 namespace Hubbard {

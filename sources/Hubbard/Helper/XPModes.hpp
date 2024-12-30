@@ -1,13 +1,13 @@
 #pragma once
 #include "ModeHelper.hpp"
-#include <mrock/Utility/Numerics/iEoM/XPResolvent.hpp>
+#include <mrock/utility/Numerics/iEoM/XPResolvent.hpp>
 
 namespace Hubbard::Helper {
-	class XPModes : public ModeHelper, protected mrock::Utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>
+	class XPModes : public ModeHelper, protected mrock::utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>
 	{
-		friend struct mrock::Utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>;
+		friend struct mrock::utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>;
 	protected:
-		using _parent_algorithm = mrock::Utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>;
+		using _parent_algorithm = mrock::utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>;
 
 		static constexpr size_t hermitian_size = 7U;
 		static constexpr size_t antihermitian_size = 5U;
@@ -21,7 +21,7 @@ namespace Hubbard::Helper {
 		virtual void fillMatrices() override;
 		void createStartingStates();
 	public:
-		XPModes(mrock::Utility::InputFileReader& input)
+		XPModes(mrock::utility::InputFileReader& input)
 			: ModeHelper(input), _parent_algorithm(this, SQRT_SALT),
 			hermitian_offsets{
 				0,							Constants::BASIS_SIZE,

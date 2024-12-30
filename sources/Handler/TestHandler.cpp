@@ -39,7 +39,7 @@ global_floating_type compute_phi_k(NumericalMomentum<2> const& k) {
 	return result;
 }
 
-void TestHandler::execute(mrock::Utility::InputFileReader& input) const
+void TestHandler::execute(mrock::utility::InputFileReader& input) const
 {
 	std::chrono::steady_clock::time_point test_b = std::chrono::steady_clock::now();
 	std::chrono::steady_clock::time_point test_e;

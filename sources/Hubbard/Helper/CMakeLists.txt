@@ -1,5 +1,5 @@
 # CMake for Helper
-# requires: Utility, Models, SymbolicOperators, DensityOfStates
+# requires: utility, Models, symbolic_operators, DensityOfStates
 
 add_library(Helper 
     GeneralBasis.cpp
@@ -25,4 +25,4 @@ if(USE_MKL)
 endif()
 
 target_include_directories(Helper PUBLIC ${mrock_INCLUDE_DIRS})
-target_link_libraries(Helper PUBLIC OpenMP::OpenMP_CXX mrock::SymbolicOperators Models)
+target_link_libraries(Helper PUBLIC OpenMP::OpenMP_CXX mrock::symbolic_operators Models)

@@ -1,7 +1,7 @@
 #include "BaseDOS.hpp"
 #include <iostream>
 #include <numeric>
-#include <mrock/Utility/BinaryIO.hpp>
+#include <mrock/utility/BinaryIO.hpp>
 
 namespace Hubbard::DensityOfStates {
 	std::vector<dos_precision> BaseDOS::values;
@@ -40,7 +40,7 @@ namespace Hubbard::DensityOfStates {
 	}
 
 	void BaseDOS::writeToBinaryFile(const std::string& filename) {
-		std::ofstream writer = mrock::Utility::BinaryIO::createWriter(filename);
+		std::ofstream writer = mrock::utility::BinaryIO::createWriter(filename);
 		if (!writer) {
 			std::cerr << "Could not open file stream in writeToBinaryFile - " << filename << std::endl;
 			return;
@@ -48,28 +48,28 @@ namespace Hubbard::DensityOfStates {
 		// we need to create a proper lvalue variable
 		// In order to read its address and by extent byte representation later on
 		size_t vector_size = values.size();
-		mrock::Utility::BinaryIO::writeVariable(vector_size, writer);
-		mrock::Utility::BinaryIO::writeVector(values, writer);
-		mrock::Utility::BinaryIO::writeVector(abscissa, writer);
-		mrock::Utility::BinaryIO::writeVector(weights, writer);
+		mrock::utility::BinaryIO::writeVariable(vector_size, writer);
+		mrock::utility::BinaryIO::writeVector(values, writer);
+		mrock::utility::BinaryIO::writeVector(abscissa, writer);
+		mrock::utility::BinaryIO::writeVector(weights, writer);
 		writer.close();
 	}
 
 	bool BaseDOS::loadFromBinaryFile(const std::string& filename) {
-		std::ifstream reader = mrock::Utility::BinaryIO::createReader(filename);
+		std::ifstream reader = mrock::utility::BinaryIO::createReader(filename);
 		if (!reader) {
 			std::cerr << "Could not open file stream for " << filename << std::endl;
 			return false;
 		}
 		size_t vector_size;
-		mrock::Utility::BinaryIO::readToVariable(vector_size, reader);
+		mrock::utility::BinaryIO::readToVariable(vector_size, reader);
 		values.resize(vector_size);
 		weights.resize(vector_size);
 		abscissa.resize(vector_size);
 
-		mrock::Utility::BinaryIO::readToVector(values, reader);
-		mrock::Utility::BinaryIO::readToVector(abscissa, reader);
-		mrock::Utility::BinaryIO::readToVector(weights, reader);
+		mrock::utility::BinaryIO::readToVector(values, reader);
+		mrock::utility::BinaryIO::readToVector(abscissa, reader);
+		mrock::utility::BinaryIO::readToVector(weights, reader);
 
 		reader.close();
 		if (!reader.good()) {

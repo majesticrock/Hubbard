@@ -1,5 +1,5 @@
 # CMake for Handler
-# requires: MPI, Utility, Models, DensityOfStates, Helper
+# requires: MPI, utility, Models, DensityOfStates, Helper
 
 add_library(Handler 
     HandlerBase.cpp

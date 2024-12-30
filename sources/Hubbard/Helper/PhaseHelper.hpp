@@ -3,7 +3,7 @@
 #include <array>
 #include <cassert>
 #include <memory>
-#include <mrock/Utility/InputFileReader.hpp>
+#include <mrock/utility/InputFileReader.hpp>
 #include "../Models/BaseModel.hpp"
 
 namespace Hubbard::Helper {
@@ -33,7 +33,7 @@ namespace Hubbard::Helper {
 		Models::ModelAttributes<global_floating_type> computeDataPoint_No_AFM_CDW_Fix(const Models::ModelParameters& mp,
 			std::optional<Models::ModelAttributes<global_floating_type>> startingValues = std::nullopt);
 	public:
-		PhaseHelper(mrock::Utility::InputFileReader& input, int _rank, int _nRanks);
+		PhaseHelper(mrock::utility::InputFileReader& input, int _rank, int _nRanks);
 
 		void compute_crude(std::vector<data_vector>& data_mapper);
 		void findSingleBoundary(const std::vector<data_vector>& origin, data_vector& recieve_data, int value_index);

@@ -1,6 +1,6 @@
 #pragma once
-#include <mrock/Utility/InputFileReader.hpp>
-#include <mrock/SymbolicOperators/WickTerm.hpp>
+#include <mrock/utility/InputFileReader.hpp>
+#include <mrock/symbolic_operators/WickTerm.hpp>
 #include <map>
 #include <memory>
 #include "../Models/ModelParameters.hpp"
@@ -14,7 +14,7 @@ namespace Hubbard::Helper {
 	template <class Model>
 	class DetailModelConstructor {
 	private:
-		void initialize_model(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) {
+		void initialize_model(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters) {
 			if (input.getString("ratio_CDW_SC") != "-1") {
 				model->set_CDW_SC_ratio(input.getDouble("ratio_CDW_SC"));
 			}
@@ -53,17 +53,17 @@ namespace Hubbard::Helper {
 		ValueArray sum_of_all;
 		std::unique_ptr<Model> model{};
 
-		const std::map<mrock::SymbolicOperators::Index, int> wick_spin_offset = {
-			{mrock::SymbolicOperators::Index::SpinUp, 0}, 
-			{mrock::SymbolicOperators::Index::SpinDown, 4}, 
-			{mrock::SymbolicOperators::Index::Sigma, 6} };
+		const std::map<mrock::symbolic_operators::Index, int> wick_spin_offset = {
+			{mrock::symbolic_operators::Index::SpinUp, 0}, 
+			{mrock::symbolic_operators::Index::SpinDown, 4}, 
+			{mrock::symbolic_operators::Index::Sigma, 6} };
 
-		inline global_floating_type getSumOfAll(const mrock::SymbolicOperators::WickOperator& op, int cos_modulation = 0) const {
-			assert(op.type < mrock::SymbolicOperators::OperatorType::Undefined_Type);
+		inline global_floating_type getSumOfAll(const mrock::symbolic_operators::WickOperator& op, int cos_modulation = 0) const {
+			assert(op.type < mrock::symbolic_operators::OperatorType::Undefined_Type);
 
 			int index = static_cast<int>(op.type);
-			if (op.type == mrock::SymbolicOperators::OperatorType::CDW_Type 
-				|| op.type == mrock::SymbolicOperators::OperatorType::Number_Type) 
+			if (op.type == mrock::symbolic_operators::OperatorType::CDW_Type 
+				|| op.type == mrock::symbolic_operators::OperatorType::Number_Type) 
 			{
 				auto jt = wick_spin_offset.find(op.indizes[0]);
 				if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
@@ -73,7 +73,7 @@ namespace Hubbard::Helper {
 			if (op.is_daggered) return sum_of_all(index, cos_modulation);
 			return sum_of_all(index, cos_modulation);
 		};
-		void internal_setNewModelParameters(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
+		void internal_setNewModelParameters(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
 		{
 			this->model->setNewModelParameters(modelParameters, Model::SYSTEM_TYPE);
 			this->initialize_model(input, modelParameters);
@@ -82,7 +82,7 @@ namespace Hubbard::Helper {
 	public:
 		virtual ~DetailModelConstructor() = default;
 
-		DetailModelConstructor(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
+		DetailModelConstructor(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
 			: model(std::make_unique<Model>(modelParameters))
 		{
 			this->initialize_model(input, modelParameters);

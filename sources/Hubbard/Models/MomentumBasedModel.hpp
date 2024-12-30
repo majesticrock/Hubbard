@@ -1,6 +1,6 @@
 #pragma once
 #include "BaseModel.hpp"
-#include <mrock/SymbolicOperators/Coefficient.hpp>
+#include <mrock/symbolic_operators/Coefficient.hpp>
 #include "../NumericalMomentum.hpp"
 
 namespace Hubbard::Models {
@@ -39,7 +39,7 @@ namespace Hubbard::Models {
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(DataType{});
-			std::conditional_t<mrock::Utility::is_complex<DataType>(),
+			std::conditional_t<mrock::utility::is_complex<DataType>(),
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
@@ -51,7 +51,7 @@ namespace Hubbard::Models {
 				this->addToParameterSet(complex_F, ks);
 			} while (ks.iterateHalfBZ());
 
-			if constexpr (!mrock::Utility::is_complex<DataType>()) {
+			if constexpr (!mrock::utility::is_complex<DataType>()) {
 				complexParametersToReal(complex_F, F);
 			}
 			this->applyIteration(F);
@@ -77,7 +77,7 @@ namespace Hubbard::Models {
 			computeChemicalPotential();
 		};
 
-		inline global_floating_type computeCoefficient(const mrock::SymbolicOperators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
+		inline global_floating_type computeCoefficient(const mrock::symbolic_operators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {
 				NumericalMomentum<Dimension> temp{ index_vector_to_k_vector(momentum) };
 				return temp.unperturbed_energy() - this->chemical_potential;

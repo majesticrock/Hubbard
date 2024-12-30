@@ -1,6 +1,6 @@
 #pragma once
 #include "ModelParameters.hpp"
-#include <mrock/Utility/IsComplex.hpp>
+#include <mrock/utility/IsComplex.hpp>
 #include <complex>
 #include <iostream>
 #include <vector>
@@ -163,7 +163,7 @@ namespace Hubbard::Models {
 		};
 
 		/*
-		* Utility functions
+		* utility functions
 		*/
 
 		inline DataType& operator[](size_t i) {
@@ -225,7 +225,7 @@ namespace Hubbard::Models {
 		};
 
 		inline global_floating_type renormalizedEnergy_up(const global_floating_type GAMMA) const {
-			if constexpr (mrock::Utility::is_complex<DataType>()) {
+			if constexpr (mrock::utility::is_complex<DataType>()) {
 				return -(2. + this->selfconsistency_values[6].real()) * GAMMA;
 			}
 			else {
@@ -233,7 +233,7 @@ namespace Hubbard::Models {
 			}
 		};
 		inline global_floating_type renormalizedEnergy_down(const global_floating_type GAMMA) const {
-			if constexpr (mrock::Utility::is_complex<DataType>()) {
+			if constexpr (mrock::utility::is_complex<DataType>()) {
 				return -(2. + this->selfconsistency_values[7].real()) * GAMMA;
 			}
 			else {
@@ -243,7 +243,7 @@ namespace Hubbard::Models {
 
 		// Returns the total gap value sqrt(sc^2 + cdw^2)
 		inline global_floating_type getTotalGapValue() const {
-			if constexpr (mrock::Utility::is_complex<DataType>()) {
+			if constexpr (mrock::utility::is_complex<DataType>()) {
 				return sqrt(norm(selfconsistency_values[0])
 					+ norm(selfconsistency_values[1])
 					+ norm(selfconsistency_values[2]));

@@ -7,13 +7,13 @@
 #include "../Hubbard/Helper/DOS_XP.hpp"
 #include "../Hubbard/DensityOfStates/Square.hpp"
 #include "../Hubbard/DensityOfStates/SimpleCubic.hpp"
-#include <mrock/Utility/OutputConvenience.hpp>
+#include <mrock/utility/OutputConvenience.hpp>
 #include <nlohmann/json.hpp>
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
 const std::string BASE_FOLDER = "../../data/hubbard/";
 
-std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(mrock::Utility::InputFileReader& input, Hubbard::Models::ModelParameters& modelParameters) const
+std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(mrock::utility::InputFileReader& input, Hubbard::Models::ModelParameters& modelParameters) const
 {
 	if (input.getInt("start_basis_at") == -1) {
 		if (input.getBool("use_DOS")) {
@@ -50,7 +50,7 @@ std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(mrock::Utili
 	return nullptr;
 }
 
-std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(mrock::Utility::InputFileReader& input) const
+std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(mrock::utility::InputFileReader& input) const
 {
 	std::vector<double> model_params = input.getDoubleList("model_parameters");
 	Hubbard::Models::ModelParameters modelParameters(model_params[0], model_params[1], model_params[2],
@@ -58,7 +58,7 @@ std::unique_ptr<Hubbard::Helper::ModeHelper> ModeHandler::getHelper(mrock::Utili
 	return getHelper(input, modelParameters);
 }
 
-std::vector<std::string> ModeHandler::getFileComments(mrock::Utility::InputFileReader& input, Hubbard::Helper::ModeHelper* modeHelper) const
+std::vector<std::string> ModeHandler::getFileComments(mrock::utility::InputFileReader& input, Hubbard::Helper::ModeHelper* modeHelper) const
 {
 	using std::to_string;
 
@@ -70,7 +70,7 @@ std::vector<std::string> ModeHandler::getFileComments(mrock::Utility::InputFileR
 	return comments;
 }
 
-void ModeHandler::execute(mrock::Utility::InputFileReader& input) const
+void ModeHandler::execute(mrock::utility::InputFileReader& input) const
 {
 	using std::to_string;
 
@@ -88,7 +88,7 @@ void ModeHandler::execute(mrock::Utility::InputFileReader& input) const
 		if (!resolvents.empty()) {
 			nlohmann::json jResolvents = {
 				{ "resolvents", resolvents },
-				{ "time", mrock::Utility::time_stamp() },
+				{ "time", mrock::utility::time_stamp() },
 				{ "used_dos", input.getBool("use_DOS") },
 				{ "discretization", input.getInt("k_discretization") },
 				{ "lattice_type", input.getString("lattice_type") },
@@ -100,7 +100,7 @@ void ModeHandler::execute(mrock::Utility::InputFileReader& input) const
 				{ "XP_basis", (input.getInt("start_basis_at") < 0 ? 1 : 0) },
 				{ "start_ratio_cdw_sc", input.getDouble("ratio_CDW_SC") }
 			};
-			mrock::Utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + "resolvents.json.gz");
+			mrock::utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + "resolvents.json.gz");
 		}
 		else {
 			std::cout << "Resolvent returned an empty vector." << std::endl;

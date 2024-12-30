@@ -15,7 +15,7 @@ namespace Hubbard::Helper {
 	class DOS_XP : public TermWithDOS<DOS>, public XPModes
 	{
 	protected:
-		inline global_floating_type computeRealTerm(const mrock::SymbolicOperators::WickTerm& term, int k, int l) const {
+		inline global_floating_type computeRealTerm(const mrock::symbolic_operators::WickTerm& term, int k, int l) const {
 			const auto result = this->computeTerm(term, k, l);
 			if (abs(std::imag(result)) > ERROR_MARGIN) {
 				throw std::runtime_error("computeRealTerm() encountered a complex value!");
@@ -115,11 +115,11 @@ namespace Hubbard::Helper {
 			return *(this->model);
 		};
 
-		DOS_XP(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) : TermWithDOS<DOS>(input, modelParameters), XPModes(input) {
+		DOS_XP(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters) : TermWithDOS<DOS>(input, modelParameters), XPModes(input) {
 			this->TOTAL_BASIS = this->number_of_basis_terms * Constants::BASIS_SIZE;
 		};
 
-		void setNewModelParameters(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override {
+		void setNewModelParameters(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override {
 			this->internal_setNewModelParameters(input, modelParameters);
 		};
 	};

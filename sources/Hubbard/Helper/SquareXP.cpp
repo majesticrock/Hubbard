@@ -80,7 +80,7 @@ namespace Hubbard::Helper {
 			} // end k-loop
 		} // end term-loop
 	}
-	void SquareXP::setNewModelParameters(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
+	void SquareXP::setNewModelParameters(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters)
 	{
 		this->internal_setNewModelParameters(input, modelParameters);
 	}

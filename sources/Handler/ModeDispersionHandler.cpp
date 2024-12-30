@@ -6,7 +6,7 @@
 
 const std::string BASE_FOLDER = "../../data/hubbard/";
 
-void ModeDispersionHandler::execute(mrock::Utility::InputFileReader& input) const
+void ModeDispersionHandler::execute(mrock::utility::InputFileReader& input) const
 {
 	using std::to_string;
 
@@ -20,24 +20,24 @@ void ModeDispersionHandler::execute(mrock::Utility::InputFileReader& input) cons
 	if(eval_index < 0) {
 		for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
 		{
-			mrock::Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
+			mrock::utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
 			modeHelper.mode_momentum.x() += 1;
 		}
 		for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
 		{
-			mrock::Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
+			mrock::utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
 			modeHelper.mode_momentum.y() += 1;
 		}
 		for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
 		{
-			mrock::Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
+			mrock::utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
 			modeHelper.mode_momentum.x() -= 1;
 			modeHelper.mode_momentum.y() -= 1;
 		}
 	} 
 	else {
 		modeHelper.mode_momentum = eval_point(eval_index);
-		mrock::Utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
+		mrock::utility::Numerics::join_data_wrapper(resolvents, modeHelper.computeCollectiveModes());
 	}
 
 	const std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };
@@ -47,7 +47,7 @@ void ModeDispersionHandler::execute(mrock::Utility::InputFileReader& input) cons
 	if (!resolvents.empty()) {
 		nlohmann::json jResolvents = {
 			{ "resolvents", resolvents },
-			{ "time", mrock::Utility::time_stamp() },
+			{ "time", mrock::utility::time_stamp() },
 			{ "used_dos", input.getBool("use_DOS") },
 			{ "discretization", input.getInt("k_discretization") },
 			{ "lattice_type", input.getString("lattice_type") },
@@ -60,7 +60,7 @@ void ModeDispersionHandler::execute(mrock::Utility::InputFileReader& input) cons
 			{ "XP_basis", (input.getInt("start_basis_at") < 0 ? 1 : 0) },
 			{ "start_ratio_cdw_sc", input.getDouble("ratio_CDW_SC") }
 		};
-		mrock::Utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + std::to_string(eval_index) + "dispersions.json.gz");
+		mrock::utility::saveString(jResolvents.dump(4), BASE_FOLDER + output_folder + std::to_string(eval_index) + "dispersions.json.gz");
 	}
 	else {
 		std::cout << "Resolvent returned an empty vector." << std::endl;

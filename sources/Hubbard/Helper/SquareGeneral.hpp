@@ -17,10 +17,10 @@ namespace Hubbard::Helper {
 			return *model;
 		};
 
-		SquareGeneral(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) : TermOnSquare(input, modelParameters), GeneralBasis(input) {};
-		SquareGeneral(mrock::Utility::InputFileReader& input, std::unique_ptr<Hubbard::Models::SquareLattice::UsingBroyden>&& model_ptr)
+		SquareGeneral(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters) : TermOnSquare(input, modelParameters), GeneralBasis(input) {};
+		SquareGeneral(mrock::utility::InputFileReader& input, std::unique_ptr<Hubbard::Models::SquareLattice::UsingBroyden>&& model_ptr)
 			: TermOnSquare(std::move(model_ptr)), GeneralBasis(input) {};
 
-		void setNewModelParameters(mrock::Utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override;
+		void setNewModelParameters(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters) override;
 	};
 }

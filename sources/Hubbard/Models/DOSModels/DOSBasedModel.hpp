@@ -1,7 +1,7 @@
 #pragma once
 #include "../BaseModel.hpp"
 #include "../../DensityOfStates/BaseDOS.hpp"
-#include <mrock/SymbolicOperators/Coefficient.hpp>
+#include <mrock/symbolic_operators/Coefficient.hpp>
 #include <algorithm>
 #include <mutex>
 #include <numeric>
@@ -116,7 +116,7 @@ namespace Hubbard::Models::DOSModels {
 
 		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(DataType{});
-			std::conditional_t<mrock::Utility::is_complex<DataType>(), ComplexParameterVector&, ComplexParameterVector> complex_F = F;
+			std::conditional_t<mrock::utility::is_complex<DataType>(), ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
 
@@ -128,7 +128,7 @@ namespace Hubbard::Models::DOSModels {
 
 			complex_F = _self_consistency_integrator.integrate_by_reference_symmetric(expectationValues);
 
-			if constexpr (!mrock::Utility::is_complex<DataType>()) {
+			if constexpr (!mrock::utility::is_complex<DataType>()) {
 				complexParametersToReal(complex_F, F);
 			}
 			this->applyIteration(F);
@@ -185,7 +185,7 @@ namespace Hubbard::Models::DOSModels {
 			return _scalar_integrator().integrate_by_value(procedure) / 2;
 		};
 
-		inline global_floating_type computeCoefficient(const mrock::SymbolicOperators::Coefficient& coeff, const global_floating_type& gamma) const {
+		inline global_floating_type computeCoefficient(const mrock::symbolic_operators::Coefficient& coeff, const global_floating_type& gamma) const {
 			if (coeff.name == "\\epsilon_0") {
 				if (!coeff.dependsOn('k')) throw std::runtime_error("Epsilon should always be k-dependent.");
 				return ((coeff.momenta.front().add_Q ? 2 * gamma : -2 * gamma) - this->chemical_potential);

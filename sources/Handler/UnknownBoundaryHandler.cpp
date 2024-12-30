@@ -13,7 +13,7 @@
 #include <vector>
 #include <filesystem>
 
-#include <mrock/Utility/OutputConvenience.hpp>
+#include <mrock/utility/OutputConvenience.hpp>
 
 #include "../Hubbard/Constants.hpp"
 #include "../Hubbard/Helper/DetailModelConstructor.hpp"
@@ -23,7 +23,7 @@ constexpr size_t MAX_ITERATIONS = 30U;
 constexpr double ERROR_MARGIN = 1e-4;
 const std::string BASE_FOLDER = "../../data/phases/";
 
-void UnknownBoundaryHandler::execute(mrock::Utility::InputFileReader& input) const {
+void UnknownBoundaryHandler::execute(mrock::utility::InputFileReader& input) const {
 	Hubbard::Helper::DetailModelConstructorSettings::print_mean_field_result = false;
 
 	double SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
@@ -146,6 +146,6 @@ void UnknownBoundaryHandler::execute(mrock::Utility::InputFileReader& input) con
 		std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;
 		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
-		mrock::Utility::saveData(global_iterator_data, recieve_data, BASE_FOLDER + output_folder + "unkown_boundary.dat.gz", comments);
+		mrock::utility::saveData(global_iterator_data, recieve_data, BASE_FOLDER + output_folder + "unkown_boundary.dat.gz", comments);
 	}
 }

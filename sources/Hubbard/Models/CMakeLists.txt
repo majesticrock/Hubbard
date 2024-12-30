@@ -1,5 +1,5 @@
 # CMake for Models
-# requires: Utility, SymbolicOperators, DensityOfStates
+# requires: utility, symbolic_operators, DensityOfStates
 
 add_library(Models 
     EMCoupling.cpp

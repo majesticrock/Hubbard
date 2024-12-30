@@ -48,7 +48,7 @@ int main(int argc, char** argv)
 	if (rank == 0) {
 		std::cout << "Using parameter file " << argv[1] << std::endl;
 	}
-	mrock::Utility::InputFileReader input(argv[1]);
+	mrock::utility::InputFileReader input(argv[1]);
 	Constants::setDiscretization(input.getInt("k_discretization"));
 	if (input.getBool("use_DOS")) {
 		Constants::setBasis(Constants::K_DISCRETIZATION);

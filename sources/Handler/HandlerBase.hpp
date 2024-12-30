@@ -1,5 +1,5 @@
 #pragma once
-#include <mrock/Utility/InputFileReader.hpp>
+#include <mrock/utility/InputFileReader.hpp>
 #include "../Hubbard/Models/ModelParameters.hpp"
 #include <string>
 
@@ -10,11 +10,11 @@ protected:
 	int rank{};
 	int numberOfRanks{ 1 };
 
-	inline std::string getOutputFolder(mrock::Utility::InputFileReader& input) const {
+	inline std::string getOutputFolder(mrock::utility::InputFileReader& input) const {
 		return input.getString("lattice_type") + "/" + input.getString("output_folder");
 	}
 public:
-	HandlerBase(mrock::Utility::InputFileReader& input, int _rank, int _numberOfRanks);
+	HandlerBase(mrock::utility::InputFileReader& input, int _rank, int _numberOfRanks);
 	virtual ~HandlerBase() = default;
-	virtual void execute(mrock::Utility::InputFileReader& input) const = 0;
+	virtual void execute(mrock::utility::InputFileReader& input) const = 0;
 };

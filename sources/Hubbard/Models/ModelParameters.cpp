@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <cmath>
-#include <mrock/Utility/better_to_string.hpp>
+#include <mrock/utility/better_to_string.hpp>
 
 namespace Hubbard::Models {
 	void ModelParameters::init()
@@ -144,7 +144,7 @@ namespace Hubbard::Models {
 				return out.str();
 			}
 			else {
-				std::string str = mrock::Utility::better_to_string(number, std::chars_format::fixed);
+				std::string str = mrock::utility::better_to_string(number, std::chars_format::fixed);
 				// Remove trailing zeroes
 				str.erase(str.find_last_not_of('0') + 1, std::string::npos);
 				str.erase(str.find_last_not_of('.') + 1, std::string::npos);

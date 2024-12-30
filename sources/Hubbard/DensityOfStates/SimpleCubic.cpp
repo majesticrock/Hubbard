@@ -9,7 +9,7 @@
 #include <boost/math/quadrature/tanh_sinh.hpp>
 #include <boost/math/quadrature/gauss_kronrod.hpp>
 
-#include <mrock/Utility/FunctionTime.hpp>
+#include <mrock/utility/FunctionTime.hpp>
 
 #include "tanh_sinh_helper.hpp"
 

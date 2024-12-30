@@ -14,7 +14,7 @@ protected:
 	const int FIRST_IT_STEPS{};
 
 public:
-	PhaseHandler(mrock::Utility::InputFileReader& input, int _rank, int _numberOfRanks)
+	PhaseHandler(mrock::utility::InputFileReader& input, int _rank, int _numberOfRanks)
 		: HandlerBase(input, _rank, _numberOfRanks), model_params{ input.getDoubleList("model_parameters") },
 		GLOBAL_IT_STEPS{ input.getInt("global_iterator_steps") }, FIRST_IT_STEPS{ GLOBAL_IT_STEPS / _numberOfRanks }
 	{
@@ -31,5 +31,5 @@ public:
 			}
 		}
 	};
-	virtual void execute(mrock::Utility::InputFileReader& input) const override;
+	virtual void execute(mrock::utility::InputFileReader& input) const override;
 };
