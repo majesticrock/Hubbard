@@ -1,8 +1,15 @@
 #include "ModeDispersionHandler.hpp"
-#include "../Hubbard/Helper/SquareGeneral.hpp"
+
 #include <vector>
 #include <array>
 #include <filesystem>
+#include <mrock/utility/info_to_json.hpp>
+#include <mrock/info.h>
+#include <nlohmann/json.hpp>
+// File is generated on build by cmake
+#include "../build/info.h"
+
+#include "../Hubbard/Helper/SquareGeneral.hpp"
 
 const std::string BASE_FOLDER = "../../data/hubbard/";
 
@@ -65,4 +72,9 @@ void ModeDispersionHandler::execute(mrock::utility::InputFileReader& input) cons
 	else {
 		std::cout << "Resolvent returned an empty vector." << std::endl;
 	}
+
+	// Generate metadata
+	nlohmann::json info_json = mrock::utility::generate_json<Hubbard::info>("hubbard_");
+	info_json.update(mrock::utility::generate_json<mrock::info>("mrock_"));
+	mrock::utility::saveString(info_json.dump(4), BASE_FOLDER + output_folder + "metadata.json.gz");
 }

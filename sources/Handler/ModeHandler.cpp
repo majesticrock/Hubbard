@@ -1,14 +1,22 @@
 #include "ModeHandler.hpp"
+
 #include <vector>
 #include <filesystem>
+
+#include <mrock/utility/OutputConvenience.hpp>
+#include <mrock/utility/info_to_json.hpp>
+#include <mrock/info.h>
+#include <nlohmann/json.hpp>
+// File is generated on build by cmake
+#include "../build/info.h"
+
 #include "../Hubbard/Helper/SquareGeneral.hpp"
 #include "../Hubbard/Helper/SquareXP.hpp"
 #include "../Hubbard/Helper/DOSGeneral.hpp"
 #include "../Hubbard/Helper/DOS_XP.hpp"
 #include "../Hubbard/DensityOfStates/Square.hpp"
 #include "../Hubbard/DensityOfStates/SimpleCubic.hpp"
-#include <mrock/utility/OutputConvenience.hpp>
-#include <nlohmann/json.hpp>
+
 
 using data_vector = std::vector<Hubbard::global_floating_type>;
 const std::string BASE_FOLDER = "../../data/hubbard/";
@@ -105,5 +113,10 @@ void ModeHandler::execute(mrock::utility::InputFileReader& input) const
 		else {
 			std::cout << "Resolvent returned an empty vector." << std::endl;
 		}
+
+		// Generate metadata
+		nlohmann::json info_json = mrock::utility::generate_json<Hubbard::info>("hubbard_");
+		info_json.update(mrock::utility::generate_json<mrock::info>("mrock_"));
+		mrock::utility::saveString(info_json.dump(4), BASE_FOLDER + output_folder + "metadata.json.gz");
 	}
 }
