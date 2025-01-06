@@ -3,7 +3,7 @@
 #include "../Constants.hpp"
 #include "../Models/SquareLattice/UsingBroyden.hpp"
 #include "DetailModelConstructor.hpp"
-#include "../MomentumIndexutility.hpp"
+#include "../MomentumIndexUtility.hpp"
 
 namespace Hubbard::Helper {
 	class TermOnSquare : protected DetailModelConstructor<Hubbard::Models::SquareLattice::UsingBroyden>

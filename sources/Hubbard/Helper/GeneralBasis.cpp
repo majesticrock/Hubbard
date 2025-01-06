@@ -1,5 +1,5 @@
 #include "GeneralBasis.hpp"
-#include "../MomentumIndexutility.hpp"
+#include "../MomentumIndexUtility.hpp"
 
 namespace Hubbard::Helper {
 	void GeneralBasis::fill_M()
