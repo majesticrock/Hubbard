@@ -56,7 +56,7 @@ namespace Hubbard::Helper {
 		global_floating_type value{ static_cast<global_floating_type>(term.multiplicity) };
 
 		// Compute coefficient
-		assert(term.hasSingleCoefficient());
+		assert(term.has_single_coefficient());
 		int sum_of_all_index{ 0 };
 		mrock::symbolic_operators::Coefficient const& coeff = term.coefficients.front();
 		if(coeff.momenta.empty()) {
@@ -64,13 +64,13 @@ namespace Hubbard::Helper {
 		}
 		else {
 			value *= this->model->computeCoefficient(coeff, compute_momentum_no_q(coeff.momenta.front(), k, l));
-			if(coeff.dependsOn('q')) sum_of_all_index = 1;
+			if(coeff.depends_on('q')) sum_of_all_index = 1;
 		}
 
 		// Compute sum
-		const int q_dependend = term.whichOperatorDependsOn('q');
+		const int q_dependend = term.which_operator_depends_on('q');
 		mrock::symbolic_operators::WickOperator const* const summed_op = &(term.operators[q_dependend]);
-		mrock::symbolic_operators::WickOperator const* const other_op = term.isBilinear() ? nullptr : &(term.operators[q_dependend == 0]);
+		mrock::symbolic_operators::WickOperator const* const other_op = term.is_bilinear() ? nullptr : &(term.operators[q_dependend == 0]);
 		int index = static_cast<int>(summed_op->type);
 		if (summed_op->type == mrock::symbolic_operators::OperatorType::CDW_Type 
 			|| summed_op->type == mrock::symbolic_operators::OperatorType::Number_Type) 
@@ -91,19 +91,19 @@ namespace Hubbard::Helper {
 	global_floating_type TermOnSquare::computeTerm(const mrock::symbolic_operators::WickTerm& term, const int k, const int l) const
 	{
 		const OrderType model_order = this->model->get_order();
-		if(term.includesType(mrock::symbolic_operators::OperatorType::CDW_Type) && !(model_order & (OrderType::CDW | OrderType::AFM))) return global_floating_type{};
-		if(term.includesType(mrock::symbolic_operators::OperatorType::SC_Type)  && !(model_order & OrderType::SC)) return global_floating_type{};
+		if(term.includes_type(mrock::symbolic_operators::OperatorType::CDW_Type) && !(model_order & (OrderType::CDW | OrderType::AFM))) return global_floating_type{};
+		if(term.includes_type(mrock::symbolic_operators::OperatorType::SC_Type)  && !(model_order & OrderType::SC)) return global_floating_type{};
 
 		const std::vector<char>& momenta_plain = { 'k', 'l' };
 		std::vector<Eigen::Vector2i> indizes = { { x(k), y(k) }, { x(l), y(l) } };
 		Eigen::Vector2i coeff_momentum;
 
-		if (term.isIdentity()) {
-			if (term.hasSingleCoefficient()) {
+		if (term.is_identity()) {
+			if (term.has_single_coefficient()) {
 				coeff_momentum = compute_momentum_list(term.coefficients[0].momenta, indizes[0], indizes[1]);
-				return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
+				return term.get_factor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
 			}
-			return term.getFactor();
+			return term.get_factor();
 		}
 
 		if (term.sums.has_momentum()) {
@@ -115,10 +115,10 @@ namespace Hubbard::Helper {
 		{
 			returnBuffer *= getExpectationValue(op, compute_momentum_no_q(op.momentum, indizes[0], indizes[1]));
 		}
-		if (term.hasSingleCoefficient()) {
+		if (term.has_single_coefficient()) {
 			coeff_momentum = compute_momentum_list(term.coefficients[0].momenta, indizes[0], indizes[1]);
-			return term.getFactor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
+			return term.get_factor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}
-		return term.getFactor() * returnBuffer;
+		return term.get_factor() * returnBuffer;
 	}
 }

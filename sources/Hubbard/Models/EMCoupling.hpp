@@ -44,7 +44,7 @@ namespace Hubbard::Models {
 		EMCoupling(const ModelParameters& _params, const ModelAttributes<global_floating_type>& startingValues)
 			: MomentumBasedModel(_params, startingValues) {};
 
-		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override;
+		virtual void iteration_step(const ParameterVector& x, ParameterVector& F) override;
 
 		// saves all one particle energies to reciever
 		virtual void getAllEnergies(std::vector<global_floating_type>& reciever) override;

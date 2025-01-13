@@ -59,7 +59,7 @@ namespace Hubbard::Helper {
 		// Merely checks whether the dynamical matrix M is negative or not
 		virtual bool matrix_is_negative() = 0;
 		// does the full iEoM resolvent computations
-		virtual std::vector<ResolventReturnData> computeCollectiveModes() = 0;
+		virtual std::vector<ResolventReturnData> compute_collective_modes() = 0;
 		virtual void setNewModelParameters(mrock::utility::InputFileReader& input, const Models::ModelParameters& modelParameters) = 0;
 	};
 }

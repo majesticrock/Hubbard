@@ -146,6 +146,6 @@ void UnknownBoundaryHandler::execute(mrock::utility::InputFileReader& input) con
 		std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;
 		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
-		mrock::utility::saveData(global_iterator_data, recieve_data, BASE_FOLDER + output_folder + "unkown_boundary.dat.gz", comments);
+		mrock::utility::save_data(global_iterator_data, recieve_data, BASE_FOLDER + output_folder + "unkown_boundary.dat.gz", comments);
 	}
 }

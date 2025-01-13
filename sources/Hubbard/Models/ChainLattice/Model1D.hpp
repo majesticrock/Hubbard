@@ -31,7 +31,7 @@ namespace Hubbard::Models::ChainLattice
 		using ParameterVector = typename BaseModel<DataType>::ParameterVector;
 
 	public:
-		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
+		virtual void iteration_step(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(global_floating_type{});
 			std::conditional_t<mrock::utility::is_complex<DataType>(),
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;

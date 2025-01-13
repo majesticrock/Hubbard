@@ -52,7 +52,7 @@ namespace Hubbard::Models::DOSModels {
 		};
 
 	public:
-		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
+		virtual void iteration_step(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(global_floating_type{});
 			ComplexParameterVector complex_F = F;
 

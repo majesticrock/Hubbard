@@ -12,17 +12,17 @@ namespace Hubbard::Helper {
 		if (term.coefficients.size() > 1U) throw mrock::symbolic_operators::bad_term_exception("Undefined number of coefficients: " + std::to_string(term.coefficients.size()), term);
 		if (term.operators.size() > 2U) throw mrock::symbolic_operators::bad_term_exception("There are more than 2 WickOperators: " + term.operators.size(), term);
 		if (term.sums.momenta.size() > 0U) {
-			if (!term.hasSingleCoefficient()) throw mrock::symbolic_operators::bad_term_exception("Too many sums: " + term.sums.momenta.size(), term);
+			if (!term.has_single_coefficient()) throw mrock::symbolic_operators::bad_term_exception("Too many sums: " + term.sums.momenta.size(), term);
 			if (term.delta_momenta.empty()) throw mrock::symbolic_operators::bad_term_exception("There is a summation without delta_kl.", term);
 		}
 		else {
 			if (term.operators.size() > 2U) throw mrock::symbolic_operators::bad_term_exception("A term without a sum can only be bilinear, quartic or an identity.", term);
 		}
 		if (!(term.coefficients.empty())) {
-			//if (term.getFirstCoefficient().dependsOnMomentum()) {
-			//	if (!(term.getFirstCoefficient().dependsOn('k'))) throw mrock::symbolic_operators::bad_term_exception("Each momentum dependent term should have a k-depedance.", term);
+			//if (term.get_first_coefficient().depends_on_momentum()) {
+			//	if (!(term.get_first_coefficient().depends_on('k'))) throw mrock::symbolic_operators::bad_term_exception("Each momentum dependent term should have a k-depedance.", term);
 			//}
-			if (term.getFirstCoefficient().momenta.size() > 1U)
+			if (term.get_first_coefficient().momenta.size() > 1U)
 				throw mrock::symbolic_operators::bad_term_exception("There must not be more than 1 momentum in coefficient!", term);
 		}
 	}

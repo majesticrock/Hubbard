@@ -40,7 +40,7 @@ namespace Hubbard::DensityOfStates {
 	}
 
 	void BaseDOS::writeToBinaryFile(const std::string& filename) {
-		std::ofstream writer = mrock::utility::BinaryIO::createWriter(filename);
+		std::ofstream writer = mrock::utility::BinaryIO::create_writer(filename);
 		if (!writer) {
 			std::cerr << "Could not open file stream in writeToBinaryFile - " << filename << std::endl;
 			return;
@@ -56,13 +56,13 @@ namespace Hubbard::DensityOfStates {
 	}
 
 	bool BaseDOS::loadFromBinaryFile(const std::string& filename) {
-		std::ifstream reader = mrock::utility::BinaryIO::createReader(filename);
+		std::ifstream reader = mrock::utility::BinaryIO::create_reader(filename);
 		if (!reader) {
 			std::cerr << "Could not open file stream for " << filename << std::endl;
 			return false;
 		}
 		size_t vector_size;
-		mrock::utility::BinaryIO::readToVariable(vector_size, reader);
+		mrock::utility::BinaryIO::read_to_variable(vector_size, reader);
 		values.resize(vector_size);
 		weights.resize(vector_size);
 		abscissa.resize(vector_size);

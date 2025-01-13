@@ -70,13 +70,13 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 		std::cout << "Saving data to folder " << BASE_FOLDER + output_folder << std::endl;
 		std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
-		mrock::utility::saveData(recieve_data[0], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "cdw.dat.gz", comments);
-		mrock::utility::saveData(recieve_data[1], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "afm.dat.gz", comments);
-		mrock::utility::saveData(recieve_data[2], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "sc.dat.gz", comments);
-		mrock::utility::saveData(recieve_data[3], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "gamma_sc.dat.gz", comments);
-		mrock::utility::saveData(recieve_data[4], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "xi_sc.dat.gz", comments);
-		mrock::utility::saveData(recieve_data[5], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "eta.dat.gz", comments);
-		mrock::utility::saveData(recieve_data[8], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "ps.dat.gz", comments);
+		mrock::utility::save_data(recieve_data[0], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "cdw.dat.gz", comments);
+		mrock::utility::save_data(recieve_data[1], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "afm.dat.gz", comments);
+		mrock::utility::save_data(recieve_data[2], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "sc.dat.gz", comments);
+		mrock::utility::save_data(recieve_data[3], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "gamma_sc.dat.gz", comments);
+		mrock::utility::save_data(recieve_data[4], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "xi_sc.dat.gz", comments);
+		mrock::utility::save_data(recieve_data[5], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "eta.dat.gz", comments);
+		mrock::utility::save_data(recieve_data[8], SECOND_IT_STEPS, BASE_FOLDER + output_folder + "ps.dat.gz", comments);
 
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 		std::cout << "Crude computation time = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
@@ -150,7 +150,7 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 					buffer[1][j / 2] = recieve_boundaries[i][j + 1];
 				}
 
-				mrock::utility::saveData(buffer, BASE_FOLDER + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
+				mrock::utility::save_data(buffer, BASE_FOLDER + output_folder + "boundaries_" + names[i] + ".dat.gz", comments);
 			}
 		}
 	}

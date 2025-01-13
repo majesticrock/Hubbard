@@ -90,7 +90,7 @@ namespace Hubbard::Models {
 		//} while (q.iterateFullBZ());
 	}
 
-	void EMCoupling::iterationStep(const ParameterVector& x, ParameterVector& F)
+	void EMCoupling::iteration_step(const ParameterVector& x, ParameterVector& F)
 	{
 		std::cerr << "TODO!!!" << std::endl;
 		F.fill(global_floating_type{});

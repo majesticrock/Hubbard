@@ -114,7 +114,7 @@ namespace Hubbard::Models::DOSModels {
 	public:
 		static constexpr SystemType SYSTEM_TYPE = static_cast<SystemType>(DOS::DIMENSION);
 
-		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
+		virtual void iteration_step(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(DataType{});
 			std::conditional_t<mrock::utility::is_complex<DataType>(), ComplexParameterVector&, ComplexParameterVector> complex_F = F;
 
@@ -187,15 +187,15 @@ namespace Hubbard::Models::DOSModels {
 
 		inline global_floating_type computeCoefficient(const mrock::symbolic_operators::Coefficient& coeff, const global_floating_type& gamma) const {
 			if (coeff.name == "\\epsilon_0") {
-				if (!coeff.dependsOn('k')) throw std::runtime_error("Epsilon should always be k-dependent.");
+				if (!coeff.depends_on('k')) throw std::runtime_error("Epsilon should always be k-dependent.");
 				return ((coeff.momenta.front().add_Q ? 2 * gamma : -2 * gamma) - this->chemical_potential);
 			}
 			if (coeff.name == "\\frac{U}{N}") {
 				return this->U_OVER_N;
 			}
 			if (coeff.name == "\\tilde{V}") {
-				if (coeff.dependsOnMomentum()) {
-					return  this->V_OVER_N * (coeff.dependsOnTwoMomenta() ? (gamma / DOS::DIMENSION) : gamma);
+				if (coeff.depends_on_momentum()) {
+					return  this->V_OVER_N * (coeff.depends_on_two_momenta() ? (gamma / DOS::DIMENSION) : gamma);
 				}
 				else {
 					return DOS::DIMENSION * this->V_OVER_N;

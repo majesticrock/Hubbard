@@ -193,7 +193,7 @@ namespace Hubbard::Models {
 			computeChemicalPotential();
 		};
 
-		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) = 0;
+		virtual void iteration_step(const ParameterVector& x, ParameterVector& F) = 0;
 
 		virtual ModelAttributes<global_floating_type> computePhases() = 0;
 

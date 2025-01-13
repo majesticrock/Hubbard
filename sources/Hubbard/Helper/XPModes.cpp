@@ -80,8 +80,8 @@ namespace Hubbard::Helper {
 		return _parent_algorithm::dynamic_matrix_is_negative();
 	};
 
-	std::vector<ResolventReturnData> XPModes::computeCollectiveModes()
+	std::vector<ResolventReturnData> XPModes::compute_collective_modes()
 	{
-		return _parent_algorithm::computeCollectiveModes(this->usingDOS ? 150 : 2 * Constants::K_DISCRETIZATION);
+		return _parent_algorithm::compute_collective_modes(this->usingDOS ? 150 : 2 * Constants::K_DISCRETIZATION);
 	}
 }

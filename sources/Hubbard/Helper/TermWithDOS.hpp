@@ -67,10 +67,10 @@ namespace Hubbard::Helper {
 				return (!this->model->getAttributes().isFinite(index));
 				};
 
-			if (attributeVanishes(0) && attributeVanishes(1) && term.includesType(mrock::symbolic_operators::OperatorType::CDW_Type)) {
+			if (attributeVanishes(0) && attributeVanishes(1) && term.includes_type(mrock::symbolic_operators::OperatorType::CDW_Type)) {
 				return global_floating_type{};
 			}
-			if (attributeVanishes(2) && term.includesType(mrock::symbolic_operators::OperatorType::SC_Type)) {
+			if (attributeVanishes(2) && term.includes_type(mrock::symbolic_operators::OperatorType::SC_Type)) {
 				return global_floating_type{};
 			}
 
@@ -78,52 +78,52 @@ namespace Hubbard::Helper {
 			const global_floating_type& gamma_prime{ this->model->getGammaFromIndex(gamma_prime_idx) };
 
 			auto getCoefficient = [&]() {
-				if (term.getFirstCoefficient().dependsOn('l')) {
-					return gamma_prime * term.getFactor() * this->model->computeCoefficient(term.getFirstCoefficient(), gamma);
+				if (term.get_first_coefficient().depends_on('l')) {
+					return gamma_prime * term.get_factor() * this->model->computeCoefficient(term.get_first_coefficient(), gamma);
 				}
-				return term.getFactor() * this->model->computeCoefficient(term.getFirstCoefficient(), gamma);
+				return term.get_factor() * this->model->computeCoefficient(term.get_first_coefficient(), gamma);
 				};
 
 			auto getCoefficientAndExpec = [&](size_t expec_pos) {
 				return getCoefficient() * getExpectationValue(term.operators[expec_pos], gamma_idx);
 				};
 
-			if (term.isIdentity()) {
-				if (term.hasSingleCoefficient()) {
+			if (term.is_identity()) {
+				if (term.has_single_coefficient()) {
 					return getCoefficient();
 				}
-				return term.getFactor();
+				return term.get_factor();
 			}
 			if (term.sums.momenta.size() > 0U) {
-				if (term.isBilinear()) {
+				if (term.is_bilinear()) {
 					// bilinear
-					return getCoefficient() * this->getSumOfAll(term.operators.front(), term.getFirstCoefficient().dependsOn('q'));
+					return getCoefficient() * this->getSumOfAll(term.operators.front(), term.get_first_coefficient().depends_on('q'));
 				}
-				else if (term.isQuartic()) {
+				else if (term.is_quartic()) {
 					// quartic
-					int q_dependend = term.whichOperatorDependsOn('q');
+					int q_dependend = term.which_operator_depends_on('q');
 					if (q_dependend < 0) throw std::invalid_argument("Suming q, but no operator depends on q.");
 
-					return getCoefficientAndExpec(q_dependend == 0) * this->getSumOfAll(term.operators[q_dependend], term.getFirstCoefficient().dependsOn('q'));
+					return getCoefficientAndExpec(q_dependend == 0) * this->getSumOfAll(term.operators[q_dependend], term.get_first_coefficient().depends_on('q'));
 				}
 			}
 
-			if (term.hasSingleCoefficient()) {
+			if (term.has_single_coefficient()) {
 				// Can never be an identity (checked above) and only be bilinear or quartic (checked in validity)
 				global_floating_type ret{};
-				if (term.isBilinear()) {
+				if (term.is_bilinear()) {
 					const auto& op = term.operators.front();
-					ret = (op.dependsOn('l') ? getExpectationValue(op, gamma_prime_idx) : getExpectationValue(op, gamma_idx));
+					ret = (op.depends_on('l') ? getExpectationValue(op, gamma_prime_idx) : getExpectationValue(op, gamma_idx));
 				}
 				else {
-					int l_dependend = term.whichOperatorDependsOn('l');
+					int l_dependend = term.which_operator_depends_on('l');
 					ret = getExpectationValue(term.operators[l_dependend == 0], gamma_idx)
 						* getExpectationValue(term.operators[l_dependend], gamma_prime_idx);
 				}
 				return ret * getCoefficient();
 			}
 
-			return term.getFactor() * getExpectationValue(term.operators[0U], gamma_idx);
+			return term.get_factor() * getExpectationValue(term.operators[0U], gamma_idx);
 		};
 
 	public:

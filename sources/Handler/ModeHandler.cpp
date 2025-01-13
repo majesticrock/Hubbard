@@ -8,7 +8,7 @@
 #include <mrock/info.h>
 #include <nlohmann/json.hpp>
 // File is generated on build by cmake
-#include "../build/info.h"
+#include "../../build/info.h"
 
 #include "../Hubbard/Helper/SquareGeneral.hpp"
 #include "../Hubbard/Helper/SquareXP.hpp"
@@ -85,7 +85,7 @@ void ModeHandler::execute(mrock::utility::InputFileReader& input) const
 	data_vector oneParticleEnergies;
 	std::unique_ptr<Hubbard::Helper::ModeHelper> modeHelper{ getHelper(input) };
 	modeHelper->getModel().getAllEnergies(oneParticleEnergies);
-	std::vector<Hubbard::ResolventReturnData> resolvents = modeHelper->computeCollectiveModes();
+	std::vector<Hubbard::ResolventReturnData> resolvents = modeHelper->compute_collective_modes();
 
 	if (rank == 0) {
 		const std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };

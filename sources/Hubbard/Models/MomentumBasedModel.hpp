@@ -37,7 +37,7 @@ namespace Hubbard::Models {
 	public:
 		static constexpr SystemType SYSTEM_TYPE = static_cast<SystemType>(Dimension);
 
-		virtual void iterationStep(const ParameterVector& x, ParameterVector& F) override {
+		virtual void iteration_step(const ParameterVector& x, ParameterVector& F) override {
 			F.fill(DataType{});
 			std::conditional_t<mrock::utility::is_complex<DataType>(),
 				ComplexParameterVector&, ComplexParameterVector> complex_F = F;

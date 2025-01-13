@@ -36,6 +36,6 @@ namespace Hubbard::Helper {
 		{ };
 
 		virtual bool matrix_is_negative() override;
-		virtual std::vector<ResolventReturnData> computeCollectiveModes() override;
+		virtual std::vector<ResolventReturnData> compute_collective_modes() override;
 	};
 }
