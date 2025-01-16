@@ -6,7 +6,6 @@ namespace Hubbard::Helper {
 		if (term.delta_momenta.size() > 1) throw mrock::symbolic_operators::bad_term_exception("Too many deltas: " + term.delta_momenta.size(), term);
 		if (term.delta_momenta.size() == 1) {
 			if (term.delta_momenta[0].first.momentum_list.size() != 1) throw mrock::symbolic_operators::bad_term_exception("First delta list is not of size 1: " + term.delta_momenta[0].first.momentum_list.size(), term);
-			//if (term.delta_momenta[0].second.momentum_list.size() != 1) throw mrock::symbolic_operators::bad_term_exception("To be implemented: Second delta list is not of size 1: " + term.delta_momenta[0].second.momentum_list.size(), term);
 		}
 
 		if (term.coefficients.size() > 1U) throw mrock::symbolic_operators::bad_term_exception("Undefined number of coefficients: " + std::to_string(term.coefficients.size()), term);

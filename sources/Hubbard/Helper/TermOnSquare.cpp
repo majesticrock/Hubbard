@@ -29,16 +29,16 @@ namespace Hubbard::Helper {
 	Eigen::Vector2i TermOnSquare::compute_momentum_no_q(const mrock::symbolic_operators::Momentum& momentum, const Eigen::Vector2i& k, const Eigen::Vector2i& l) const
 	{
 		Eigen::Vector2i momentum_value = Eigen::Vector2i::Zero();
-		for (const auto& momentum_pair : momentum.momentum_list) {
-			switch(momentum_pair.second) {
+		for (const auto& momentum_symbol : momentum.momentum_list) {
+			switch(momentum_symbol.name) {
 			case 'k':
-				momentum_value += momentum_pair.first * k;
+				momentum_value += momentum_symbol.factor * k;
 				break;
 			case 'l':
-				momentum_value += momentum_pair.first * l;
+				momentum_value += momentum_symbol.factor * l;
 				break;
 			case 'x':
-				momentum_value += momentum_pair.first * this->mode_momentum;
+				momentum_value += momentum_symbol.factor * this->mode_momentum;
 				break;
 			default:
 				break;
@@ -60,10 +60,10 @@ namespace Hubbard::Helper {
 		int sum_of_all_index{ 0 };
 		mrock::symbolic_operators::Coefficient const& coeff = term.coefficients.front();
 		if(coeff.momenta.empty()) {
-			value *= this->model->computeCoefficient(coeff, Eigen::Vector2i::Zero());
+			value *= this->model->compute_coefficient(coeff, Eigen::Vector2i::Zero());
 		}
 		else {
-			value *= this->model->computeCoefficient(coeff, compute_momentum_no_q(coeff.momenta.front(), k, l));
+			value *= this->model->compute_coefficient(coeff, compute_momentum_no_q(coeff.momenta.front(), k, l));
 			if(coeff.depends_on('q')) sum_of_all_index = 1;
 		}
 
@@ -101,7 +101,7 @@ namespace Hubbard::Helper {
 		if (term.is_identity()) {
 			if (term.has_single_coefficient()) {
 				coeff_momentum = compute_momentum_list(term.coefficients[0].momenta, indizes[0], indizes[1]);
-				return term.get_factor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum);
+				return term.get_factor() * this->model->compute_coefficient(term.coefficients[0], coeff_momentum);
 			}
 			return term.get_factor();
 		}
@@ -117,7 +117,7 @@ namespace Hubbard::Helper {
 		}
 		if (term.has_single_coefficient()) {
 			coeff_momentum = compute_momentum_list(term.coefficients[0].momenta, indizes[0], indizes[1]);
-			return term.get_factor() * this->model->computeCoefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
+			return term.get_factor() * this->model->compute_coefficient(term.coefficients[0], coeff_momentum) * returnBuffer;
 		}
 		return term.get_factor() * returnBuffer;
 	}

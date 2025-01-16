@@ -185,7 +185,7 @@ namespace Hubbard::Models::DOSModels {
 			return _scalar_integrator().integrate_by_value(procedure) / 2;
 		};
 
-		inline global_floating_type computeCoefficient(const mrock::symbolic_operators::Coefficient& coeff, const global_floating_type& gamma) const {
+		inline global_floating_type compute_coefficient(const mrock::symbolic_operators::Coefficient& coeff, const global_floating_type& gamma) const {
 			if (coeff.name == "\\epsilon_0") {
 				if (!coeff.depends_on('k')) throw std::runtime_error("Epsilon should always be k-dependent.");
 				return ((coeff.momenta.front().add_Q ? 2 * gamma : -2 * gamma) - this->chemical_potential);

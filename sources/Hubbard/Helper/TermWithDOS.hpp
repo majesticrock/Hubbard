@@ -79,9 +79,9 @@ namespace Hubbard::Helper {
 
 			auto getCoefficient = [&]() {
 				if (term.get_first_coefficient().depends_on('l')) {
-					return gamma_prime * term.get_factor() * this->model->computeCoefficient(term.get_first_coefficient(), gamma);
+					return gamma_prime * term.get_factor() * this->model->compute_coefficient(term.get_first_coefficient(), gamma);
 				}
-				return term.get_factor() * this->model->computeCoefficient(term.get_first_coefficient(), gamma);
+				return term.get_factor() * this->model->compute_coefficient(term.get_first_coefficient(), gamma);
 				};
 
 			auto getCoefficientAndExpec = [&](size_t expec_pos) {

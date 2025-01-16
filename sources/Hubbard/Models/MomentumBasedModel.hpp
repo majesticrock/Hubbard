@@ -77,7 +77,7 @@ namespace Hubbard::Models {
 			computeChemicalPotential();
 		};
 
-		inline global_floating_type computeCoefficient(const mrock::symbolic_operators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
+		inline global_floating_type compute_coefficient(const mrock::symbolic_operators::Coefficient& coeff, const Eigen::Vector<int, Dimension>& momentum) const {
 			if (coeff.name == "\\epsilon_0") {
 				NumericalMomentum<Dimension> temp{ index_vector_to_k_vector(momentum) };
 				return temp.unperturbed_energy() - this->chemical_potential;

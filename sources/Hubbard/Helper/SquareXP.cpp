@@ -18,7 +18,7 @@ namespace Hubbard::Helper {
 						l = addQTo(k);
 					}
 					if (term.delta_momenta[0].second.momentum_list.size() == 2U) {
-						l = add_index_momenta(l, this->mode_momentum, -term.delta_momenta[0].second.momentum_list[1].first);
+						l = add_index_momenta(l, this->mode_momentum, -term.delta_momenta[0].second.momentum_list[1].factor);
 					}
 					if (l >= inner_sum_limit) {
 						continue;
@@ -63,7 +63,7 @@ namespace Hubbard::Helper {
 						l = addQTo(k);
 					}
 					if (term.delta_momenta[0].second.momentum_list.size() == 2U) {
-						l = add_index_momenta(l, this->mode_momentum, -term.delta_momenta[0].second.momentum_list[1].first);
+						l = add_index_momenta(l, this->mode_momentum, -term.delta_momenta[0].second.momentum_list[1].factor);
 					}
 					if (l >= inner_sum_limit) {
 						continue;
