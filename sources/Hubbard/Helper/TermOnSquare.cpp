@@ -30,7 +30,7 @@ namespace Hubbard::Helper {
 	{
 		Eigen::Vector2i momentum_value = Eigen::Vector2i::Zero();
 		for (const auto& momentum_symbol : momentum.momentum_list) {
-			switch(momentum_symbol.name) {
+			switch(static_cast<char>(momentum_symbol.name)) {
 			case 'k':
 				momentum_value += momentum_symbol.factor * k;
 				break;
