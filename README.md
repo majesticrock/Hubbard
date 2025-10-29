@@ -1,6 +1,7 @@
-# ContinuumSystem
+# Hubbard
 
-Code used to compute the mean-field data and collective excitation spectra presented in 
+The code allows studying the phase diagram and collective excitations of the extended Hubbard model on a square and a simple cubic lattice.
+The code was used to compute the mean-field data and collective excitation spectra presented in 
 
 Collective excitations in competing phases in two and three dimensions
 https://journals.aps.org/prb/abstract/10.1103/PhysRevB.109.205153?ft=1
