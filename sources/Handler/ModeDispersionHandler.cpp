@@ -27,24 +27,24 @@ void ModeDispersionHandler::execute(mrock::utility::InputFileReader& input) cons
 	if(eval_index < 0) {
 		for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
 		{
-			mrock::utility::Numerics::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
+			mrock::utility::Numerics::resolvent_details::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
 			modeHelper.mode_momentum.x() += 1;
 		}
 		for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
 		{
-			mrock::utility::Numerics::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
+			mrock::utility::Numerics::resolvent_details::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
 			modeHelper.mode_momentum.y() += 1;
 		}
 		for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i)
 		{
-			mrock::utility::Numerics::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
+			mrock::utility::Numerics::resolvent_details::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
 			modeHelper.mode_momentum.x() -= 1;
 			modeHelper.mode_momentum.y() -= 1;
 		}
 	} 
 	else {
 		modeHelper.mode_momentum = eval_point(eval_index);
-		mrock::utility::Numerics::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
+		mrock::utility::Numerics::resolvent_details::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
 	}
 
 	const std::string output_folder{ getOutputFolder(input) + modelParameters.getFolderName() };

@@ -81,7 +81,7 @@ namespace Hubbard {
 
 	//	using ResolventReal = mrock::utility::Numerics::Resolvent<Matrix_L, Vector_L>;
 	//	using ResolventComplex = mrock::utility::Numerics::Resolvent<Matrix_L, Vector_L>;
-	using ResolventReturnData = mrock::utility::Numerics::ResolventDataWrapper<global_floating_type>;
+	using ResolventReturnData = mrock::utility::Numerics::resolvent_details::ResolventDataWrapper<global_floating_type>;
 
 	template <int vector_size = Eigen::Dynamic>
 	void printAsRow(Eigen::Vector<global_floating_type, vector_size>& printer) {
