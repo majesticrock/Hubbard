@@ -1,13 +1,13 @@
 #pragma once
 #include "ModeHelper.hpp"
-#include <mrock/utility/Numerics/iEoM/GeneralResolvent.hpp>
+#include <mrock/iEoM/GeneralResolvent.hpp>
 
 namespace Hubbard::Helper {
-	class GeneralBasis : public ModeHelper, protected mrock::utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, global_floating_type>
+	class GeneralBasis : public ModeHelper, protected mrock::iEoM::GeneralResolvent<GeneralBasis, global_floating_type>
 	{
-		friend struct mrock::utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, global_floating_type>;
+		friend struct mrock::iEoM::GeneralResolvent<GeneralBasis, global_floating_type>;
 	protected:
-		using _parent_algorithm = mrock::utility::Numerics::iEoM::GeneralResolvent<GeneralBasis, global_floating_type>;
+		using _parent_algorithm = mrock::iEoM::GeneralResolvent<GeneralBasis, global_floating_type>;
 
 		void fill_M();
 		virtual void fillMatrices() override;

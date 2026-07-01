@@ -1,13 +1,13 @@
 #pragma once
 #include "ModeHelper.hpp"
-#include <mrock/utility/Numerics/iEoM/XPResolvent.hpp>
+#include <mrock/iEoM/XPResolvent.hpp>
 
 namespace Hubbard::Helper {
-	class XPModes : public ModeHelper, protected mrock::utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>
+	class XPModes : public ModeHelper, protected mrock::iEoM::XPResolvent<XPModes, global_floating_type>
 	{
-		friend struct mrock::utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>;
+		friend struct mrock::iEoM::XPResolvent<XPModes, global_floating_type>;
 	protected:
-		using _parent_algorithm = mrock::utility::Numerics::iEoM::XPResolvent<XPModes, global_floating_type>;
+		using _parent_algorithm = mrock::iEoM::XPResolvent<XPModes, global_floating_type>;
 
 		static constexpr size_t hermitian_size = 7U;
 		static constexpr size_t antihermitian_size = 5U;

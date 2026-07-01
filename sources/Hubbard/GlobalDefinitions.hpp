@@ -1,7 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 #include <stddef.h>
-#include <mrock/utility/Numerics/Resolvent.hpp>
+#include <mrock/iEoM/Resolvent.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <type_traits>
 
@@ -79,9 +79,7 @@ namespace Hubbard {
 	typedef Eigen::Array<global_floating_type, Eigen::Dynamic, Eigen::Dynamic> ValueArray;
 	using SpinorMatrix = MatrixCL;
 
-	//	using ResolventReal = mrock::utility::Numerics::Resolvent<Matrix_L, Vector_L>;
-	//	using ResolventComplex = mrock::utility::Numerics::Resolvent<Matrix_L, Vector_L>;
-	using ResolventReturnData = mrock::utility::Numerics::resolvent_details::ResolventDataWrapper<global_floating_type>;
+	using ResolventReturnData = mrock::iEoM::ResolventDataWrapper<global_floating_type>;
 
 	template <int vector_size = Eigen::Dynamic>
 	void printAsRow(Eigen::Vector<global_floating_type, vector_size>& printer) {
