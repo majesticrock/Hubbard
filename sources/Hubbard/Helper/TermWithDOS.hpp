@@ -40,11 +40,11 @@ namespace Hubbard::Helper {
 		};
 
 		global_floating_type getExpectationValue(const mrock::symbolic_operators::WickOperator& op, int gamma_idx) const {
-			assert(op.type < mrock::symbolic_operators::OperatorType::Undefined_Type);
+			assert(op.type < mrock::symbolic_operators::OperatorType::Undefined);
 
 			int index = static_cast<int>(op.type);
-			if (op.type == mrock::symbolic_operators::OperatorType::CDW_Type 
-				|| op.type == mrock::symbolic_operators::OperatorType::Number_Type)
+			if (op.type == mrock::symbolic_operators::OperatorType::CDW 
+				|| op.type == mrock::symbolic_operators::OperatorType::Number)
 			{
 				auto jt = this->wick_spin_offset.find(op.indizes[0]);
 				if (jt == this->wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
@@ -67,10 +67,10 @@ namespace Hubbard::Helper {
 				return (!this->model->getAttributes().isFinite(index));
 				};
 
-			if (attributeVanishes(0) && attributeVanishes(1) && term.includes_type(mrock::symbolic_operators::OperatorType::CDW_Type)) {
+			if (attributeVanishes(0) && attributeVanishes(1) && term.includes_type(mrock::symbolic_operators::OperatorType::CDW)) {
 				return global_floating_type{};
 			}
-			if (attributeVanishes(2) && term.includes_type(mrock::symbolic_operators::OperatorType::SC_Type)) {
+			if (attributeVanishes(2) && term.includes_type(mrock::symbolic_operators::OperatorType::SC)) {
 				return global_floating_type{};
 			}
 

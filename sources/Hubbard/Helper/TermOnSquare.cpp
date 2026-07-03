@@ -3,11 +3,11 @@
 namespace Hubbard::Helper {
 	global_floating_type TermOnSquare::getExpectationValue(const mrock::symbolic_operators::WickOperator& op, const Eigen::Vector2i& momentum_value) const
 	{
-		assert(op.type < mrock::symbolic_operators::OperatorType::Undefined_Type);
+		assert(op.type < mrock::symbolic_operators::OperatorType::Undefined);
 
 		int index = static_cast<int>(op.type);
-		if (op.type == mrock::symbolic_operators::OperatorType::CDW_Type 
-			|| op.type == mrock::symbolic_operators::OperatorType::Number_Type) 
+		if (op.type == mrock::symbolic_operators::OperatorType::CDW 
+			|| op.type == mrock::symbolic_operators::OperatorType::Number) 
 		{
 			auto jt = wick_spin_offset.find(op.indizes[0]);
 			if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
@@ -72,8 +72,8 @@ namespace Hubbard::Helper {
 		mrock::symbolic_operators::WickOperator const* const summed_op = &(term.operators[q_dependend]);
 		mrock::symbolic_operators::WickOperator const* const other_op = term.is_bilinear() ? nullptr : &(term.operators[q_dependend == 0]);
 		int index = static_cast<int>(summed_op->type);
-		if (summed_op->type == mrock::symbolic_operators::OperatorType::CDW_Type 
-			|| summed_op->type == mrock::symbolic_operators::OperatorType::Number_Type) 
+		if (summed_op->type == mrock::symbolic_operators::OperatorType::CDW 
+			|| summed_op->type == mrock::symbolic_operators::OperatorType::Number) 
 		{
 			auto jt = wick_spin_offset.find(summed_op->indizes[0]);
 			if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
@@ -91,8 +91,8 @@ namespace Hubbard::Helper {
 	global_floating_type TermOnSquare::computeTerm(const mrock::symbolic_operators::WickTerm& term, const int k, const int l) const
 	{
 		const OrderType model_order = this->model->get_order();
-		if(term.includes_type(mrock::symbolic_operators::OperatorType::CDW_Type) && !(model_order & (OrderType::CDW | OrderType::AFM))) return global_floating_type{};
-		if(term.includes_type(mrock::symbolic_operators::OperatorType::SC_Type)  && !(model_order & OrderType::SC)) return global_floating_type{};
+		if(term.includes_type(mrock::symbolic_operators::OperatorType::CDW) && !(model_order & (OrderType::CDW | OrderType::AFM))) return global_floating_type{};
+		if(term.includes_type(mrock::symbolic_operators::OperatorType::SC)  && !(model_order & OrderType::SC)) return global_floating_type{};
 
 		const std::vector<char>& momenta_plain = { 'k', 'l' };
 		std::vector<Eigen::Vector2i> indizes = { { x(k), y(k) }, { x(l), y(l) } };

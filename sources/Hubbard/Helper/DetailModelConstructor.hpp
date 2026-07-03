@@ -59,11 +59,11 @@ namespace Hubbard::Helper {
 			{mrock::symbolic_operators::Index::Sigma, 6} };
 
 		inline global_floating_type getSumOfAll(const mrock::symbolic_operators::WickOperator& op, int cos_modulation = 0) const {
-			assert(op.type < mrock::symbolic_operators::OperatorType::Undefined_Type);
+			assert(op.type < mrock::symbolic_operators::OperatorType::Undefined);
 
 			int index = static_cast<int>(op.type);
-			if (op.type == mrock::symbolic_operators::OperatorType::CDW_Type 
-				|| op.type == mrock::symbolic_operators::OperatorType::Number_Type) 
+			if (op.type == mrock::symbolic_operators::OperatorType::CDW 
+				|| op.type == mrock::symbolic_operators::OperatorType::Number) 
 			{
 				auto jt = wick_spin_offset.find(op.indizes[0]);
 				if (jt == wick_spin_offset.end()) throw std::runtime_error("Something went wrong while looking up the spin indizes.");
