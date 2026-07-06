@@ -12,23 +12,25 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 list(APPEND CMAKE_PREFIX_PATH "~/usr/local")
 
-if(CLUSTER_BUILD)
-    #include(${CMAKE_SOURCE_DIR}/cmake/CascadelakeCompilerFlags.cmake)
-    include(${CMAKE_SOURCE_DIR}/cmake/IcelakeCompilerFlags.cmake)
+set(MKL_LINK static)
+set(MKL_THREADING gnu_thread)
+set(MKL_INTERFACE lp64)
+
+find_package(MKL CONFIG QUIET HINTS $ENV{MKLROOT})
+if (MKL_FOUND)
+    set(USE_MKL ON CACHE BOOL "Use Intel MKL" FORCE)
 else()
-    include(${CMAKE_SOURCE_DIR}/cmake/DefaultCompilerFlags.cmake)
+    set(USE_MKL OFF CACHE BOOL "Use Intel MKL" FORCE)
 endif()
+
+include(${CMAKE_SOURCE_DIR}/cmake/MKLFlags.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/SelectClusterBuildOptions.cmake)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../PhdUtility/cmake/mrock-information.cmake)
 
 include_directories(
     $ENV{HOME}/usr/local/include
 )
-
-option(USE_MKL "Use Intel MKL for LAPACK" OFF)
-if(USE_MKL)
-    list(APPEND CMAKE_PREFIX_PATH "/opt/intel/oneapi/mkl/latest")
-    find_package(MKL CONFIG REQUIRED)
-endif()
 
 # System libraries
 find_package(MPI REQUIRED)

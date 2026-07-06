@@ -1,29 +1,54 @@
-BUILD_DIR = build
-MKL_BUILD_DIR = build_MKL
-CLUSTER_BUILD_DIR = build_cluster
+BUILD_DIR               := build$(BUILD_SUFFIX)
+CASCADELAKE_BUILD_DIR   := build_CascadeLake$(BUILD_SUFFIX)
+ICELAKE_BUILD_DIR       := build_IceLake$(BUILD_SUFFIX)
+DEBUG_BUILD_DIR         := build_debug$(BUILD_SUFFIX)
 
+# Default target to build the project
 all: $(BUILD_DIR)/Makefile
 	@$(MAKE) -C $(BUILD_DIR)
 
 $(BUILD_DIR)/Makefile: CMakeLists.txt
 	@mkdir -p $(BUILD_DIR)
-	@cd $(BUILD_DIR) && cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCLUSTER_BUILD=OFF ..
+	@cd $(BUILD_DIR) && cmake \
+		-DCMAKE_C_COMPILER=gcc \
+		-DCMAKE_CXX_COMPILER=g++ \
+		..
 
-MKL: $(MKL_BUILD_DIR)/Makefile
-	@$(MAKE) -C $(MKL_BUILD_DIR)
+cascadelake: $(CASCADELAKE_BUILD_DIR)/Makefile
+	@$(MAKE) -C $(CASCADELAKE_BUILD_DIR)
 
-$(MKL_BUILD_DIR)/Makefile: CMakeLists.txt
-	@mkdir -p $(MKL_BUILD_DIR)
-	@cd $(MKL_BUILD_DIR) && cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DUSE_MKL=ON ..
+$(CASCADELAKE_BUILD_DIR)/Makefile: CMakeLists.txt
+	@mkdir -p $(CASCADELAKE_BUILD_DIR)
+	@cd $(CASCADELAKE_BUILD_DIR) && cmake \
+		-DCMAKE_C_COMPILER=gcc \
+		-DCMAKE_CXX_COMPILER=g++ \
+ 		-DCLUSTER_BUILD=cascadelake \
+		..
 
-cluster: $(CLUSTER_BUILD_DIR)/Makefile
-	@$(MAKE) -C $(CLUSTER_BUILD_DIR)
+icelake: $(ICELAKE_BUILD_DIR)/Makefile
+	@$(MAKE) -C $(ICELAKE_BUILD_DIR)
 
-$(CLUSTER_BUILD_DIR)/Makefile: CMakeLists.txt
-	@mkdir -p $(CLUSTER_BUILD_DIR)
-	@cd $(CLUSTER_BUILD_DIR) && cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCLUSTER_BUILD=ON ..
+$(ICELAKE_BUILD_DIR)/Makefile: CMakeLists.txt
+	@mkdir -p $(ICELAKE_BUILD_DIR)
+	@cd $(ICELAKE_BUILD_DIR) && cmake \
+		-DCMAKE_C_COMPILER=gcc \
+		-DCMAKE_CXX_COMPILER=g++ \
+ 		-DCLUSTER_BUILD=icelake \
+		..
+
+debug: $(DEBUG_BUILD_DIR)/Makefile
+	@$(MAKE) -C $(DEBUG_BUILD_DIR)
+
+$(DEBUG_BUILD_DIR)/Makefile: CMakeLists.txt
+	@mkdir -p $(DEBUG_BUILD_DIR)
+	@cd $(DEBUG_BUILD_DIR) && cmake \
+		-DCMAKE_C_COMPILER=gcc \
+		-DCMAKE_CXX_COMPILER=g++ \
+ 		-DCMAKE_BUILD_TYPE=Debug \
+		..
 
 clean:
-	@rm -rf $(BUILD_DIR) $(CLUSTER_BUILD_DIR) $(MKL_BUILD_DIR)
+	@rm -rf $(BUILD_DIR) $(CASCADELAKE_BUILD_DIR) $(ICELAKE_BUILD_DIR) $(DEBUG_BUILD_DIR) build_header
+	@rm -rf auto_generated*
 
-.PHONY: all clean cluster MKL
+.PHONY: all clean icelake cascadelake debug
