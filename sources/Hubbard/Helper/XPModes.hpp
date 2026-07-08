@@ -3,11 +3,10 @@
 #include <mrock/iEoM/XPResolvent.hpp>
 
 namespace Hubbard::Helper {
-	class XPModes : public ModeHelper, protected mrock::iEoM::XPResolvent<XPModes, global_floating_type>
+	class XPModes : public ModeHelper, protected mrock::iEoM::XPResolvent<global_floating_type>
 	{
-		friend struct mrock::iEoM::XPResolvent<XPModes, global_floating_type>;
 	protected:
-		using _parent_algorithm = mrock::iEoM::XPResolvent<XPModes, global_floating_type>;
+		using _parent_algorithm = mrock::iEoM::XPResolvent<global_floating_type>;
 
 		static constexpr size_t hermitian_size = 7U;
 		static constexpr size_t antihermitian_size = 5U;
@@ -18,11 +17,11 @@ namespace Hubbard::Helper {
 		static constexpr std::array<int, 4> cdw_basis_positions{ 2,3,9,10 };
 
 		void fill_M();
-		virtual void fillMatrices() override;
-		void createStartingStates();
+		virtual void fill_matrices() override;
+		void create_starting_states();
 	public:
 		XPModes(mrock::utility::InputFileReader& input)
-			: ModeHelper(input), _parent_algorithm(this, SQRT_SALT),
+			: ModeHelper(input), _parent_algorithm(SQRT_SALT),
 			hermitian_offsets{
 				0,							Constants::BASIS_SIZE,
 				2 * Constants::BASIS_SIZE,	(5 * Constants::BASIS_SIZE) / 2,

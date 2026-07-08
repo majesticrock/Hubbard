@@ -15,7 +15,7 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	void GeneralBasis::fillMatrices()
+	void GeneralBasis::fill_matrices()
 	{
 		M.setZero(TOTAL_BASIS, TOTAL_BASIS);
 		N.setZero(TOTAL_BASIS, TOTAL_BASIS);
@@ -42,7 +42,7 @@ namespace Hubbard::Helper {
 		std::cout << "||N - N^+|| = " << (N - N.adjoint()).norm() << std::endl;
 	}
 
-	void GeneralBasis::createStartingStates()
+	void GeneralBasis::create_starting_states()
 	{
 		/*
 		* 0 - SC Higgs

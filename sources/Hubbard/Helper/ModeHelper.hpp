@@ -37,7 +37,7 @@ namespace Hubbard::Helper {
 		/////////////
 		// methods //
 		/////////////
-		virtual void fillMatrices() = 0;
+		virtual void fill_matrices() = 0;
 
 		// Throws an exception if the passed term is not valid or of a type that is not implemented yet,
 		// otherwise it does nothing

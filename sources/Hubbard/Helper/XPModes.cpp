@@ -22,7 +22,7 @@ namespace Hubbard::Helper {
 		}
 	}
 
-	void XPModes::fillMatrices()
+	void XPModes::fill_matrices()
 	{
 		constexpr int a = hermitian_size - 1;
 		constexpr int b = antihermitian_size - 1;
@@ -52,13 +52,13 @@ namespace Hubbard::Helper {
 			throw std::invalid_argument("K_+ is not hermitian: " + to_string((K_minus - K_minus.adjoint()).norm()));
 	}
 
-	void XPModes::createStartingStates()
+	void XPModes::create_starting_states()
 	{
-		this->starting_states.reserve(4);
-		this->starting_states.push_back({ Vector_L::Zero(K_minus.rows()), Vector_L::Zero(K_plus.rows()), "SC" }); // SC
-		this->starting_states.push_back(_parent_algorithm::OnlyAmplitude(K_plus.rows(), "CDW")); // CDW
-		this->starting_states.push_back(_parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM")); // AFM
-		this->starting_states.push_back(_parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM_transversal")); // AFM transversal
+		starting_states.reserve(4);
+		starting_states.push_back({ Vector_L::Zero(K_minus.rows()), Vector_L::Zero(K_plus.rows()), "SC" }); // SC
+		starting_states.push_back(_parent_algorithm::OnlyAmplitude(K_plus.rows(), "CDW")); // CDW
+		starting_states.push_back(_parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM")); // AFM
+		starting_states.push_back(_parent_algorithm::OnlyAmplitude(K_plus.rows(), "AFM_transversal")); // AFM transversal
 
 		const global_floating_type norm_constant =
 #ifdef _EXACT_DOS
