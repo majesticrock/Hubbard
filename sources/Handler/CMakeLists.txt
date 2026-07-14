@@ -10,5 +10,5 @@ add_library(Handler
     UnknownBoundaryHandler.cpp
 )
 SET_COMPILER_FLAGS(Handler)
-target_include_directories(Handler PRIVATE Models Helper)
+#target_include_directories(Handler PRIVATE Models Helper)
 target_link_libraries(Handler PRIVATE MPI::MPI_CXX Models Helper)

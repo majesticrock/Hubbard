@@ -28,16 +28,18 @@ include(${CMAKE_SOURCE_DIR}/cmake/SelectClusterBuildOptions.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../../PhdUtility/cmake/mrock-information.cmake)
 
-include_directories(
-    $ENV{HOME}/usr/local/include
-)
-
 # System libraries
 find_package(MPI REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(Boost REQUIRED)
 
-find_package(mrock REQUIRED CONFIG)
+find_package(mrock 
+    REQUIRED 
+    COMPONENTS 
+        symbolic_operators 
+        iEoM 
+        utility
+)
 
 # subdirs
 add_subdirectory(sources/Hubbard/Helper)
@@ -54,6 +56,5 @@ SET_COMPILER_FLAGS(HubbardMeanField)
 target_link_libraries(HubbardMeanField PUBLIC
     Handler
     MPI::MPI_CXX
+    ${mrock_LIBRARIES}
 )
-
-#target_link_options(HubbardMeanField PRIVATE "-Wl,--trace-symbol")

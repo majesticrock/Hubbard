@@ -15,7 +15,7 @@ SET_COMPILER_FLAGS(Helper)
 
 if(USE_MKL)
     target_compile_options(Helper PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_COMPILE_OPTIONS>)
-    target_include_directories(Helper PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_INCLUDE_DIRECTORIES>)
+    #target_include_directories(Helper PUBLIC $<TARGET_PROPERTY:MKL::MKL,INTERFACE_INCLUDE_DIRECTORIES>)
     target_link_libraries(Helper PUBLIC $<LINK_ONLY:MKL::MKL>)
 
     get_target_property(MKL_LINK_LIBS MKL::MKL INTERFACE_LINK_LIBRARIES)
