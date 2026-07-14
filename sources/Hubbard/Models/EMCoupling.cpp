@@ -62,7 +62,7 @@ namespace Hubbard::Models {
 			q_minus_k = q - k;
 
 			for (int i = 0; i < N_PARAMETERS; ++i) {
-				F(q.getIndex() + static_cast<size_t>(i * Constants::BASIS_SIZE)) +=
+				F(q.getIndex() + static_cast<std::size_t>(i * Constants::BASIS_SIZE)) +=
 					(this->phis[q.getIndex()] + parameterCoefficients[i] + 0.5 * V_OVER_N * q.gamma())
 					* (this->expectation_values(q_plus_k.getIndex(), i) + this->expectation_values(q_minus_k.getIndex(), i));
 			}
@@ -71,7 +71,7 @@ namespace Hubbard::Models {
 	}
 
 	EMCoupling::EMCoupling(const ModelParameters& _params)
-		: MomentumBasedModel(_params, 4U, static_cast<size_t>(2 * Constants::BASIS_SIZE))
+		: MomentumBasedModel(_params, 4U, static_cast<std::size_t>(2 * Constants::BASIS_SIZE))
 	{
 		auto guess = [&]() -> global_floating_type {
 			if (std::abs(this->U) > 1e-12) {

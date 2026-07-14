@@ -4,7 +4,7 @@
 #include "../NumericalMomentum.hpp"
 
 namespace Hubbard::Models {
-	template <typename DataType, size_t Dimension>
+	template <typename DataType, std::size_t Dimension>
 	class MomentumBasedModel : public BaseModel<DataType>
 	{
 	protected:
@@ -64,7 +64,7 @@ namespace Hubbard::Models {
 		{
 			computeChemicalPotential();
 		};
-		MomentumBasedModel(const ModelParameters& _params, const size_t _spinor_size, const size_t number_of_attributes)
+		MomentumBasedModel(const ModelParameters& _params, const std::size_t _spinor_size, const std::size_t number_of_attributes)
 			: BaseModel<DataType>(_params, _spinor_size, number_of_attributes)
 		{
 			computeChemicalPotential();

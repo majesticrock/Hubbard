@@ -34,20 +34,20 @@ namespace Hubbard {
 			static_assert(sizeof...(Args) == Dimension, "Incorrect number of arguments");
 			static_assert(std::conjunction_v<std::is_integral<Args>...>, "All arguments must be integers");
 			//((std::cout << ',' << std::forward<Args>(args)), ...);
-			for (size_t d = 0U; d < Dimension; ++d)
+			for (std::size_t d = 0U; d < Dimension; ++d)
 			{
 				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
 			}
 		}
 		explicit NumericalMomentum(const Eigen::Array<int, Dimension, 1>& point_in_bz) {
-			for (size_t d = 0U; d < Dimension; ++d)
+			for (std::size_t d = 0U; d < Dimension; ++d)
 			{
 				k[d] = point_in_bz(d);
 				momenta[d] = k[d] * Constants::PI_DIV_DISCRETIZATION;
 			}
 		};
 		explicit NumericalMomentum(const Eigen::Vector<global_floating_type, Dimension>& momentum) {
-			for (size_t d = 0U; d < Dimension; ++d)
+			for (std::size_t d = 0U; d < Dimension; ++d)
 			{
 				momenta[d] = momentum(d);
 			}
@@ -107,9 +107,9 @@ namespace Hubbard {
 			return (k[d] < Constants::K_DISCRETIZATION);
 		}
 
-		inline size_t getIndex() const {
+		inline std::size_t getIndex() const {
 			assert(k[0] + Constants::K_DISCRETIZATION >= 0);
-			size_t index{ static_cast<size_t>(k[0] + Constants::K_DISCRETIZATION) };
+			std::size_t index{ static_cast<std::size_t>(k[0] + Constants::K_DISCRETIZATION) };
 			for (unsigned int i = 1U; i < Dimension; ++i)
 			{
 				index += 2 * i * Constants::K_DISCRETIZATION * (k[i] + Constants::K_DISCRETIZATION);
@@ -141,7 +141,7 @@ namespace Hubbard {
 
 		// This function assumes that no anomalous momenta (i.e. outside of [-pi, pi)) are being used
 		inline NumericalMomentum& operator+=(const NumericalMomentum& rhs) {
-			for (size_t i = 0U; i < Dimension; ++i)
+			for (std::size_t i = 0U; i < Dimension; ++i)
 			{
 				this->k[i] += rhs.k[i];
 				if (this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
@@ -153,7 +153,7 @@ namespace Hubbard {
 		};
 		// This function assumes that no anomalous momenta (i.e. outside of [-pi, pi)) are being used
 		inline NumericalMomentum& operator-=(const NumericalMomentum& rhs) {
-			for (size_t i = 0U; i < Dimension; ++i)
+			for (std::size_t i = 0U; i < Dimension; ++i)
 			{
 				this->k[i] -= rhs.k[i];
 				if (this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
@@ -165,7 +165,7 @@ namespace Hubbard {
 		};
 
 		inline NumericalMomentum& operator*=(const int rhs) {
-			for (size_t i = 0U; i < Dimension; ++i)
+			for (std::size_t i = 0U; i < Dimension; ++i)
 			{
 				this->k[i] = mod_two_pi(rhs * this->k[i]);
 				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
@@ -211,7 +211,7 @@ namespace Hubbard {
 	template <unsigned int Dimension>
 	inline std::ostream& operator<<(std::ostream& os, const NumericalMomentum<Dimension>& momentum) {
 		os << momentum.momenta[0];
-		for (size_t d = 1U; d < Dimension; ++d)
+		for (std::size_t d = 1U; d < Dimension; ++d)
 		{
 			os << " " << momentum.momenta[d];
 		}

@@ -32,7 +32,7 @@ namespace Hubbard::DensityOfStates {
 	}
 	void BaseDOS::printValuesAndAbscissa()
 	{
-		for (size_t i = 0U; i < values.size(); ++i)
+		for (std::size_t i = 0U; i < values.size(); ++i)
 		{
 			std::cout << abscissa[i] << "; " << values[i] << std::endl;
 		}
@@ -47,7 +47,7 @@ namespace Hubbard::DensityOfStates {
 		}
 		// we need to create a proper lvalue variable
 		// In order to read its address and by extent byte representation later on
-		size_t vector_size = values.size();
+		std::size_t vector_size = values.size();
 		mrock::utility::BinaryIO::writeVariable(vector_size, writer);
 		mrock::utility::BinaryIO::writeVector(values, writer);
 		mrock::utility::BinaryIO::writeVector(abscissa, writer);
@@ -61,7 +61,7 @@ namespace Hubbard::DensityOfStates {
 			std::cerr << "Could not open file stream for " << filename << std::endl;
 			return false;
 		}
-		size_t vector_size;
+		std::size_t vector_size;
 		mrock::utility::BinaryIO::read_to_variable(vector_size, reader);
 		values.resize(vector_size);
 		weights.resize(vector_size);

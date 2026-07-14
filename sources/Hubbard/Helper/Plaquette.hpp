@@ -18,21 +18,21 @@ namespace Hubbard::Helper {
 		coefficient_type upperSecond{};
 		int value_index{};
 
-		inline global_floating_type& operator()(const size_t i, const size_t j) {
+		inline global_floating_type& operator()(const std::size_t i, const std::size_t j) {
 			assert(i < 4);
 			return attributes[i][j];
 		};
-		inline const global_floating_type& operator()(const size_t i, const size_t j) const {
+		inline const global_floating_type& operator()(const std::size_t i, const std::size_t j) const {
 			assert(i < 4);
 			return attributes[i][j];
 		};
 
-		inline bool valueIsFinite(const size_t index) const {
+		inline bool valueIsFinite(const std::size_t index) const {
 			return abs(attributes[index][value_index]) > DEFAULT_PRECISION;
 		};
 		inline bool containsPhaseBoundary() const
 		{
-			for (size_t i = 1U; i < 4U; ++i)
+			for (std::size_t i = 1U; i < 4U; ++i)
 			{
 				if (valueIsFinite(0U) != valueIsFinite(i)) {
 					return true;

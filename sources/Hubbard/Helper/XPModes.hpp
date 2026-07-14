@@ -8,8 +8,8 @@ namespace Hubbard::Helper {
 	protected:
 		using _parent_algorithm = mrock::iEoM::XPResolvent<global_floating_type>;
 
-		static constexpr size_t hermitian_size = 7U;
-		static constexpr size_t antihermitian_size = 5U;
+		static constexpr std::size_t hermitian_size = 7U;
+		static constexpr std::size_t antihermitian_size = 5U;
 
 		const std::array<int, hermitian_size> hermitian_offsets;
 		const std::array<int, antihermitian_size> antihermitian_offsets;

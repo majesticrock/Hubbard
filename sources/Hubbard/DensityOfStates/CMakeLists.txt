@@ -7,4 +7,4 @@ add_library(DensityOfStates
     Square.cpp
 )
 SET_COMPILER_FLAGS(DensityOfStates)
-target_link_libraries(DensityOfStates PUBLIC mrock::utility)
+target_link_libraries(DensityOfStates PUBLIC mrock::utility OpenMP::OpenMP_CXX)

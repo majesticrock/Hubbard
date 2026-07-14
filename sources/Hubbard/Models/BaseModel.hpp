@@ -15,7 +15,7 @@ namespace Hubbard::Models {
 	template <int Dimension>
 	inline Eigen::Vector<global_floating_type, Dimension> index_vector_to_k_vector(const Eigen::Vector<int, Dimension>& index_vec) {
 		Eigen::Vector<global_floating_type, Dimension> ret;
-		for (size_t i = 0U; i < Dimension; ++i)
+		for (std::size_t i = 0U; i < Dimension; ++i)
 		{
 			ret(i) = index_to_k_vector(index_vec(i));
 		}
@@ -33,7 +33,7 @@ namespace Hubbard::Models {
 	protected:
 		virtual void init() = 0;
 		inline void multiplyParametersByCoefficients(ParameterVector& F) const {
-			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
+			for (std::size_t i = 0U; i < this->model_attributes.size(); ++i)
 			{
 				F(i) *= parameterCoefficients[i];
 			}
@@ -56,11 +56,11 @@ namespace Hubbard::Models {
 		coefficient_type V_OVER_N{ V / Constants::BASIS_SIZE };
 		coefficient_type chemical_potential{};
 
-		size_t SPINOR_SIZE{ 4U };
+		std::size_t SPINOR_SIZE{ 4U };
 
 		inline void setParameters(ParameterVector& F) {
 			_CONST_FLOATING new_weight{ 0.5 };
-			for (size_t i = 0U; i < this->model_attributes.size(); ++i)
+			for (std::size_t i = 0U; i < this->model_attributes.size(); ++i)
 			{
 				this->model_attributes[i] = new_weight * F(i) + (1 - new_weight) * this->model_attributes[i];
 				// Numerical noise correction
@@ -84,7 +84,7 @@ namespace Hubbard::Models {
 		inline void fillRho() {
 			this->hamilton_solver.compute(this->hamilton);
 			rho.setZero(this->SPINOR_SIZE, this->SPINOR_SIZE);
-			for (size_t i = 0U; i < this->SPINOR_SIZE; ++i)
+			for (std::size_t i = 0U; i < this->SPINOR_SIZE; ++i)
 			{
 				rho(i, i) = 1 - fermi_dirac(hamilton_solver.eigenvalues()(i));
 			}
@@ -161,7 +161,7 @@ namespace Hubbard::Models {
 			: model_attributes(params, sytemType), temperature(params.temperature), U(params.U), V(params.V)
 		{ };
 
-		BaseModel(const ModelParameters& params, const size_t _spinor_size, const size_t number_of_attributes)
+		BaseModel(const ModelParameters& params, const std::size_t _spinor_size, const std::size_t number_of_attributes)
 			: model_attributes(number_of_attributes), parameterCoefficients(_spinor_size), temperature(params.temperature), U(params.U), V(params.V), SPINOR_SIZE(_spinor_size)
 		{
 			this->hamilton = SpinorMatrix::Zero(this->SPINOR_SIZE, this->SPINOR_SIZE);

@@ -64,16 +64,16 @@ namespace Hubbard::DensityOfStates {
 		virtual void computeValues() = 0;
 		virtual ~BaseDOS() = default;
 
-		inline static global_floating_type abscissa_v(size_t index) {
+		inline static global_floating_type abscissa_v(std::size_t index) {
 			return static_cast<global_floating_type>(index < abscissa.size() ? abscissa[index] : -abscissa[index - abscissa.size()]);
 		};
-		inline static global_floating_type values_v(size_t index) {
+		inline static global_floating_type values_v(std::size_t index) {
 			return static_cast<global_floating_type>(index < values.size() ? values[index] : values[index - values.size()]);
 		};
-		inline static global_floating_type weights_v(size_t index) {
+		inline static global_floating_type weights_v(std::size_t index) {
 			return static_cast<global_floating_type>(index < weights.size() ? weights[index] : weights[index - weights.size()]);
 		};
-		inline static size_t size() noexcept {
+		inline static std::size_t size() noexcept {
 			return values.size();
 		};
 

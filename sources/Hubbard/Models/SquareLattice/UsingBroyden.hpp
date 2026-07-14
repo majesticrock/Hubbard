@@ -6,14 +6,14 @@ namespace Hubbard::Models::SquareLattice {
 	{
 	private:
 		void init() override;
-		const size_t _MaxPreBroydenIterations;
+		const std::size_t _MaxPreBroydenIterations;
 	protected:
 		virtual void fillHamiltonian(const NumericalMomentum<2>& k_values) override;
 
 		virtual void addToParameterSet(ComplexParameterVector& F, const NumericalMomentum<2>& k_values) override;
 	public:
-		UsingBroyden(const ModelParameters& _params, size_t MaxPreBroydenIterations = 300U);
-		UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, size_t MaxPreBroydenIterations = 300U);
+		UsingBroyden(const ModelParameters& _params, std::size_t MaxPreBroydenIterations = 300U);
+		UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, std::size_t MaxPreBroydenIterations = 300U);
 
 		virtual ModelAttributes<global_floating_type> computePhases() override;
 	};

@@ -112,7 +112,7 @@ namespace Hubbard::DensityOfStates {
 
 		constexpr double borders[2][2] = { {0, 1},{1, 3} };
 
-		for (size_t i = 0U; i < 2U; ++i)
+		for (std::size_t i = 0U; i < 2U; ++i)
 		{
 			decltype(abscissa) buf_abscissa;
 			decltype(upper_border_to_abscissa) buf_upper_border_to_abscissa;

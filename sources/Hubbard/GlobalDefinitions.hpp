@@ -1,4 +1,5 @@
 #pragma once
+// IWYU pragma: keep
 #include <Eigen/Dense>
 #include <stddef.h>
 #include <mrock/iEoM/Resolvent.hpp>
@@ -83,7 +84,7 @@ namespace Hubbard {
 
 	template <int vector_size = Eigen::Dynamic>
 	void printAsRow(Eigen::Vector<global_floating_type, vector_size>& printer) {
-		for (size_t i = 0U; i < printer.size(); ++i)
+		for (std::size_t i = 0U; i < printer.size(); ++i)
 		{
 			std::cout << "   " << printer(i);
 		}
@@ -92,7 +93,7 @@ namespace Hubbard {
 
 	template <int vector_size = Eigen::Dynamic>
 	void printAsRow(Eigen::Vector<complex_prec, vector_size>& printer) {
-		for (size_t i = 0U; i < printer.size(); ++i)
+		for (std::size_t i = 0U; i < printer.size(); ++i)
 		{
 			std::cout << " \t" << printer(i);
 			if (!((i + 1U) & 3U)) {

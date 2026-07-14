@@ -137,7 +137,7 @@ namespace Hubbard::Models {
 			}
 		};
 		// Using this constructor constructs the attribute vector with a fixed value, default is 0
-		explicit ModelAttributes(const size_t number_of_attributes, const DataType& default_value = DataType{})
+		explicit ModelAttributes(const std::size_t number_of_attributes, const DataType& default_value = DataType{})
 			: selfconsistency_values(number_of_attributes, default_value) {};
 
 		ModelAttributes(const ModelAttributes<complex_prec>& other, ComplexAttributePolicy complexAttributePolicy)
@@ -145,13 +145,13 @@ namespace Hubbard::Models {
 			converged{ other.converged }
 		{
 			if (complexAttributePolicy == Magnitude) {
-				for (size_t i = 0U; i < selfconsistency_values.size(); ++i)
+				for (std::size_t i = 0U; i < selfconsistency_values.size(); ++i)
 				{
 					selfconsistency_values[i] = abs(other.selfconsistency_values[i]);
 				}
 			}
 			else if (complexAttributePolicy == SeperateRealAndImaginary) {
-				for (size_t i = 0; i < other.selfconsistency_values.size(); i++)
+				for (std::size_t i = 0; i < other.selfconsistency_values.size(); i++)
 				{
 					selfconsistency_values[i] = real(other.selfconsistency_values[i]);
 					selfconsistency_values[i + other.selfconsistency_values.size()] = imag(other.selfconsistency_values[i]);
@@ -166,15 +166,15 @@ namespace Hubbard::Models {
 		* utility functions
 		*/
 
-		inline DataType& operator[](size_t i) {
+		inline DataType& operator[](std::size_t i) {
 			assert(i < selfconsistency_values.size());
 			return selfconsistency_values[i];
 		};
-		inline const DataType& operator[](size_t i) const {
+		inline const DataType& operator[](std::size_t i) const {
 			assert(i < selfconsistency_values.size());
 			return selfconsistency_values[i];
 		};
-		inline size_t size() const noexcept {
+		inline std::size_t size() const noexcept {
 			return selfconsistency_values.size();
 		}
 		inline void push_back(const DataType& value) {
@@ -255,7 +255,7 @@ namespace Hubbard::Models {
 			}
 		};
 
-		inline bool isFinite(const size_t i) const {
+		inline bool isFinite(const std::size_t i) const {
 			return (abs(selfconsistency_values[i]) > DEFAULT_PRECISION);
 		}
 		inline void print() const {
@@ -267,14 +267,14 @@ namespace Hubbard::Models {
 		*/
 
 		inline ModelAttributes& operator+=(const ModelAttributes& rhs) {
-			for (size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
+			for (std::size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
 			{
 				this->selfconsistency_values[i] += rhs.selfconsistency_values[i];
 			}
 			return *this;
 		};
 		inline ModelAttributes& operator-=(const ModelAttributes& rhs) {
-			for (size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
+			for (std::size_t i = 0U; i < this->selfconsistency_values.size(); ++i)
 			{
 				this->selfconsistency_values[i] -= rhs.selfconsistency_values[i];
 			}

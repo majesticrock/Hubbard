@@ -57,13 +57,13 @@ namespace Hubbard::Models::SquareLattice {
 		F(7) += GAMMA * (rho(2, 2) - rho(3, 3)).real(); // Gamma Occupation Down
 	}
 
-	UsingBroyden::UsingBroyden(const ModelParameters& _params, size_t MaxPreBroydenIterations)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, std::size_t MaxPreBroydenIterations)
 		: Model2D(_params), _MaxPreBroydenIterations(MaxPreBroydenIterations)
 	{
 		init();
 	}
 
-	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, size_t MaxPreBroydenIterations)
+	UsingBroyden::UsingBroyden(const ModelParameters& _params, const BaseAttributes& startingValues, std::size_t MaxPreBroydenIterations)
 		: Model2D(_params, startingValues), _MaxPreBroydenIterations(MaxPreBroydenIterations)
 	{
 		init();

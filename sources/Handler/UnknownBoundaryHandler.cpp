@@ -19,7 +19,7 @@
 #include "../Hubbard/Helper/DetailModelConstructor.hpp"
 
 using data_vector = std::vector<double>;
-constexpr size_t MAX_ITERATIONS = 30U;
+constexpr std::size_t MAX_ITERATIONS = 30U;
 constexpr double ERROR_MARGIN = 1e-4;
 const std::string BASE_FOLDER = "../../data/phases/";
 
@@ -76,7 +76,7 @@ void UnknownBoundaryHandler::execute(mrock::utility::InputFileReader& input) con
 			}
 		}
 
-		for (size_t iter = 0U; iter < MAX_ITERATIONS && abs(upper - lower) > ERROR_MARGIN; ++iter) {
+		for (std::size_t iter = 0U; iter < MAX_ITERATIONS && abs(upper - lower) > ERROR_MARGIN; ++iter) {
 			center = 0.5 * (lower + upper);
 			modelParameters.setSecondIteratorExact(center);
 			modeHelper->setNewModelParameters(input, modelParameters);

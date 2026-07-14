@@ -59,7 +59,7 @@ namespace Hubbard::Models::SquareLattice
 					expecs[6](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = this->get_n_up_plus_down();
 					// g_up + g_down
 					expecs[7](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION) = std::real(this->get_g_up_plus_down());
-					for (size_t idx = 0U; idx < 8U; ++idx)
+					for (std::size_t idx = 0U; idx < 8U; ++idx)
 					{
 						sum_of_all(idx, 0) += expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);
 						sum_of_all(idx, 1) += 0.5 * ks.gamma() * expecs[idx](k + Constants::K_DISCRETIZATION, l + Constants::K_DISCRETIZATION);

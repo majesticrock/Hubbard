@@ -63,7 +63,7 @@ namespace Hubbard::Helper {
 		SECOND_IT_STEPS = input.getInt("second_iterator_steps");
 		SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
 
-		for (size_t i = 0U; i < option_list.size(); ++i)
+		for (std::size_t i = 0U; i < option_list.size(); ++i)
 		{
 			if (input.getString("second_iterator_type") == option_list[i]) {
 				SECOND_IT_MIN = model_params[i];
@@ -158,7 +158,7 @@ namespace Hubbard::Helper {
 
 	void PhaseHelper::compute_crude(std::vector<data_vector>& data_mapper)
 	{
-		size_t NUMBER_OF_GAP_VALUES = data_mapper.size();
+		std::size_t NUMBER_OF_GAP_VALUES = data_mapper.size();
 		for (int T = 0; T < FIRST_IT_STEPS; T++)
 		{
 #pragma omp parallel for schedule(dynamic)
@@ -168,7 +168,7 @@ namespace Hubbard::Helper {
 				local.setSecondIterator(U);
 				ModelAttributes<global_floating_type> ret{ computeDataPoint(local) };
 
-				for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+				for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 				{
 					data_mapper[i][(T * SECOND_IT_STEPS) + U] = ret[i];
 				}
@@ -188,7 +188,7 @@ namespace Hubbard::Helper {
 			{
 				Plaquette plaq;
 				plaq.value_index = value_index;
-				for (size_t l = 0U; l < origin.size(); ++l)
+				for (std::size_t l = 0U; l < origin.size(); ++l)
 				{
 					plaq(0, l) = origin[l][rank_offset + i * SECOND_IT_STEPS + j - 1];
 					plaq(1, l) = origin[l][rank_offset + i * SECOND_IT_STEPS + j];
@@ -210,7 +210,7 @@ namespace Hubbard::Helper {
 
 		while (plaqs.size() > 0U && plaqs.begin()->size() > 5e-5) {
 			std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
-			const size_t N_PLAQUETTES = plaqs.size();
+			const std::size_t N_PLAQUETTES = plaqs.size();
 
 			const unsigned int n_omp_threads = omp_get_max_threads();
 			std::vector<std::vector<Plaquette>> buffer(n_omp_threads);
@@ -220,7 +220,7 @@ namespace Hubbard::Helper {
 			{
 				plaqs[i].devidePlaquette(buffer[omp_get_thread_num()]);
 			}
-			size_t totalSize = 0U;
+			std::size_t totalSize = 0U;
 			for (const auto& vec : buffer)
 			{
 				totalSize += vec.size();

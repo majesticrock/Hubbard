@@ -1,7 +1,7 @@
 #include "SquareTripletPairing.hpp"
 #include <mrock/utility/Selfconsistency/IterativeSolver.hpp>
 
-constexpr size_t NUMBER_OF_PARAMETERS = 18;
+constexpr std::size_t NUMBER_OF_PARAMETERS = 18;
 
 namespace Hubbard::Models::SquareLattice {
 	void SquareTripletPairing::init()
@@ -17,7 +17,7 @@ namespace Hubbard::Models::SquareLattice {
 		parameterCoefficients.push_back(V_OVER_N); // Tau_sc
 		parameterCoefficients.push_back(V_OVER_N); // Theta_sc
 
-		for (size_t i = 0U; i < 16U; i++)
+		for (std::size_t i = 0U; i < 16U; i++)
 		{
 			model_attributes[i] = global_floating_type{};
 		}

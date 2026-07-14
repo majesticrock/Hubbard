@@ -10,7 +10,7 @@ namespace Hubbard::DensityOfStates {
 		static constexpr int DIMENSION = 2;
 		static constexpr int COORDINATION_NUMBER = 4;
 
-		inline static size_t n_abscissa() noexcept {
+		inline static std::size_t n_abscissa() noexcept {
 			return abscissa.size();
 		};
 		static global_floating_type computeValue(const global_floating_type& gamma);

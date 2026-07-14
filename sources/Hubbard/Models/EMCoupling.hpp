@@ -19,20 +19,20 @@ namespace Hubbard::Models {
 		void init() override;
 		void computeChemicalPotential() override;
 
-		inline size_t get_sc_index(const NumericalMomentum<2>& q) const {
+		inline std::size_t get_sc_index(const NumericalMomentum<2>& q) const {
 			return q.getIndex();
 		};
-		inline size_t get_n_index(const NumericalMomentum<2>& q) const {
-			return q.getIndex() + static_cast<size_t>(Constants::BASIS_SIZE);
+		inline std::size_t get_n_index(const NumericalMomentum<2>& q) const {
+			return q.getIndex() + static_cast<std::size_t>(Constants::BASIS_SIZE);
 		};
-		inline size_t get_cdw_index(const NumericalMomentum<2>& q) const {
-			return q.getIndex() + static_cast<size_t>(2 * Constants::BASIS_SIZE);
+		inline std::size_t get_cdw_index(const NumericalMomentum<2>& q) const {
+			return q.getIndex() + static_cast<std::size_t>(2 * Constants::BASIS_SIZE);
 		};
-		inline size_t get_afm_index(const NumericalMomentum<2>& q) const {
-			return q.getIndex() + static_cast<size_t>(3 * Constants::BASIS_SIZE);
+		inline std::size_t get_afm_index(const NumericalMomentum<2>& q) const {
+			return q.getIndex() + static_cast<std::size_t>(3 * Constants::BASIS_SIZE);
 		};
-		inline size_t get_eta_index(const NumericalMomentum<2>& q) const {
-			return q.getIndex() + static_cast<size_t>(4 * Constants::BASIS_SIZE);
+		inline std::size_t get_eta_index(const NumericalMomentum<2>& q) const {
+			return q.getIndex() + static_cast<std::size_t>(4 * Constants::BASIS_SIZE);
 		};
 
 	protected:

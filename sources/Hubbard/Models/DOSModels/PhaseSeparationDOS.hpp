@@ -7,7 +7,7 @@ namespace Hubbard::Models::DOSModels {
 	{
 	private:
 		using ParameterVector = typename BaseModel<global_floating_type>::ParameterVector;
-		const size_t _MaxPreBroydenIterations;
+		const std::size_t _MaxPreBroydenIterations;
 		int _extra_dimensions{};
 
 		void init() override {
@@ -71,14 +71,14 @@ namespace Hubbard::Models::DOSModels {
 			F -= x;
 		};
 
-		PhaseSeparationDOS(const ModelParameters& _params, int extra_dimensions, size_t MaxPreBroydenIterations = 300U)
+		PhaseSeparationDOS(const ModelParameters& _params, int extra_dimensions, std::size_t MaxPreBroydenIterations = 300U)
 			: DOSBasedModel<global_floating_type, DOS>(_params), _MaxPreBroydenIterations(MaxPreBroydenIterations), _extra_dimensions(extra_dimensions)
 		{
 			init();
 		};
 
 		template<typename StartingValuesglobal_floating_type>
-		PhaseSeparationDOS(const ModelParameters& _params, const ModelAttributes<StartingValuesglobal_floating_type>& startingValues, int extra_dimensions, size_t MaxPreBroydenIterations = 300U)
+		PhaseSeparationDOS(const ModelParameters& _params, const ModelAttributes<StartingValuesglobal_floating_type>& startingValues, int extra_dimensions, std::size_t MaxPreBroydenIterations = 300U)
 			: DOSBasedModel<global_floating_type, DOS>(_params, startingValues), _MaxPreBroydenIterations(MaxPreBroydenIterations), _extra_dimensions(extra_dimensions)
 		{
 			init();

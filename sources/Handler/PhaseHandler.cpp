@@ -27,7 +27,7 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 	int SECOND_IT_STEPS = input.getInt("second_iterator_steps");
 	double SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
 
-	for (size_t i = 0U; i < Hubbard::Constants::option_list.size(); ++i)
+	for (std::size_t i = 0U; i < Hubbard::Constants::option_list.size(); ++i)
 	{
 		if (input.getString("second_iterator_type") == Hubbard::Constants::option_list[i]) {
 			SECOND_IT_MIN = model_params[i];
@@ -40,17 +40,17 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 	phaseHelper.compute_crude(local_data);
 
 #ifndef _NO_MPI
-	for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
+	for (std::size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
 	{
 		MPI_Allgather(local_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE,
 			recieve_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE, MPI_COMM_WORLD);
 	}
 #else
-	for (size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
+	for (std::size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
 	{
 		recieve_data[i] = local_data[i];
 	}
-	for (size_t i = 0U; i < 3; ++i) {
+	for (std::size_t i = 0U; i < 3; ++i) {
 		recieve_coexitence_data[i] = local_coexitence_data[i];
 	}
 #endif
@@ -84,12 +84,12 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 
 	if (input.getBool("improved_boundaries")) {
 		std::vector<data_vector> local(NUMBER_OF_GAP_VALUES);
-		// We stick to int (and ignore size_t vs. int mismatch) due to MPI restrictions
+		// We stick to int (and ignore std::size_t vs. int mismatch) due to MPI restrictions
 		std::vector<int> sizes(NUMBER_OF_GAP_VALUES);
 		std::vector<std::vector<int>> all_sizes(NUMBER_OF_GAP_VALUES);
 		std::vector<int> totalSizes(NUMBER_OF_GAP_VALUES, 0);
 
-		for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+		for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 		{
 			phaseHelper.findSingleBoundary(recieve_data, local[i], i < 6 ? i : i + 2);
 			sizes[i] = local[i].size();
@@ -97,14 +97,14 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 
 		std::vector<data_vector> recieve_boundaries(NUMBER_OF_GAP_VALUES);
 		if (rank == 0) {
-			for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+			for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 			{
 				all_sizes[i].resize(numberOfRanks);
 			}
 		}
 
 #ifndef _NO_MPI
-		for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+		for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 		{
 			MPI_Gather(&(sizes[i]), 1, MPI_INT, all_sizes[i].data(), 1, MPI_INT, 0, MPI_COMM_WORLD);
 			std::vector<int> displacements(numberOfRanks, 0);
@@ -114,7 +114,7 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 				{
 					totalSizes[i] += s;
 				}
-				for (size_t j = 1; j < numberOfRanks; j++)
+				for (std::size_t j = 1; j < numberOfRanks; j++)
 				{
 					displacements[j] = displacements[j - 1] + all_sizes[i][j - 1];
 				}
@@ -124,7 +124,7 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 			MPI_Gatherv(local[i].data(), sizes[i], _MPI_RETURN_TYPE, recieve_boundaries[i].data(), all_sizes[i].data(), displacements.data(), _MPI_RETURN_TYPE, 0, MPI_COMM_WORLD);
 		}
 #else
-		for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+		for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 		{
 			recieve_boundaries[i] = local[i];
 		}
@@ -140,11 +140,11 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 			std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
 			std::string names[] = { "cdw", "afm", "sc", "gamma_sc", "xi_sc", "eta" };
-			for (size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+			for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
 			{
-				const size_t n = recieve_boundaries[i].size() / 2;
+				const std::size_t n = recieve_boundaries[i].size() / 2;
 				std::vector<data_vector> buffer(2, data_vector(n));
-				for (size_t j = 0U; j < recieve_boundaries[i].size(); j += 2)
+				for (std::size_t j = 0U; j < recieve_boundaries[i].size(); j += 2)
 				{
 					buffer[0][j / 2] = recieve_boundaries[i][j];
 					buffer[1][j / 2] = recieve_boundaries[i][j + 1];

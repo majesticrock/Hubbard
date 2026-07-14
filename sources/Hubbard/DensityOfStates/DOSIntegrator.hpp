@@ -16,7 +16,7 @@ namespace Hubbard::DensityOfStates {
 		inline const ResultType& integrate_vector_symmetric(const VectorType& function_values) {
 			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) * function_values[0];
 
-			for (size_t i = 1U; i < DOS::size(); ++i)
+			for (std::size_t i = 1U; i < DOS::size(); ++i)
 			{
 				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) * function_values[i];
 			}
@@ -29,7 +29,7 @@ namespace Hubbard::DensityOfStates {
 			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0])
 				* (function_values[0] + function_values[DOS::size()]);
 
-			for (size_t i = 1U; i < DOS::size(); ++i)
+			for (std::size_t i = 1U; i < DOS::size(); ++i)
 			{
 				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i])
 					* (function_values[i] + function_values[i + DOS::size()]);
@@ -45,7 +45,7 @@ namespace Hubbard::DensityOfStates {
 			F(static_cast<global_floating_type>(DOS::abscissa.front()), buffer);
 			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) * buffer;
 
-			for (size_t i = 1U; i < DOS::size(); ++i)
+			for (std::size_t i = 1U; i < DOS::size(); ++i)
 			{
 				F(static_cast<global_floating_type>(DOS::abscissa[i]), buffer);
 				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) * buffer;
@@ -61,7 +61,7 @@ namespace Hubbard::DensityOfStates {
 			F(static_cast<global_floating_type>(-DOS::abscissa.front()), second_buffer);
 			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) * (buffer + second_buffer);
 
-			for (size_t i = 1U; i < DOS::size(); ++i)
+			for (std::size_t i = 1U; i < DOS::size(); ++i)
 			{
 				F(static_cast<global_floating_type>(DOS::abscissa[i]), buffer);
 				F(static_cast<global_floating_type>(-DOS::abscissa[i]), second_buffer);
@@ -77,7 +77,7 @@ namespace Hubbard::DensityOfStates {
 			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) *
 				F(static_cast<global_floating_type>(DOS::abscissa.front()));
 
-			for (size_t i = 1U; i < DOS::size(); ++i)
+			for (std::size_t i = 1U; i < DOS::size(); ++i)
 			{
 				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) *
 					F(static_cast<global_floating_type>(DOS::abscissa[i]));
@@ -91,7 +91,7 @@ namespace Hubbard::DensityOfStates {
 			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) *
 				(F(static_cast<global_floating_type>(DOS::abscissa.front())) + F(static_cast<global_floating_type>(-DOS::abscissa.front())));
 
-			for (size_t i = 1U; i < DOS::size(); ++i)
+			for (std::size_t i = 1U; i < DOS::size(); ++i)
 			{
 				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) *
 					(F(static_cast<global_floating_type>(DOS::abscissa[i])) + F(static_cast<global_floating_type>(-DOS::abscissa[i])));
@@ -105,7 +105,7 @@ namespace Hubbard::DensityOfStates {
 		inline const ResultType& integrate_by_index_symmetric(const UnaryFunction& F) {
 			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) * F(0U);
 
-			for (size_t i = 1U; i < DOS::size(); ++i)
+			for (std::size_t i = 1U; i < DOS::size(); ++i)
 			{
 				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) * F(i);
 			}
@@ -118,7 +118,7 @@ namespace Hubbard::DensityOfStates {
 		inline const ResultType& integrate_by_index(const UnaryFunction& F) {
 			result = static_cast<global_floating_type>(DOS::values[0] * DOS::weights[0]) * F(0U);
 
-			for (size_t i = 1U; i < DOS::size(); ++i)
+			for (std::size_t i = 1U; i < DOS::size(); ++i)
 			{
 				result += static_cast<global_floating_type>(DOS::values[i] * DOS::weights[i]) * (F(i) + F(i + DOS::size()));
 			}

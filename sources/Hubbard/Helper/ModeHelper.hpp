@@ -12,7 +12,7 @@ namespace Hubbard::Helper {
 	class ModeHelper {
 	protected:
 		mrock::symbolic_operators::TermLoader wicks;
-		size_t TOTAL_BASIS{};
+		std::size_t TOTAL_BASIS{};
 		/*
 		* 0 - n
 		* 1 - g_up

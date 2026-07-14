@@ -114,25 +114,25 @@ namespace Hubbard::Helper {
 				int jdx = addQTo(idx);
 				std::cout << idx << ": " << gammaFromIndex(idx) << "\n";
 
-				for (size_t i = 0U; i < number_of_basis_terms; ++i)
+				for (std::size_t i = 0U; i < number_of_basis_terms; ++i)
 				{
-					for (size_t j = 0U; j < number_of_basis_terms; ++j)
+					for (std::size_t j = 0U; j < number_of_basis_terms; ++j)
 					{
 						printM(j + idx * number_of_basis_terms, i + idx * number_of_basis_terms);
 					}
-					for (size_t j = 0U; j < number_of_basis_terms; ++j)
+					for (std::size_t j = 0U; j < number_of_basis_terms; ++j)
 					{
 						printM(j + jdx * number_of_basis_terms, i + idx * number_of_basis_terms);
 					}
 					std::cout << std::endl;
 				}
-				for (size_t i = 0U; i < number_of_basis_terms; ++i)
+				for (std::size_t i = 0U; i < number_of_basis_terms; ++i)
 				{
-					for (size_t j = 0U; j < number_of_basis_terms; ++j)
+					for (std::size_t j = 0U; j < number_of_basis_terms; ++j)
 					{
 						printM(j + idx * number_of_basis_terms, i + jdx * number_of_basis_terms);
 					}
-					for (size_t j = 0U; j < number_of_basis_terms; ++j)
+					for (std::size_t j = 0U; j < number_of_basis_terms; ++j)
 					{
 						printM(j + jdx * number_of_basis_terms, i + jdx * number_of_basis_terms);
 					}
@@ -148,27 +148,27 @@ namespace Hubbard::Helper {
 	{
 		std::cout << std::fixed << std::setprecision(4) << std::endl;
 
-		for (size_t k = 0U; k < Constants::BASIS_SIZE / 2; ++k)
+		for (std::size_t k = 0U; k < Constants::BASIS_SIZE / 2; ++k)
 		{
-			for (size_t i = 0U; i < number_of_basis_terms; ++i)
+			for (std::size_t i = 0U; i < number_of_basis_terms; ++i)
 			{
-				for (size_t j = 0U; j < number_of_basis_terms; ++j)
+				for (std::size_t j = 0U; j < number_of_basis_terms; ++j)
 				{
 					printM(j + k * number_of_basis_terms, i + k * number_of_basis_terms);
 				}
-				for (size_t j = 0U; j < number_of_basis_terms; ++j)
+				for (std::size_t j = 0U; j < number_of_basis_terms; ++j)
 				{
 					printM(j + (k + Constants::BASIS_SIZE / 2) * number_of_basis_terms, i + k * number_of_basis_terms);
 				}
 				std::cout << std::endl;
 			}
-			for (size_t i = 0U; i < number_of_basis_terms; ++i)
+			for (std::size_t i = 0U; i < number_of_basis_terms; ++i)
 			{
-				for (size_t j = 0U; j < number_of_basis_terms; ++j)
+				for (std::size_t j = 0U; j < number_of_basis_terms; ++j)
 				{
 					printM(j + k * number_of_basis_terms, i + (k + Constants::BASIS_SIZE / 2) * number_of_basis_terms);
 				}
-				for (size_t j = 0U; j < number_of_basis_terms; ++j)
+				for (std::size_t j = 0U; j < number_of_basis_terms; ++j)
 				{
 					printM(j + (k + Constants::BASIS_SIZE / 2) * number_of_basis_terms, i + (k + Constants::BASIS_SIZE / 2) * number_of_basis_terms);
 				}

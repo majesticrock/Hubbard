@@ -24,7 +24,7 @@ namespace Hubbard::Helper {
 		std::vector<global_floating_type> approximate_dos;
 		const global_floating_type INV_GAMMA_DISC;
 
-		inline global_floating_type getWeightFromIndex(size_t gamma_idx) {
+		inline global_floating_type getWeightFromIndex(std::size_t gamma_idx) {
 			if (gamma_idx < Constants::HALF_BASIS) {
 				// gamma < 0
 				if (gamma_idx < Constants::EIGHTH_BASIS) {
@@ -84,7 +84,7 @@ namespace Hubbard::Helper {
 				return term.get_factor() * this->model->compute_coefficient(term.get_first_coefficient(), gamma);
 				};
 
-			auto getCoefficientAndExpec = [&](size_t expec_pos) {
+			auto getCoefficientAndExpec = [&](std::size_t expec_pos) {
 				return getCoefficient() * getExpectationValue(term.operators[expec_pos], gamma_idx);
 				};
 
@@ -135,7 +135,7 @@ namespace Hubbard::Helper {
 #ifdef _EXACT_DOS
 			auto dos_norm = [this]() -> global_floating_type {
 				global_floating_type val{};
-				for (size_t i = 0U; i < approximate_dos.size(); ++i)
+				for (std::size_t i = 0U; i < approximate_dos.size(); ++i)
 				{
 					val += approximate_dos[i] * getWeightFromIndex(i);
 				}

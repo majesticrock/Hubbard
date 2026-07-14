@@ -38,7 +38,7 @@ namespace Hubbard::DensityOfStates {
 		const FinalType _half_distance{ (_upper_border - _lower_border) / 2 }; // (b-a)/2
 
 		FinalType _step{ 1 };
-		size_t _level{};
+		std::size_t _level{};
 		int _min_k{};
 
 	public:
@@ -81,7 +81,7 @@ namespace Hubbard::DensityOfStates {
 		inline FinalType step() const {
 			return _step;
 		};
-		inline size_t level() const {
+		inline std::size_t level() const {
 			return _level;
 		};
 
