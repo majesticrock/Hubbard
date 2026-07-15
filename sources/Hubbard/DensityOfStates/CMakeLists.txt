@@ -6,5 +6,10 @@ add_library(DensityOfStates
     SimpleCubic.cpp
     Square.cpp
 )
-SET_COMPILER_FLAGS(DensityOfStates)
-target_link_libraries(DensityOfStates PUBLIC mrock::utility OpenMP::OpenMP_CXX)
+
+target_link_libraries(DensityOfStates 
+    PUBLIC 
+        mrock::utility 
+        OpenMP::OpenMP_CXX
+        hubbard_options
+)

@@ -9,6 +9,6 @@ add_library(Models
     SquareLattice/UsingBroyden.cpp
     ChainLattice/ChainTripletPairing.cpp
 )
-SET_COMPILER_FLAGS(Models)
+
 target_include_directories(Models PUBLIC DensityOfStates)
-target_link_libraries(Models PUBLIC DensityOfStates)
+target_link_libraries(Models PUBLIC DensityOfStates hubbard_options)

@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 #include <mrock/utility/OutputConvenience.hpp>
 // File is generated on build by cmake
-#include "../../build_header/info.h"
+#include "../../build/generated/mrock/info.h"
 
 #include "../Hubbard/Helper/SquareGeneral.hpp"
 

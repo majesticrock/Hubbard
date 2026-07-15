@@ -8,7 +8,7 @@
 #include <mrock/info.h>
 #include <nlohmann/json.hpp>
 // File is generated on build by cmake
-#include "../../build_header/info.h"
+#include "../../build/generated/mrock/info.h"
 
 #include "../Hubbard/Helper/SquareGeneral.hpp"
 #include "../Hubbard/Helper/SquareXP.hpp"
