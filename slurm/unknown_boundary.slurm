@@ -32,7 +32,7 @@ date
 echo "--- START ---"
 
 ## execute binary using mpirun on the allocated computation resource; the number of cores is $
-mpirun ./build_cluster/HubbardMeanField params/unknown_boundary.config
+mpirun ./build/cascadelake/HubbardMeanField params/unknown_boundary.config
 
 echo "--- END ---"
 date
