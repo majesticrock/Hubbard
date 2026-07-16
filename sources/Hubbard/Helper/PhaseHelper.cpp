@@ -7,12 +7,13 @@
 #include "../Models/DOSModels/PhaseSeparationDOS.hpp"
 #include "../DensityOfStates/Square.hpp"
 #include "../DensityOfStates/SimpleCubic.hpp"
-
 #include "../Constants.hpp"
+
 #include <omp.h>
 #include <limits>
 #include <mutex>
 #include <algorithm>
+#include <cstddef>
 
 using namespace Hubbard::Models;
 
@@ -49,7 +50,7 @@ namespace Hubbard::Helper {
 		coefficient_type FIRST_IT_RANGE = 0;
 		FIRST_IT_MIN = 0, FIRST_IT_MAX = 0;
 
-		for (int i = 0; i < option_list.size(); i++)
+		for (std::size_t i = 0U; i < option_list.size(); i++)
 		{
 			if (input.getString("global_iterator_type") == option_list[i]) {
 				GLOBAL_IT_LIMS[0] = model_params[i];
@@ -210,7 +211,7 @@ namespace Hubbard::Helper {
 
 		while (plaqs.size() > 0U && plaqs.begin()->size() > 5e-5) {
 			std::cout << "Plaquette size: " << plaqs.begin()->size() << "\t" << "Current number of Plaquettes: " << plaqs.size() << std::endl;
-			const std::size_t N_PLAQUETTES = plaqs.size();
+			const int N_PLAQUETTES = std::ssize(plaqs);
 
 			const unsigned int n_omp_threads = omp_get_max_threads();
 			std::vector<std::vector<Plaquette>> buffer(n_omp_threads);
@@ -245,9 +246,9 @@ namespace Hubbard::Helper {
 				}
 				});
 
-			if (totalSize > (8 * this->FIRST_IT_STEPS > 200 ? 8 * this->FIRST_IT_STEPS : 200)) {
+			if (totalSize > (8 * this->FIRST_IT_STEPS > 200 ? 8U * static_cast<std::size_t>(this->FIRST_IT_STEPS) : std::size_t{200U})) {
 				// remove every second element
-				const int offset = plaqs.size() & 1U;
+				const std::size_t offset = plaqs.size() & 1U;
 				for (auto it = plaqs.begin() + offset; it != plaqs.end(); ++it)
 				{
 					it = plaqs.erase(it);
@@ -263,7 +264,7 @@ namespace Hubbard::Helper {
 	}
 
 	void PhaseHelper::coexistence_AFM_CDW(std::vector<data_vector>& recieve_data) {
-		if (recieve_data.size() < 3U || recieve_data.at(0).size() < FIRST_IT_STEPS) {
+		if (recieve_data.size() < 3U || std::ssize(recieve_data.at(0)) < FIRST_IT_STEPS) {
 			std::cerr << "You are calling coexistence_AFM_CDW() with an empty data reciever!" << std::endl;
 			recieve_data.resize(3U, data_vector(FIRST_IT_STEPS));
 		}

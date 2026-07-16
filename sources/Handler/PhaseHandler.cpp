@@ -40,17 +40,17 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 	phaseHelper.compute_crude(local_data);
 
 #ifndef _NO_MPI
-	for (std::size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
+	for (int i = 0; i < NUMBER_OF_PARAMETERS; ++i)
 	{
 		MPI_Allgather(local_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE,
 			recieve_data[i].data(), FIRST_IT_STEPS * SECOND_IT_STEPS, _MPI_RETURN_TYPE, MPI_COMM_WORLD);
 	}
 #else
-	for (std::size_t i = 0U; i < NUMBER_OF_PARAMETERS; ++i)
+	for (int i = 0; i < NUMBER_OF_PARAMETERS; ++i)
 	{
 		recieve_data[i] = local_data[i];
 	}
-	for (std::size_t i = 0U; i < 3; ++i) {
+	for (int i = 0; i < 3; ++i) {
 		recieve_coexitence_data[i] = local_coexitence_data[i];
 	}
 #endif
@@ -84,12 +84,11 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 
 	if (input.getBool("improved_boundaries")) {
 		std::vector<data_vector> local(NUMBER_OF_GAP_VALUES);
-		// We stick to int (and ignore std::size_t vs. int mismatch) due to MPI restrictions
 		std::vector<int> sizes(NUMBER_OF_GAP_VALUES);
 		std::vector<std::vector<int>> all_sizes(NUMBER_OF_GAP_VALUES);
 		std::vector<int> totalSizes(NUMBER_OF_GAP_VALUES, 0);
 
-		for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+		for (int i = 0; i < NUMBER_OF_GAP_VALUES; ++i)
 		{
 			phaseHelper.findSingleBoundary(recieve_data, local[i], i < 6 ? i : i + 2);
 			sizes[i] = local[i].size();
@@ -97,14 +96,14 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 
 		std::vector<data_vector> recieve_boundaries(NUMBER_OF_GAP_VALUES);
 		if (rank == 0) {
-			for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+			for (int i = 0; i < NUMBER_OF_GAP_VALUES; ++i)
 			{
 				all_sizes[i].resize(numberOfRanks);
 			}
 		}
 
 #ifndef _NO_MPI
-		for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+		for (int i = 0; i < NUMBER_OF_GAP_VALUES; ++i)
 		{
 			MPI_Gather(&(sizes[i]), 1, MPI_INT, all_sizes[i].data(), 1, MPI_INT, 0, MPI_COMM_WORLD);
 			std::vector<int> displacements(numberOfRanks, 0);
@@ -114,7 +113,7 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 				{
 					totalSizes[i] += s;
 				}
-				for (std::size_t j = 1; j < numberOfRanks; j++)
+				for (int j = 1; j < numberOfRanks; j++)
 				{
 					displacements[j] = displacements[j - 1] + all_sizes[i][j - 1];
 				}
@@ -124,7 +123,7 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 			MPI_Gatherv(local[i].data(), sizes[i], _MPI_RETURN_TYPE, recieve_boundaries[i].data(), all_sizes[i].data(), displacements.data(), _MPI_RETURN_TYPE, 0, MPI_COMM_WORLD);
 		}
 #else
-		for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+		for (int i = 0; i < NUMBER_OF_GAP_VALUES; ++i)
 		{
 			recieve_boundaries[i] = local[i];
 		}
@@ -140,7 +139,7 @@ void PhaseHandler::execute(mrock::utility::InputFileReader& input) const
 			std::filesystem::create_directories(BASE_FOLDER + output_folder);
 
 			std::string names[] = { "cdw", "afm", "sc", "gamma_sc", "xi_sc", "eta" };
-			for (std::size_t i = 0U; i < NUMBER_OF_GAP_VALUES; ++i)
+			for (int i = 0; i < NUMBER_OF_GAP_VALUES; ++i)
 			{
 				const std::size_t n = recieve_boundaries[i].size() / 2;
 				std::vector<data_vector> buffer(2, data_vector(n));

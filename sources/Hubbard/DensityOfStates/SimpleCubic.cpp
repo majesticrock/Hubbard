@@ -106,7 +106,7 @@ namespace Hubbard::DensityOfStates {
 
 		typedef tanh_sinh_helper<abscissa_t, dos_precision> tanh_sinh;
 		step = std::ldexp(1, -1);
-		auto compute_DOS = [](abscissa_t gamma, abscissa_t one_minus_gamma) -> dos_precision {
+		auto compute_DOS = [](abscissa_t gamma, [[maybe_unused]] abscissa_t one_minus_gamma) -> dos_precision {
 			return static_cast<dos_precision>(boost::math::pow<3>(LONG_1_PI) * (I_1(gamma) - I_2(gamma.convert_to<_internal_precision>())));
 			};
 
@@ -133,7 +133,7 @@ namespace Hubbard::DensityOfStates {
 
 				new_integral = 0;
 #pragma omp parallel for reduction(+:new_integral) schedule(dynamic)
-				for (int k = 0; k < buf_values.size(); ++k)
+				for (int k = 0; k < std::ssize(buf_values); ++k)
 				{
 					if (k & 1) {
 						tsh.compute_step(compute_DOS, k, buffer_vectors);

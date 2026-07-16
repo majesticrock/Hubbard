@@ -2,7 +2,6 @@
 # requires: utility, symbolic_operators, DensityOfStates
 
 add_library(Models 
-    EMCoupling.cpp
     ModelParameters.cpp
     SquareLattice/HubbardCDW.cpp
     SquareLattice/SquareTripletPairing.cpp

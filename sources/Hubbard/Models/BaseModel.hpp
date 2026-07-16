@@ -3,9 +3,11 @@
 #include "../Constants.hpp"
 #include "../OrderType.hpp"
 #include "ModelAttributes.hpp"
+
 #include <string>
 #include <memory>
 #include <algorithm>
+#include <cstddef>
 
 namespace Hubbard::Models {
 	// maps an index; [0, N_K) -> [-pi, pi)

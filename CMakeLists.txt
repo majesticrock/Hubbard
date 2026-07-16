@@ -19,7 +19,16 @@ find_package(mrock
         utility
 )
 
+# provided by the mrock library
+mrock_generate_information_header(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/generated/hubbard/info.h"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    OUT_HEADER MROCK_GENERATED_INFO_HEADER
+    OUT_INCLUDE_DIR MROCK_GENERATED_INCLUDE_DIR
+)
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/hubbard_options.cmake)
+# Sets include dir for the generated metadata header file
+target_include_directories(hubbard_options INTERFACE ${MROCK_GENERATED_INCLUDE_DIR})
 
 # subdirs
 add_subdirectory(sources/Hubbard/Helper)
@@ -37,10 +46,4 @@ target_link_libraries(HubbardMeanField PUBLIC
     MPI::MPI_CXX
     ${mrock_LIBRARIES}
     hubbard_options
-)
-
-# provided by the mrock library
-mrock_generate_information_header(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/generated/mrock/info.h"
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )

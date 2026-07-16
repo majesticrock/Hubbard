@@ -27,8 +27,8 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         $<$<CXX_COMPILER_ID:GNU,Clang>:-ffast-math> 
     )
 else()
-    target_compile_definitions(hubbard_options PRIVATE DEBUG)
-    target_compile_options(hubbard_options PRIVATE -g)
+    target_compile_definitions(hubbard_options INTERFACE DEBUG)
+    target_compile_options(hubbard_options INTERFACE -g)
 endif()
 
 #

@@ -1,15 +1,16 @@
 #include "TestHandler.hpp"
-#include <chrono>
-#include <iostream>
 #include "../Hubbard/Models/ModelParameters.hpp"
 #include "../Hubbard/Models/SquareLattice/UsingBroyden.hpp"
 #include "../Hubbard/Models/SquareLattice/HubbardCDW.hpp"
 #include "../Hubbard/Models/DOSModels/BroydenDOS.hpp"
 #include "../Hubbard/Models/DOSModels/PhaseSeparationDOS.hpp"
-#include "../Hubbard/Models/EMCoupling.hpp"
 #include "../Hubbard/NumericalMomentum.hpp"
 #include "../Hubbard/DensityOfStates/Square.hpp"
 #include "../Hubbard/DensityOfStates/SimpleCubic.hpp"
+
+#include <chrono>
+#include <iostream>
+#include <cmath>
 
 using namespace Hubbard;
 using namespace Hubbard::Models;
@@ -25,7 +26,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<double>& data) {
 	return os;
 }
 
-#include <cmath>
+
 global_floating_type compute_phi_k(NumericalMomentum<2> const& k) {
 	// Starting value: j=0, i=1 and j=1, i=0, maybe, we can omit it, claiming to incorporate it within V.
 	// j=0, i=0 cannot be included here, we need to include it in U
@@ -53,40 +54,29 @@ void TestHandler::execute(mrock::utility::InputFileReader& input) const
 	//} while (k.iterateFullBZ());
 	return;
 
-	if (input.getBool("em_coupling")) {
-		Constants::setDiscretization(input.getInt("k_discretization"));
-		Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
-
-		EMCoupling model(modelParameters);
-		model.computePhases().print();
+	//ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1, 0. };
+	if (input.getBool("use_DOS")) {
+		if (input.getString("lattice_type") == "square") {
+			DOSModels::BroydenDOS<DensityOfStates::Square> model(modelParameters);
+			model.computePhases().print();
+			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
+			std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
+		}
+		else if (input.getString("lattice_type") == "cube") {
+			DOSModels::PhaseSeparationDOS<DensityOfStates::SimpleCubic> model(modelParameters, 1);
+			model.computePhases().print();
+			std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
+			std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
+		}
 	}
 	else {
-		//ModelAttributes<global_floating_type> startingValues{ 1., 1., 1., 0., 0., 0., 0.1,  0.1, 0. };
-		if (input.getBool("use_DOS")) {
-			if (input.getString("lattice_type") == "square") {
-				DOSModels::BroydenDOS<DensityOfStates::Square> model(modelParameters);
-				model.computePhases().print();
-				std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
-				std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
-			}
-			else if (input.getString("lattice_type") == "cube") {
-				DOSModels::PhaseSeparationDOS<DensityOfStates::SimpleCubic> model(modelParameters, 1);
-				model.computePhases().print();
-				std::cout << "Free energy = " << model.freeEnergyPerSite() << std::endl;
-				std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
-			}
-		}
-		else {
-			Constants::setDiscretization(input.getInt("k_discretization"));
-			Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
-
-			SquareLattice::UsingBroyden model2(modelParameters);
-			test_b = std::chrono::steady_clock::now();
-			model2.computePhases().print();
-			std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
-
-			std::cout << "Sum rule: " << model2.cdw_in_sc_sum_rule() << std::endl;
-		}
+		Constants::setDiscretization(input.getInt("k_discretization"));
+		Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+		SquareLattice::UsingBroyden model2(modelParameters);
+		test_b = std::chrono::steady_clock::now();
+		model2.computePhases().print();
+		std::cout << "Free energy = " << model2.freeEnergyPerSite() << std::endl;
+		std::cout << "Sum rule: " << model2.cdw_in_sc_sum_rule() << std::endl;
 	}
 
 	//------------------------------------------------------------//

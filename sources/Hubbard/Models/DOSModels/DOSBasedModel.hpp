@@ -1,8 +1,11 @@
 #pragma once
 #include "../BaseModel.hpp"
 #include "../../DensityOfStates/BaseDOS.hpp"
+
 #include <mrock/symbolic_operators/Coefficient.hpp>
+
 #include <algorithm>
+#include <cstddef>
 #include <mutex>
 #include <numeric>
 
@@ -310,7 +313,7 @@ namespace Hubbard::Models::DOSModels {
 				this->fillHamiltonian(g * step);
 				solver.compute(this->hamilton, false);
 
-				for (int i = 0; i < this->SPINOR_SIZE; ++i)
+				for (std::size_t i = 0U; i < this->SPINOR_SIZE; ++i)
 				{
 					reciever.push_back(solver.eigenvalues()(i));
 				}

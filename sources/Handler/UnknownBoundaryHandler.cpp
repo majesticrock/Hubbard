@@ -12,6 +12,7 @@
 #include <limits>
 #include <vector>
 #include <filesystem>
+#include <cstddef>
 
 #include <mrock/utility/OutputConvenience.hpp>
 
@@ -28,7 +29,7 @@ void UnknownBoundaryHandler::execute(mrock::utility::InputFileReader& input) con
 
 	double SECOND_IT_MIN = 0, SECOND_IT_MAX = input.getDouble("second_iterator_upper_limit");
 
-	for (int i = 0; i < Hubbard::Constants::option_list.size(); i++)
+	for (std::size_t i = 0U; i < Hubbard::Constants::option_list.size(); i++)
 	{
 		if (input.getString("second_iterator_type") == Hubbard::Constants::option_list[i]) {
 			SECOND_IT_MIN = model_params[i];

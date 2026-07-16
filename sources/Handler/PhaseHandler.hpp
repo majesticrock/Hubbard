@@ -2,6 +2,10 @@
 #include "HandlerBase.hpp"
 #include "../Hubbard/Constants.hpp"
 
+#include <mrock/utility/InputFileReader.hpp>
+
+#include <cstddef>
+
 class PhaseHandler : virtual public HandlerBase
 {
 protected:
@@ -20,7 +24,7 @@ public:
 	{
 		// Setup the number of steps
 		GLOBAL_IT_LIMS[1] = input.getDouble("global_iterator_upper_limit");
-		for (int i = 0; i < Hubbard::Constants::option_list.size(); ++i)
+		for (std::size_t i = 0U; i < Hubbard::Constants::option_list.size(); ++i)
 		{
 			if (input.getString("global_iterator_type") == Hubbard::Constants::option_list[i]) {
 				GLOBAL_IT_LIMS[0] = model_params[i];
