@@ -3,8 +3,13 @@
 #include "../Models/DOSModels/BroydenDOS.hpp"
 #include <complex>
 #include <cmath>
+#include <string>
 #include <filesystem>
 #include <mrock/utility/BinaryIO.hpp>
+
+#ifndef OUTPUT_DATA_DIR
+#define OUTPUT_DATA_DIR "../../data/hubbard/"
+#endif
 
 namespace Hubbard::Helper {
 	template <class DOS>
@@ -147,7 +152,12 @@ namespace Hubbard::Helper {
 				};
 #endif
 
-			const std::string filename = "../../data/approx_dos_dim_" + std::to_string(DOS::DIMENSION) + "_disc_" + std::to_string(Constants::BASIS_SIZE) + ".bin";
+			const std::string filename = std::string(OUTPUT_DATA_DIR) 
+										+ std::string("approx_dos_dim_") 
+										+ std::to_string(DOS::DIMENSION) 
+										+ std::string("_disc_") 
+										+ std::to_string(Constants::BASIS_SIZE) 
+										+ std::string(".bin");
 			if (std::filesystem::exists(filename)) {
 				std::ifstream reader = mrock::utility::BinaryIO::readSerializedVector(approximate_dos, filename);
 				if (reader.good() && std::abs(dos_norm() - 1.) < 1e-7) {
@@ -166,7 +176,6 @@ namespace Hubbard::Helper {
 
 			for (int i = 0; i < Constants::BASIS_SIZE; ++i)
 			{
-				//std::cout << i << "\t" << this->model->getGammaFromIndex(i) << "\t" << this->model->getGammaFromIndex(this->model->shiftByQ(i)) << std::endl;
 				approximate_dos[i] = DOS::computeValue(this->model->getGammaFromIndex(i));
 #ifdef _CLOSED_FORMULA
 				if (i == 0 || i == Constants::BASIS_SIZE - 1) {

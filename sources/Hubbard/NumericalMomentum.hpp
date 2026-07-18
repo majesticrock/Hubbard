@@ -136,7 +136,7 @@ namespace Hubbard {
 		};
 
 		global_floating_type norm() const {
-			return sqrt(squared_norm());
+			return std::sqrt(squared_norm());
 		};
 
 		// This function assumes that no anomalous momenta (i.e. outside of [-pi, pi)) are being used

@@ -29,8 +29,8 @@ for NEW_VALUE in "${NEW_VALUES[@]}"; do
   done < params/small_square.config
   cp slurm/modes_small_square.slurm small_square_auto_generated/$NEW_NAME.slurm
   sed -i "s|#SBATCH --job-name=modes|#SBATCH --job-name=$NEW_NAME|" small_square_auto_generated/$NEW_NAME.slurm
-  sed -i "s|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/small_modes_output.txt|#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/small_square_output_$NEW_NAME.txt|" small_square_auto_generated/$NEW_NAME.slurm
-  sed -i "s|mpirun ./build/cascadelake/HubbardMeanField params/small_square.config|mpirun ./build/cascadelake/HubbardMeanField small_square_auto_generated/$NEW_NAME.config|" small_square_auto_generated/$NEW_NAME.slurm
+  sed -i "s|#SBATCH --output=/home/althueser/phd/cpp/Hubbard/small_modes_output.txt|#SBATCH --output=/home/althueser/phd/cpp/Hubbard/small_square_output_$NEW_NAME.txt|" small_square_auto_generated/$NEW_NAME.slurm
+  sed -i "s|mpirun ./build/cascadelake/Hubbard params/small_square.config|mpirun ./build/cascadelake/Hubbard small_square_auto_generated/$NEW_NAME.config|" small_square_auto_generated/$NEW_NAME.slurm
 
   # Execute the program
   sbatch small_square_auto_generated/$NEW_NAME.slurm

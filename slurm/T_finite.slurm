@@ -5,7 +5,7 @@
 
 ## Mandatory:
 #SBATCH --job-name=T_fin
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_T_fin.txt    ## File for stdout & stderr
+#SBATCH --output=/home/althueser/phd/cpp/Hubbard/output_T_fin.txt    ## File for stdout & stderr
 #SBATCH --time=12:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=mpi       ## choose queue
 
@@ -26,12 +26,12 @@
 module purge
 module add gcc/11.3.0-full
 module add boost/1.71.0
-cd /home/althueser/phd/cpp/HubbardMeanField/        ## go to working directory
+cd /home/althueser/phd/cpp/Hubbard/        ## go to working directory
 
 date
 echo "--- START ---"
 
-mpirun ./build/cascadelake/HubbardMeanField params/T_finite.config            ## execute binary using mpirun on the allocated computation resource; the number of cores is $
+mpirun ./build/cascadelake/Hubbard params/T_finite.config            ## execute binary using mpirun on the allocated computation resource; the number of cores is $
 
 echo "--- END ---"
 date

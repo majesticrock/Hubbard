@@ -3,13 +3,13 @@ cmake_minimum_required(VERSION 3.30)
 
 project(Hubbard VERSION 1.0)
 
-#
-# Set local settings and set the default build type as Release
-#
+# Set local user-specific settings
+# By default, this adds ~/usr/local/ and ../../.mrock/ to the cmake and include paths
+# If additional configurations/includes are needed, provide them in cmake/user_settings.cmake
+# Extra include dirs are stored in the cmake variable EXTRA_INCLUDE_DIRS
+include(cmake/include_settings.cmake)
 
-list(APPEND CMAKE_PREFIX_PATH "$ENV{HOME}/usr/local")
-set(Boost_DIR /usr/lib64/openmpi/lib/cmake/Boost-1.78.0)
-
+# Build type settings; defaults to Release
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
@@ -26,7 +26,7 @@ message(STATUS "Build type is '${CMAKE_BUILD_TYPE}'.")
 
 # System libraries
 find_package(MPI REQUIRED)
-find_package(OpenMP REQUIRED)
+find_package(OpenMP REQUIRED COMPONENTS CXX)
 find_package(Boost REQUIRED)
 
 find_package(mrock 
@@ -55,13 +55,22 @@ add_subdirectory(sources/Hubbard/Models)
 add_subdirectory(sources/Hubbard/DensityOfStates)
 
 # Configure main
-add_executable(HubbardMeanField 
-    sources/HubbardMeanField.cpp
+add_executable(Hubbard 
+    sources/Hubbard.cpp
 )
 
-target_link_libraries(HubbardMeanField PUBLIC
+target_link_libraries(Hubbard PUBLIC
     Handler
     MPI::MPI_CXX
     ${mrock_LIBRARIES}
     hubbard_options
 )
+
+option(BUILD_TESTING 
+    "Build and configure the testing suit" 
+    OFF
+)
+
+if(BUILD_TESTING)
+    include(tests/test_config.cmake)
+endif()

@@ -5,7 +5,7 @@
 
 ## Mandatory:
 #SBATCH --job-name=ul_square
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/output_ul_square.txt
+#SBATCH --output=/home/althueser/phd/cpp/Hubbard/output_ul_square.txt
 #SBATCH --time=168:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=ultralong       ## choose queue
 
@@ -26,13 +26,13 @@
 module purge
 module add gcc/11.3.0-full
 module add boost/1.71.0
-cd /home/althueser/phd/cpp/HubbardMeanField/        ## go to working directory
+cd /home/althueser/phd/cpp/Hubbard/        ## go to working directory
 
 date
 echo "--- START ---"
 
 ## execute binary using mpirun on the allocated computation resource; the number of cores is $
-mpirun ./build/cascadelake/HubbardMeanField params/ul_square.config
+mpirun ./build/cascadelake/Hubbard params/ul_square.config
 
 echo "--- END ---"
 date

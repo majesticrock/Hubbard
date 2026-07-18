@@ -5,7 +5,7 @@
 
 ## Mandatory:
 #SBATCH --job-name=u_boundary
-#SBATCH --output=/home/althueser/phd/cpp/HubbardMeanField/u_square_output.txt
+#SBATCH --output=/home/althueser/phd/cpp/Hubbard/u_square_output.txt
 #SBATCH --time=168:00:00         ## maximum runtime; hours:minutes:seconds
 #SBATCH --partition=ultralong       ## choose queue
 
@@ -26,13 +26,13 @@
 module purge
 module add gcc/11.3.0-full
 module add boost/1.71.0
-cd /home/althueser/phd/cpp/HubbardMeanField/        ## go to working directory
+cd /home/althueser/phd/cpp/Hubbard/        ## go to working directory
 
 date
 echo "--- START ---"
 
 ## execute binary using mpirun on the allocated computation resource; the number of cores is $
-mpirun ./build/cascadelake/HubbardMeanField params/unknown_boundary.config
+mpirun ./build/cascadelake/Hubbard params/unknown_boundary.config
 
 echo "--- END ---"
 date

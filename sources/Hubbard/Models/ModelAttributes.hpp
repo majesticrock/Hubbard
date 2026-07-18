@@ -49,7 +49,7 @@ namespace Hubbard::Models {
 		void initializeParamters_2d(const ModelParameters& _params) {
 			auto guess = [&]() -> global_floating_type {
 				if (std::abs(_params.U) > 1e-12) {
-					return std::abs(_params.U) * 4. * exp(-2 * 3.1415926 / sqrt(std::abs(_params.U)));
+					return std::abs(_params.U) * 4. * exp(-2 * 3.1415926 / std::sqrt(std::abs(_params.U)));
 				}
 				return 0.0;
 				};
@@ -244,12 +244,12 @@ namespace Hubbard::Models {
 		// Returns the total gap value sqrt(sc^2 + cdw^2)
 		inline global_floating_type getTotalGapValue() const {
 			if constexpr (mrock::utility::is_complex_v<DataType>) {
-				return sqrt(norm(selfconsistency_values[0])
+				return std::sqrt(norm(selfconsistency_values[0])
 					+ norm(selfconsistency_values[1])
 					+ norm(selfconsistency_values[2]));
 			}
 			else {
-				return sqrt(selfconsistency_values[0] * selfconsistency_values[0]
+				return std::sqrt(selfconsistency_values[0] * selfconsistency_values[0]
 					+ selfconsistency_values[1] * selfconsistency_values[1]
 					+ selfconsistency_values[2] * selfconsistency_values[2]);
 			}
