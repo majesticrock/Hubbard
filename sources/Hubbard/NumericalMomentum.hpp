@@ -8,12 +8,12 @@
 
 namespace Hubbard {
 	inline int mod_two_pi(int index) {
-		if (index >= -Constants::K_DISCRETIZATION && index < Constants::K_DISCRETIZATION)
+		if (index >= -Constants::DISCRETIZATION && index < Constants::DISCRETIZATION)
 			return index;
 		if (index < 0)
-			return ((1 + abs(index / TWO_K_DISC)) * TWO_K_DISC + index) % TWO_K_DISC - Constants::K_DISCRETIZATION;
+			return ((1 + abs(index / TWO_K_DISC)) * TWO_K_DISC + index) % TWO_K_DISC - Constants::DISCRETIZATION;
 		else
-			return index % TWO_K_DISC - Constants::K_DISCRETIZATION;
+			return index % TWO_K_DISC - Constants::DISCRETIZATION;
 	};
 
 	template<unsigned int Dimension>
@@ -57,7 +57,7 @@ namespace Hubbard {
 			return NumericalMomentum<Dimension>(0);
 		};
 		inline static NumericalMomentum<Dimension> Q() {
-			return NumericalMomentum<Dimension>(-Constants::K_DISCRETIZATION);
+			return NumericalMomentum<Dimension>(-Constants::DISCRETIZATION);
 		}
 
 		inline global_floating_type tau() const {
@@ -97,28 +97,28 @@ namespace Hubbard {
 		// Otherwise the first point is omitted!
 		inline bool iterateFullBZ() {
 			_increment<0>();
-			return (k[Dimension - 1] < Constants::K_DISCRETIZATION);
+			return (k[Dimension - 1] < Constants::DISCRETIZATION);
 		};
 
 		template <unsigned int d>
 		inline bool increase_d() {
 			static_assert(d < Dimension, "NumericalMomentum out of bounds!");
 			momenta[d] = (++k[d]) * Constants::PI_DIV_DISCRETIZATION;
-			return (k[d] < Constants::K_DISCRETIZATION);
+			return (k[d] < Constants::DISCRETIZATION);
 		}
 
 		inline std::size_t getIndex() const {
-			assert(k[0] + Constants::K_DISCRETIZATION >= 0);
-			std::size_t index{ static_cast<std::size_t>(k[0] + Constants::K_DISCRETIZATION) };
+			assert(k[0] + Constants::DISCRETIZATION >= 0);
+			std::size_t index{ static_cast<std::size_t>(k[0] + Constants::DISCRETIZATION) };
 			for (unsigned int i = 1U; i < Dimension; ++i)
 			{
-				index += 2 * i * Constants::K_DISCRETIZATION * (k[i] + Constants::K_DISCRETIZATION);
+				index += 2 * i * Constants::DISCRETIZATION * (k[i] + Constants::DISCRETIZATION);
 			}
 			return index;
 		};
 		inline void reset() {
 			std::fill(std::begin(momenta), std::end(momenta), -BASE_PI);
-			std::fill(std::begin(k), std::end(k), -Constants::K_DISCRETIZATION);
+			std::fill(std::begin(k), std::end(k), -Constants::DISCRETIZATION);
 		};
 
 		bool isZero() const {
@@ -126,7 +126,7 @@ namespace Hubbard {
 		};
 
 		bool isQ() const {
-			return std::all_of(std::begin(k), std::end(k), [](int value) { return value == -Constants::K_DISCRETIZATION; });
+			return std::all_of(std::begin(k), std::end(k), [](int value) { return value == -Constants::DISCRETIZATION; });
 		};
 
 		global_floating_type squared_norm() const {
@@ -144,8 +144,8 @@ namespace Hubbard {
 			for (std::size_t i = 0U; i < Dimension; ++i)
 			{
 				this->k[i] += rhs.k[i];
-				if (this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
-				else if (this->k[i] >= Constants::K_DISCRETIZATION) this->k[i] -= TWO_K_DISC;
+				if (this->k[i] < -Constants::DISCRETIZATION) this->k[i] += TWO_K_DISC;
+				else if (this->k[i] >= Constants::DISCRETIZATION) this->k[i] -= TWO_K_DISC;
 
 				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
 			}
@@ -156,8 +156,8 @@ namespace Hubbard {
 			for (std::size_t i = 0U; i < Dimension; ++i)
 			{
 				this->k[i] -= rhs.k[i];
-				if (this->k[i] < -Constants::K_DISCRETIZATION) this->k[i] += TWO_K_DISC;
-				else if (this->k[i] >= Constants::K_DISCRETIZATION) this->k[i] -= TWO_K_DISC;
+				if (this->k[i] < -Constants::DISCRETIZATION) this->k[i] += TWO_K_DISC;
+				else if (this->k[i] >= Constants::DISCRETIZATION) this->k[i] -= TWO_K_DISC;
 
 				this->momenta[i] = this->k[i] * Constants::PI_DIV_DISCRETIZATION;
 			}
@@ -177,8 +177,8 @@ namespace Hubbard {
 		template <int _d>
 		inline void _increment() {
 			static_assert(_d < Dimension, "Call to increment in NumericalMomentum provides a too high dimension.");
-			if (++k[_d] >= Constants::K_DISCRETIZATION) {
-				if constexpr (_d + 1 < Dimension) k[_d] = -Constants::K_DISCRETIZATION;
+			if (++k[_d] >= Constants::DISCRETIZATION) {
+				if constexpr (_d + 1 < Dimension) k[_d] = -Constants::DISCRETIZATION;
 				if constexpr (_d + 1 < Dimension) {
 					_increment<_d + 1>();
 				}

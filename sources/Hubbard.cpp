@@ -20,7 +20,7 @@
 
 #include <chrono>
 
-int Hubbard::Constants::K_DISCRETIZATION = -1;
+int Hubbard::Constants::DISCRETIZATION = -1;
 int Hubbard::Constants::BASIS_SIZE = -1;
 int Hubbard::Constants::HALF_BASIS = -1;
 int Hubbard::Constants::QUARTER_BASIS = -1;
@@ -51,17 +51,17 @@ int main(int argc, char** argv) {
         std::cout << "Using parameter file " << argv[1] << std::endl;
     }
     mrock::utility::InputFileReader input(argv[1]);
-    Constants::setDiscretization(input.getInt("k_discretization"));
+    Constants::setDiscretization(input.getInt("discretization"));
     if (input.getBool("use_DOS")) {
-        Constants::setBasis(Constants::K_DISCRETIZATION);
+        Constants::setBasis(Constants::DISCRETIZATION);
     } else {
         if (input.getString("lattice_type") == "square") {
-            Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+            Constants::setBasis(4 * Constants::DISCRETIZATION * Constants::DISCRETIZATION);
         } else if (input.getString("lattice_type") == "cube") {
-            Constants::setBasis(8 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION *
-                                Constants::K_DISCRETIZATION);
+            Constants::setBasis(8 * Constants::DISCRETIZATION * Constants::DISCRETIZATION *
+                                Constants::DISCRETIZATION);
         } else {
-            Constants::setBasis(2 * Constants::K_DISCRETIZATION);
+            Constants::setBasis(2 * Constants::DISCRETIZATION);
         }
     }
     if (input.getString("compute_what") == "test") {

@@ -2,11 +2,11 @@
 #include <string>
 #include <vector>
 #include "GlobalDefinitions.hpp"
-#define TWO_K_DISC (2 * Constants::K_DISCRETIZATION)
+#define TWO_K_DISC (2 * Constants::DISCRETIZATION)
 
 namespace Hubbard {
 	namespace Constants {
-		extern int K_DISCRETIZATION;
+		extern int DISCRETIZATION;
 		extern int BASIS_SIZE;
 		extern int HALF_BASIS;
 		extern int QUARTER_BASIS;
@@ -25,7 +25,7 @@ namespace Hubbard {
 
 		inline void setDiscretization(int setTo)
 		{
-			K_DISCRETIZATION = setTo;
+			DISCRETIZATION = setTo;
 			PI_DIV_DISCRETIZATION = BASE_PI / setTo;
 		};
 	}

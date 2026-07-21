@@ -30,8 +30,8 @@ global_floating_type compute_phi_k(NumericalMomentum<2> const& k) {
     // Starting value: j=0, i=1 and j=1, i=0, maybe, we can omit it, claiming to incorporate it within V.
     // j=0, i=0 cannot be included here, we need to include it in U
     global_floating_type result{std::cos(k.momenta[0]) + std::cos(k.momenta[1])};
-    for (int i = 1; i < Constants::K_DISCRETIZATION; ++i) {
-        for (int j = 1; j < Constants::K_DISCRETIZATION; ++j) {
+    for (int i = 1; i < Constants::DISCRETIZATION; ++i) {
+        for (int j = 1; j < Constants::DISCRETIZATION; ++j) {
             result += (std::cos(i * k.momenta[0]) * std::cos(j * k.momenta[1])) / std::sqrt(i * i + j * j);
         }
     }
@@ -45,7 +45,7 @@ void TestHandler::execute(mrock::utility::InputFileReader& input) const {
 
     NumericalMomentum<2> q = NumericalMomentum<2>::Q();
     std::cout << q << ": " << compute_phi_k(q) << "\t"
-              << 3.1415926 / (sqrt(2.) * Constants::K_DISCRETIZATION) - 2 * 3.14145926 / Constants::BASIS_SIZE
+              << 3.1415926 / (sqrt(2.) * Constants::DISCRETIZATION) - 2 * 3.14145926 / Constants::BASIS_SIZE
               << std::endl;
     // NumericalMomentum<2> k{};
     // do {
@@ -67,8 +67,8 @@ void TestHandler::execute(mrock::utility::InputFileReader& input) const {
             std::cout << "Sum rule: " << model.cdw_in_sc_sum_rule() << std::endl;
         }
     } else {
-        Constants::setDiscretization(input.getInt("k_discretization"));
-        Constants::setBasis(4 * Constants::K_DISCRETIZATION * Constants::K_DISCRETIZATION);
+        Constants::setDiscretization(input.getInt("discretization"));
+        Constants::setBasis(4 * Constants::DISCRETIZATION * Constants::DISCRETIZATION);
         SquareLattice::UsingBroyden model2(modelParameters);
         test_b = std::chrono::steady_clock::now();
         model2.computePhases().print();

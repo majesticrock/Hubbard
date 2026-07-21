@@ -31,15 +31,15 @@ void ModeDispersionHandler::execute(mrock::utility::InputFileReader& input) cons
     Hubbard::Helper::SquareGeneral modeHelper(input, modelParameters);
 
     if (eval_index < 0) {
-        for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i) {
+        for (int i = 0; i < Hubbard::Constants::DISCRETIZATION; ++i) {
             mrock::iEoM::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
             modeHelper.mode_momentum.x() += 1;
         }
-        for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i) {
+        for (int i = 0; i < Hubbard::Constants::DISCRETIZATION; ++i) {
             mrock::iEoM::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
             modeHelper.mode_momentum.y() += 1;
         }
-        for (int i = 0; i < Hubbard::Constants::K_DISCRETIZATION; ++i) {
+        for (int i = 0; i < Hubbard::Constants::DISCRETIZATION; ++i) {
             mrock::iEoM::join_data_wrapper(resolvents, modeHelper.compute_collective_modes());
             modeHelper.mode_momentum.x() -= 1;
             modeHelper.mode_momentum.y() -= 1;
@@ -57,7 +57,7 @@ void ModeDispersionHandler::execute(mrock::utility::InputFileReader& input) cons
         nlohmann::json jResolvents = {{"resolvents", resolvents},
                                       {"time", mrock::utility::time_stamp()},
                                       {"used_dos", input.getBool("use_DOS")},
-                                      {"discretization", input.getInt("k_discretization")},
+                                      {"discretization", input.getInt("discretization")},
                                       {"lattice_type", input.getString("lattice_type")},
                                       {"gap_parameters", modeHelper.getModel().getAttributes().selfconsistency_values},
                                       {"total_gap", modeHelper.getModel().getTotalGapValue()},

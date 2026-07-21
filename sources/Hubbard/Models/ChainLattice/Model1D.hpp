@@ -38,7 +38,7 @@ namespace Hubbard::Models::ChainLattice
 
 			std::copy(x.begin(), x.end(), this->model_attributes.begin());
 
-			for (int k = -Constants::K_DISCRETIZATION; k < 0; ++k)
+			for (int k = -Constants::DISCRETIZATION; k < 0; ++k)
 			{
 				const NumericalMomentum<1> k_x{ k };
 
@@ -61,34 +61,34 @@ namespace Hubbard::Models::ChainLattice
 			: MomentumBasedModel<DataType, 1>(_params, startingValues) {};
 
 		virtual void computeExpectationValues(std::vector<ValueArray>& expecs, ValueArray& sum_of_all) override {
-			expecs = std::vector<ValueArray>(8, ValueArray::Zero(2 * Constants::K_DISCRETIZATION, 1));
+			expecs = std::vector<ValueArray>(8, ValueArray::Zero(2 * Constants::DISCRETIZATION, 1));
 			sum_of_all = ValueArray::Zero(8, 1);
 
-			for (int k = -Constants::K_DISCRETIZATION; k < Constants::K_DISCRETIZATION; k++)
+			for (int k = -Constants::DISCRETIZATION; k < Constants::DISCRETIZATION; k++)
 			{
 				const NumericalMomentum<1> k_x{ k };
 				this->fillHamiltonian(k_x);
 				this->fillRho();
 
 				// n_up
-				expecs[0](k + Constants::K_DISCRETIZATION, 0) = this->get_n_up();
+				expecs[0](k + Constants::DISCRETIZATION, 0) = this->get_n_up();
 				// g_up
-				expecs[1](k + Constants::K_DISCRETIZATION, 0) = std::real(this->get_g_up());
+				expecs[1](k + Constants::DISCRETIZATION, 0) = std::real(this->get_g_up());
 				// f
-				expecs[2](k + Constants::K_DISCRETIZATION, 0) = std::real(this->get_f());
+				expecs[2](k + Constants::DISCRETIZATION, 0) = std::real(this->get_f());
 				// eta
-				expecs[3](k + Constants::K_DISCRETIZATION, 0) = std::real(this->get_eta());
+				expecs[3](k + Constants::DISCRETIZATION, 0) = std::real(this->get_eta());
 				// n_down
-				expecs[4](k + Constants::K_DISCRETIZATION, 0) = this->get_n_down();
+				expecs[4](k + Constants::DISCRETIZATION, 0) = this->get_n_down();
 				// g_down
-				expecs[5](k + Constants::K_DISCRETIZATION, 0) = std::real(this->get_g_down());
+				expecs[5](k + Constants::DISCRETIZATION, 0) = std::real(this->get_g_down());
 				// n_up + n_down
-				expecs[6](k + Constants::K_DISCRETIZATION, 0) = this->get_n_up_plus_down();
+				expecs[6](k + Constants::DISCRETIZATION, 0) = this->get_n_up_plus_down();
 				// g_up + g_down
-				expecs[7](k + Constants::K_DISCRETIZATION, 0) = std::real(this->get_g_up_plus_down());
+				expecs[7](k + Constants::DISCRETIZATION, 0) = std::real(this->get_g_up_plus_down());
 				for (int idx = 0; idx < 8; idx++)
 				{
-					sum_of_all(idx, 0) += expecs[idx](k + Constants::K_DISCRETIZATION, 0);
+					sum_of_all(idx, 0) += expecs[idx](k + Constants::DISCRETIZATION, 0);
 				}
 
 				if (abs(this->rho(3, 0)) > 1e-10) {

@@ -147,7 +147,7 @@ void UnknownBoundaryHandler::execute(mrock::utility::InputFileReader& input) con
                            "_MAX=" + std::to_string(GLOBAL_IT_LIMS[1]));
 
         comments.push_back("Used DOS: " + input.getString("use_DOS"));
-        comments.push_back("Discretization: " + input.getString("k_discretization"));
+        comments.push_back("Discretization: " + input.getString("discretization"));
         comments.push_back("Lattice type: " + input.getString("lattice_type"));
 
         std::cout << "Saving data to folder " << PHASE_FOLDER + output_folder << std::endl;

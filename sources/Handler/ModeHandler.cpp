@@ -74,7 +74,7 @@ std::vector<std::string> ModeHandler::getFileComments(mrock::utility::InputFileR
 
     std::vector<std::string> comments;
     comments.push_back("Used DOS: " + input.getString("use_DOS"));
-    comments.push_back("Discretization: " + input.getString("k_discretization"));
+    comments.push_back("Discretization: " + input.getString("discretization"));
     comments.push_back("Lattice type: " + input.getString("lattice_type"));
     comments.push_back("Total Gap: " + to_string(modeHelper->getModel().getTotalGapValue()));
     return comments;
@@ -98,7 +98,7 @@ void ModeHandler::execute(mrock::utility::InputFileReader& input) const {
             nlohmann::json jResolvents = {{"resolvents", resolvents},
                                           {"time", mrock::utility::time_stamp()},
                                           {"used_dos", input.getBool("use_DOS")},
-                                          {"discretization", input.getInt("k_discretization")},
+                                          {"discretization", input.getInt("discretization")},
                                           {"lattice_type", input.getString("lattice_type")},
                                           {"total_gap", modeHelper->getModel().getTotalGapValue()},
                                           {"continuum_boundaries", modeHelper->getModel().continuum_boundaries()},

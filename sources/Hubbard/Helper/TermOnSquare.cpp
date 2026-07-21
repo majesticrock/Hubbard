@@ -48,8 +48,8 @@ Eigen::Vector2i TermOnSquare::compute_momentum_no_q(const mrock::symbolic_operat
         }
     }
     if (momentum.add_Q) {
-        momentum_value(0) += Constants::K_DISCRETIZATION;
-        momentum_value(1) += Constants::K_DISCRETIZATION;
+        momentum_value(0) += Constants::DISCRETIZATION;
+        momentum_value(1) += Constants::DISCRETIZATION;
     }
     clean_factor_2pi(momentum_value);
     return momentum_value;

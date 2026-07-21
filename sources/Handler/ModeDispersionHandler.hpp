@@ -10,21 +10,21 @@ private:
 		return { 0, i };
 	}
 	static inline Eigen::Vector2i path_X_to_R(int i) {
-		return { i, Hubbard::Constants::K_DISCRETIZATION };
+		return { i, Hubbard::Constants::DISCRETIZATION };
 	}
 	static inline Eigen::Vector2i path_R_to_Gamma(int i) {
-		return { Hubbard::Constants::K_DISCRETIZATION - i, Hubbard::Constants::K_DISCRETIZATION - i };
+		return { Hubbard::Constants::DISCRETIZATION - i, Hubbard::Constants::DISCRETIZATION - i };
 	}
 	static inline Eigen::Vector2i eval_point(int i) {
-		switch (i / Hubbard::Constants::K_DISCRETIZATION) {
+		switch (i / Hubbard::Constants::DISCRETIZATION) {
 		case 0:
 			return path_Gamma_to_X(i);
 			break;
 		case 1:
-			return path_X_to_R(i - Hubbard::Constants::K_DISCRETIZATION);
+			return path_X_to_R(i - Hubbard::Constants::DISCRETIZATION);
 			break;
 		case 2:
-			return path_R_to_Gamma(i - 2 * Hubbard::Constants::K_DISCRETIZATION);
+			return path_R_to_Gamma(i - 2 * Hubbard::Constants::DISCRETIZATION);
 			break;
 		default:
 			throw std::runtime_error("Could not find eval point!");

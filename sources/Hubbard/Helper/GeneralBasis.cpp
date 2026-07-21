@@ -96,9 +96,9 @@ void GeneralBasis::printM(int i, int j) const {
 void GeneralBasis::printMomentumBlocks() const {
     std::cout << std::fixed << std::setprecision(4) << std::endl;
 
-    for (int l = 0; l < Constants::K_DISCRETIZATION; l++) {
-        for (int k = 0; k < Constants::K_DISCRETIZATION; ++k) {
-            int idx = l * Constants::K_DISCRETIZATION + k;
+    for (int l = 0; l < Constants::DISCRETIZATION; l++) {
+        for (int k = 0; k < Constants::DISCRETIZATION; ++k) {
+            int idx = l * Constants::DISCRETIZATION + k;
             int jdx = addQTo(idx);
             std::cout << idx << ": " << gammaFromIndex(idx) << "\n";
 
@@ -158,6 +158,6 @@ bool GeneralBasis::matrix_is_negative() {
 }
 
 std::vector<ResolventReturnData> GeneralBasis::compute_collective_modes() {
-    return _parent_algorithm::compute_collective_modes(this->usingDOS ? 150 : 2 * Constants::K_DISCRETIZATION);
+    return _parent_algorithm::compute_collective_modes(this->usingDOS ? 150 : 2 * Constants::DISCRETIZATION);
 }
 }  // namespace Hubbard::Helper
